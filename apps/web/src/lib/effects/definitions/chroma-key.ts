@@ -10,11 +10,11 @@ function hexToRgb(hex: string): [number, number, number] {
 }
 
 export const CHROMA_KEY_PRESETS = [
-	{ id: "green-screen", name: "Green Screen", color: "#00b140" },
-	{ id: "blue-screen", name: "Blue Screen", color: "#0047ab" },
-	{ id: "red-screen", name: "Red Screen", color: "#ff0040" },
-	{ id: "white-bg", name: "White Background", color: "#ffffff" },
-	{ id: "black-bg", name: "Black Background", color: "#000000" },
+	{ id: "green-screen", name: "Tela Verde", color: "#00b140" },
+	{ id: "blue-screen", name: "Tela Azul", color: "#0047ab" },
+	{ id: "red-screen", name: "Tela Vermelha", color: "#ff0040" },
+	{ id: "white-bg", name: "Fundo Branco", color: "#ffffff" },
+	{ id: "black-bg", name: "Fundo Preto", color: "#000000" },
 ];
 
 export const chromaKeyEffectDefinition: EffectDefinition = {
@@ -24,13 +24,13 @@ export const chromaKeyEffectDefinition: EffectDefinition = {
 	params: [
 		{
 			key: "keyColor",
-			label: "Key Color",
+			label: "Cor-Chave",
 			type: "color",
 			default: "#00b140",
 		},
 		{
 			key: "tolerance",
-			label: "Tolerance",
+			label: "Tolerância",
 			type: "number",
 			default: 0.35,
 			min: 0.0,
@@ -39,7 +39,7 @@ export const chromaKeyEffectDefinition: EffectDefinition = {
 		},
 		{
 			key: "softness",
-			label: "Edge Softness",
+			label: "Suavidade da Borda",
 			type: "number",
 			default: 0.08,
 			min: 0.0,
@@ -48,7 +48,7 @@ export const chromaKeyEffectDefinition: EffectDefinition = {
 		},
 		{
 			key: "spillSuppress",
-			label: "Spill Suppress",
+			label: "Supressão de Spill",
 			type: "number",
 			default: 0.3,
 			min: 0.0,

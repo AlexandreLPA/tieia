@@ -7,12 +7,21 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
+from app.config import settings
 from app.services.model_backend import llm_backend
 from app.services.ollama_service import ollama_service
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/llm", tags=["llm"])
+
+DEFAULT_SYSTEM_PROMPT = (
+    "Você é um assistente de produção de vídeo. "
+    "Ajude a ter ideias de vídeo, escrever roteiros, planejar conteúdo, "
+    "sugerir thumbnails e melhorar projetos de vídeo. "
+    "Seja criativo, específico e prático. Mantenha as respostas concisas. "
+    "Responda sempre em português do Brasil."
+)
 
 
 class PullModelRequest(BaseModel):
@@ -45,16 +54,19 @@ async def llm_status() -> dict:
     status = await llm_backend.get_status()
     ollama = status["ollama"]
     tq = status["turboquant"]
+    orouter = status["openrouter"]
 
     return {
-        "available": ollama["available"] or tq["available"],
-        "url": ollama["url"],
-        "default_model": ollama_service.default_model,
+        "available": ollama["available"] or tq["available"] or orouter["available"],
+        "url": "openrouter (cloud)" if orouter["available"] else ollama["url"],
+        "default_model": orouter["model"] if orouter["available"] else ollama_service.default_model,
         "active_backend": status["active_backend"],
         "turboquant_available": tq["available"],
         "turboquant_model": tq["active_model"],
         "kv_cache_bits": tq["kv_cache_bits"],
         "models": ollama["models"],
+        "openrouter_configured": orouter["configured"],
+        "openrouter_model": orouter["model"],
     }
 
 
@@ -71,12 +83,7 @@ async def chat(request: ChatRequest) -> dict:
             detail="No LLM backend available. Start Ollama or TurboQuant service.",
         )
 
-    system_prompt = request.system or (
-        "You are a helpful video production assistant. "
-        "Help users brainstorm video ideas, write scripts, plan content, "
-        "suggest thumbnails, and improve their video projects. "
-        "Be creative, specific, and actionable. Keep responses concise."
-    )
+    system_prompt = request.system or DEFAULT_SYSTEM_PROMPT
 
     try:
         response = await llm_backend.generate(
@@ -104,12 +111,7 @@ async def chat_stream(request: ChatRequest) -> StreamingResponse:
             detail="No LLM backend available. Start Ollama or TurboQuant service.",
         )
 
-    system_prompt = request.system or (
-        "You are a helpful video production assistant. "
-        "Help users brainstorm video ideas, write scripts, plan content, "
-        "suggest thumbnails, and improve their video projects. "
-        "Be creative, specific, and actionable. Keep responses concise."
-    )
+    system_prompt = request.system or DEFAULT_SYSTEM_PROMPT
 
     async def _stream():
         try:
@@ -173,6 +175,45 @@ async def set_model(request: SetModelRequest) -> dict:
         "previous_model": old_model,
         "current_model": request.model,
     }
+
+
+class SetCloudModelRequest(BaseModel):
+    model: str
+
+
+@router.post("/set-cloud-model")
+async def set_cloud_model(request: SetCloudModelRequest) -> dict:
+    """Switch to a cloud model via OpenRouter at runtime — no restart needed.
+
+    Requires OPENROUTER_API_KEY to already be set in .env (this endpoint
+    only switches which model/backend is active, it never sets the key).
+    """
+    if not settings.OPENROUTER_API_KEY:
+        raise HTTPException(
+            status_code=400,
+            detail="Nenhuma chave da OpenRouter configurada. Adicione OPENROUTER_API_KEY no .env primeiro.",
+        )
+
+    old_backend = llm_backend.backend_mode
+    old_model = llm_backend.openrouter_model
+    llm_backend.set_backend("openrouter", request.model)
+    logger.info("Switched to cloud model: %s -> %s", old_model, request.model)
+
+    return {
+        "status": "switched",
+        "previous_backend": old_backend,
+        "current_backend": "openrouter",
+        "current_model": request.model,
+    }
+
+
+@router.post("/set-local-backend")
+async def set_local_backend() -> dict:
+    """Switch back to local inference (Ollama/TurboQuant), undoing set-cloud-model."""
+    old_backend = llm_backend.backend_mode
+    llm_backend.set_backend("auto")
+    logger.info("Switched back to local backend from: %s", old_backend)
+    return {"status": "switched", "previous_backend": old_backend, "current_backend": "auto"}
 
 
 @router.post("/pull-model")

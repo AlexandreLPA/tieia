@@ -21,10 +21,10 @@ interface TextPreset {
 const TEXT_PRESETS: TextPreset[] = [
 	{
 		id: "heading",
-		name: "Heading",
-		preview: "Heading",
+		name: "Título",
+		preview: "Título",
 		config: {
-			content: "Heading",
+			content: "Título",
 			fontSize: 24,
 			fontWeight: "bold",
 			fontFamily: "Inter",
@@ -33,10 +33,10 @@ const TEXT_PRESETS: TextPreset[] = [
 	},
 	{
 		id: "subheading",
-		name: "Subheading",
-		preview: "Subheading",
+		name: "Subtítulo",
+		preview: "Subtítulo",
 		config: {
-			content: "Subheading",
+			content: "Subtítulo",
 			fontSize: 16,
 			fontWeight: "bold",
 			fontFamily: "Inter",
@@ -45,10 +45,10 @@ const TEXT_PRESETS: TextPreset[] = [
 	},
 	{
 		id: "body",
-		name: "Body Text",
-		preview: "Body text",
+		name: "Texto do corpo",
+		preview: "Texto do corpo",
 		config: {
-			content: "Body text",
+			content: "Texto do corpo",
 			fontSize: 10,
 			fontWeight: "normal",
 			fontFamily: "Inter",
@@ -57,10 +57,10 @@ const TEXT_PRESETS: TextPreset[] = [
 	},
 	{
 		id: "caption",
-		name: "Caption",
-		preview: "Caption",
+		name: "Legenda",
+		preview: "Legenda",
 		config: {
-			content: "Caption",
+			content: "Legenda",
 			fontSize: 6,
 			fontWeight: "normal",
 			fontFamily: "Inter",
@@ -69,10 +69,10 @@ const TEXT_PRESETS: TextPreset[] = [
 	},
 	{
 		id: "bold-impact",
-		name: "Bold Impact",
-		preview: "IMPACT",
+		name: "Impacto em negrito",
+		preview: "IMPACTO",
 		config: {
-			content: "IMPACT",
+			content: "IMPACTO",
 			fontSize: 30,
 			fontWeight: "bold",
 			fontFamily: "Inter",
@@ -81,10 +81,10 @@ const TEXT_PRESETS: TextPreset[] = [
 	},
 	{
 		id: "outlined",
-		name: "Outlined",
-		preview: "Outlined",
+		name: "Contornado",
+		preview: "Contornado",
 		config: {
-			content: "Outlined",
+			content: "Contornado",
 			fontSize: 20,
 			fontWeight: "bold",
 			fontFamily: "Inter",
@@ -102,10 +102,10 @@ const TEXT_PRESETS: TextPreset[] = [
 	},
 	{
 		id: "label-badge",
-		name: "Label / Badge",
-		preview: "LABEL",
+		name: "Etiqueta / Selo",
+		preview: "ETIQUETA",
 		config: {
-			content: "LABEL",
+			content: "ETIQUETA",
 			fontSize: 5,
 			fontWeight: "bold",
 			fontFamily: "Inter",
@@ -123,10 +123,10 @@ const TEXT_PRESETS: TextPreset[] = [
 	},
 	{
 		id: "lower-third",
-		name: "Lower Third",
-		preview: "Name | Title",
+		name: "Terço inferior",
+		preview: "Nome | Cargo",
 		config: {
-			content: "Name | Title",
+			content: "Nome | Cargo",
 			fontSize: 6,
 			fontWeight: "bold",
 			fontFamily: "Inter",
@@ -149,8 +149,8 @@ const TEXT_PRESETS: TextPreset[] = [
 	},
 	{
 		id: "default",
-		name: "Default",
-		preview: "Default text",
+		name: "Padrão",
+		preview: "Texto padrão",
 		config: {},
 	},
 ];
@@ -196,7 +196,7 @@ export function TextView() {
 					!file.name.endsWith(".woff") &&
 					!file.name.endsWith(".woff2")
 				) {
-					toast.error(`${file.name}: unsupported format. Use TTF, OTF, WOFF, or WOFF2.`);
+					toast.error(`${file.name}: formato não compatível. Use TTF, OTF, WOFF ou WOFF2.`);
 					continue;
 				}
 
@@ -208,7 +208,7 @@ export function TextView() {
 					document.fonts.add(fontFace);
 					loaded.push(fontName);
 				} catch (err) {
-					toast.error(`Failed to load ${file.name}`);
+					toast.error(`Falha ao carregar ${file.name}`);
 					console.error("Font load error:", err);
 				}
 			}
@@ -219,7 +219,7 @@ export function TextView() {
 				try {
 					localStorage.setItem("opencut:custom-fonts", JSON.stringify(updated));
 				} catch { /* ignore */ }
-				toast.success(`Loaded ${loaded.length} font${loaded.length > 1 ? "s" : ""}: ${loaded.join(", ")}`);
+				toast.success(`${loaded.length} fonte${loaded.length > 1 ? "s" : ""} carregada${loaded.length > 1 ? "s" : ""}: ${loaded.join(", ")}`);
 			}
 
 			// Reset input
@@ -229,11 +229,11 @@ export function TextView() {
 	);
 
 	return (
-		<PanelView title="Text">
+		<PanelView title="Texto">
 			<div className="flex flex-col gap-4 pb-4">
 				{/* Text presets */}
 				<div className="flex flex-col gap-2">
-					<Label className="text-xs font-medium">Text presets</Label>
+					<Label className="text-xs font-medium">Predefinições de texto</Label>
 					<div className="grid grid-cols-2 gap-1.5">
 						{TEXT_PRESETS.map((preset) => (
 							<DraggableItem
@@ -272,9 +272,9 @@ export function TextView() {
 
 				{/* Font upload */}
 				<div className="border-t pt-3 flex flex-col gap-2">
-					<Label className="text-xs font-medium">Custom fonts</Label>
+					<Label className="text-xs font-medium">Fontes personalizadas</Label>
 					<p className="text-[11px] text-muted-foreground leading-relaxed">
-						Upload TTF, OTF, WOFF, or WOFF2 font files to use in your project.
+						Envie arquivos de fonte TTF, OTF, WOFF ou WOFF2 para usar no seu projeto.
 					</p>
 					<Button
 						variant="outline"
@@ -282,7 +282,7 @@ export function TextView() {
 						className="w-full"
 						onClick={() => fontInputRef.current?.click()}
 					>
-						Upload fonts
+						Enviar fontes
 					</Button>
 					<input
 						ref={fontInputRef}

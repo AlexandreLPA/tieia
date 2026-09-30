@@ -45,28 +45,28 @@ interface SuggestedCommand {
 
 const DEFAULT_SUGGESTIONS: SuggestedCommand[] = [
 	{
-		label: "Remove filler words",
-		prompt: "Remove all filler words like um, uh, like from the transcript",
+		label: "Remover palavras de preenchimento",
+		prompt: "Remover palavras de preenchimento como \"hã\" e \"tipo\" da transcrição",
 	},
 	{
-		label: "Add subtitles",
-		prompt: "Generate subtitles for the current video",
+		label: "Adicionar legendas",
+		prompt: "Gerar legendas para o vídeo atual",
 	},
 	{
-		label: "Remove silences",
-		prompt: "Detect and remove long silences from the timeline",
+		label: "Remover silêncios",
+		prompt: "Detectar e remover silêncios longos da linha do tempo",
 	},
 	{
-		label: "Improve audio",
-		prompt: "Apply noise reduction and normalize audio levels",
+		label: "Melhorar áudio",
+		prompt: "Aplicar redução de ruído e normalizar os níveis de áudio",
 	},
 	{
-		label: "Generate thumbnail",
-		prompt: "Create a thumbnail image for this video",
+		label: "Gerar miniatura",
+		prompt: "Criar uma imagem de miniatura para este vídeo",
 	},
 	{
-		label: "Auto color grade",
-		prompt: "Apply automatic color grading to the video clips",
+		label: "Correção de cor automática",
+		prompt: "Aplicar correção de cor automática aos clipes de vídeo",
 	},
 ];
 
@@ -187,7 +187,7 @@ export function AICommandPanel({
 						icon={SparklesIcon}
 						className="size-4 text-primary"
 					/>
-					<span className="text-sm font-medium">AI Studio</span>
+					<span className="text-sm font-medium">Estúdio de IA</span>
 					<Badge variant="secondary" className="text-[10px] px-1.5 py-0">
 						Beta
 					</Badge>
@@ -203,7 +203,7 @@ export function AICommandPanel({
 						variant="ghost"
 						size="icon"
 						onClick={onClose}
-						aria-label="Close AI panel"
+						aria-label="Fechar painel de IA"
 					>
 						<HugeiconsIcon icon={Cancel01Icon} className="size-4" />
 					</Button>
@@ -236,7 +236,7 @@ export function AICommandPanel({
 						{isProcessing && (
 							<div className="flex items-center gap-2 text-muted-foreground text-sm py-2">
 								<Spinner className="size-3" />
-								<span>Thinking...</span>
+								<span>Pensando...</span>
 							</div>
 						)}
 					</div>
@@ -251,7 +251,7 @@ export function AICommandPanel({
 						value={inputValue}
 						onChange={(e) => setInputValue(e.target.value)}
 						onKeyDown={handleKeyDown}
-						placeholder="Ask anything..."
+						placeholder="Pergunte qualquer coisa..."
 						disabled={isProcessing}
 						className="pr-10 text-sm"
 					/>
@@ -261,7 +261,7 @@ export function AICommandPanel({
 						onClick={handleSend}
 						disabled={!inputValue.trim() || isProcessing}
 						className="absolute right-1 top-1/2 -translate-y-1/2 size-7"
-						aria-label="Send message"
+						aria-label="Enviar mensagem"
 					>
 						{isProcessing ? (
 							<Spinner className="size-3.5" />
@@ -271,7 +271,7 @@ export function AICommandPanel({
 					</Button>
 				</div>
 				<p className="text-[9px] text-muted-foreground mt-1.5 text-center">
-					Press Enter to send &middot; Save responses as ideas
+					Pressione Enter para enviar &middot; Salve as respostas como ideias
 				</p>
 			</div>
 		</div>
@@ -294,9 +294,9 @@ function EmptySuggestions({
 					icon={SparklesIcon}
 					className="size-8 text-muted-foreground/50 mx-auto mb-2"
 				/>
-				<p className="text-sm font-medium">AI Studio</p>
+				<p className="text-sm font-medium">Estúdio de IA</p>
 				<p className="text-xs text-muted-foreground mt-1">
-					Brainstorm ideas, plan your video, or run AI commands.
+					Faça brainstorm de ideias, planeje seu vídeo ou execute comandos de IA.
 				</p>
 			</div>
 			<div className="flex flex-col gap-1.5 mt-2">
@@ -352,7 +352,7 @@ function MessageBubble({
 					onClick={() => saveIdea(message.content)}
 				>
 					<HugeiconsIcon icon={Bookmark01Icon} className="size-3" />
-					Save as idea
+					Salvar como ideia
 				</Button>
 			)}
 
@@ -404,9 +404,9 @@ function ActionPreviewCard({
 						className="text-[10px] shrink-0"
 					>
 						{action.status === "applied"
-							? "Applied"
+							? "Aplicado"
 							: action.status === "cancelled"
-								? "Skipped"
+								? "Ignorado"
 								: action.type}
 					</Badge>
 				</div>
@@ -420,7 +420,7 @@ function ActionPreviewCard({
 							className="flex-1 h-6 text-xs"
 						>
 							<HugeiconsIcon icon={Tick01Icon} className="size-3 mr-1" />
-							Apply
+							Aplicar
 						</Button>
 						<Button
 							variant="outline"
@@ -429,7 +429,7 @@ function ActionPreviewCard({
 							className="flex-1 h-6 text-xs"
 						>
 							<HugeiconsIcon icon={Cancel01Icon} className="size-3 mr-1" />
-							Cancel
+							Cancelar
 						</Button>
 					</div>
 				)}

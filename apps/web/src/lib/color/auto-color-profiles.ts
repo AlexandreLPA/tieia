@@ -14,45 +14,49 @@ export interface ColorCorrectionProfile {
 	};
 }
 
+// NOTE: `name` is left in English (not translated) because it is used as a
+// lookup key by exact string match in hooks/use-auto-color-correction.ts
+// (`AUTO_CORRECT_PROFILES.find((p) => p.name === profileName)`), and there is
+// no separate `id` field to preserve instead. Only `description` is translated.
 export const AUTO_CORRECT_PROFILES: ColorCorrectionProfile[] = [
 	{
 		name: "Auto Balance",
-		description: "Neutral white balance and exposure",
+		description: "Balanço de branco e exposição neutros",
 		adjustments: { brightness: 0, contrast: 0, saturation: 0, temperature: 0, tint: 0, highlights: 0, shadows: 0, exposure: 0, gamma: 0 },
 	},
 	{
 		name: "Vibrant Pop",
-		description: "Boosted saturation and contrast",
+		description: "Saturação e contraste realçados",
 		adjustments: { brightness: 5, contrast: 15, saturation: 25, temperature: 5, tint: 0, highlights: -10, shadows: 10, exposure: 5, gamma: 0 },
 	},
 	{
 		name: "Film Look",
-		description: "Cinematic color grading",
+		description: "Correção de cor cinematográfica",
 		adjustments: { brightness: -5, contrast: 10, saturation: -15, temperature: -10, tint: 5, highlights: -20, shadows: 15, exposure: -5, gamma: 5 },
 	},
 	{
 		name: "Warm Sunset",
-		description: "Warm, golden tones",
+		description: "Tons quentes e dourados",
 		adjustments: { brightness: 5, contrast: 5, saturation: 10, temperature: 25, tint: 5, highlights: 5, shadows: 10, exposure: 5, gamma: 0 },
 	},
 	{
 		name: "Cool Blue",
-		description: "Cool, blue tones",
+		description: "Tons frios e azulados",
 		adjustments: { brightness: 0, contrast: 10, saturation: -10, temperature: -20, tint: -5, highlights: 5, shadows: -5, exposure: 0, gamma: 0 },
 	},
 	{
 		name: "High Contrast B&W",
-		description: "Dramatic black and white",
+		description: "Preto e branco dramático",
 		adjustments: { brightness: 5, contrast: 30, saturation: -100, temperature: 0, tint: 0, highlights: 10, shadows: -20, exposure: 5, gamma: 10 },
 	},
 	{
 		name: "Soft Portrait",
-		description: "Soft, flattering skin tones",
+		description: "Tons de pele suaves e favorecedores",
 		adjustments: { brightness: 10, contrast: -5, saturation: 5, temperature: 10, tint: 5, highlights: -10, shadows: 15, exposure: 5, gamma: -5 },
 	},
 	{
 		name: "Night Vision",
-		description: "Enhanced low-light footage",
+		description: "Realce de imagens com pouca luz",
 		adjustments: { brightness: 20, contrast: 15, saturation: -20, temperature: -15, tint: 10, highlights: -30, shadows: 40, exposure: 20, gamma: -10 },
 	},
 ];

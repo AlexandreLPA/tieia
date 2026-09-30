@@ -8,8 +8,8 @@ export function ElementsCombinedView() {
 	return (
 		<SubTabView
 			tabs={[
-				{ key: "stickers", label: "Stickers", content: <StickersView /> },
-				{ key: "overlays", label: "Overlays", content: <OverlaysView /> },
+				{ key: "stickers", label: "Figurinhas", content: <StickersView /> },
+				{ key: "overlays", label: "Sobreposições", content: <OverlaysView /> },
 			]}
 		/>
 	);

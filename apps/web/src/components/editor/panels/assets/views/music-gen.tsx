@@ -43,26 +43,26 @@ export function MusicGenPanel({ className }: { className?: string }) {
 			<div className="px-4 py-3 border-b space-y-2">
 				<div className="flex items-center gap-2">
 					<HugeiconsIcon icon={MusicNote01Icon} className="size-4 text-primary" />
-					<span className="text-xs font-medium">AI Music Generator</span>
+					<span className="text-xs font-medium">Gerador de Música com IA</span>
 				</div>
 				<p className="text-[10px] text-muted-foreground">
-					Generate royalty-free background music for your project.
+					Gere música de fundo livre de direitos autorais para o seu projeto.
 				</p>
 			</div>
 
 			<div className="px-4 py-3 space-y-4 flex-1 overflow-y-auto">
 				<div className="space-y-1.5">
-					<span className="text-[10px] text-muted-foreground">Description (optional)</span>
+					<span className="text-[10px] text-muted-foreground">Descrição (opcional)</span>
 					<textarea
 						className="w-full rounded border bg-transparent px-2 py-1 text-[10px] resize-none h-14 placeholder:text-muted-foreground"
-						placeholder="Describe the music you want..."
+						placeholder="Descreva a música que você quer..."
 						value={params.prompt}
 						onChange={(e) => setParams((p) => ({ ...p, prompt: e.target.value }))}
 					/>
 				</div>
 
 				<div className="space-y-1.5">
-					<span className="text-[10px] text-muted-foreground">Genre</span>
+					<span className="text-[10px] text-muted-foreground">Gênero</span>
 					<div className="flex flex-wrap gap-1">
 						{MUSIC_GENRES.map((genre) => (
 							<Button
@@ -79,7 +79,7 @@ export function MusicGenPanel({ className }: { className?: string }) {
 				</div>
 
 				<div className="space-y-1.5">
-					<span className="text-[10px] text-muted-foreground">Mood</span>
+					<span className="text-[10px] text-muted-foreground">Clima</span>
 					<div className="flex flex-wrap gap-1">
 						{MUSIC_MOODS.map((mood) => (
 							<Button
@@ -119,7 +119,7 @@ export function MusicGenPanel({ className }: { className?: string }) {
 
 				<div className="space-y-1.5">
 					<div className="flex justify-between text-[10px] text-muted-foreground">
-						<span>Duration</span>
+						<span>Duração</span>
 						<span className="font-mono">{params.duration}s</span>
 					</div>
 					<Slider
@@ -136,7 +136,7 @@ export function MusicGenPanel({ className }: { className?: string }) {
 					onClick={handleGenerate}
 					disabled={isGenerating}
 				>
-					{isGenerating ? "Generating..." : `Generate ${params.duration}s ${params.genre}`}
+					{isGenerating ? "Gerando..." : `Gerar ${params.duration}s de ${params.genre}`}
 				</Button>
 
 				{generatedUrl && (
@@ -160,7 +160,7 @@ export function MusicGenPanel({ className }: { className?: string }) {
 							onClick={handleAddToTimeline}
 						>
 							<HugeiconsIcon icon={Add01Icon} className="size-3 mr-1" />
-							Add to Timeline
+							Adicionar à Linha do Tempo
 						</Button>
 					</div>
 				)}

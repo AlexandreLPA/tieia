@@ -58,7 +58,7 @@ export function useAIDubbing() {
 					.filter(Boolean) ?? segments;
 
 			if (targetSegments.length === 0) {
-				toast.error("No segments to dub");
+				toast.error("Nenhum segmento para dublar");
 				return;
 			}
 
@@ -138,7 +138,7 @@ export function useAIDubbing() {
 						// LLM translation so dubbing still works.
 						if (isLocal) {
 							toast.warning(
-								"NLLB translate service unavailable — using LLM fallback.",
+								"Serviço de tradução NLLB indisponível — usando alternativa via LLM.",
 							);
 							translations = await Promise.all(
 								targetSegments.map((s) =>
@@ -239,17 +239,17 @@ export function useAIDubbing() {
 				});
 
 				toast.success(
-					`Dubbing complete: ${totalSegments} segments in ${options.targetLanguage}`,
+					`Dublagem concluída: ${totalSegments} segmentos em ${options.targetLanguage}`,
 				);
 			} catch (error) {
 				const message =
-					error instanceof Error ? error.message : "Dubbing failed";
+					error instanceof Error ? error.message : "Falha na dublagem";
 				updateTask(taskId, {
 					status: "error",
 					error: message,
 					completedAt: Date.now(),
 				});
-				toast.error("Dubbing failed", { description: message });
+				toast.error("Falha na dublagem", { description: message });
 			} finally {
 				setIsDubbing(false);
 				setProgress(null);

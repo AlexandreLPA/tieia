@@ -41,47 +41,47 @@ const createHugeiconsIcon =
 export const tabs = {
 	media: {
 		icon: createHugeiconsIcon({ icon: Folder03Icon }),
-		label: "Media",
+		label: "Mídia",
 	},
 	ai: {
 		icon: createHugeiconsIcon({ icon: SparklesIcon }),
-		label: "AI Studio",
+		label: "Estúdio de IA",
 	},
 	videogen: {
 		icon: createHugeiconsIcon({ icon: VideoReplayIcon }),
-		label: "Video Gen",
+		label: "Geração de Vídeo",
 	},
 	text: {
 		icon: createHugeiconsIcon({ icon: TextIcon }),
-		label: "Text",
+		label: "Texto",
 	},
 	captions: {
 		icon: createHugeiconsIcon({ icon: ClosedCaptionIcon }),
-		label: "Captions",
+		label: "Legendas",
 	},
 	audio: {
 		icon: createHugeiconsIcon({ icon: HeadphonesIcon }),
-		label: "Audio",
+		label: "Áudio",
 	},
 	elements: {
 		icon: createHugeiconsIcon({ icon: Happy01Icon }),
-		label: "Elements",
+		label: "Elementos",
 	},
 	visuals: {
 		icon: createHugeiconsIcon({ icon: MagicWand05Icon }),
-		label: "Visuals",
+		label: "Visuais",
 	},
 	search: {
 		icon: createHugeiconsIcon({ icon: Search01Icon }),
-		label: "Search",
+		label: "Pesquisa",
 	},
 	brandkit: {
 		icon: createHugeiconsIcon({ icon: CrownIcon }),
-		label: "Brand Kit",
+		label: "Kit de Marca",
 	},
 	settings: {
 		icon: createHugeiconsIcon({ icon: Settings01Icon }),
-		label: "Settings",
+		label: "Configurações",
 	},
 } satisfies Record<
 	Tab,

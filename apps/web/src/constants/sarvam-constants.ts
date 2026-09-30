@@ -110,8 +110,8 @@ export const SARVAM_TTS_MODEL = "bulbul:v3";
 // ---------------------------------------------------------------------------
 
 export const SARVAM_STT_MODES = [
-	{ value: "transcribe", label: "Transcribe", description: "Transcribe in original language" },
-	{ value: "translate", label: "Translate to English", description: "Transcribe and translate to English" },
+	{ value: "transcribe", label: "Transcrever", description: "Transcrever no idioma original" },
+	{ value: "translate", label: "Traduzir para o inglês", description: "Transcrever e traduzir para o inglês" },
 ] as const;
 
 // ---------------------------------------------------------------------------

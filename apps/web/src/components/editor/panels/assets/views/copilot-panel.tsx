@@ -58,8 +58,8 @@ export function CopilotPanel({ className }: { className?: string }) {
 					<span className="text-xs font-medium">AI Co-Pilot</span>
 				</div>
 				<p className="text-[10px] text-muted-foreground">
-					Describe what you want. AI creates and executes a multi-step editing
-					plan.
+					Descreva o que você quer. A IA cria e executa um plano de edição em
+					várias etapas.
 				</p>
 			</div>
 
@@ -67,11 +67,11 @@ export function CopilotPanel({ className }: { className?: string }) {
 				<div className="px-4 py-3 space-y-4">
 					<div className="space-y-1.5">
 						<span className="text-[10px] text-muted-foreground">
-							What do you want to do?
+							O que você quer fazer?
 						</span>
 						<textarea
 							className="w-full rounded border bg-transparent px-2 py-1.5 text-[10px] resize-none h-16 placeholder:text-muted-foreground"
-							placeholder="e.g., Make this a 60-second reel with captions and music..."
+							placeholder="ex.: Transforme isto em um reel de 60 segundos com legendas e música..."
 							value={goal}
 							onChange={(e) => setGoal(e.target.value)}
 							disabled={isPlanning || isExecuting}
@@ -80,7 +80,7 @@ export function CopilotPanel({ className }: { className?: string }) {
 
 					<div className="space-y-1">
 						<span className="text-[8px] text-muted-foreground">
-							Quick presets
+							Predefinições rápidas
 						</span>
 						<div className="flex flex-wrap gap-1">
 							{COPILOT_PRESETS.map((preset) => (
@@ -104,7 +104,7 @@ export function CopilotPanel({ className }: { className?: string }) {
 							onClick={handleCreatePlan}
 							disabled={isPlanning || !goal.trim()}
 						>
-							{isPlanning ? "Creating Plan..." : "Create Plan"}
+							{isPlanning ? "Criando plano..." : "Criar plano"}
 						</Button>
 					)}
 
@@ -112,7 +112,7 @@ export function CopilotPanel({ className }: { className?: string }) {
 						<div className="space-y-3">
 							<div className="rounded border p-2 space-y-1">
 								<div className="flex items-center justify-between">
-									<span className="text-[10px] font-medium">Plan</span>
+									<span className="text-[10px] font-medium">Plano</span>
 									<span className="text-[8px] text-muted-foreground">
 										~{plan.estimatedTime}
 									</span>
@@ -147,7 +147,7 @@ export function CopilotPanel({ className }: { className?: string }) {
 										className="flex-1 h-7 text-[10px]"
 										onClick={executePlan}
 									>
-										Execute Plan
+										Executar plano
 									</Button>
 								)}
 								{isExecuting && (
@@ -156,7 +156,7 @@ export function CopilotPanel({ className }: { className?: string }) {
 										className="flex-1 h-7 text-[10px]"
 										onClick={cancel}
 									>
-										Cancel
+										Cancelar
 									</Button>
 								)}
 								{!isExecuting && (
@@ -165,7 +165,7 @@ export function CopilotPanel({ className }: { className?: string }) {
 										className="h-7 text-[10px]"
 										onClick={reset}
 									>
-										New Plan
+										Novo plano
 									</Button>
 								)}
 							</div>

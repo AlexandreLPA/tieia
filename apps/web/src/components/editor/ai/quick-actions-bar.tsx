@@ -157,10 +157,10 @@ export function QuickActionsBar({ className }: { className?: string }) {
 				);
 				const cuts = computeCutsFromDeletedSegments(toDelete);
 				handleDeleteSegments(segmentsToRemove, cuts);
-				toast.success(`Removed ${segmentsToRemove.length} filler segments`);
+				toast.success(`${segmentsToRemove.length} trechos de preenchimento removidos`);
 			} else {
 				toast.info(
-					"No segments are predominantly filler words. Use word-level editing in the transcript panel.",
+					"Nenhum trecho é predominantemente de palavras de preenchimento. Use a edição por palavra no painel de transcrição.",
 				);
 			}
 			setFillerStatus("idle");
@@ -168,11 +168,11 @@ export function QuickActionsBar({ className }: { className?: string }) {
 			setFillerCount(currentFillerCount);
 			setFillerStatus("done");
 			if (currentFillerCount > 0) {
-				toast.success(`Found ${currentFillerCount} filler words`, {
-					description: "Click again to remove them from the video.",
+				toast.success(`${currentFillerCount} palavras de preenchimento encontradas`, {
+					description: "Clique novamente para removê-las do vídeo.",
 				});
 			} else {
-				toast.info("No filler words found in the transcript.");
+				toast.info("Nenhuma palavra de preenchimento encontrada na transcrição.");
 			}
 		}
 	}, [fillerStatus, currentFillerCount, handleDeleteSegments]);
@@ -181,16 +181,16 @@ export function QuickActionsBar({ className }: { className?: string }) {
 	const handleSilences = useCallback(() => {
 		if (silenceStatus === "done") {
 			toast.success(
-				"Silences are removed when you delete segments (gaps auto-close).",
+				"Os silêncios são removidos quando você exclui trechos (os intervalos se fecham automaticamente).",
 			);
 			setSilenceStatus("idle");
 		} else {
 			setSilenceCount(currentSilenceCount);
 			setSilenceStatus("done");
 			if (currentSilenceCount > 0) {
-				toast.success(`Found ${currentSilenceCount} silent gaps (>1s)`);
+				toast.success(`${currentSilenceCount} intervalos de silêncio encontrados (>1s)`);
 			} else {
-				toast.info("No significant silences found between segments.");
+				toast.info("Nenhum silêncio significativo encontrado entre os trechos.");
 			}
 		}
 	}, [silenceStatus, currentSilenceCount]);
@@ -199,7 +199,7 @@ export function QuickActionsBar({ className }: { className?: string }) {
 	const handleSubtitles = useCallback(() => {
 		if (subtitleTrackId) {
 			editor.timeline.removeTrack({ trackId: subtitleTrackId });
-			toast.success("Subtitles removed");
+			toast.success("Legendas removidas");
 			return;
 		}
 
@@ -243,7 +243,7 @@ export function QuickActionsBar({ className }: { className?: string }) {
 			});
 		}
 
-		toast.success("Subtitles added to timeline");
+		toast.success("Legendas adicionadas à linha do tempo");
 	}, [editor, subtitleTrackId]);
 
 	// --- Fact Check ---
@@ -257,7 +257,7 @@ export function QuickActionsBar({ className }: { className?: string }) {
 			const result = await aiClient.factCheck(fullText);
 
 			if (result.claims.length === 0) {
-				toast.info("No verifiable claims found.");
+				toast.info("Nenhuma alegação verificável encontrada.");
 			} else {
 				const trueCount = result.claims.filter(
 					(c) => c.verdict === "True",
@@ -265,13 +265,13 @@ export function QuickActionsBar({ className }: { className?: string }) {
 				const falseCount = result.claims.filter(
 					(c) => c.verdict === "False",
 				).length;
-				toast.success(`Fact check complete: ${result.claims.length} claims`, {
-					description: `${trueCount} true, ${falseCount} false. Open the Fact Check panel for details.`,
+				toast.success(`Verificação de fatos concluída: ${result.claims.length} alegações`, {
+					description: `${trueCount} verdadeiras, ${falseCount} falsas. Abra o painel de Verificação de Fatos para mais detalhes.`,
 				});
 			}
 			setFactcheckStatus("done");
 		} catch {
-			toast.error("Fact check failed. Make sure the AI backend is running.");
+			toast.error("Falha na verificação de fatos. Verifique se o backend de IA está em execução.");
 			setFactcheckStatus("idle");
 		}
 	}, []);
@@ -288,8 +288,8 @@ export function QuickActionsBar({ className }: { className?: string }) {
 		bgTasks.addTask({
 			id: taskId,
 			type: "popover-subs",
-			label: "Popover subtitles",
-			progress: "Building subtitle elements...",
+			label: "Legendas popover",
+			progress: "Criando elementos de legenda...",
 		});
 
 		try {
@@ -313,7 +313,7 @@ export function QuickActionsBar({ className }: { className?: string }) {
 			for (let t = 0; t < trackBuckets.length; t++) {
 				const trackId = editor.timeline.addTrack({ type: "text", index: 0 });
 				const label =
-					trackBuckets.length === 1 ? "Popover Subs" : `Popover Subs ${t + 1}`;
+					trackBuckets.length === 1 ? "Legendas Popover" : `Legendas Popover ${t + 1}`;
 				editor.timeline.renameTrack({ trackId, name: label });
 
 				for (const el of trackBuckets[t]) {
@@ -333,7 +333,7 @@ export function QuickActionsBar({ className }: { className?: string }) {
 			setPopoverSubStatus("idle");
 		} catch (err) {
 			const message =
-				err instanceof Error ? err.message : "Failed to add popover subtitles";
+				err instanceof Error ? err.message : "Falha ao adicionar legendas popover";
 			bgTasks.updateTask(taskId, {
 				status: "error",
 				error: message,
@@ -347,7 +347,7 @@ export function QuickActionsBar({ className }: { className?: string }) {
 	const handleFindClips = useCallback(() => {
 		useAssetsPanelStore.getState().setActiveTab("audio");
 		toast.info(
-			"Switched to Audio panel — use the Podcast tab to find best clips.",
+			"Mudou para o painel de Áudio — use a aba Podcast para encontrar os melhores clipes.",
 		);
 		setFindClipsStatus("done");
 	}, []);
@@ -374,8 +374,8 @@ export function QuickActionsBar({ className }: { className?: string }) {
 	const actions = [
 		{
 			id: "smart-cut",
-			label: smartCutStatus === "done" ? "Cut done" : "Smart cut",
-			description: "Remove all filler words and silences in one click",
+			label: smartCutStatus === "done" ? "Corte concluído" : "Corte inteligente",
+			description: "Remove todas as palavras de preenchimento e silêncios em um clique",
 			icon: Scissor01Icon,
 			status: smartCutStatus,
 			handler: handleSmartCut,
@@ -384,16 +384,16 @@ export function QuickActionsBar({ className }: { className?: string }) {
 			id: "fillers",
 			label:
 				fillerStatus === "done" && effectiveFillerCount > 0
-					? "Remove fillers"
+					? "Remover preenchimentos"
 					: currentFillerCount > 0
-						? `${currentFillerCount} fillers`
-						: "Find fillers",
+						? `${currentFillerCount} preenchimentos`
+						: "Buscar preenchimentos",
 			description:
 				fillerStatus === "done" && effectiveFillerCount > 0
-					? `${effectiveFillerCount} filler words found — click to remove`
+					? `${effectiveFillerCount} palavras de preenchimento encontradas — clique para remover`
 					: currentFillerCount > 0
-						? `${currentFillerCount} filler words detected`
-						: "Scan for filler words (um, uh, like...)",
+						? `${currentFillerCount} palavras de preenchimento detectadas`
+						: "Buscar palavras de preenchimento (hã, tipo, né...)",
 			icon: Delete02Icon,
 			count: effectiveFillerCount > 0 ? effectiveFillerCount : undefined,
 			status:
@@ -406,14 +406,14 @@ export function QuickActionsBar({ className }: { className?: string }) {
 			id: "silences",
 			label:
 				silenceStatus === "done" && effectiveSilenceCount > 0
-					? `${effectiveSilenceCount} gaps`
+					? `${effectiveSilenceCount} intervalos`
 					: currentSilenceCount > 0
-						? `${currentSilenceCount} gaps`
-						: "Find silences",
+						? `${currentSilenceCount} intervalos`
+						: "Buscar silêncios",
 			description:
 				effectiveSilenceCount > 0
-					? `${effectiveSilenceCount} silent gaps detected between segments`
-					: "Detect long pauses between transcript segments",
+					? `${effectiveSilenceCount} intervalos de silêncio detectados entre os trechos`
+					: "Detectar pausas longas entre os trechos da transcrição",
 			icon: AiMicIcon,
 			count: effectiveSilenceCount > 0 ? effectiveSilenceCount : undefined,
 			status:
@@ -422,21 +422,21 @@ export function QuickActionsBar({ className }: { className?: string }) {
 		},
 		{
 			id: "subtitles",
-			label: subtitleTrackId ? "Remove subtitles" : "Add subtitles",
+			label: subtitleTrackId ? "Remover legendas" : "Adicionar legendas",
 			description: subtitleTrackId
-				? "Remove subtitle track from timeline"
-				: "Add subtitle text overlay from transcript",
+				? "Remover a faixa de legendas da linha do tempo"
+				: "Adicionar sobreposição de texto de legenda a partir da transcrição",
 			icon: TextIcon,
 			status: (subtitleTrackId ? "done" : "idle") as ActionStatus,
 			handler: handleSubtitles,
 		},
 		{
 			id: "popover-subs",
-			label: popoverSubCount > 0 ? "Add more subs" : "Popover subs",
+			label: popoverSubCount > 0 ? "Adicionar mais legendas" : "Legendas popover",
 			description:
 				popoverSubCount > 0
-					? `${popoverSubCount} set${popoverSubCount > 1 ? "s" : ""} added — click to add another layer`
-					: "Word-by-word popover subtitles — each word appears when spoken and stays visible",
+					? `${popoverSubCount} conjunto${popoverSubCount > 1 ? "s" : ""} adicionado${popoverSubCount > 1 ? "s" : ""} — clique para adicionar outra camada`
+					: "Legendas popover palavra por palavra — cada palavra aparece ao ser falada e permanece visível",
 			icon: ClosedCaptionIcon,
 			count: popoverSubCount > 0 ? popoverSubCount : undefined,
 			status: popoverSubStatus,
@@ -444,16 +444,16 @@ export function QuickActionsBar({ className }: { className?: string }) {
 		},
 		{
 			id: "find-clips",
-			label: "Find clips",
-			description: "Open Podcast Clips panel to find the best viral moments",
+			label: "Buscar clipes",
+			description: "Abra o painel de Clipes de Podcast para encontrar os melhores momentos virais",
 			icon: Mic01Icon,
 			status: findClipsStatus,
 			handler: handleFindClips,
 		},
 		{
 			id: "factcheck",
-			label: "Fact check",
-			description: "Verify factual claims in the transcript",
+			label: "Verificar fatos",
+			description: "Verificar alegações factuais na transcrição",
 			icon: CheckmarkBadge01Icon,
 			status: factcheckStatus,
 			handler: handleFactCheck,
@@ -468,7 +468,7 @@ export function QuickActionsBar({ className }: { className?: string }) {
 			)}
 		>
 			<span className="text-[10px] text-muted-foreground font-medium px-1 shrink-0">
-				Quick actions
+				Ações rápidas
 			</span>
 			<div className="w-px h-4 bg-border shrink-0" />
 			{actions.map((action) => (

@@ -20,11 +20,11 @@ const CATEGORY_ICONS: Record<string, string> = {
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
-	dissolve: "Dissolve",
-	slide: "Slide",
-	wipe: "Wipe",
+	dissolve: "Dissolvência",
+	slide: "Deslizar",
+	wipe: "Varredura",
 	zoom: "Zoom",
-	dip: "Dip",
+	dip: "Fusão",
 };
 
 export function TransitionsView() {
@@ -33,10 +33,10 @@ export function TransitionsView() {
 	const categories = Array.from(new Set(transitions.map((t) => t.category)));
 
 	return (
-		<PanelView title="Transitions">
+		<PanelView title="Transições">
 			<p className="text-[11px] text-muted-foreground px-1 pb-2">
-				Select a clip on the timeline, then click a transition to apply it to
-				the outgoing edge.
+				Selecione um clipe na linha do tempo e clique em uma transição para
+				aplicá-la à borda de saída.
 			</p>
 			{categories.map((category) => (
 				<div key={category} className="mb-3">

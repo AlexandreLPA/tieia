@@ -34,14 +34,14 @@ export function AutoDuckPanel({ className }: { className?: string }) {
 					<span className="text-xs font-medium">Auto-Duck</span>
 				</div>
 				<p className="text-[10px] text-muted-foreground">
-					Automatically lower music volume when speech is detected.
+					Reduz automaticamente o volume da música quando uma fala é detectada.
 				</p>
 			</div>
 
 			<div className="px-4 py-3 space-y-4">
 				<div className="space-y-1.5">
 					<div className="flex justify-between text-[10px] text-muted-foreground">
-						<span>Duck Amount</span>
+						<span>Nível de redução</span>
 						<span className="font-mono">{duckAmount} dB</span>
 					</div>
 					<Slider
@@ -55,7 +55,7 @@ export function AutoDuckPanel({ className }: { className?: string }) {
 
 				<div className="space-y-1.5">
 					<div className="flex justify-between text-[10px] text-muted-foreground">
-						<span>Fade Duration</span>
+						<span>Duração do fade</span>
 						<span className="font-mono">{fadeDuration.toFixed(1)}s</span>
 					</div>
 					<Slider
@@ -68,12 +68,12 @@ export function AutoDuckPanel({ className }: { className?: string }) {
 				</div>
 
 				<div className="text-[9px] text-muted-foreground">
-					{audioTracks.length} audio track{audioTracks.length !== 1 ? "s" : ""} detected.
-					Music tracks (named "music", "bgm", "bg") are auto-detected.
+					{audioTracks.length} faixa{audioTracks.length !== 1 ? "s" : ""} de áudio detectada{audioTracks.length !== 1 ? "s" : ""}.
+					Faixas de música (nomeadas "music", "bgm" ou "bg") são detectadas automaticamente.
 				</div>
 
 				<Button size="sm" className="w-full" onClick={handleApply}>
-					Apply Auto-Duck
+					Aplicar Auto-Duck
 				</Button>
 			</div>
 		</div>

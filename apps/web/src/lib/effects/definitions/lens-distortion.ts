@@ -3,12 +3,12 @@ import lensDistortionShader from "./lens-distortion.frag.glsl";
 
 export const lensDistortionEffectDefinition: EffectDefinition = {
 	type: "lens-distortion",
-	name: "Lens Distortion",
+	name: "Distorção de Lente",
 	keywords: ["lens", "distortion", "barrel", "pincushion", "fisheye", "warp"],
 	params: [
 		{
 			key: "amount",
-			label: "Amount",
+			label: "Quantidade",
 			type: "number",
 			default: 30,
 			min: -100,

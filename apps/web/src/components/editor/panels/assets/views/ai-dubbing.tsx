@@ -20,25 +20,25 @@ import { toast } from "sonner";
 const DUBBING_LANGUAGES = [
 	{ code: "hi", name: "Hindi" },
 	{ code: "bn", name: "Bengali" },
-	{ code: "ta", name: "Tamil" },
-	{ code: "te", name: "Telugu" },
-	{ code: "mr", name: "Marathi" },
-	{ code: "gu", name: "Gujarati" },
-	{ code: "kn", name: "Kannada" },
-	{ code: "ml", name: "Malayalam" },
-	{ code: "pa", name: "Punjabi" },
+	{ code: "ta", name: "Tâmil" },
+	{ code: "te", name: "Telugo" },
+	{ code: "mr", name: "Marata" },
+	{ code: "gu", name: "Guzerate" },
+	{ code: "kn", name: "Canarês" },
+	{ code: "ml", name: "Malaiala" },
+	{ code: "pa", name: "Panjabi" },
 	{ code: "od", name: "Odia" },
-	{ code: "en", name: "English" },
-	{ code: "es", name: "Spanish" },
-	{ code: "fr", name: "French" },
-	{ code: "de", name: "German" },
-	{ code: "pt", name: "Portuguese" },
-	{ code: "ja", name: "Japanese" },
-	{ code: "ko", name: "Korean" },
-	{ code: "zh", name: "Chinese" },
-	{ code: "ar", name: "Arabic" },
-	{ code: "ru", name: "Russian" },
-	{ code: "it", name: "Italian" },
+	{ code: "en", name: "Inglês" },
+	{ code: "es", name: "Espanhol" },
+	{ code: "fr", name: "Francês" },
+	{ code: "de", name: "Alemão" },
+	{ code: "pt", name: "Português" },
+	{ code: "ja", name: "Japonês" },
+	{ code: "ko", name: "Coreano" },
+	{ code: "zh", name: "Chinês" },
+	{ code: "ar", name: "Árabe" },
+	{ code: "ru", name: "Russo" },
+	{ code: "it", name: "Italiano" },
 ];
 
 const ENGINES: Array<{
@@ -49,17 +49,17 @@ const ENGINES: Array<{
 	{
 		value: "sarvam",
 		label: "Sarvam AI",
-		description: "11 Indian languages, 23 voices",
+		description: "11 idiomas indianos, 23 vozes",
 	},
 	{
 		value: "smallest",
 		label: "Smallest AI",
-		description: "15 languages, 80+ voices, low latency",
+		description: "15 idiomas, mais de 80 vozes, baixa latência",
 	},
 	{
 		value: "local",
 		label: "Local NLLB + XTTS",
-		description: "100% private — no cloud, no API key",
+		description: "100% privado — sem nuvem, sem chave de API",
 	},
 ];
 
@@ -79,11 +79,11 @@ export function AIDubbingPanel() {
 
 	const handleDub = useCallback(() => {
 		if (segments.length === 0) {
-			toast.error("No transcript available. Transcribe first.");
+			toast.error("Nenhuma transcrição disponível. Transcreva primeiro.");
 			return;
 		}
 		if (language === targetLanguage) {
-			toast.error("Target language is same as source.");
+			toast.error("O idioma de destino é igual ao de origem.");
 			return;
 		}
 		runDubbing({
@@ -103,28 +103,28 @@ export function AIDubbingPanel() {
 						{ id: "matthew", name: "Matthew" },
 						{ id: "maitrayi", name: "Maitrayi" },
 					]
-				: [{ id: "default", name: "Default" }];
+				: [{ id: "default", name: "Padrão" }];
 
 	return (
 		<div className="flex flex-col gap-4 p-3">
 			<div className="flex items-center justify-between">
 				<div className="flex items-center gap-1.5">
-					<span className="text-xs font-medium">AI Dubbing</span>
+					<span className="text-xs font-medium">Dublagem por IA</span>
 					{segments.length > 0 && (
 						<Badge variant="secondary" className="text-[8px] px-1 py-0">
-							{segments.length} segments
+							{segments.length} segmentos
 						</Badge>
 					)}
 				</div>
 				<Badge variant="outline" className="text-[8px] px-1 py-0">
-					Source: {language}
+					Origem: {language}
 				</Badge>
 			</div>
 
 			<p className="text-[10px] text-muted-foreground leading-relaxed">
-				Translates transcript segments and generates speech in the target
-				language. Each dubbed segment is placed as a new audio track aligned to
-				the original timestamps.
+				Traduz os segmentos da transcrição e gera fala no idioma de destino.
+				Cada segmento dublado é posicionado como uma nova faixa de áudio
+				alinhada aos tempos originais.
 			</p>
 
 			{engine === "local" && (
@@ -142,13 +142,13 @@ export function AIDubbingPanel() {
 						/>
 					</svg>
 					<span className="text-[9px] text-emerald-700 dark:text-emerald-400 font-medium">
-						Fully local — translation via NLLB-200, never leaves your machine
+						Totalmente local — tradução via NLLB-200, nunca sai da sua máquina
 					</span>
 				</div>
 			)}
 
 			<div className="flex flex-col gap-1.5">
-				<Label className="text-[10px]">Target language</Label>
+				<Label className="text-[10px]">Idioma de destino</Label>
 				<Select value={targetLanguage} onValueChange={setTargetLanguage}>
 					<SelectTrigger className="w-full">
 						<SelectValue />
@@ -164,7 +164,7 @@ export function AIDubbingPanel() {
 			</div>
 
 			<div className="flex flex-col gap-1.5">
-				<Label className="text-[10px]">TTS Engine</Label>
+				<Label className="text-[10px]">Motor de TTS</Label>
 				<div className="flex flex-col gap-1">
 					{ENGINES.map((e) => {
 						const isActive = engine === e.value;
@@ -215,7 +215,7 @@ export function AIDubbingPanel() {
 			</div>
 
 			<div className="flex flex-col gap-1.5">
-				<Label className="text-[10px]">Voice</Label>
+				<Label className="text-[10px]">Voz</Label>
 				<Select value={voiceId} onValueChange={setVoiceId}>
 					<SelectTrigger className="w-full">
 						<SelectValue />
@@ -235,12 +235,12 @@ export function AIDubbingPanel() {
 					<div className="flex items-center justify-between">
 						<span className="text-[9px] font-medium">
 							{progress.phase === "translating"
-								? "Translating..."
+								? "Traduzindo..."
 								: progress.phase === "generating"
-									? "Generating speech..."
+									? "Gerando fala..."
 									: progress.phase === "placing"
-										? "Placing on timeline..."
-										: "Done"}
+										? "Posicionando na linha do tempo..."
+										: "Concluído"}
 						</span>
 						<span className="text-[9px] text-muted-foreground">
 							{progress.currentSegment}/{progress.totalSegments}
@@ -271,7 +271,7 @@ export function AIDubbingPanel() {
 						: "bg-primary text-primary-foreground hover:bg-primary/90",
 				)}
 			>
-				{isDubbing ? "Dubbing..." : "Start Dubbing"}
+				{isDubbing ? "Dublando..." : "Iniciar dublagem"}
 			</button>
 		</div>
 	);

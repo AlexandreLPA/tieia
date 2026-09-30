@@ -122,7 +122,7 @@ export function MemoryStatusBar({
 
 					{/* Fallback when no memory data is available */}
 					{!hasAnyData && (
-						<span className="text-[10px]">AI Connected</span>
+						<span className="text-[10px]">IA conectada</span>
 					)}
 				</div>
 			</TooltipTrigger>
@@ -130,7 +130,7 @@ export function MemoryStatusBar({
 				<div className="flex flex-col gap-1.5 text-xs">
 					{hasGpu && (
 						<div className="flex items-center justify-between gap-6">
-							<span className="font-medium">GPU Memory</span>
+							<span className="font-medium">Memória da GPU</span>
 							<span className={getTextColor(gpuPercent)}>
 								{formatMb(status.gpuUsedMb)} /{" "}
 								{formatMb(status.gpuTotalMb)}
@@ -139,7 +139,7 @@ export function MemoryStatusBar({
 					)}
 					{hasRam && (
 						<div className="flex items-center justify-between gap-6">
-							<span className="font-medium">RAM Usage</span>
+							<span className="font-medium">Uso de RAM</span>
 							<span className={getTextColor(ramPercent)}>
 								{formatMb(status.ramUsedMb)} /{" "}
 								{formatMb(status.ramTotalMb)}
@@ -148,7 +148,7 @@ export function MemoryStatusBar({
 					)}
 					{!hasAnyData && (
 						<p className="text-muted-foreground">
-							AI backend connected. Memory stats not available.
+							Backend de IA conectado. Estatísticas de memória não disponíveis.
 						</p>
 					)}
 				</div>

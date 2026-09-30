@@ -38,9 +38,9 @@ export function CreateBranchDialog({
 	};
 
 	const validate = (value: string): string => {
-		if (!value.trim()) return "Branch name is required";
+		if (!value.trim()) return "O nome da ramificação é obrigatório";
 		if (!/^[a-zA-Z0-9][a-zA-Z0-9\-_]*$/.test(value)) {
-			return "Must start with letter/number, use only letters, numbers, hyphens, underscores";
+			return "Deve começar com letra/número; use apenas letras, números, hífens e sublinhados";
 		}
 		return "";
 	};
@@ -58,16 +58,16 @@ export function CreateBranchDialog({
 		<Dialog open={isOpen} onOpenChange={handleOpenChange}>
 			<DialogContent className="max-w-sm">
 				<DialogHeader>
-					<DialogTitle>New Branch</DialogTitle>
+					<DialogTitle>Nova ramificação</DialogTitle>
 				</DialogHeader>
 
 				<DialogBody className="gap-3">
 					<div className="text-xs text-muted-foreground">
-						Branching from <span className="font-medium text-foreground">{currentBranch}</span>
+						Criando ramificação a partir de <span className="font-medium text-foreground">{currentBranch}</span>
 					</div>
 
 					<div>
-						<Label htmlFor="branch-name">Branch name</Label>
+						<Label htmlFor="branch-name">Nome da ramificação</Label>
 						<Input
 							id="branch-name"
 							value={name}
@@ -81,7 +81,7 @@ export function CreateBranchDialog({
 									handleSubmit();
 								}
 							}}
-							placeholder="e.g. social-cut, client-v2"
+							placeholder="ex.: corte-social, cliente-v2"
 							className="mt-1"
 							autoFocus
 						/>
@@ -92,13 +92,13 @@ export function CreateBranchDialog({
 
 					<div>
 						<Label htmlFor="branch-desc" className="text-xs text-muted-foreground">
-							Description (optional)
+							Descrição (opcional)
 						</Label>
 						<Input
 							id="branch-desc"
 							value={description}
 							onChange={(e) => setDescription(e.target.value)}
-							placeholder="What is this branch for?"
+							placeholder="Para que serve esta ramificação?"
 							className="mt-1"
 						/>
 					</div>
@@ -106,9 +106,9 @@ export function CreateBranchDialog({
 
 				<DialogFooter>
 					<Button variant="outline" onClick={() => onOpenChange(false)}>
-						Cancel
+						Cancelar
 					</Button>
-					<Button onClick={handleSubmit}>Create Branch</Button>
+					<Button onClick={handleSubmit}>Criar ramificação</Button>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>

@@ -67,63 +67,78 @@ function statusBadge(status: ServiceState): {
 	switch (status) {
 		case "running":
 		case "loaded":
-			return { variant: "default", label: status === "loaded" ? "Loaded" : "Running", dotColor: "bg-green-500" };
+			return { variant: "default", label: status === "loaded" ? "Carregado" : "Em execução", dotColor: "bg-green-500" };
 		case "available":
-			return { variant: "secondary", label: "Not loaded", dotColor: "bg-yellow-500" };
+			return { variant: "secondary", label: "Não carregado", dotColor: "bg-yellow-500" };
 		case "not_installed":
-			return { variant: "destructive", label: "Not installed", dotColor: "bg-red-500" };
+			return { variant: "destructive", label: "Não instalado", dotColor: "bg-red-500" };
 		case "loading":
-			return { variant: "outline", label: "Loading...", dotColor: "bg-yellow-500" };
+			return { variant: "outline", label: "Carregando...", dotColor: "bg-yellow-500" };
 		case "stopped":
-			return { variant: "destructive", label: "Stopped", dotColor: "bg-red-500" };
+			return { variant: "destructive", label: "Parado", dotColor: "bg-red-500" };
 		case "error":
-			return { variant: "destructive", label: "Error", dotColor: "bg-red-500" };
+			return { variant: "destructive", label: "Erro", dotColor: "bg-red-500" };
 	}
 }
 
 const SUGGESTED_MODELS = [
-	{ name: "llama3.2:1b", description: "Fastest, minimal resources", size: "~1.3 GB", device: "cpu" as const, turboquant: true },
-	{ name: "kimi-k2:latest", description: "MoonshotAI Kimi K2 — frontier reasoning, 3-bit (Lite tier)", size: "~1.4 GB", device: "cpu" as const, turboquant: true },
-	{ name: "llama3.2:3b", description: "Fast, lightweight — good for commands and analysis", size: "~2 GB", device: "cpu" as const, turboquant: true },
-	{ name: "kimi-k2:q4_K_M", description: "MoonshotAI Kimi K2 — long-context agentic tasks, 4-bit (Standard tier)", size: "~3 GB", device: "cpu" as const, turboquant: true },
-	{ name: "mistral:7b", description: "High quality, needs more RAM", size: "~4.1 GB", device: "cpu" as const, turboquant: true },
-	{ name: "llama3.1:8b", description: "Best quality Llama, needs 8+ GB", size: "~4.9 GB", device: "gpu" as const, turboquant: true },
-	{ name: "kimi-k2:q5_K_M", description: "MoonshotAI Kimi K2 — near-lossless 5-bit, best reasoning (Pro tier)", size: "~7 GB", device: "gpu" as const, turboquant: true },
-	{ name: "qwen2.5:3b", description: "Strong multilingual, TurboQuant validated", size: "~2 GB", device: "cpu" as const, turboquant: true },
-	{ name: "qwen2.5:7b", description: "Excellent quality, multilingual", size: "~4.7 GB", device: "gpu" as const, turboquant: true },
-	{ name: "phi3.5:3.8b", description: "Microsoft Phi — 128K context, compact", size: "~2.2 GB", device: "cpu" as const, turboquant: true },
-	{ name: "gemma2:2b", description: "Google Gemma 2 — efficient and fast", size: "~1.6 GB", device: "cpu" as const, turboquant: true },
-	{ name: "gemma4:e2b", description: "Google Gemma 4 — 5B any-to-any multimodal", size: "~7.2 GB", device: "cpu" as const, turboquant: true },
-	{ name: "gemma4:e4b", description: "Google Gemma 4 — 8B any-to-any multimodal", size: "~9.6 GB", device: "gpu" as const, turboquant: true },
-	{ name: "gemma4:26b", description: "Google Gemma 4 MoE — 26B params, 4B active", size: "~18 GB", device: "gpu" as const, turboquant: true },
-	{ name: "gemma4:31b", description: "Google Gemma 4 Dense — top quality 31B", size: "~20 GB", device: "gpu" as const, turboquant: true },
+	{ name: "llama3.2:1b", description: "Mais rápido, recursos mínimos", size: "~1.3 GB", device: "cpu" as const, turboquant: true },
+	{ name: "kimi-k2:latest", description: "MoonshotAI Kimi K2 — raciocínio de ponta, 3 bits (nível Lite)", size: "~1.4 GB", device: "cpu" as const, turboquant: true },
+	{ name: "llama3.2:3b", description: "Rápido e leve — bom para comandos e análises", size: "~2 GB", device: "cpu" as const, turboquant: true },
+	{ name: "kimi-k2:q4_K_M", description: "MoonshotAI Kimi K2 — tarefas agênticas de contexto longo, 4 bits (nível Standard)", size: "~3 GB", device: "cpu" as const, turboquant: true },
+	{ name: "mistral:7b", description: "Alta qualidade, precisa de mais RAM", size: "~4.1 GB", device: "cpu" as const, turboquant: true },
+	{ name: "llama3.1:8b", description: "Melhor qualidade da linha Llama, precisa de 8+ GB", size: "~4.9 GB", device: "gpu" as const, turboquant: true },
+	{ name: "kimi-k2:q5_K_M", description: "MoonshotAI Kimi K2 — 5 bits quase sem perdas, melhor raciocínio (nível Pro)", size: "~7 GB", device: "gpu" as const, turboquant: true },
+	{ name: "qwen2.5:3b", description: "Multilíngue forte, validado pelo TurboQuant", size: "~2 GB", device: "cpu" as const, turboquant: true },
+	{ name: "qwen2.5:7b", description: "Excelente qualidade, multilíngue", size: "~4.7 GB", device: "gpu" as const, turboquant: true },
+	{ name: "phi3.5:3.8b", description: "Microsoft Phi — contexto de 128K, compacto", size: "~2.2 GB", device: "cpu" as const, turboquant: true },
+	{ name: "gemma2:2b", description: "Google Gemma 2 — eficiente e rápido", size: "~1.6 GB", device: "cpu" as const, turboquant: true },
+	{ name: "gemma4:e2b", description: "Google Gemma 4 — multimodal any-to-any de 5B", size: "~7.2 GB", device: "cpu" as const, turboquant: true },
+	{ name: "gemma4:e4b", description: "Google Gemma 4 — multimodal any-to-any de 8B", size: "~9.6 GB", device: "gpu" as const, turboquant: true },
+	{ name: "gemma4:26b", description: "Google Gemma 4 MoE — 26B parâmetros, 4B ativos", size: "~18 GB", device: "gpu" as const, turboquant: true },
+	{ name: "gemma4:31b", description: "Google Gemma 4 Dense — qualidade máxima 31B", size: "~20 GB", device: "gpu" as const, turboquant: true },
+];
+
+// Cloud models via OpenRouter — no download, but the prompt text leaves this
+// machine. Only usable once OPENROUTER_API_KEY is set in .env.
+const SUGGESTED_CLOUD_MODELS = [
+	{
+		id: "nvidia/nemotron-3-ultra-550b-a55b:free",
+		name: "Nemotron 3 Ultra",
+		description: "NVIDIA — grátis, 262K de contexto, só texto. Provedor identificado.",
+	},
+	{
+		id: "stealth/space-bunny-alpha",
+		name: "Space Bunny Alpha",
+		description: "Grátis, 1M de contexto, aceita texto/imagem/vídeo. Provedor anônimo — dados podem ser retidos.",
+	},
 ];
 
 const SUGGESTED_TTS_MODELS = [
-	{ name: "xtts_v2", description: "Best quality — multilingual, voice cloning", size: "~1.8 GB", device: "cpu" as const, multilingual: true, voiceCloning: true },
-	{ name: "your_tts", description: "Multilingual, voice cloning, lighter", size: "~290 MB", device: "cpu" as const, multilingual: true, voiceCloning: true },
-	{ name: "kitten_tts", description: "Fast, expressive — small footprint", size: "~500 MB", device: "cpu" as const, multilingual: false, voiceCloning: false },
-	{ name: "vits-en", description: "English only — fast and lightweight", size: "~110 MB", device: "cpu" as const, multilingual: false, voiceCloning: false },
-	{ name: "vits-en-multi", description: "English multi-speaker", size: "~140 MB", device: "cpu" as const, multilingual: false, voiceCloning: false },
-	{ name: "tacotron2-en", description: "English — classic, reliable", size: "~130 MB", device: "cpu" as const, multilingual: false, voiceCloning: false },
+	{ name: "xtts_v2", description: "Melhor qualidade — multilíngue, clonagem de voz", size: "~1.8 GB", device: "cpu" as const, multilingual: true, voiceCloning: true },
+	{ name: "your_tts", description: "Multilíngue, clonagem de voz, mais leve", size: "~290 MB", device: "cpu" as const, multilingual: true, voiceCloning: true },
+	{ name: "kitten_tts", description: "Rápido e expressivo — baixo consumo de recursos", size: "~500 MB", device: "cpu" as const, multilingual: false, voiceCloning: false },
+	{ name: "vits-en", description: "Somente inglês — rápido e leve", size: "~110 MB", device: "cpu" as const, multilingual: false, voiceCloning: false },
+	{ name: "vits-en-multi", description: "Inglês, múltiplos locutores", size: "~140 MB", device: "cpu" as const, multilingual: false, voiceCloning: false },
+	{ name: "tacotron2-en", description: "Inglês — clássico e confiável", size: "~130 MB", device: "cpu" as const, multilingual: false, voiceCloning: false },
 ];
 
 const SUGGESTED_WHISPER_MODELS = [
-	{ name: "tiny", description: "Fastest — minimal accuracy", size: "~75 MB", device: "cpu" as const },
-	{ name: "base", description: "Good balance of speed and accuracy", size: "~140 MB", device: "cpu" as const },
-	{ name: "small", description: "Better accuracy, moderate speed", size: "~460 MB", device: "cpu" as const },
-	{ name: "medium", description: "High accuracy, slower", size: "~1.5 GB", device: "cpu" as const },
-	{ name: "large-v3", description: "Best accuracy — needs 4+ GB", size: "~3 GB", device: "gpu" as const },
+	{ name: "tiny", description: "Mais rápido — precisão mínima", size: "~75 MB", device: "cpu" as const },
+	{ name: "base", description: "Bom equilíbrio entre velocidade e precisão", size: "~140 MB", device: "cpu" as const },
+	{ name: "small", description: "Melhor precisão, velocidade moderada", size: "~460 MB", device: "cpu" as const },
+	{ name: "medium", description: "Alta precisão, mais lento", size: "~1.5 GB", device: "cpu" as const },
+	{ name: "large-v3", description: "Melhor precisão — precisa de 4+ GB", size: "~3 GB", device: "gpu" as const },
 ];
 
 const SUGGESTED_IMAGE_MODELS = [
-	{ name: "stable-diffusion-2-1", description: "Good quality — versatile default", size: "~5 GB", device: "gpu" as const },
-	{ name: "sdxl-turbo", description: "Fast SDXL — 1-4 step generation", size: "~7 GB", device: "gpu" as const },
-	{ name: "sdxl-base", description: "Highest quality — SDXL 1.0", size: "~7 GB", device: "gpu" as const },
-	{ name: "sd-1.5", description: "Classic SD 1.5 — huge ecosystem", size: "~4 GB", device: "gpu" as const },
-	{ name: "flux-schnell", description: "FLUX.1 Schnell — fast, high quality", size: "~12 GB", device: "gpu" as const },
-	{ name: "segmind-tiny", description: "Tiny SD — CPU-friendly, compact", size: "~1 GB", device: "cpu" as const },
-	{ name: "small-sd", description: "Small SD — runs on CPU, decent quality", size: "~1.5 GB", device: "cpu" as const },
+	{ name: "stable-diffusion-2-1", description: "Boa qualidade — padrão versátil", size: "~5 GB", device: "gpu" as const },
+	{ name: "sdxl-turbo", description: "SDXL rápido — geração em 1 a 4 passos", size: "~7 GB", device: "gpu" as const },
+	{ name: "sdxl-base", description: "Qualidade máxima — SDXL 1.0", size: "~7 GB", device: "gpu" as const },
+	{ name: "sd-1.5", description: "SD 1.5 clássico — ecossistema enorme", size: "~4 GB", device: "gpu" as const },
+	{ name: "flux-schnell", description: "FLUX.1 Schnell — rápido, alta qualidade", size: "~12 GB", device: "gpu" as const },
+	{ name: "segmind-tiny", description: "SD minúsculo — leve para CPU, compacto", size: "~1 GB", device: "cpu" as const },
+	{ name: "small-sd", description: "SD pequeno — roda em CPU, qualidade decente", size: "~1.5 GB", device: "cpu" as const },
 ];
 
 // ----- Component -----
@@ -149,6 +164,10 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 	const [activeImageDevice, setActiveImageDevice] = useState<string>("cpu");
 	const [isSwitchingImage, setIsSwitchingImage] = useState<string | null>(null);
 	const [isTestingService, setIsTestingService] = useState<string | null>(null);
+	const [activeBackend, setActiveBackend] = useState<string>("ollama");
+	const [openRouterConfigured, setOpenRouterConfigured] = useState(false);
+	const [openRouterModel, setOpenRouterModel] = useState<string>("");
+	const [isSwitchingCloudModel, setIsSwitchingCloudModel] = useState<string | null>(null);
 
 	const isLoading = isChecking;
 
@@ -158,6 +177,9 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 			checkAll();
 			aiClient.llmStatus().then((data) => {
 				if (data.default_model) setActiveModel(data.default_model);
+				if (data.active_backend) setActiveBackend(data.active_backend);
+				setOpenRouterConfigured(!!data.openrouter_configured);
+				if (data.openrouter_model) setOpenRouterModel(data.openrouter_model);
 			}).catch(() => {});
 			// Fetch active TTS model + device
 			fetch(`${SERVICE_URLS.tts}/models`, { signal: AbortSignal.timeout(5000) })
@@ -192,11 +214,38 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 		try {
 			const result = await aiClient.setLLMModel(modelName);
 			setActiveModel(result.current_model);
-			toast.success(`Switched to ${modelName}`);
+			toast.success(`Modelo alterado para ${modelName}`);
 		} catch (err) {
-			toast.error(err instanceof Error ? err.message : "Failed to switch model");
+			toast.error(err instanceof Error ? err.message : "Falha ao trocar o modelo");
 		} finally {
 			setIsSwitchingModel(false);
+		}
+	}, []);
+
+	const handleSwitchCloudModel = useCallback(async (modelId: string) => {
+		setIsSwitchingCloudModel(modelId);
+		try {
+			const result = await aiClient.setCloudModel(modelId);
+			setActiveBackend(result.current_backend);
+			setOpenRouterModel(modelId);
+			toast.success(`Agora usando ${modelId} (nuvem)`);
+		} catch (err) {
+			toast.error(err instanceof Error ? err.message : "Falha ao trocar para o modelo em nuvem");
+		} finally {
+			setIsSwitchingCloudModel(null);
+		}
+	}, []);
+
+	const handleUseLocalModel = useCallback(async () => {
+		setIsSwitchingCloudModel("local");
+		try {
+			await aiClient.setLocalBackend();
+			setActiveBackend("ollama");
+			toast.success("Voltou a usar o modelo local");
+		} catch (err) {
+			toast.error(err instanceof Error ? err.message : "Falha ao voltar para o modelo local");
+		} finally {
+			setIsSwitchingCloudModel(null);
 		}
 	}, []);
 
@@ -211,20 +260,20 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 		setActionMessage(null);
 		try {
 			await aiClient.pullOllamaModel(modelName);
-			setActionMessage(`Model "${modelName}" pulled successfully. Switching to it...`);
+			setActionMessage(`Modelo "${modelName}" baixado com sucesso. Alternando para ele...`);
 			await checkAll();
 			// Auto-switch to the newly pulled model
 			try {
 				const result = await aiClient.setLLMModel(modelName);
 				setActiveModel(result.current_model);
-				setActionMessage(`Model "${modelName}" pulled and activated.`);
-				toast.success(`Now using ${modelName}`);
+				setActionMessage(`Modelo "${modelName}" baixado e ativado.`);
+				toast.success(`Agora usando ${modelName}`);
 			} catch {
 				// Switch failed but download succeeded — that's fine
-				setActionMessage(`Model "${modelName}" pulled. Select it above to use it.`);
+				setActionMessage(`Modelo "${modelName}" baixado. Selecione-o acima para usá-lo.`);
 			}
 		} catch (error) {
-			setPullError(error instanceof Error ? error.message : "Failed to pull model");
+			setPullError(error instanceof Error ? error.message : "Falha ao baixar o modelo");
 		} finally {
 			setIsPullingModel(null);
 		}
@@ -238,18 +287,18 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 			const result = await loadModel("tts", { model_name: modelName });
 			if (result.verified) {
 				setActiveTTSModel(modelName);
-				setActionMessage(`TTS switched to ${modelName}`);
-				toast.success(`TTS now using ${modelName}`);
+				setActionMessage(`TTS alternado para ${modelName}`);
+				toast.success(`TTS agora usando ${modelName}`);
 				// Refresh device info
 				fetch(`${SERVICE_URLS.tts}/models`, { signal: AbortSignal.timeout(5000) })
 					.then((r) => r.ok ? r.json() : null)
 					.then((d) => { if (d?.device) setActiveTTSDevice(d.device); })
 					.catch(() => {});
 			} else {
-				setTtsError("Model loaded but could not be verified. Try again.");
+				setTtsError("Modelo carregado, mas não foi possível verificá-lo. Tente novamente.");
 			}
 		} catch (error) {
-			setTtsError(error instanceof Error ? error.message : "Failed to switch TTS model");
+			setTtsError(error instanceof Error ? error.message : "Falha ao trocar o modelo de TTS");
 		} finally {
 			setIsSwitchingTTS(null);
 		}
@@ -263,13 +312,13 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 			const result = await loadModel("whisper", { model_size: modelSize });
 			if (result.verified) {
 				setActiveWhisperModel(modelSize);
-				setActionMessage(`Whisper switched to ${modelSize}`);
-				toast.success(`Whisper now using ${modelSize}`);
+				setActionMessage(`Whisper alternado para ${modelSize}`);
+				toast.success(`Whisper agora usando ${modelSize}`);
 			} else {
-				setWhisperError("Model loaded but could not be verified. Click 'Verify' to re-check.");
+				setWhisperError("Modelo carregado, mas não foi possível verificá-lo. Clique em \"Verificar\" para checar novamente.");
 			}
 		} catch (error) {
-			setWhisperError(error instanceof Error ? error.message : "Failed to switch Whisper model");
+			setWhisperError(error instanceof Error ? error.message : "Falha ao trocar o modelo do Whisper");
 		} finally {
 			setIsSwitchingWhisper(null);
 		}
@@ -283,17 +332,17 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 			const result = await loadModel("image", { model_name: modelName });
 			if (result.verified) {
 				setActiveImageModel(modelName);
-				setActionMessage(`Image model switched to ${modelName}`);
-				toast.success(`Image model now using ${modelName}`);
+				setActionMessage(`Modelo de imagem alternado para ${modelName}`);
+				toast.success(`Modelo de imagem agora usando ${modelName}`);
 				fetch(`${SERVICE_URLS.image}/models`, { signal: AbortSignal.timeout(5000) })
 					.then((r) => r.ok ? r.json() : null)
 					.then((d) => { if (d?.device) setActiveImageDevice(d.device); })
 					.catch(() => {});
 			} else {
-				setDiffusionError("Model loaded but could not be verified. Try again.");
+				setDiffusionError("Modelo carregado, mas não foi possível verificá-lo. Tente novamente.");
 			}
 		} catch (error) {
-			setDiffusionError(error instanceof Error ? error.message : "Failed to switch image model");
+			setDiffusionError(error instanceof Error ? error.message : "Falha ao trocar o modelo de imagem");
 		} finally {
 			setIsSwitchingImage(null);
 		}
@@ -305,16 +354,16 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 		try {
 			const result = await testModel(service);
 			if (result.ok) {
-				setActionMessage(result.message ?? `${label} is working correctly.`);
-				toast.success(`${label} test passed`);
+				setActionMessage(result.message ?? `${label} está funcionando corretamente.`);
+				toast.success(`Teste de ${label} aprovado`);
 			} else {
-				const errMsg = result.message ?? `${label} test failed.`;
+				const errMsg = result.message ?? `Falha no teste de ${label}.`;
 				if (service === "tts") setTtsError(errMsg);
 				if (service === "whisper") setWhisperError(errMsg);
 				if (service === "image") setDiffusionError(errMsg);
 			}
 		} catch (error) {
-			const msg = error instanceof Error ? error.message : "Test failed";
+			const msg = error instanceof Error ? error.message : "Falha no teste";
 			if (service === "tts") setTtsError(msg);
 			if (service === "whisper") setWhisperError(msg);
 			if (service === "image") setDiffusionError(msg);
@@ -354,10 +403,10 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 				<DialogHeader>
 					<DialogTitle className="flex items-center gap-2">
 						<HugeiconsIcon icon={SparklesIcon} className="size-5 text-primary" />
-						AI Setup
+						Configuração de IA
 					</DialogTitle>
 					<DialogDescription>
-						Manage AI services, models, and verify everything is ready.
+						Gerencie os serviços de IA, os modelos e verifique se está tudo pronto.
 					</DialogDescription>
 				</DialogHeader>
 
@@ -385,16 +434,16 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 							/>
 							<div className="flex-1">
 								{readyCount >= totalServices ? (
-									<span className="font-medium">All {totalServices} services running</span>
+									<span className="font-medium">Todos os {totalServices} serviços em execução</span>
 								) : readyCount > 0 ? (
 									<span className="font-medium">
-										{readyCount}/{totalServices} services running
+										{readyCount}/{totalServices} serviços em execução
 									</span>
 								) : (
 									<div>
-										<span className="font-medium">No services running</span>
+										<span className="font-medium">Nenhum serviço em execução</span>
 										<p className="text-[11px] mt-0.5 opacity-80">
-											Start all with: <code className="font-mono bg-black/20 px-1 rounded">docker compose up -d</code>
+											Inicie tudo com: <code className="font-mono bg-black/20 px-1 rounded">docker compose up -d</code>
 										</p>
 									</div>
 								)}
@@ -406,24 +455,24 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 								disabled={isLoading}
 								className="h-6 text-[11px] px-2 shrink-0"
 							>
-								{isLoading ? <Spinner className="size-3" /> : "Refresh"}
+								{isLoading ? <Spinner className="size-3" /> : "Atualizar"}
 							</Button>
 						</div>
 
 						{/* ── 1. Docker / Backend Service ── */}
 						<ServiceCard
-							title="AI Backend"
+							title="Backend de IA"
 							status={isBackendRunning ? "running" : "stopped"}
-							detail={isBackendRunning ? `v${backend?.version ?? "0.1.0"} on port 8420` : SERVICE_URLS.backend}
+							detail={isBackendRunning ? `v${backend?.version ?? "0.1.0"} na porta 8420` : SERVICE_URLS.backend}
 						>
 							{!isBackendRunning && (
 								<div className="flex flex-col gap-2 mt-2">
 									<p className="text-[11px] text-muted-foreground leading-relaxed">
-										The AI backend gateway powers all AI features. Start it using Docker:
+										O gateway do backend de IA alimenta todos os recursos de IA. Inicie-o usando o Docker:
 									</p>
 									<div className="flex flex-col gap-1">
-										<CommandBlock label="Start all services" command="docker compose up -d" />
-										<CommandBlock label="Or start backend only" command={SERVICE_DOCKER_COMMANDS.backend} />
+										<CommandBlock label="Iniciar todos os serviços" command="docker compose up -d" />
+										<CommandBlock label="Ou iniciar somente o backend" command={SERVICE_DOCKER_COMMANDS.backend} />
 									</div>
 								</div>
 							)}
@@ -434,17 +483,17 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 							title="Ollama (LLM)"
 							status={isOllamaRunning ? "running" : "stopped"}
 							detail={isOllamaRunning
-								? `${ollamaModels.length} ${ollamaModels.length === 1 ? "model" : "models"} installed`
+								? `${ollamaModels.length} ${ollamaModels.length === 1 ? "modelo instalado" : "modelos instalados"}`
 								: SERVICE_URLS.ollama
 							}
 						>
 							{!isOllamaRunning && (
 								<div className="mt-2">
 									<p className="text-[11px] text-muted-foreground leading-relaxed">
-										Ollama serves local LLMs for AI commands, chapter detection, and analysis. Start it:
+										O Ollama executa LLMs locais para comandos de IA, detecção de capítulos e análises. Inicie-o:
 									</p>
 									<CommandBlock label="Via Docker" command={SERVICE_DOCKER_COMMANDS.ollama} />
-									<CommandBlock label="Or install locally" command="brew install ollama && ollama serve" />
+									<CommandBlock label="Ou instalar localmente" command="brew install ollama && ollama serve" />
 								</div>
 							)}
 
@@ -453,7 +502,7 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 									{/* Installed models — with explicit Use / Active button */}
 									{ollamaModels.length > 0 && (
 										<div className="flex flex-col gap-1">
-											<span className="text-[11px] text-muted-foreground font-medium">Installed models</span>
+											<span className="text-[11px] text-muted-foreground font-medium">Modelos instalados</span>
 											{ollamaModels.map((model) => {
 												const isActive = model.name === activeModel;
 												// Determine CPU/GPU from size: models > 4GB typically need GPU
@@ -490,7 +539,7 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 															</span>
 															{isActive ? (
 																<Badge variant="default" className="text-[8px] px-1.5 py-0 h-4">
-																	Active
+																	Ativo
 																</Badge>
 															) : (
 																<Button
@@ -500,7 +549,7 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 																	disabled={isSwitchingModel}
 																	onClick={() => handleSwitchModel(model.name)}
 																>
-																	{isSwitchingModel ? <Spinner className="size-2.5" /> : "Use this"}
+																	{isSwitchingModel ? <Spinner className="size-2.5" /> : "Usar este"}
 																</Button>
 															)}
 														</div>
@@ -513,19 +562,19 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 									{/* Pull a new model */}
 									{!hasModels && (
 										<div className="rounded bg-yellow-500/10 px-2.5 py-2 text-[11px] text-yellow-400">
-											No models installed yet. Pull one to enable AI commands.
+											Nenhum modelo instalado ainda. Baixe um para habilitar os comandos de IA.
 										</div>
 									)}
 
 									{ollamaModels.length === 1 && (
 										<div className="rounded bg-blue-500/10 px-2.5 py-2 text-[11px] text-blue-400 leading-relaxed">
-											To switch models, pull a different one below. It will download and automatically become the active model.
+											Para trocar de modelo, baixe um diferente abaixo. Ele será baixado e se tornará automaticamente o modelo ativo.
 										</div>
 									)}
 
 									<div className="flex flex-col gap-1">
 										<span className="text-[11px] text-muted-foreground font-medium">
-											{hasModels ? "Switch to a different model" : "Choose a model to install"}
+											{hasModels ? "Trocar para outro modelo" : "Escolha um modelo para instalar"}
 										</span>
 										{SUGGESTED_MODELS.map((model) => {
 											// Exact match: "llama3.2:1b" must match "llama3.2:1b", not "llama3.2:3b"
@@ -572,7 +621,7 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 															)}
 															{isActive && (
 																<Badge variant="default" className="text-[8px] px-1 py-0 h-3.5">
-																	Active
+																	Ativo
 																</Badge>
 															)}
 														</div>
@@ -582,11 +631,11 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 														{isPulling ? (
 															<Button size="sm" variant="outline" className="h-6 text-[10px] px-2" disabled>
 																<Spinner className="size-3 mr-1" />
-																Pulling...
+																Baixando...
 															</Button>
 														) : isActive ? (
 															<Badge variant="default" className="text-[9px] px-1.5 py-0.5">
-																In use
+																Em uso
 															</Badge>
 														) : isInstalled ? (
 															<Button
@@ -596,7 +645,7 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 																disabled={isSwitchingModel || isPullingModel !== null}
 																onClick={() => handleSwitchModel(model.name)}
 															>
-																{isSwitchingModel ? <Spinner className="size-3" /> : "Use this"}
+																{isSwitchingModel ? <Spinner className="size-3" /> : "Usar este"}
 															</Button>
 														) : (
 															<Button
@@ -607,7 +656,7 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 																onClick={() => handlePullModel(model.name)}
 															>
 																<HugeiconsIcon icon={Download04Icon} className="size-3 mr-0.5" />
-																Pull & Use
+																Baixar e usar
 															</Button>
 														)}
 													</div>
@@ -623,9 +672,98 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 							)}
 						</ServiceCard>
 
+						{/* ── 2.5 Cloud models (OpenRouter) ── */}
+						<ServiceCard
+							title="Nuvem (OpenRouter)"
+							status={
+								activeBackend === "openrouter"
+									? "loaded"
+									: openRouterConfigured
+										? "available"
+										: "not_installed"
+							}
+							detail={
+								activeBackend === "openrouter"
+									? `${openRouterModel} em uso`
+									: openRouterConfigured
+										? "Configurado — escolha um modelo abaixo"
+										: "Nenhuma chave configurada"
+							}
+						>
+							<div className="mt-2 flex flex-col gap-2">
+								<p className="text-[11px] text-muted-foreground leading-relaxed">
+									Modelos na nuvem: sem download, mas o que você digitar sai da sua máquina e vai para o provedor do modelo.
+								</p>
+
+								{!openRouterConfigured && (
+									<div className="rounded bg-yellow-500/10 px-2.5 py-2 text-[11px] text-yellow-400 leading-relaxed">
+										Adicione OPENROUTER_API_KEY no arquivo .env do projeto (gere uma chave grátis em openrouter.ai) para habilitar estes modelos.
+									</div>
+								)}
+
+								{activeBackend === "openrouter" && (
+									<Button
+										size="sm"
+										variant="outline"
+										className="h-6 w-fit text-[10px] px-2"
+										disabled={isSwitchingCloudModel !== null}
+										onClick={handleUseLocalModel}
+									>
+										{isSwitchingCloudModel === "local" ? <Spinner className="size-3" /> : "Voltar para o modelo local"}
+									</Button>
+								)}
+
+								<div className="flex flex-col gap-1">
+									{SUGGESTED_CLOUD_MODELS.map((model) => {
+										const isActive = activeBackend === "openrouter" && openRouterModel === model.id;
+										const isSwitching = isSwitchingCloudModel === model.id;
+
+										return (
+											<div
+												key={model.id}
+												className={cn(
+													"flex items-center gap-2 rounded px-2.5 py-2 text-[11px]",
+													isActive ? "bg-primary/10 border border-primary/30" : "bg-muted/30",
+												)}
+											>
+												<div className="flex-1 min-w-0">
+													<div className="flex items-center gap-1.5 flex-wrap">
+														<span className="font-medium font-mono">{model.name}</span>
+														{isActive && (
+															<Badge variant="default" className="text-[8px] px-1 py-0 h-3.5">
+																Ativo
+															</Badge>
+														)}
+													</div>
+													<p className="text-muted-foreground mt-0.5">{model.description}</p>
+												</div>
+												<div className="shrink-0">
+													{isActive ? (
+														<Badge variant="default" className="text-[9px] px-1.5 py-0.5">
+															Em uso
+														</Badge>
+													) : (
+														<Button
+															size="sm"
+															variant="outline"
+															className="h-6 text-[10px] px-2"
+															disabled={!openRouterConfigured || isSwitchingCloudModel !== null}
+															onClick={() => handleSwitchCloudModel(model.id)}
+														>
+															{isSwitching ? <Spinner className="size-3" /> : "Usar este"}
+														</Button>
+													)}
+												</div>
+											</div>
+										);
+									})}
+								</div>
+							</div>
+						</ServiceCard>
+
 						{/* ── 3. TTS (Voice Generation) ── */}
 						<ServiceCard
-							title="Voice (TTS)"
+							title="Voz (TTS)"
 							status={isTTSRunning
 								? (tts.model_loaded || activeTTSModel)
 									? "loaded"
@@ -638,18 +776,18 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 								!isTTSRunning
 									? SERVICE_URLS.tts
 									: (tts.model_loaded || activeTTSModel)
-										? `${activeTTSModel || tts.model_name || "xtts_v2"} loaded`
+										? `${activeTTSModel || tts.model_name || "xtts_v2"} carregado`
 										: tts.model_installed === false
-											? "Not installed"
-											: "Choose a model to load"
+											? "Não instalado"
+											: "Escolha um modelo para carregar"
 							}
 						>
 							{!isTTSRunning && (
 								<div className="mt-2 flex flex-col gap-2">
 									<p className="text-[11px] text-muted-foreground leading-relaxed">
-										TTS service is not running. Start it with Docker:
+										O serviço de TTS não está em execução. Inicie-o com o Docker:
 									</p>
-									<CommandBlock label="Start TTS" command={SERVICE_DOCKER_COMMANDS.tts} />
+									<CommandBlock label="Iniciar TTS" command={SERVICE_DOCKER_COMMANDS.tts} />
 								</div>
 							)}
 
@@ -658,7 +796,7 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 									{/* Active model */}
 									{(tts.model_loaded || activeTTSModel) && activeTTSModel && (
 										<div className="flex flex-col gap-1">
-											<span className="text-[11px] text-muted-foreground font-medium">Active model</span>
+											<span className="text-[11px] text-muted-foreground font-medium">Modelo ativo</span>
 											<div className="flex items-center justify-between rounded px-2 py-1.5 text-[11px] bg-primary/10 border border-primary/30">
 												<div className="flex items-center gap-1.5">
 													<span className={cn("size-1.5 rounded-full bg-primary")} />
@@ -676,7 +814,7 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 													</Badge>
 												</div>
 												<div className="flex items-center gap-1.5">
-													<Badge variant="default" className="text-[8px] px-1.5 py-0 h-4">Active</Badge>
+													<Badge variant="default" className="text-[8px] px-1.5 py-0 h-4">Ativo</Badge>
 													<Button
 														variant="ghost"
 														size="sm"
@@ -684,7 +822,7 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 														disabled={isTestingService === "tts"}
 														onClick={() => handleTestService("tts", "TTS")}
 													>
-														{isTestingService === "tts" ? <Spinner className="size-2.5" /> : "Test"}
+														{isTestingService === "tts" ? <Spinner className="size-2.5" /> : "Testar"}
 													</Button>
 												</div>
 											</div>
@@ -694,7 +832,7 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 									{/* Model list */}
 									<div className="flex flex-col gap-1">
 										<span className="text-[11px] text-muted-foreground font-medium">
-											{(tts.model_loaded || activeTTSModel) ? "Switch to a different model" : "Choose a model to load"}
+											{(tts.model_loaded || activeTTSModel) ? "Trocar para outro modelo" : "Escolha um modelo para carregar"}
 										</span>
 										{SUGGESTED_TTS_MODELS.map((model) => {
 											const isActive = model.name === activeTTSModel;
@@ -730,7 +868,7 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 																	variant="outline"
 																	className="text-[8px] px-1 py-0 text-blue-400 border-blue-500/30"
 																>
-																	Multilingual
+																	Multilíngue
 																</Badge>
 															)}
 															{model.voiceCloning && (
@@ -738,12 +876,12 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 																	variant="outline"
 																	className="text-[8px] px-1 py-0 text-purple-400 border-purple-500/30"
 																>
-																	Cloning
+																	Clonagem
 																</Badge>
 															)}
 															{isActive && (
 																<Badge variant="default" className="text-[8px] px-1 py-0 h-3.5">
-																	Active
+																	Ativo
 																</Badge>
 															)}
 														</div>
@@ -753,11 +891,11 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 														{isSwitching ? (
 															<Button size="sm" variant="outline" className="h-6 text-[10px] px-2" disabled>
 																<Spinner className="size-3 mr-1" />
-																Loading...
+																Carregando...
 															</Button>
 														) : isActive ? (
 															<Badge variant="default" className="text-[9px] px-1.5 py-0.5">
-																In use
+																Em uso
 															</Badge>
 														) : (
 															<Button
@@ -768,7 +906,7 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 																onClick={() => handleSwitchTTSModel(model.name)}
 															>
 																<HugeiconsIcon icon={Download04Icon} className="size-3 mr-0.5" />
-																Load & Use
+																Carregar e usar
 															</Button>
 														)}
 													</div>
@@ -786,7 +924,7 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 
 						{/* ── 4. Whisper (Transcription) ── */}
 						<ServiceCard
-							title="Whisper (Transcription)"
+							title="Whisper (Transcrição)"
 							status={isWhisperRunning
 								? (whisper.model_loaded || activeWhisperModel ? "loaded" : "available")
 								: "stopped"
@@ -795,16 +933,16 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 								!isWhisperRunning
 									? SERVICE_URLS.whisper
 									: (whisper.model_loaded || activeWhisperModel)
-										? `"${activeWhisperModel || whisper.model_size || "base"}" loaded`
-										: "Choose a model to load"
+										? `"${activeWhisperModel || whisper.model_size || "base"}" carregado`
+										: "Escolha um modelo para carregar"
 							}
 						>
 							{!isWhisperRunning && (
 								<div className="mt-2 flex flex-col gap-2">
 									<p className="text-[11px] text-muted-foreground leading-relaxed">
-										Whisper service is not running. Start it with Docker:
+										O serviço do Whisper não está em execução. Inicie-o com o Docker:
 									</p>
-									<CommandBlock label="Start Whisper" command={SERVICE_DOCKER_COMMANDS.whisper} />
+									<CommandBlock label="Iniciar Whisper" command={SERVICE_DOCKER_COMMANDS.whisper} />
 								</div>
 							)}
 
@@ -813,7 +951,7 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 									{/* Active model */}
 									{(whisper.model_loaded || activeWhisperModel) && activeWhisperModel && (
 										<div className="flex flex-col gap-1">
-											<span className="text-[11px] text-muted-foreground font-medium">Active model</span>
+											<span className="text-[11px] text-muted-foreground font-medium">Modelo ativo</span>
 											<div className="flex items-center justify-between rounded px-2 py-1.5 text-[11px] bg-primary/10 border border-primary/30">
 												<div className="flex items-center gap-1.5">
 													<span className={cn("size-1.5 rounded-full bg-primary")} />
@@ -831,7 +969,7 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 													</Badge>
 												</div>
 												<div className="flex items-center gap-1.5">
-													<Badge variant="default" className="text-[8px] px-1.5 py-0 h-4">Active</Badge>
+													<Badge variant="default" className="text-[8px] px-1.5 py-0 h-4">Ativo</Badge>
 													<Button
 														variant="ghost"
 														size="sm"
@@ -839,7 +977,7 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 														disabled={isTestingService === "whisper"}
 														onClick={() => handleTestService("whisper", "Whisper")}
 													>
-														{isTestingService === "whisper" ? <Spinner className="size-2.5" /> : "Test"}
+														{isTestingService === "whisper" ? <Spinner className="size-2.5" /> : "Testar"}
 													</Button>
 												</div>
 											</div>
@@ -849,7 +987,7 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 									{/* Model list */}
 									<div className="flex flex-col gap-1">
 										<span className="text-[11px] text-muted-foreground font-medium">
-											{(whisper.model_loaded || activeWhisperModel) ? "Switch to a different model" : "Choose a model to load"}
+											{(whisper.model_loaded || activeWhisperModel) ? "Trocar para outro modelo" : "Escolha um modelo para carregar"}
 										</span>
 										{SUGGESTED_WHISPER_MODELS.map((model) => {
 											const isActive = model.name === activeWhisperModel;
@@ -882,7 +1020,7 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 															</Badge>
 															{isActive && (
 																<Badge variant="default" className="text-[8px] px-1 py-0 h-3.5">
-																	Active
+																	Ativo
 																</Badge>
 															)}
 														</div>
@@ -892,11 +1030,11 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 														{isSwitching ? (
 															<Button size="sm" variant="outline" className="h-6 text-[10px] px-2" disabled>
 																<Spinner className="size-3 mr-1" />
-																Loading...
+																Carregando...
 															</Button>
 														) : isActive ? (
 															<Badge variant="default" className="text-[9px] px-1.5 py-0.5">
-																In use
+																Em uso
 															</Badge>
 														) : (
 															<Button
@@ -907,7 +1045,7 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 																onClick={() => handleSwitchWhisperModel(model.name)}
 															>
 																<HugeiconsIcon icon={Download04Icon} className="size-3 mr-0.5" />
-																Load & Use
+																Carregar e usar
 															</Button>
 														)}
 													</div>
@@ -925,7 +1063,7 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 
 						{/* ── 5. Image Generation ── */}
 						<ServiceCard
-							title="Image Generation"
+							title="Geração de imagem"
 							status={isImageRunning
 								? (diffusion.model_loaded || activeImageModel)
 									? "loaded"
@@ -938,18 +1076,18 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 								!isImageRunning
 									? SERVICE_URLS.image
 									: (diffusion.model_loaded || activeImageModel)
-										? `${activeImageModel || diffusion.model_name || "stable-diffusion-2-1"} loaded`
+										? `${activeImageModel || diffusion.model_name || "stable-diffusion-2-1"} carregado`
 										: diffusion.model_installed === false
-											? "Not installed"
-											: "Choose a model to load"
+											? "Não instalado"
+											: "Escolha um modelo para carregar"
 							}
 						>
 							{!isImageRunning && (
 								<div className="mt-2 flex flex-col gap-2">
 									<p className="text-[11px] text-muted-foreground leading-relaxed">
-										Image service is not running. Start it with Docker:
+										O serviço de imagem não está em execução. Inicie-o com o Docker:
 									</p>
-									<CommandBlock label="Start Image service" command={SERVICE_DOCKER_COMMANDS.image} />
+									<CommandBlock label="Iniciar serviço de imagem" command={SERVICE_DOCKER_COMMANDS.image} />
 								</div>
 							)}
 
@@ -958,7 +1096,7 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 									{/* Active model */}
 									{(diffusion.model_loaded || activeImageModel) && activeImageModel && (
 										<div className="flex flex-col gap-1">
-											<span className="text-[11px] text-muted-foreground font-medium">Active model</span>
+											<span className="text-[11px] text-muted-foreground font-medium">Modelo ativo</span>
 											<div className="flex items-center justify-between rounded px-2 py-1.5 text-[11px] bg-primary/10 border border-primary/30">
 												<div className="flex items-center gap-1.5">
 													<span className={cn("size-1.5 rounded-full bg-primary")} />
@@ -976,15 +1114,15 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 													</Badge>
 												</div>
 												<div className="flex items-center gap-1.5">
-													<Badge variant="default" className="text-[8px] px-1.5 py-0 h-4">Active</Badge>
+													<Badge variant="default" className="text-[8px] px-1.5 py-0 h-4">Ativo</Badge>
 													<Button
 														variant="ghost"
 														size="sm"
 														className="h-5 text-[10px] px-1.5 text-muted-foreground"
 														disabled={isTestingService === "image"}
-														onClick={() => handleTestService("image", "Image")}
+														onClick={() => handleTestService("image", "Imagem")}
 													>
-														{isTestingService === "image" ? <Spinner className="size-2.5" /> : "Test"}
+														{isTestingService === "image" ? <Spinner className="size-2.5" /> : "Testar"}
 													</Button>
 												</div>
 											</div>
@@ -994,7 +1132,7 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 									{/* Model list */}
 									<div className="flex flex-col gap-1">
 										<span className="text-[11px] text-muted-foreground font-medium">
-											{(diffusion.model_loaded || activeImageModel) ? "Switch to a different model" : "Choose a model to load"}
+											{(diffusion.model_loaded || activeImageModel) ? "Trocar para outro modelo" : "Escolha um modelo para carregar"}
 										</span>
 										{SUGGESTED_IMAGE_MODELS.map((model) => {
 											const isActive = model.name === activeImageModel;
@@ -1027,7 +1165,7 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 															</Badge>
 															{isActive && (
 																<Badge variant="default" className="text-[8px] px-1 py-0 h-3.5">
-																	Active
+																	Ativo
 																</Badge>
 															)}
 														</div>
@@ -1037,11 +1175,11 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 														{isSwitching ? (
 															<Button size="sm" variant="outline" className="h-6 text-[10px] px-2" disabled>
 																<Spinner className="size-3 mr-1" />
-																Loading...
+																Carregando...
 															</Button>
 														) : isActive ? (
 															<Badge variant="default" className="text-[9px] px-1.5 py-0.5">
-																In use
+																Em uso
 															</Badge>
 														) : (
 															<Button
@@ -1052,7 +1190,7 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 																onClick={() => handleSwitchImageModel(model.name)}
 															>
 																<HugeiconsIcon icon={Download04Icon} className="size-3 mr-0.5" />
-																Load & Use
+																Carregar e usar
 															</Button>
 														)}
 													</div>
@@ -1082,22 +1220,22 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 				<DialogFooter>
 					{readyCount >= totalServices ? (
 						<Button onClick={() => onOpenChange(false)}>
-							Get started
+							Começar
 							<HugeiconsIcon icon={ArrowRight01Icon} className="!size-3.5 ml-1" />
 						</Button>
 					) : (
 						<div className="flex items-center gap-2 w-full">
 							<Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
-								Close
+								Fechar
 							</Button>
 							<Button onClick={handleRefresh} disabled={isLoading} className="flex-1">
 								{isLoading ? (
 									<>
 										<Spinner className="size-3 mr-1" />
-										Checking...
+										Verificando...
 									</>
 								) : (
-									"Check all services"
+									"Verificar todos os serviços"
 								)}
 							</Button>
 						</div>

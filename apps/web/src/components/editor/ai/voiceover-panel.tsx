@@ -97,8 +97,8 @@ export function VoiceoverPanel({
 		bgTasks.addTask({
 			id: taskId,
 			type: "voiceover",
-			label: "Voiceover",
-			progress: "Generating speech...",
+			label: "Locução",
+			progress: "Gerando fala...",
 		});
 
 		try {
@@ -110,11 +110,11 @@ export function VoiceoverPanel({
 			setResult(generated);
 			bgTasks.updateTask(taskId, {
 				status: "completed",
-				progress: "Speech ready",
+				progress: "Fala pronta",
 				completedAt: Date.now(),
 			});
 		} catch (err) {
-			const message = err instanceof Error ? err.message : "Failed to generate voiceover";
+			const message = err instanceof Error ? err.message : "Falha ao gerar a locução";
 			setError(message);
 			bgTasks.updateTask(taskId, {
 				status: "error",
@@ -141,7 +141,7 @@ export function VoiceoverPanel({
 			setError(
 				err instanceof Error
 					? err.message
-					: "Failed to upload voice sample",
+					: "Falha ao enviar a amostra de voz",
 			);
 		} finally {
 			setIsUploading(false);
@@ -168,7 +168,7 @@ export function VoiceoverPanel({
 			audio.onended = () => setIsPlaying(false);
 			audio.onerror = () => {
 				setIsPlaying(false);
-				setError("Failed to play audio");
+				setError("Falha ao reproduzir o áudio");
 			};
 			audio.play();
 			setIsPlaying(true);
@@ -194,29 +194,29 @@ export function VoiceoverPanel({
 					icon={AiMicIcon}
 					className="size-4 text-primary"
 				/>
-				<span className="text-sm font-medium">Voiceover</span>
+				<span className="text-sm font-medium">Locução</span>
 			</div>
 
 			<ScrollArea className="flex-1 px-4 py-3">
 				<div className="flex flex-col gap-4">
 					{/* Text input */}
 					<div className="flex flex-col gap-2">
-						<Label className="text-xs">Text</Label>
+						<Label className="text-xs">Texto</Label>
 						<Textarea
 							value={text}
 							onChange={(e) => setText(e.target.value)}
-							placeholder="Enter the text you want to convert to speech..."
+							placeholder="Digite o texto que você quer converter em fala..."
 							rows={4}
 							disabled={isGenerating}
 						/>
 						<p className="text-[10px] text-muted-foreground text-right">
-							{text.length} characters
+							{text.length} caracteres
 						</p>
 					</div>
 
 					{/* Language */}
 					<div className="flex items-center gap-3">
-						<Label className="text-xs w-20 shrink-0">Language</Label>
+						<Label className="text-xs w-20 shrink-0">Idioma</Label>
 						<Select
 							value={selectedLanguage}
 							onValueChange={(v) => {
@@ -245,7 +245,7 @@ export function VoiceoverPanel({
 
 					{/* Voice picker */}
 					<div className="flex flex-col gap-2">
-						<Label className="text-xs">Voice</Label>
+						<Label className="text-xs">Voz</Label>
 						<div className="grid grid-cols-2 gap-1.5">
 							{filteredVoices.map((voice) => (
 								<Card
@@ -278,7 +278,7 @@ export function VoiceoverPanel({
 													variant="secondary"
 													className="text-[9px] px-1 py-0"
 												>
-													Cloned
+													Clonada
 												</Badge>
 											)}
 										</div>
@@ -306,7 +306,7 @@ export function VoiceoverPanel({
 							{isUploading ? (
 								<>
 									<Spinner className="size-3 mr-1" />
-									Uploading...
+									Enviando...
 								</>
 							) : (
 								<>
@@ -314,12 +314,12 @@ export function VoiceoverPanel({
 										icon={Upload04Icon}
 										className="size-3 mr-1"
 									/>
-									Upload Voice Sample
+									Enviar amostra de voz
 								</>
 							)}
 						</Button>
 						<p className="text-[10px] text-muted-foreground">
-							Upload an audio sample to clone a voice. Minimum 10 seconds recommended.
+							Envie uma amostra de áudio para clonar uma voz. Recomendamos no mínimo 10 segundos.
 						</p>
 					</div>
 
@@ -338,10 +338,10 @@ export function VoiceoverPanel({
 						{isGenerating ? (
 							<>
 								<Spinner className="size-3 mr-1" />
-								Generating...
+								Gerando...
 							</>
 						) : (
-							"Generate"
+							"Gerar"
 						)}
 					</Button>
 
@@ -351,7 +351,7 @@ export function VoiceoverPanel({
 							<CardContent className="p-3">
 								<div className="flex items-center justify-between mb-2">
 									<span className="text-xs font-medium">
-										Generated Audio
+										Áudio gerado
 									</span>
 									<span className="text-[10px] text-muted-foreground tabular-nums">
 										{result.duration.toFixed(1)}s
@@ -379,7 +379,7 @@ export function VoiceoverPanel({
 									onClick={handleAddToTimeline}
 									className="w-full mt-2"
 								>
-									Add to Timeline
+									Adicionar à linha do tempo
 								</Button>
 							</CardContent>
 						</Card>

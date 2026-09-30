@@ -123,7 +123,7 @@ export function useBeatDetection() {
 					completedAt: Date.now(),
 				});
 
-				toast.success(`Beat detection: ${detection.bpm} BPM, ${detection.beats.length} beats`);
+				toast.success(`Detecção de batidas: ${detection.bpm} BPM, ${detection.beats.length} batidas`);
 			} catch (err) {
 				bgTasks.updateTask(taskId, {
 					status: "error",

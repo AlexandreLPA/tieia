@@ -91,7 +91,7 @@ async function translateSegments(
 	}
 
 	// 1. NLLB batch (preferred — local).
-	onProgress?.(`Translating to ${targetName} via NLLB…`);
+	onProgress?.(`Traduzindo para ${targetName} via NLLB…`);
 	try {
 		const translations = await aiClient.nllbTranslateBatch(
 			texts,
@@ -113,7 +113,7 @@ async function translateSegments(
 		const targetSarvamCode = SARVAM_LANGUAGE_MAP[targetCode] || `${targetCode}-IN`;
 		const out: { text: string; start: number; end: number }[] = [];
 		for (let i = 0; i < segments.length; i++) {
-			onProgress?.(`Translating to ${targetName} (Sarvam) ${i + 1}/${segments.length}`);
+			onProgress?.(`Traduzindo para ${targetName} (Sarvam) ${i + 1}/${segments.length}`);
 			try {
 				const result = await aiClient.sarvamTranslate(
 					segments[i].text,
@@ -139,7 +139,7 @@ async function translateSegments(
 		const batch = segments.slice(i, i + BATCH_SIZE);
 		const batchIndex = Math.floor(i / BATCH_SIZE) + 1;
 		const totalBatches = Math.ceil(segments.length / BATCH_SIZE);
-		onProgress?.(`Translating to ${targetName} (LLM) ${batchIndex}/${totalBatches}`);
+		onProgress?.(`Traduzindo para ${targetName} (LLM) ${batchIndex}/${totalBatches}`);
 		const numberedLines = batch.map((seg, idx) => `${idx + 1}. ${seg.text}`).join("\n");
 		const translated = await aiClient.translateText(numberedLines, targetName);
 		const lines = translated
@@ -217,8 +217,8 @@ export function Captions() {
 			bgTasks.addTask({
 				id: taskId,
 				type: "transcription",
-				label: `Transcription (${engineLabel})`,
-				progress: "Starting...",
+				label: `Transcrição (${engineLabel})`,
+				progress: "Iniciando...",
 			});
 
 			// Remove existing subtitle tracks before re-transcribing
@@ -232,8 +232,8 @@ export function Captions() {
 			setSubtitleTracks([]);
 
 			// Find the media file from the timeline
-			setProcessingStep("Finding media...");
-			bgTasks.updateTask(taskId, { progress: "Finding media..." });
+			setProcessingStep("Procurando mídia...");
+			bgTasks.updateTask(taskId, { progress: "Procurando mídia..." });
 			const tracks = editor.timeline.getTracks();
 			let foundMediaId: string | null = null;
 
@@ -251,7 +251,7 @@ export function Captions() {
 			}
 
 			if (!foundMediaId) {
-				setError("No video or audio found on the timeline. Import a file first.");
+				setError("Nenhum vídeo ou áudio encontrado na linha do tempo. Importe um arquivo primeiro.");
 				return;
 			}
 
@@ -260,13 +260,13 @@ export function Captions() {
 				.find((asset) => asset.id === foundMediaId);
 
 			if (!mediaAsset?.file) {
-				setError("Cannot access the media file for transcription.");
+				setError("Não foi possível acessar o arquivo de mídia para transcrição.");
 				return;
 			}
 
 			// Send to appropriate transcription service
-			setProcessingStep(`Transcribing via ${engineLabel}...`);
-			bgTasks.updateTask(taskId, { progress: `Transcribing via ${engineLabel}...` });
+			setProcessingStep(`Transcrevendo via ${engineLabel}...`);
+			bgTasks.updateTask(taskId, { progress: `Transcrevendo via ${engineLabel}...` });
 
 			// Ensure the file has a proper extension — the backend rejects files without one
 			const mimeToExt: Record<string, string> = {
@@ -311,8 +311,8 @@ export function Captions() {
 				result = await aiClient.transcribe(file, language);
 			}
 
-			setProcessingStep("Processing segments...");
-			bgTasks.updateTask(taskId, { progress: "Processing segments..." });
+			setProcessingStep("Processando segmentos...");
+			bgTasks.updateTask(taskId, { progress: "Processando segmentos..." });
 
 			const timelineDuration = editor.timeline.getTotalDuration();
 
@@ -333,7 +333,7 @@ export function Captions() {
 			}));
 
 			if (validSegments.length === 0) {
-				setError("No speech detected in the video. Try a different language or check that the video has audio.");
+				setError("Nenhuma fala detectada no vídeo. Tente outro idioma ou verifique se o vídeo tem áudio.");
 				return;
 			}
 
@@ -368,8 +368,8 @@ export function Captions() {
 			// ── Auto Speaker Diarization + Emotion Detection ──
 			// Run both in parallel: speaker labels and emotion annotations.
 			const speakerChangeTimes: number[] = [];
-			setProcessingStep("Detecting speakers & emotions...");
-			bgTasks.updateTask(taskId, { progress: "Detecting speakers & emotions..." });
+			setProcessingStep("Detectando falantes e emoções...");
+			bgTasks.updateTask(taskId, { progress: "Detectando falantes e emoções..." });
 
 			const speakerPromise = aiClient.analyzeSpeakers(file).catch((err) => {
 				console.warn("Speaker diarization failed:", err);
@@ -399,8 +399,8 @@ export function Captions() {
 
 				const numSpeakers = speakerResult.num_speakers;
 				if (numSpeakers > 1) {
-					toast.success(`Detected ${numSpeakers} speakers`, {
-						description: `Method: ${speakerResult.method}. Click speaker names in the transcript to rename them.`,
+					toast.success(`${numSpeakers} falantes detectados`, {
+						description: `Método: ${speakerResult.method}. Clique nos nomes dos falantes na transcrição para renomeá-los.`,
 					});
 				}
 			}
@@ -443,8 +443,8 @@ export function Captions() {
 					}
 
 					if (splitCount > 0) {
-						toast.success(`Video split into ${splitCount + 1} segments`, {
-							description: "Delete or reorder segments in the transcript panel to edit the video.",
+						toast.success(`Vídeo dividido em ${splitCount + 1} segmentos`, {
+							description: "Exclua ou reordene segmentos no painel de transcrição para editar o vídeo.",
 						});
 					}
 				} catch (splitError) {
@@ -474,7 +474,7 @@ export function Captions() {
 							type: "audio",
 							sourceType: "upload",
 							mediaId: videoEl.mediaId,
-							name: `${el.name} (audio)`,
+							name: `${el.name} (áudio)`,
 							startTime: el.startTime,
 							duration: el.duration,
 							trimStart: el.trimStart,
@@ -489,24 +489,24 @@ export function Captions() {
 
 			setSubtitleTracks([]);
 
-			toast.success(`Transcription complete (${engineLabel})`, {
-				description: `${validSegments.length} segments detected`,
+			toast.success(`Transcrição concluída (${engineLabel})`, {
+				description: `${validSegments.length} segmentos detectados`,
 			});
 
 			bgTasks.updateTask(taskId, {
 				status: "completed",
-				progress: `${validSegments.length} segments`,
+				progress: `${validSegments.length} segmentos`,
 				completedAt: Date.now(),
 			});
 		} catch (err) {
 			console.error("Transcription failed:", err);
-			const message = err instanceof Error ? err.message : "An unexpected error occurred";
+			const message = err instanceof Error ? err.message : "Ocorreu um erro inesperado";
 			if (message.includes("Cannot connect") || message.includes("connection_refused")) {
-				setError("Cannot connect to AI backend. Make sure it is running (docker compose up -d).");
+				setError("Não é possível conectar ao back-end de IA. Verifique se ele está em execução (docker compose up -d).");
 			} else if (message.includes("Sarvam API key")) {
-				setError("Sarvam API key is not configured. Add OPENCUTAI_SARVAM_API_KEY to your environment.");
+				setError("A chave de API do Sarvam não está configurada. Adicione OPENCUTAI_SARVAM_API_KEY ao seu ambiente.");
 			} else if (message.includes("Smallest AI API key")) {
-				setError("Smallest AI API key is not configured. Add it in Settings > API Keys, or set OPENCUTAI_SMALLEST_API_KEY in your environment.");
+				setError("A chave de API do Smallest AI não está configurada. Adicione-a em Configurações > Chaves de API, ou defina OPENCUTAI_SMALLEST_API_KEY no seu ambiente.");
 			} else {
 				setError(message);
 			}
@@ -538,7 +538,7 @@ export function Captions() {
 		const trackId = editor.timeline.addTrack({ type: "text", index: 0 });
 		editor.timeline.renameTrack({
 			trackId,
-			name: `Subs: ${languageLabel}`,
+			name: `Legendas: ${languageLabel}`,
 		});
 		const canvasSize = editor.project.getActive().settings.canvasSize;
 		const subtitleY = canvasSize.height * yOffset;
@@ -600,11 +600,11 @@ export function Captions() {
 				end: seg.end,
 				words: seg.words,
 			})),
-			languageLabel: "Subtitle",
+			languageLabel: "Legenda",
 		});
 
 		setSubtitleTracks((prev) => [...prev, { trackId, language: "original" }]);
-		toast.success("Subtitles added with word highlighting");
+		toast.success("Legendas adicionadas com destaque de palavras");
 	};
 
 	const handleTranslateAndAdd = async () => {
@@ -623,8 +623,8 @@ export function Captions() {
 		bgTasks.addTask({
 			id: taskId,
 			type: "translation",
-			label: `${targetLang.name} translation`,
-			progress: "Starting...",
+			label: `Tradução para ${targetLang.name}`,
+			progress: "Iniciando...",
 		});
 
 		try {
@@ -666,24 +666,24 @@ export function Captions() {
 
 			bgTasks.updateTask(taskId, {
 				status: "completed",
-				progress: `${translatedSegments.length} segments`,
+				progress: `${translatedSegments.length} segmentos`,
 				completedAt: Date.now(),
 			});
 		} catch (err) {
 			console.error("Translation failed:", err);
 			const message =
-				err instanceof Error ? err.message : "Translation failed";
+				err instanceof Error ? err.message : "Falha na tradução";
 			if (
 				message.includes("Cannot connect") ||
 				message.includes("connection_refused")
 			) {
 				setError(
-					"Cannot connect to AI backend. Make sure it is running and an LLM model is loaded.",
+					"Não é possível conectar ao back-end de IA. Verifique se ele está em execução e se um modelo de LLM está carregado.",
 				);
 			} else if (message.includes("Sarvam API key")) {
-				setError("Sarvam API key is not configured. Add OPENCUTAI_SARVAM_API_KEY to your environment.");
+				setError("A chave de API do Sarvam não está configurada. Adicione OPENCUTAI_SARVAM_API_KEY ao seu ambiente.");
 			} else if (message.includes("Smallest AI API key")) {
-				setError("Smallest AI key is not configured. Add it in Settings > API Keys, or set OPENCUTAI_SMALLEST_API_KEY in your environment.");
+				setError("A chave do Smallest AI não está configurada. Adicione-a em Configurações > Chaves de API, ou defina OPENCUTAI_SMALLEST_API_KEY no seu ambiente.");
 			} else {
 				setError(message);
 			}
@@ -707,7 +707,7 @@ export function Captions() {
 			}
 		}
 		setSubtitleTracks([]);
-		toast.success("All subtitle tracks removed");
+		toast.success("Todas as faixas de legenda foram removidas");
 	};
 
 	const handleRemoveSingleTrack = (trackId: string) => {
@@ -717,7 +717,7 @@ export function Captions() {
 			// Already removed
 		}
 		setSubtitleTracks((prev) => prev.filter((t) => t.trackId !== trackId));
-		toast.success("Subtitle track removed");
+		toast.success("Faixa de legenda removida");
 	};
 
 	const handleExportSubtitles = async (
@@ -731,15 +731,15 @@ export function Captions() {
 			.translations.find((t) => t.languageCode === track.language);
 		const segments = stored?.segments ?? [];
 		if (segments.length === 0) {
-			toast.error("No segments to export for this track.");
+			toast.error("Nenhum segmento para exportar nesta faixa.");
 			return;
 		}
 		const taskId = `sub-export-${track.language}-${Date.now()}`;
 		useBackgroundTasksStore.getState().addTask({
 			id: taskId,
 			type: "popover-subs",
-			label: `Exporting ${track.language}.${format}`,
-			progress: "Generating…",
+			label: `Exportando ${track.language}.${format}`,
+			progress: "Gerando…",
 		});
 		try {
 			const result = await aiClient.generateSubtitles(segments, format);
@@ -752,18 +752,18 @@ export function Captions() {
 			});
 			useBackgroundTasksStore.getState().updateTask(taskId, {
 				status: "completed",
-				progress: "Downloaded",
+				progress: "Baixado",
 				completedAt: Date.now(),
 			});
-			toast.success(`Exported subtitles-${track.language}.${format}`);
+			toast.success(`Exportado: subtitles-${track.language}.${format}`);
 		} catch (err) {
-			const msg = err instanceof Error ? err.message : "Export failed";
+			const msg = err instanceof Error ? err.message : "Falha na exportação";
 			useBackgroundTasksStore.getState().updateTask(taskId, {
 				status: "error",
 				error: msg,
 				completedAt: Date.now(),
 			});
-			toast.error("Subtitle export failed", { description: msg });
+			toast.error("Falha ao exportar legenda", { description: msg });
 		}
 	};
 
@@ -783,15 +783,15 @@ export function Captions() {
 	};
 
 	return (
-		<PanelView title="Transcript" ref={containerRef}>
+		<PanelView title="Legendas" ref={containerRef}>
 			<div className="flex flex-col gap-5">
 				<p className="text-xs text-muted-foreground leading-relaxed">
-					Transcribe your video to edit it like a document. Delete sections, remove filler words, or reorder segments.
+					Transcreva seu vídeo para editá-lo como um documento. Exclua trechos, remova vícios de linguagem ou reordene segmentos.
 				</p>
 
 				{/* ── Engine Selector ── */}
 				<div className="flex flex-col gap-2">
-					<Label className="text-xs">Transcription engine</Label>
+					<Label className="text-xs">Motor de transcrição</Label>
 					<Select value={selectedEngine} onValueChange={handleEngineChange}>
 						<SelectTrigger>
 							<SelectValue />
@@ -801,39 +801,39 @@ export function Captions() {
 								Whisper (Local)
 							</SelectItem>
 							<SelectItem value="sarvam">
-								Sarvam AI (Indian Languages)
+								Sarvam AI (idiomas indianos)
 							</SelectItem>
 							<SelectItem value="smallest">
-								Smallest AI Pulse (39 Languages)
+								Smallest AI Pulse (39 idiomas)
 							</SelectItem>
 						</SelectContent>
 					</Select>
 					<p className="text-[10px] text-muted-foreground">
 						{selectedEngine === "sarvam"
-							? "Cloud-based, optimized for 22 Indian regional languages"
+							? "Baseado em nuvem, otimizado para 22 idiomas regionais indianos"
 							: selectedEngine === "smallest"
-								? "Cloud-based, 39 languages with speaker diarization & emotion detection"
-								: "On-device, best for global languages (English, Spanish, French, etc.)"}
+								? "Baseado em nuvem, 39 idiomas com diarização de falantes e detecção de emoções"
+								: "No dispositivo, ideal para idiomas globais (inglês, espanhol, francês etc.)"}
 					</p>
 				</div>
 
 				{/* ── Language Selector ── */}
 				<div className="flex flex-col gap-2">
-					<Label className="text-xs">Language</Label>
+					<Label className="text-xs">Idioma</Label>
 					<Select
 						value={selectedLanguage}
 						onValueChange={(value) => handleLanguageChange({ value })}
 					>
 						<SelectTrigger>
-							<SelectValue placeholder="Select a language" />
+							<SelectValue placeholder="Selecione um idioma" />
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="auto">Auto detect</SelectItem>
+							<SelectItem value="auto">Detecção automática</SelectItem>
 							{selectedEngine === "sarvam" ? (
 								<>
 									<SelectGroup>
 										<SelectLabel className="text-[10px] text-muted-foreground px-2">
-											Indian Regional Languages
+											Idiomas regionais indianos
 										</SelectLabel>
 										{SARVAM_STT_LANGUAGES.filter(l => l.code !== "en").map((language) => (
 											<SelectItem key={language.code} value={language.code}>
@@ -843,10 +843,10 @@ export function Captions() {
 									</SelectGroup>
 									<SelectGroup>
 										<SelectLabel className="text-[10px] text-muted-foreground px-2">
-											English
+											Inglês
 										</SelectLabel>
 										<SelectItem value="en">
-											English (Indian)
+											Inglês (indiano)
 										</SelectItem>
 									</SelectGroup>
 								</>
@@ -869,7 +869,7 @@ export function Captions() {
 
 				{segments.length > 0 && activeSubtitleTracks.length === 0 && (
 					<p className="text-[11px] text-muted-foreground leading-relaxed rounded-md bg-muted/50 px-3 py-2">
-						Transcript is ready. Add subtitles below, or re-transcribe if the video changed.
+						A transcrição está pronta. Adicione legendas abaixo ou retranscreva se o vídeo mudou.
 					</p>
 				)}
 
@@ -883,8 +883,8 @@ export function Captions() {
 					{isProcessing
 						? processingStep
 						: segments.length > 0
-							? "Re-transcribe"
-							: "Generate transcript"}
+							? "Retranscrever"
+							: "Gerar transcrição"}
 				</Button>
 
 				{segments.length > 0 && (
@@ -892,10 +892,10 @@ export function Captions() {
 						{/* ── Subtitle Tracks ── */}
 						<div className="border-t pt-4 flex flex-col gap-3">
 							<div className="flex items-center justify-between">
-								<Label className="text-xs">Subtitle tracks</Label>
+								<Label className="text-xs">Faixas de legenda</Label>
 								{activeSubtitleTracks.length > 0 && (
 									<span className="text-[10px] text-muted-foreground tabular-nums">
-										{activeSubtitleTracks.length} active
+										{activeSubtitleTracks.length} ativa{activeSubtitleTracks.length !== 1 ? "s" : ""}
 									</span>
 								)}
 							</div>
@@ -952,7 +952,7 @@ export function Captions() {
 												handleRemoveSingleTrack(track.trackId)
 											}
 										>
-											Remove
+											Remover
 										</Button>
 									</div>
 											</div>
@@ -964,7 +964,7 @@ export function Captions() {
 										className="w-full text-destructive hover:text-destructive"
 										onClick={handleRemoveSubtitles}
 									>
-										Remove all
+										Remover todas
 									</Button>
 								</div>
 							) : (
@@ -973,18 +973,18 @@ export function Captions() {
 									className="w-full"
 									onClick={handleAddSubtitles}
 								>
-									Add subtitles
+									Adicionar legendas
 								</Button>
 							)}
 						</div>
 
 						{/* ── Add Language ── */}
 						<div className="border-t pt-4 flex flex-col gap-3">
-							<Label className="text-xs">Add language</Label>
+							<Label className="text-xs">Adicionar idioma</Label>
 							<p className="text-[11px] text-muted-foreground leading-relaxed">
-								Translate via the local NLLB-200 service (fully offline). Falls back
-								to Sarvam AI for Indian languages or the local LLM if NLLB is
-								unavailable.
+								Traduz usando o serviço local NLLB-200 (totalmente offline).
+								Recorre ao Sarvam AI para idiomas indianos ou ao LLM local caso o
+								NLLB não esteja disponível.
 							</p>
 
 							{/* Quick-add chips: batch-translate into several languages. */}
@@ -1023,7 +1023,7 @@ export function Captions() {
 									<SelectContent>
 										<SelectGroup>
 											<SelectLabel className="text-[10px] text-muted-foreground px-2">
-												Global Languages
+												Idiomas globais
 											</SelectLabel>
 											{LANGUAGES.filter(
 												(lang) =>
@@ -1039,7 +1039,7 @@ export function Captions() {
 										</SelectGroup>
 										<SelectGroup>
 											<SelectLabel className="text-[10px] text-muted-foreground px-2">
-												Indian Languages (via Sarvam AI)
+												Idiomas indianos (via Sarvam AI)
 											</SelectLabel>
 											{LANGUAGES.filter(
 												(lang) =>
@@ -1062,7 +1062,7 @@ export function Captions() {
 									className="shrink-0"
 								>
 									{isTranslating && <Spinner className="mr-1" />}
-									{isTranslating ? "..." : "Add"}
+									{isTranslating ? "..." : "Adicionar"}
 								</Button>
 							</div>
 							{isTranslating && translatingStep && (

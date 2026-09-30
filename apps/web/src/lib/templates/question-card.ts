@@ -27,8 +27,8 @@ export interface QuestionCardTemplate {
 export const QUESTION_CARD_TEMPLATES: QuestionCardTemplate[] = [
 	{
 		id: "overlay",
-		name: "Overlay (Transparent)",
-		description: "Text over video with no background",
+		name: "Sobreposição (Transparente)",
+		description: "Texto sobre o vídeo sem fundo",
 		backgroundColor: "transparent",
 		backgroundEnabled: false,
 		backgroundOpacity: 1,
@@ -39,8 +39,8 @@ export const QUESTION_CARD_TEMPLATES: QuestionCardTemplate[] = [
 	},
 	{
 		id: "overlay-dim",
-		name: "Overlay (Dimmed)",
-		description: "Text over video with semi-transparent dark backdrop",
+		name: "Sobreposição (Escurecida)",
+		description: "Texto sobre o vídeo com fundo escuro semitransparente",
 		backgroundColor: "#000000",
 		backgroundEnabled: true,
 		backgroundOpacity: 0.5,
@@ -51,8 +51,8 @@ export const QUESTION_CARD_TEMPLATES: QuestionCardTemplate[] = [
 	},
 	{
 		id: "dark",
-		name: "Dark Minimal",
-		description: "Solid dark background",
+		name: "Escuro Minimalista",
+		description: "Fundo escuro sólido",
 		backgroundColor: "#0F172A",
 		backgroundEnabled: true,
 		backgroundOpacity: 0.9,
@@ -63,8 +63,8 @@ export const QUESTION_CARD_TEMPLATES: QuestionCardTemplate[] = [
 	},
 	{
 		id: "gradient",
-		name: "Gradient Glow",
-		description: "Deep indigo background",
+		name: "Brilho Gradiente",
+		description: "Fundo índigo profundo",
 		backgroundColor: "#1E1B4B",
 		backgroundEnabled: true,
 		backgroundOpacity: 0.9,
@@ -75,8 +75,8 @@ export const QUESTION_CARD_TEMPLATES: QuestionCardTemplate[] = [
 	},
 	{
 		id: "bold",
-		name: "Bold Statement",
-		description: "Red accent background",
+		name: "Declaração Impactante",
+		description: "Fundo com destaque vermelho",
 		backgroundColor: "#DC2626",
 		backgroundEnabled: true,
 		backgroundOpacity: 0.85,
@@ -87,8 +87,8 @@ export const QUESTION_CARD_TEMPLATES: QuestionCardTemplate[] = [
 	},
 	{
 		id: "neon",
-		name: "Neon Night",
-		description: "Dark background with neon text",
+		name: "Noite Neon",
+		description: "Fundo escuro com texto neon",
 		backgroundColor: "#0C0A09",
 		backgroundEnabled: true,
 		backgroundOpacity: 0.9,
@@ -135,7 +135,7 @@ export function buildQuestionCardElement({
 	return {
 		...DEFAULT_TEXT_ELEMENT,
 		type: "text",
-		name: `Card: ${question.slice(0, 30)}`,
+		name: `Cartão: ${question.slice(0, 30)}`,
 		content,
 		fontSize: template.fontSize,
 		fontFamily: template.fontFamily,

@@ -171,7 +171,7 @@ async def health() -> dict:
             device = torch.cuda.current_device()
             gpu_info = {
                 "usedMb": round(torch.cuda.memory_allocated(device) / 1024 / 1024),
-                "totalMb": round(torch.cuda.get_device_properties(device).total_mem / 1024 / 1024),
+                "totalMb": round(torch.cuda.get_device_properties(device).total_memory / 1024 / 1024),
             }
     except ImportError:
         pass

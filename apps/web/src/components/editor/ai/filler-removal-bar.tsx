@@ -40,18 +40,18 @@ const SENSITIVITY_MAP: Record<
 > = {
 	low: {
 		value: 0,
-		label: "Low",
-		description: "Only obvious fillers (um, uh)",
+		label: "Baixa",
+		description: "Apenas preenchimentos óbvios (hã, é)",
 	},
 	medium: {
 		value: 1,
-		label: "Medium",
-		description: "Common fillers (um, uh, like, you know)",
+		label: "Média",
+		description: "Preenchimentos comuns (hã, tipo, sabe)",
 	},
 	high: {
 		value: 2,
-		label: "High",
-		description: "All fillers including subtle ones",
+		label: "Alta",
+		description: "Todos os preenchimentos, incluindo os mais sutis",
 	},
 };
 
@@ -98,14 +98,14 @@ export function FillerRemovalBar({
 						{fillerCount}
 					</Badge>
 					<span className="text-sm text-muted-foreground">
-						filler word{fillerCount !== 1 ? "s" : ""} detected
+						palavra{fillerCount !== 1 ? "s" : ""} de preenchimento detectada{fillerCount !== 1 ? "s" : ""}
 					</span>
 				</div>
 
 				{/* Sensitivity */}
 				<div className="flex items-center gap-2 border-l pl-3 flex-1">
 					<Label className="text-xs text-muted-foreground shrink-0">
-						Sensitivity
+						Sensibilidade
 					</Label>
 					<Slider
 						value={[SENSITIVITY_MAP[sensitivity].value]}
@@ -130,7 +130,7 @@ export function FillerRemovalBar({
 						onClick={onReview}
 						disabled={fillerCount === 0 || isRemoving}
 					>
-						Review
+						Revisar
 					</Button>
 					<Button
 						variant="default"
@@ -141,10 +141,10 @@ export function FillerRemovalBar({
 						{isRemoving ? (
 							<>
 								<Spinner className="size-3 mr-1" />
-								Removing...
+								Removendo...
 							</>
 						) : (
-							"Remove All"
+							"Remover tudo"
 						)}
 					</Button>
 				</div>
@@ -154,20 +154,20 @@ export function FillerRemovalBar({
 			<AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
 				<AlertDialogContent>
 					<AlertDialogHeader>
-						<AlertDialogTitle>Remove all filler words?</AlertDialogTitle>
+						<AlertDialogTitle>Remover todas as palavras de preenchimento?</AlertDialogTitle>
 						<AlertDialogDescription>
-							This will remove {fillerCount} filler word
-							{fillerCount !== 1 ? "s" : ""} from the timeline.
-							Sensitivity is set to{" "}
+							Isso vai remover {fillerCount} palavra
+							{fillerCount !== 1 ? "s" : ""} de preenchimento da linha do tempo.
+							A sensibilidade está definida como{" "}
 							<strong>{sensitivityInfo.label.toLowerCase()}</strong> (
-							{sensitivityInfo.description.toLowerCase()}). This action can
-							be undone with Ctrl+Z.
+							{sensitivityInfo.description.toLowerCase()}). Essa ação pode
+							ser desfeita com Ctrl+Z.
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
-						<AlertDialogCancel>Cancel</AlertDialogCancel>
+						<AlertDialogCancel>Cancelar</AlertDialogCancel>
 						<AlertDialogAction onClick={handleRemoveAll}>
-							Remove All
+							Remover tudo
 						</AlertDialogAction>
 					</AlertDialogFooter>
 				</AlertDialogContent>

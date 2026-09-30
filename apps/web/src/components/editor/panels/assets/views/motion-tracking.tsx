@@ -56,18 +56,18 @@ export function MotionTrackingPanel({ className }: { className?: string }) {
 			<div className="px-4 py-3 border-b space-y-2">
 				<div className="flex items-center gap-2">
 					<HugeiconsIcon icon={CursorMove01Icon} className="size-4 text-primary" />
-					<span className="text-xs font-medium">Motion Tracking</span>
+					<span className="text-xs font-medium">Rastreamento de Movimento</span>
 				</div>
 				<p className="text-[10px] text-muted-foreground">
-					Track an object across frames using template matching. Generates
-					position keyframes that can be applied to any element.
+					Rastreia um objeto ao longo dos quadros usando correspondência de
+					padrões. Gera keyframes de posição que podem ser aplicados a qualquer elemento.
 				</p>
 			</div>
 
 			<div className="px-4 py-3 space-y-4 flex-1 overflow-y-auto">
 				<div className="space-y-1.5">
 					<span className="text-[10px] font-medium text-muted-foreground">
-						Tracking Region (% of frame)
+						Região de Rastreamento (% do quadro)
 					</span>
 					<div className="grid grid-cols-3 gap-2">
 						<div className="space-y-1">
@@ -91,7 +91,7 @@ export function MotionTrackingPanel({ className }: { className?: string }) {
 							/>
 						</div>
 						<div className="space-y-1">
-							<span className="text-[8px] text-muted-foreground">Size %</span>
+							<span className="text-[8px] text-muted-foreground">Tamanho %</span>
 							<Slider
 								value={[regionSize]}
 								onValueChange={([v]) => setRegionSize(v)}
@@ -105,7 +105,7 @@ export function MotionTrackingPanel({ className }: { className?: string }) {
 
 				<div className="space-y-1.5">
 					<div className="flex justify-between text-[10px] text-muted-foreground">
-						<span>Sample Interval</span>
+						<span>Intervalo de Amostragem</span>
 						<span className="font-mono">{sampleInterval.toFixed(1)}s</span>
 					</div>
 					<Slider
@@ -116,13 +116,13 @@ export function MotionTrackingPanel({ className }: { className?: string }) {
 						step={0.05}
 					/>
 					<span className="text-[8px] text-muted-foreground">
-						Lower = more precise but slower
+						Menor = mais preciso, porém mais lento
 					</span>
 				</div>
 
 				<div className="space-y-1.5">
 					<div className="flex justify-between text-[10px] text-muted-foreground">
-						<span>Search Radius</span>
+						<span>Raio de Busca</span>
 						<span className="font-mono">{searchRadius}px</span>
 					</div>
 					<Slider
@@ -136,7 +136,7 @@ export function MotionTrackingPanel({ className }: { className?: string }) {
 
 				{status === "idle" && (
 					<Button className="w-full" onClick={handleStart}>
-						Start Tracking
+						Iniciar Rastreamento
 					</Button>
 				)}
 
@@ -150,13 +150,13 @@ export function MotionTrackingPanel({ className }: { className?: string }) {
 						</div>
 						<p className="text-[10px] text-muted-foreground text-center">
 							{status === "extracting"
-								? "Extracting template..."
+								? "Extraindo modelo..."
 								: status === "tracking"
-									? `Tracking frame ${Math.round(progress)}%...`
-									: "Applying keyframes..."}
+									? `Rastreando quadro ${Math.round(progress)}%...`
+									: "Aplicando keyframes..."}
 						</p>
 						<Button variant="outline" size="sm" className="w-full h-5 text-[8px]" onClick={reset}>
-							Cancel
+							Cancelar
 						</Button>
 					</div>
 				)}
@@ -165,9 +165,9 @@ export function MotionTrackingPanel({ className }: { className?: string }) {
 					<>
 						<div className="rounded border p-2 space-y-1">
 							<div className="flex items-center justify-between">
-								<span className="text-[9px] font-medium">Tracking Result</span>
+								<span className="text-[9px] font-medium">Resultado do Rastreamento</span>
 								<span className="text-[8px] text-muted-foreground">
-									{track.frames.length} frames
+									{track.frames.length} quadros
 								</span>
 							</div>
 							<div className="grid grid-cols-2 gap-1 text-center">
@@ -175,23 +175,23 @@ export function MotionTrackingPanel({ className }: { className?: string }) {
 									<p className="text-[10px] font-mono font-medium">
 										{track.startTime.toFixed(1)}s - {track.endTime.toFixed(1)}s
 									</p>
-									<p className="text-[7px] text-muted-foreground">Duration</p>
+									<p className="text-[7px] text-muted-foreground">Duração</p>
 								</div>
 								<div>
 									<p className="text-[10px] font-mono font-medium">
 										{track.frames.filter((f) => f.confidence > 0.5).length}
 									</p>
-									<p className="text-[7px] text-muted-foreground">High Confidence</p>
+									<p className="text-[7px] text-muted-foreground">Alta Confiança</p>
 								</div>
 							</div>
 						</div>
 
 						<div className="flex gap-2">
 							<Button className="flex-1" onClick={applyTrack}>
-								Apply Keyframes
+								Aplicar Keyframes
 							</Button>
 							<Button variant="outline" onClick={reset}>
-								Reset
+								Redefinir
 							</Button>
 						</div>
 					</>
@@ -206,7 +206,7 @@ export function MotionTrackingPanel({ className }: { className?: string }) {
 							className="mt-1.5 h-5 text-[8px]"
 							onClick={reset}
 						>
-							Try Again
+							Tentar Novamente
 						</Button>
 					</div>
 				)}

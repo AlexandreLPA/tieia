@@ -100,9 +100,9 @@ export function ProjectTemplatePicker({
 				selectedTemplate?.icon,
 			);
 			setEditPrompt(result.prompt);
-			toast.success("Prompt generated");
+			toast.success("Prompt gerado");
 		} catch (err) {
-			toast.error(err instanceof Error ? err.message : "Failed to generate prompt. Make sure the AI backend is running.");
+			toast.error(err instanceof Error ? err.message : "Falha ao gerar o prompt. Verifique se o backend de IA está em execução.");
 		} finally {
 			setIsGeneratingPrompt(false);
 		}
@@ -110,12 +110,12 @@ export function ProjectTemplatePicker({
 
 	const handleGenerateVideo = useCallback(async () => {
 		if (!editPrompt.trim()) {
-			toast.error("Enter or generate a prompt first");
+			toast.error("Digite ou gere um prompt primeiro");
 			return;
 		}
 
 		if (videoProvider === "seedance" && !hasSeedanceKey) {
-			toast.error("Add your Seedance 2.0 key in Settings to generate videos");
+			toast.error("Adicione sua chave do Seedance 2.0 nas Configurações para gerar vídeos");
 			return;
 		}
 
@@ -134,7 +134,7 @@ export function ProjectTemplatePicker({
 			if (result.status === "completed" && result.videoUrl) {
 				setVideoResult({ url: result.videoUrl, status: "completed" });
 				setIsGeneratingVideo(false);
-				toast.success("Video generated");
+				toast.success("Vídeo gerado");
 				return;
 			}
 
@@ -148,12 +148,12 @@ export function ProjectTemplatePicker({
 							setVideoResult({ url: job.videoUrl, status: "completed" });
 							setIsGeneratingVideo(false);
 							if (pollRef.current) clearInterval(pollRef.current);
-							toast.success("Video generated");
+							toast.success("Vídeo gerado");
 						} else if (job.status === "failed") {
 							setVideoResult({ url: "", status: "failed" });
 							setIsGeneratingVideo(false);
 							if (pollRef.current) clearInterval(pollRef.current);
-							toast.error(job.error || "Video generation failed");
+							toast.error(job.error || "Falha na geração do vídeo");
 						}
 					} catch {
 						// keep polling
@@ -161,11 +161,11 @@ export function ProjectTemplatePicker({
 				}, 3000);
 			} else {
 				setIsGeneratingVideo(false);
-				toast.error("Video generation did not return a result");
+				toast.error("A geração do vídeo não retornou um resultado");
 			}
 		} catch (err) {
 			setIsGeneratingVideo(false);
-			toast.error(err instanceof Error ? err.message : "Video generation failed");
+			toast.error(err instanceof Error ? err.message : "Falha na geração do vídeo");
 		}
 	}, [editPrompt, videoProvider, hasSeedanceKey, selectedTemplate]);
 
@@ -189,14 +189,14 @@ export function ProjectTemplatePicker({
 								</DialogTitle>
 							</div>
 							<DialogDescription>
-								Customize your template, generate a video prompt, and create a video.
+								Personalize seu modelo, gere um prompt de vídeo e crie um vídeo.
 							</DialogDescription>
 						</>
 					) : (
 						<>
-							<DialogTitle>What are you making?</DialogTitle>
+							<DialogTitle>O que você está criando?</DialogTitle>
 							<DialogDescription>
-								Pick a template to set up your project. You can change settings later.
+								Escolha um modelo para configurar seu projeto. Você pode alterar as configurações depois.
 							</DialogDescription>
 						</>
 					)}
@@ -279,19 +279,19 @@ export function ProjectTemplatePicker({
 					{view === "detail" ? (
 						<>
 							<Button variant="outline" onClick={handleBack}>
-								Back
+								Voltar
 							</Button>
 							<Button onClick={handleSelect} disabled={!selectedTemplate}>
-								Create project
+								Criar projeto
 							</Button>
 						</>
 					) : (
 						<>
 							<Button variant="outline" onClick={() => onOpenChange(false)}>
-								Skip
+								Pular
 							</Button>
 							<Button onClick={handleSelect} disabled={!selectedTemplate}>
-								Create project
+								Criar projeto
 							</Button>
 						</>
 					)}
@@ -356,12 +356,12 @@ function TemplateDetailEditor({
 			{/* Heading */}
 			<div className="flex flex-col gap-1.5">
 				<label className="text-xs font-medium text-muted-foreground">
-					Heading
+					Título
 				</label>
 				<Input
 					value={editTitle}
 					onChange={(e) => setEditTitle(e.target.value)}
-					placeholder="Template title..."
+					placeholder="Título do modelo..."
 					className="text-sm font-medium"
 				/>
 			</div>
@@ -369,12 +369,12 @@ function TemplateDetailEditor({
 			{/* Description */}
 			<div className="flex flex-col gap-1.5">
 				<label className="text-xs font-medium text-muted-foreground">
-					Description
+					Descrição
 				</label>
 				<Textarea
 					value={editDescription}
 					onChange={(e) => setEditDescription(e.target.value)}
-					placeholder="Describe what this video should contain..."
+					placeholder="Descreva o que este vídeo deve conter..."
 					rows={3}
 					className="text-sm"
 				/>
@@ -384,7 +384,7 @@ function TemplateDetailEditor({
 			<div className="flex flex-col gap-1.5">
 				<div className="flex items-center justify-between">
 					<label className="text-xs font-medium text-muted-foreground">
-						Video Generation Prompt
+						Prompt de Geração de Vídeo
 					</label>
 					<Button
 						variant="outline"
@@ -396,30 +396,30 @@ function TemplateDetailEditor({
 						{isGeneratingPrompt ? (
 							<>
 								<Spinner className="size-3 mr-1" />
-								Generating...
+								Gerando...
 							</>
 						) : (
-							"Generate Prompt"
+							"Gerar Prompt"
 						)}
 					</Button>
 				</div>
 				<Textarea
 					value={editPrompt}
 					onChange={(e) => setEditPrompt(e.target.value)}
-					placeholder="A cinematic video showing... (click Generate Prompt to auto-create from your description)"
+					placeholder="Um vídeo cinematográfico mostrando... (clique em Gerar Prompt para criar automaticamente a partir da sua descrição)"
 					rows={4}
 					className="text-sm font-mono"
 				/>
 				<p className="text-[10px] text-muted-foreground">
-					Write a prompt manually or generate one from the description above.
-					This prompt will be used to create a video clip.
+					Escreva um prompt manualmente ou gere um a partir da descrição acima.
+					Esse prompt será usado para criar um clipe de vídeo.
 				</p>
 			</div>
 
 			{/* Video generation section */}
 			<div className="flex flex-col gap-2 rounded-lg border p-3">
 				<div className="flex items-center justify-between">
-					<span className="text-xs font-medium">Generate Video</span>
+					<span className="text-xs font-medium">Gerar Vídeo</span>
 					<div className="flex gap-1">
 						<button
 							type="button"
@@ -450,7 +450,7 @@ function TemplateDetailEditor({
 
 				{videoProvider === "seedance" && !hasSeedanceKey && (
 					<p className="text-[10px] text-yellow-500">
-						Add your Seedance 2.0 key in Settings &rarr; API Keys to use this provider.
+						Adicione sua chave do Seedance 2.0 em Configurações &rarr; Chaves de API para usar esse provedor.
 					</p>
 				)}
 
@@ -468,11 +468,11 @@ function TemplateDetailEditor({
 						<>
 							<Spinner className="size-3.5 mr-2" />
 							{videoResult?.status === "processing"
-								? "Processing video..."
-								: "Starting generation..."}
+								? "Processando vídeo..."
+								: "Iniciando geração..."}
 						</>
 					) : (
-						`Generate with ${videoProvider === "seedance" ? "Seedance" : "Local AI"}`
+						`Gerar com ${videoProvider === "seedance" ? "Seedance" : "IA Local"}`
 					)}
 				</Button>
 
@@ -489,7 +489,7 @@ function TemplateDetailEditor({
 
 				{videoResult?.status === "failed" && (
 					<div className="rounded-lg border border-red-500/30 bg-red-500/5 px-3 py-2 text-xs text-red-400">
-						Video generation failed. Try a different prompt or provider.
+						Falha na geração do vídeo. Tente um prompt ou provedor diferente.
 					</div>
 				)}
 			</div>
@@ -497,7 +497,7 @@ function TemplateDetailEditor({
 			{/* Tips */}
 			<div className="rounded-lg bg-muted/50 px-3 py-2.5">
 				<p className="text-[11px] font-medium text-muted-foreground mb-1.5">
-					Suggested workflow
+					Fluxo de trabalho sugerido
 				</p>
 				<ol className="flex flex-col gap-1">
 					{template.tips.map((tip, index) => (

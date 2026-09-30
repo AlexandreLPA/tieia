@@ -27,6 +27,7 @@ interface AIState {
 	consecutiveFailures: number;
 	savedIdeas: SavedIdea[];
 	studioMessages: StudioMessage[];
+	pendingAutoPrompt: string | null;
 
 	setBackendStatus: (status: AIBackendStatus | null) => void;
 	setConnectionError: (error: string, errorType: AIErrorType) => void;
@@ -45,6 +46,7 @@ interface AIState {
 	addStudioMessage: (message: StudioMessage) => void;
 	updateStudioMessage: (id: string, content: string) => void;
 	clearStudioMessages: () => void;
+	setPendingAutoPrompt: (prompt: string | null) => void;
 }
 
 export const useAIStore = create<AIState>()((set) => ({
@@ -60,6 +62,7 @@ export const useAIStore = create<AIState>()((set) => ({
 	consecutiveFailures: 0,
 	savedIdeas: [],
 	studioMessages: [],
+	pendingAutoPrompt: null,
 
 	setBackendStatus: (status) =>
 		set({
@@ -150,4 +153,6 @@ export const useAIStore = create<AIState>()((set) => ({
 		})),
 
 	clearStudioMessages: () => set({ studioMessages: [] }),
+
+	setPendingAutoPrompt: (prompt) => set({ pendingAutoPrompt: prompt }),
 }));

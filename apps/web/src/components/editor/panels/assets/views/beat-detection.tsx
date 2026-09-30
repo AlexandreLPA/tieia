@@ -25,10 +25,10 @@ export function BeatDetectionPanel({ className }: { className?: string }) {
 			<div className="px-4 py-3 border-b space-y-2">
 				<div className="flex items-center gap-2">
 					<HugeiconsIcon icon={MusicNote01Icon} className="size-4 text-primary" />
-					<span className="text-xs font-medium">Beat Detection</span>
+					<span className="text-xs font-medium">Detecção de Batidas</span>
 				</div>
 				<p className="text-[10px] text-muted-foreground">
-					Detect beats in your audio for rhythm-aware editing.
+					Detecte batidas no seu áudio para uma edição com consciência de ritmo.
 				</p>
 			</div>
 
@@ -38,24 +38,24 @@ export function BeatDetectionPanel({ className }: { className?: string }) {
 					onClick={handleDetect}
 					disabled={isDetecting}
 				>
-					{isDetecting ? "Detecting..." : "Detect Beats"}
+					{isDetecting ? "Detectando..." : "Detectar batidas"}
 				</Button>
 
 				{result && (
 					<>
 						<div className="rounded border p-2 space-y-1.5">
-							<span className="text-[10px] font-medium">Results</span>
+							<span className="text-[10px] font-medium">Resultados</span>
 							<div className="grid grid-cols-2 gap-1 text-[9px]">
 								<div>
 									<span className="text-muted-foreground">BPM: </span>
 									<span className="font-mono font-medium">{result.bpm}</span>
 								</div>
 								<div>
-									<span className="text-muted-foreground">Beats: </span>
+									<span className="text-muted-foreground">Batidas: </span>
 									<span className="font-mono">{result.beats.length}</span>
 								</div>
 								<div>
-									<span className="text-muted-foreground">Confidence: </span>
+									<span className="text-muted-foreground">Confiança: </span>
 									<span className="font-mono">
 										{Math.round(result.confidence * 100)}%
 									</span>
@@ -64,7 +64,7 @@ export function BeatDetectionPanel({ className }: { className?: string }) {
 						</div>
 
 						<div className="space-y-1.5">
-							<span className="text-[10px] text-muted-foreground">Beat Grid</span>
+							<span className="text-[10px] text-muted-foreground">Grade de Batidas</span>
 							<Button
 								variant={gridConfig.showGrid ? "secondary" : "ghost"}
 								size="sm"
@@ -73,12 +73,12 @@ export function BeatDetectionPanel({ className }: { className?: string }) {
 									setGridConfig((g) => ({ ...g, showGrid: !g.showGrid }))
 								}
 							>
-								Show Beat Grid {gridConfig.showGrid ? "On" : "Off"}
+								Mostrar grade de batidas {gridConfig.showGrid ? "Ativado" : "Desativado"}
 							</Button>
 						</div>
 
 						<div className="space-y-1.5">
-							<span className="text-[10px] text-muted-foreground">Snap</span>
+							<span className="text-[10px] text-muted-foreground">Ajuste</span>
 							<Button
 								variant={gridConfig.snapToBeats ? "secondary" : "ghost"}
 								size="sm"
@@ -87,7 +87,7 @@ export function BeatDetectionPanel({ className }: { className?: string }) {
 									setGridConfig((g) => ({ ...g, snapToBeats: !g.snapToBeats }))
 								}
 							>
-								Snap to Beats {gridConfig.snapToBeats ? "On" : "Off"}
+								Ajustar às batidas {gridConfig.snapToBeats ? "Ativado" : "Desativado"}
 							</Button>
 						</div>
 
@@ -111,7 +111,7 @@ export function BeatDetectionPanel({ className }: { className?: string }) {
 								))}
 							</div>
 							<span className="text-[7px] text-muted-foreground block text-center mt-1">
-								Beat strength visualization
+								Visualização da intensidade das batidas
 							</span>
 						</div>
 					</>

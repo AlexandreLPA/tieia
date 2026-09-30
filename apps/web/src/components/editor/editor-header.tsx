@@ -104,7 +104,7 @@ export function EditorHeader() {
 					onClick={() => setViralityOpen(true)}
 				>
 					<HugeiconsIcon icon={SparklesIcon} className="size-3.5" />
-					Virality Score
+					Pontuação Viral
 				</Button>
 				<ExportButton />
 				<ThemeToggle />
@@ -151,9 +151,9 @@ function ProjectDropdown() {
 					name: newName.trim(),
 				});
 			} catch (error) {
-				toast.error("Failed to rename project", {
+				toast.error("Falha ao renomear projeto", {
 					description:
-						error instanceof Error ? error.message : "Please try again",
+						error instanceof Error ? error.message : "Tente novamente",
 				});
 			} finally {
 				setOpenDialog(null);
@@ -169,9 +169,9 @@ function ProjectDropdown() {
 				});
 				router.push("/projects");
 			} catch (error) {
-				toast.error("Failed to delete project", {
+				toast.error("Falha ao excluir projeto", {
 					description:
-						error instanceof Error ? error.message : "Please try again",
+						error instanceof Error ? error.message : "Tente novamente",
 				});
 			} finally {
 				setOpenDialog(null);
@@ -193,14 +193,14 @@ function ProjectDropdown() {
 						disabled={isExiting}
 						icon={<HugeiconsIcon icon={Logout05Icon} />}
 					>
-						Exit project
+						Sair do projeto
 					</DropdownMenuItem>
 
 					<DropdownMenuItem
 						onClick={() => setOpenDialog("shortcuts")}
 						icon={<HugeiconsIcon icon={CommandIcon} />}
 					>
-						Shortcuts
+						Atalhos de teclado
 					</DropdownMenuItem>
 
 					<DropdownMenuItem
@@ -218,7 +218,7 @@ function ProjectDropdown() {
 						icon={<HugeiconsIcon icon={Search01Icon} />}
 					>
 						<span className="flex items-center justify-between w-full">
-							Search Features
+							Buscar recursos
 							<kbd className="text-[10px] text-muted-foreground/50 ml-2">
 								Ctrl+Shift+P
 							</kbd>
@@ -231,7 +231,7 @@ function ProjectDropdown() {
 						onClick={() => setOpenDialog("features")}
 						icon={<HugeiconsIcon icon={SparklesIcon} />}
 					>
-						Features
+						Recursos
 					</DropdownMenuItem>
 
 					<DropdownMenuSeparator />
@@ -272,24 +272,24 @@ function FeaturesDialog({
 	const { setActiveTab } = useAssetsPanelStore();
 
 	const features = [
-		{ name: "AI Studio", desc: "AI-powered editing: remove silences, filler words, auto-caption", tab: "ai" as const, shortcut: "Ctrl+K" },
-		{ name: "Version History", desc: "Git-like commits, branches, merging, and diff for video — always in the header bar", shortcut: "Ctrl+Shift+S" },
-		{ name: "Media", desc: "Import and manage video, audio, and image files", tab: "media" as const },
-		{ name: "Text", desc: "Add and style text overlays on your video", tab: "text" as const },
-		{ name: "Captions & Transcript", desc: "Auto-generate subtitles from speech", tab: "captions" as const },
-		{ name: "Audio", desc: "Sound effects, AI voiceover, and podcast clip extraction", tab: "audio" as const },
-		{ name: "Elements", desc: "Stickers, emojis, and overlay transitions", tab: "elements" as const },
-		{ name: "Visuals", desc: "Effects, color filters, and manual adjustments", tab: "visuals" as const },
-		{ name: "Brand Kit", desc: "Brand colors, fonts, logos, and quick overlays", tab: "brandkit" as const },
-		{ name: "Fact Check", desc: "AI-powered claim verification (in Settings)", tab: "settings" as const },
-		{ name: "Command Palette", desc: "Search any feature, action, or shortcut instantly", shortcut: "Ctrl+Shift+P" },
+		{ name: "Estúdio de IA", desc: "Edição com IA: remove silêncios, vícios de linguagem, gera legendas automáticas", tab: "ai" as const, shortcut: "Ctrl+K" },
+		{ name: "Histórico de Versões", desc: "Commits, branches, merge e diff para vídeo, como no Git — sempre na barra do cabeçalho", shortcut: "Ctrl+Shift+S" },
+		{ name: "Mídia", desc: "Importe e gerencie arquivos de vídeo, áudio e imagem", tab: "media" as const },
+		{ name: "Texto", desc: "Adicione e estilize sobreposições de texto no seu vídeo", tab: "text" as const },
+		{ name: "Legendas e Transcrição", desc: "Gera legendas automaticamente a partir da fala", tab: "captions" as const },
+		{ name: "Áudio", desc: "Efeitos sonoros, locução com IA e extração de clipes de podcast", tab: "audio" as const },
+		{ name: "Elementos", desc: "Figurinhas, emojis e transições de sobreposição", tab: "elements" as const },
+		{ name: "Visuais", desc: "Efeitos, filtros de cor e ajustes manuais", tab: "visuals" as const },
+		{ name: "Kit de Marca", desc: "Cores, fontes, logotipos e sobreposições rápidas da marca", tab: "brandkit" as const },
+		{ name: "Verificação de Fatos", desc: "Verificação de afirmações com IA (em Configurações)", tab: "settings" as const },
+		{ name: "Paleta de Comandos", desc: "Busque qualquer recurso, ação ou atalho instantaneamente", shortcut: "Ctrl+Shift+P" },
 	];
 
 	return (
 		<Dialog open={isOpen} onOpenChange={onOpenChange}>
 			<DialogContent className="max-w-md">
 				<DialogHeader>
-					<DialogTitle>Features</DialogTitle>
+					<DialogTitle>Recursos</DialogTitle>
 				</DialogHeader>
 				<DialogBody className="gap-0 p-0">
 					<div className="max-h-[60vh] overflow-y-auto divide-y divide-border/50">
@@ -331,7 +331,7 @@ function FeaturesDialog({
 				</DialogBody>
 				<DialogFooter>
 					<Button variant="outline" onClick={() => onOpenChange(false)}>
-						Close
+						Fechar
 					</Button>
 				</DialogFooter>
 			</DialogContent>
@@ -375,9 +375,9 @@ function EditableProjectName() {
 					name: newName,
 				});
 			} catch (error) {
-				toast.error("Failed to rename project", {
+				toast.error("Falha ao renomear projeto", {
 					description:
-						error instanceof Error ? error.message : "Please try again",
+						error instanceof Error ? error.message : "Tente novamente",
 				});
 			}
 		}

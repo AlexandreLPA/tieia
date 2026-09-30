@@ -34,12 +34,12 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 
 const EXAMPLE_QUERIES = [
-	"person talking",
-	"outdoor shot",
-	"close-up face",
-	"screen recording",
-	"landscape",
-	"product shot",
+	"pessoa falando",
+	"cena externa",
+	"rosto em close",
+	"gravação de tela",
+	"paisagem",
+	"foto de produto",
 ];
 
 export function VisualSearchView() {
@@ -69,7 +69,7 @@ export function VisualSearchView() {
 		if (!id) return;
 		setQuery("");
 		findSimilar(id).catch((err) => {
-			toast.error(err instanceof Error ? err.message : "Find similar failed");
+			toast.error(err instanceof Error ? err.message : "Falha ao buscar similares");
 		});
 	}, [pendingSimilar, consumeFindSimilar, findSimilar]);
 
@@ -83,14 +83,14 @@ export function VisualSearchView() {
 			const pairs = await findDuplicates();
 			setDuplicates(pairs);
 			if (pairs.length === 0) {
-				toast.success("No duplicates detected");
+				toast.success("Nenhuma duplicata encontrada");
 			} else {
 				toast.info(
-					`Found ${pairs.length} possible duplicate pair${pairs.length === 1 ? "" : "s"}`,
+					`${pairs.length} ${pairs.length === 1 ? "possível par duplicado encontrado" : "possíveis pares duplicados encontrados"}`,
 				);
 			}
 		} catch (err) {
-			toast.error(err instanceof Error ? err.message : "Duplicate scan failed");
+			toast.error(err instanceof Error ? err.message : "Falha na busca por duplicatas");
 		}
 	}, []);
 
@@ -118,17 +118,17 @@ export function VisualSearchView() {
 	const handleReindex = useCallback(async () => {
 		try {
 			await refreshIndex();
-			toast.success("Search index refreshed");
+			toast.success("Índice de busca atualizado");
 		} catch (err) {
 			toast.error(
-				err instanceof Error ? err.message : "Failed to refresh search index",
+				err instanceof Error ? err.message : "Falha ao atualizar o índice de busca",
 			);
 		}
 	}, [refreshIndex]);
 
 	return (
 		<PanelView
-			title="Visual Search"
+			title="Busca visual"
 			actions={
 				<TooltipProvider>
 					<Tooltip>
@@ -143,7 +143,7 @@ export function VisualSearchView() {
 								<HugeiconsIcon icon={Search01Icon} className="size-4" />
 							</Button>
 						</TooltipTrigger>
-						<TooltipContent>Refresh search index</TooltipContent>
+						<TooltipContent>Atualizar índice de busca</TooltipContent>
 					</Tooltip>
 					<Tooltip>
 						<TooltipTrigger asChild>
@@ -157,7 +157,7 @@ export function VisualSearchView() {
 								<HugeiconsIcon icon={Copy01Icon} className="size-4" />
 							</Button>
 						</TooltipTrigger>
-						<TooltipContent>Find duplicate / retake clips</TooltipContent>
+						<TooltipContent>Encontrar clipes duplicados ou repetidos</TooltipContent>
 					</Tooltip>
 				</TooltipProvider>
 			}
@@ -171,7 +171,7 @@ export function VisualSearchView() {
 					<Input
 						value={query}
 						onChange={(e) => setQuery(e.target.value)}
-						placeholder="Search footage by meaning..."
+						placeholder="Pesquisar material por significado..."
 						className="pl-8"
 						disabled={!hasIndex && inflightCount === 0}
 					/>
@@ -179,22 +179,22 @@ export function VisualSearchView() {
 
 				{inflightCount > 0 && (
 					<div className="bg-muted/40 text-muted-foreground rounded-md px-3 py-2 text-xs">
-						Indexing {inflightCount} new asset
+						Indexando {inflightCount} arquivo
 						{inflightCount > 1 ? "s" : ""}…{" "}
-						<span className="text-foreground/70">({indexedCount} indexed)</span>
+						<span className="text-foreground/70">({indexedCount} no índice)</span>
 					</div>
 				)}
 
 				{!hasIndex && inflightCount === 0 && (
 					<EmptyState
-						title="No media indexed yet"
-						body="Import a video or image to enable semantic search. OpenCut AI samples frames and embeds them locally — your footage never leaves the machine."
+						title="Nenhuma mídia indexada ainda"
+						body="Importe um vídeo ou imagem para ativar a busca semântica. O OpenCut AI extrai quadros e os processa localmente — seu material nunca sai da sua máquina."
 					/>
 				)}
 
 				{hasIndex && !query && hits.length === 0 && !isSearching && (
 					<SuggestionRow
-						label="Try"
+						label="Tente"
 						suggestions={EXAMPLE_QUERIES}
 						onPick={setQuery}
 					/>
@@ -212,7 +212,8 @@ export function VisualSearchView() {
 
 				{isSearching && (
 					<div className="text-muted-foreground px-1 py-2 text-xs">
-						Searching {indexedCount} indexed asset
+						Buscando entre {indexedCount} arquivo
+						{indexedCount === 1 ? "" : "s"} indexado
 						{indexedCount === 1 ? "" : "s"}…
 					</div>
 				)}
@@ -260,15 +261,15 @@ export function VisualSearchView() {
 
 				{!isSearching && query.length >= 2 && hits.length === 0 && hasIndex && (
 					<EmptyState
-						title="No matches"
-						body="Try a more general phrase, or import more footage. The index covers what's in your media bin."
+						title="Nenhum resultado"
+						body="Tente uma frase mais genérica ou importe mais material. O índice cobre apenas o que está na sua biblioteca de mídia."
 					/>
 				)}
 
 				{duplicates && duplicates.length > 0 && (
 					<div className="space-y-2 pb-4">
 						<p className="text-muted-foreground px-1 text-xs font-medium">
-							Possible duplicates ({duplicates.length})
+							Possíveis duplicatas ({duplicates.length})
 						</p>
 						{duplicates.map((pair) => {
 							const a = byId.get(pair.mediaIdA);
@@ -283,7 +284,7 @@ export function VisualSearchView() {
 									)}
 									onClick={() => {
 										toast.info(
-											`"${a.name}" and "${b.name}" look very similar (${Math.round(pair.score * 100)}%)`,
+											`"${a.name}" e "${b.name}" parecem muito similares (${Math.round(pair.score * 100)}%)`,
 										);
 									}}
 								>

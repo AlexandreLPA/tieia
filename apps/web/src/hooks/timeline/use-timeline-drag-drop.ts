@@ -277,7 +277,7 @@ export function useTimelineDragDrop({
 	const executeMediaDrop = useCallback(
 		({ target, dragData }: { target: DropTarget; dragData: MediaDragData }) => {
 			if (target.targetElement) {
-				toast.info("Replace media source is coming soon!");
+				toast.info("Substituir a fonte da mídia estará disponível em breve!");
 				return;
 			}
 
@@ -502,7 +502,7 @@ export function useTimelineDragDrop({
 				}
 			} catch (err) {
 				console.error("Failed to process drop:", err);
-				toast.error("Failed to process drop");
+				toast.error("Falha ao processar o item solto");
 			}
 		},
 		[

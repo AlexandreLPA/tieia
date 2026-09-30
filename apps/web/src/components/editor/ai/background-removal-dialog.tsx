@@ -85,7 +85,7 @@ export function BackgroundRemovalDialog({
 			setError(
 				err instanceof Error
 					? err.message
-					: "Failed to remove background",
+					: "Falha ao remover o fundo",
 			);
 		} finally {
 			setIsProcessing(false);
@@ -142,11 +142,11 @@ export function BackgroundRemovalDialog({
 							icon={Image01Icon}
 							className="size-5 text-primary"
 						/>
-						Remove Background
+						Remover fundo
 					</DialogTitle>
 					<DialogDescription>
-						Upload an image or select from the timeline to remove its
-						background.
+						Envie uma imagem ou selecione um quadro da linha do tempo para
+						remover o fundo.
 					</DialogDescription>
 				</DialogHeader>
 
@@ -174,10 +174,10 @@ export function BackgroundRemovalDialog({
 									/>
 									<div className="text-center">
 										<p className="text-sm font-medium">
-											Upload Image
+											Enviar imagem
 										</p>
 										<p className="text-xs text-muted-foreground mt-1">
-											PNG, JPG, WEBP supported
+											Suporta PNG, JPG e WEBP
 										</p>
 									</div>
 								</button>
@@ -187,7 +187,7 @@ export function BackgroundRemovalDialog({
 							{timelineFrames.length > 0 && (
 								<div>
 									<Label className="text-xs mb-2 block">
-										From Timeline
+										Da linha do tempo
 									</Label>
 									<div className="grid grid-cols-4 gap-2">
 										{timelineFrames.map((frame) => (
@@ -231,7 +231,7 @@ export function BackgroundRemovalDialog({
 						<div className="flex flex-col items-center gap-3 py-8">
 							<Spinner className="size-6" />
 							<p className="text-sm text-muted-foreground">
-								Removing background...
+								Removendo fundo...
 							</p>
 						</div>
 					)}
@@ -239,13 +239,13 @@ export function BackgroundRemovalDialog({
 					{/* Before/After comparison */}
 					{result && (
 						<div className="flex flex-col gap-3">
-							<Label className="text-xs">Before / After</Label>
+							<Label className="text-xs">Antes / Depois</Label>
 							<div
 								ref={sliderContainerRef}
 								className="relative rounded-lg overflow-hidden border cursor-col-resize select-none"
 								onMouseDown={handleSliderDrag}
 								role="slider"
-								aria-label="Comparison slider"
+								aria-label="Controle de comparação"
 								aria-valuemin={0}
 								aria-valuemax={100}
 								aria-valuenow={Math.round(comparisonPosition)}
@@ -312,7 +312,7 @@ export function BackgroundRemovalDialog({
 							</div>
 							<div className="flex justify-between text-[10px] text-muted-foreground">
 								<span>Original</span>
-								<span>Background Removed</span>
+								<span>Fundo removido</span>
 							</div>
 						</div>
 					)}
@@ -329,10 +329,10 @@ export function BackgroundRemovalDialog({
 					{result ? (
 						<>
 							<Button variant="outline" onClick={handleReset}>
-								Try Another
+								Tentar outra
 							</Button>
 							<Button onClick={handleAddToTimeline}>
-								Add to Timeline
+								Adicionar à linha do tempo
 							</Button>
 						</>
 					) : (
@@ -347,7 +347,7 @@ export function BackgroundRemovalDialog({
 									}
 								}}
 							>
-								{source ? "Back" : "Cancel"}
+								{source ? "Voltar" : "Cancelar"}
 							</Button>
 							{source && (
 								<Button
@@ -357,10 +357,10 @@ export function BackgroundRemovalDialog({
 									{isProcessing ? (
 										<>
 											<Spinner className="size-3 mr-1" />
-											Processing...
+											Processando...
 										</>
 									) : (
-										"Remove Background"
+										"Remover fundo"
 									)}
 								</Button>
 							)}

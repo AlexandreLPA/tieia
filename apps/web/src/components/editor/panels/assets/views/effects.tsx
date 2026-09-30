@@ -16,7 +16,7 @@ export function EffectsView() {
 	const effects = getAllEffects();
 
 	return (
-		<PanelView title="Effects">
+		<PanelView title="Efeitos">
 			<EffectsGrid effects={effects} />
 		</PanelView>
 	);

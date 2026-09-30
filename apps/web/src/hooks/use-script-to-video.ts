@@ -47,7 +47,7 @@ export function useScriptToVideo() {
 					.join(" ");
 
 				if (fullText.trim().length === 0) {
-					throw new Error("Script has no narration text");
+					throw new Error("O roteiro não contém texto de narração");
 				}
 
 				const audioBlob = await aiClient.generateSpeechBlob({
@@ -149,16 +149,16 @@ export function useScriptToVideo() {
 				});
 
 				toast.success(
-					`Script-to-video created: ${totalAudioDuration.toFixed(0)}s with ${sections.length} sections`,
+					`Roteiro convertido em vídeo: ${totalAudioDuration.toFixed(0)}s com ${sections.length} seções`,
 				);
 			} catch (err) {
-				const msg = err instanceof Error ? err.message : "Generation failed";
+				const msg = err instanceof Error ? err.message : "Falha na geração";
 				bgTasks.updateTask(taskId, {
 					status: "error",
 					error: msg,
 					completedAt: Date.now(),
 				});
-				toast.error("Script-to-video failed", { description: msg });
+				toast.error("Falha ao converter roteiro em vídeo", { description: msg });
 			}
 		},
 		[editor, bgTasks],

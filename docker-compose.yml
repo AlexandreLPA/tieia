@@ -56,6 +56,13 @@ services:
       - "11434:11434"
     volumes:
       - ollama_data:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     healthcheck:
       test: ["CMD", "ollama", "list"]
       interval: 15s
@@ -92,6 +99,8 @@ services:
       - OPENCUTAI_AI_MODEL_TIER=${AI_MODEL_TIER:-auto}
       - OPENCUTAI_KV_CACHE_BITS=${KV_CACHE_BITS:-4}
       - OPENCUTAI_AI_LLM_BACKEND=${AI_LLM_BACKEND:-auto}
+      - OPENCUTAI_OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - OPENCUTAI_OPENROUTER_MODEL=${OPENROUTER_MODEL:-nvidia/nemotron-3-ultra-550b-a55b:free}
       - OPENCUTAI_SARVAM_API_KEY=${SARVAM_API_KEY:-}
     volumes:
       - ai_models:/app/models
@@ -115,8 +124,15 @@ services:
       - "8421:8421"
     environment:
       - WHISPER_MODEL_SIZE=${WHISPER_MODEL_SIZE:-base}
-      - WHISPER_DEVICE=cpu
+      - WHISPER_DEVICE=cuda
       - WHISPER_COMPUTE_TYPE=int8
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     volumes:
       - whisper_models:/root/.cache
     healthcheck:

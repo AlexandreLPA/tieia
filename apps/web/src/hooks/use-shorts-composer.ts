@@ -31,7 +31,7 @@ export function useShortsComposer() {
 		async (options: Partial<ShortsComposerOptions> = {}) => {
 			const opts = { ...DEFAULT_OPTIONS, ...options };
 			if (segments.length === 0) {
-				toast.error("Transcribe your video first");
+				toast.error("Transcreva seu vídeo primeiro");
 				return;
 			}
 
@@ -110,16 +110,16 @@ export function useShortsComposer() {
 				});
 
 				toast.success(
-					`Short composed: ${(bestEnd - bestStart).toFixed(0)}s ${opts.format} clip`,
+					`Short montado: clipe de ${(bestEnd - bestStart).toFixed(0)}s em ${opts.format}`,
 				);
 			} catch (err) {
-				const msg = err instanceof Error ? err.message : "Composition failed";
+				const msg = err instanceof Error ? err.message : "Falha na composição";
 				bgTasks.updateTask(taskId, {
 					status: "error",
 					error: msg,
 					completedAt: Date.now(),
 				});
-				toast.error("Auto-compose failed", { description: msg });
+				toast.error("Falha na composição automática", { description: msg });
 			}
 		},
 		[editor, segments, bgTasks],

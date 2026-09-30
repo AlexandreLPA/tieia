@@ -8,7 +8,7 @@ export const rgbSplitEffectDefinition: EffectDefinition = {
 	params: [
 		{
 			key: "amount",
-			label: "Amount",
+			label: "Quantidade",
 			type: "number",
 			default: 30,
 			min: 0,

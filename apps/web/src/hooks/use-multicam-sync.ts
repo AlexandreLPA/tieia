@@ -32,7 +32,7 @@ export function useMulticamSync() {
 			const tracks = editor.timeline.getTracks();
 			const videoTracks = tracks.filter((t) => t.type === "video");
 			if (videoTracks.length < 2) {
-				toast.error("Add at least 2 video tracks (angles) to sync.");
+				toast.error("Adicione pelo menos 2 faixas de vídeo (ângulos) para sincronizar.");
 				return null;
 			}
 			const refId = referenceTrackId ?? videoTracks[0].id;
@@ -68,19 +68,19 @@ export function useMulticamSync() {
 					completedAt: Date.now(),
 				});
 				toast.success(
-					`Sync analysis done — ${confident} angle${confident === 1 ? "" : "s"} aligned` +
-						(skipped > 0 ? ` (${skipped} skipped)` : "") +
-						". Review and apply.",
+					`Análise de sincronização concluída — ${confident} ângulo${confident === 1 ? "" : "s"} alinhado${confident === 1 ? "" : "s"}` +
+						(skipped > 0 ? ` (${skipped} ignorado${skipped === 1 ? "" : "s"})` : "") +
+						". Revise e aplique.",
 				);
 				return result;
 			} catch (err) {
-				const msg = err instanceof Error ? err.message : "Sync failed";
+				const msg = err instanceof Error ? err.message : "Falha na sincronização";
 				useBackgroundTasksStore.getState().updateTask(taskId, {
 					status: "error",
 					error: msg,
 					completedAt: Date.now(),
 				});
-				toast.error("Multicam sync failed", { description: msg });
+				toast.error("Falha na sincronização multicâmera", { description: msg });
 				return null;
 			} finally {
 				setIsSyncing(false);
@@ -93,7 +93,7 @@ export function useMulticamSync() {
 	/** Apply the previously-computed preview offsets to the timeline. */
 	const apply = useCallback(() => {
 		if (!previewOffsets || previewOffsets.length === 0) {
-			toast.error("Compute offsets first.");
+			toast.error("Calcule os deslocamentos primeiro.");
 			return;
 		}
 		const supportsTx = typeof editor.command.beginTransaction === "function";
@@ -107,8 +107,8 @@ export function useMulticamSync() {
 		if (supportsTx) editor.command.commitTransaction();
 		toast.success(
 			applied > 0
-				? `Aligned ${applied} angle${applied === 1 ? "" : "s"} to the reference.`
-				: "No offsets to apply.",
+				? `${applied} ângulo${applied === 1 ? "" : "s"} alinhado${applied === 1 ? "" : "s"} à referência.`
+				: "Nenhum deslocamento para aplicar.",
 		);
 	}, [editor, previewOffsets]);
 

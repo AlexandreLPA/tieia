@@ -16,7 +16,7 @@ export function UndoHistoryPanel({ className }: { className?: string }) {
 			<div className="px-4 py-3 border-b space-y-2">
 				<div className="flex items-center gap-2">
 					<HugeiconsIcon icon={Clock01Icon} className="size-4 text-primary" />
-					<span className="text-xs font-medium">Undo History</span>
+					<span className="text-xs font-medium">Histórico de desfazer</span>
 				</div>
 			</div>
 
@@ -24,7 +24,7 @@ export function UndoHistoryPanel({ className }: { className?: string }) {
 				<div className="px-4 py-3 space-y-0.5">
 					{history.length === 0 && redoStack.length === 0 && (
 						<p className="text-[10px] text-muted-foreground text-center py-4">
-							No actions yet
+							Nenhuma ação ainda
 						</p>
 					)}
 
@@ -47,7 +47,7 @@ export function UndoHistoryPanel({ className }: { className?: string }) {
 
 					{redoStack.length > 0 && (
 						<div className="border-t pt-1 mt-1">
-							<span className="text-[8px] text-muted-foreground px-2">Redo stack</span>
+							<span className="text-[8px] text-muted-foreground px-2">Pilha de refazer</span>
 							{redoStack.map((cmd, i) => (
 								<button
 									key={`redo-${i}`}

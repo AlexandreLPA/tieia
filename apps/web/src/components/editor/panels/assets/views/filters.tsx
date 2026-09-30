@@ -46,23 +46,23 @@ export function FiltersView() {
 			});
 
 			element.params = { ...preset.params };
-			element.name = `Filter: ${preset.name}`;
+			element.name = `Filtro: ${preset.name}`;
 
 			editor.timeline.insertElement({
 				placement: { mode: "auto", trackType: "effect" },
 				element,
 			});
 
-			toast.success(`"${preset.name}" filter added to selected clip`);
+			toast.success(`Filtro "${preset.name}" adicionado ao clipe selecionado`);
 		},
 		[editor],
 	);
 
 	return (
-		<PanelView title="Filters">
+		<PanelView title="Filtros">
 			<div className="flex flex-col gap-3">
 				<p className="text-xs text-muted-foreground leading-relaxed">
-					Click a filter to add it as a track. Select and delete it from the timeline to remove.
+					Clique em um filtro para adicioná-lo como uma faixa. Para remover, selecione-o e exclua-o da linha do tempo.
 				</p>
 
 				<div className="grid grid-cols-2 gap-2">

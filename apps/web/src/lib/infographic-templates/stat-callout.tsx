@@ -128,11 +128,11 @@ export const StatCallout: FC<StatCalloutProps> = ({
 
 export const templateConfig = {
   id: "stat-callout",
-  name: "Stat Callout",
+  name: "Estatística em Destaque",
   category: "data",
   defaultProps: {
     value: 98,
-    label: "Customer Satisfaction",
+    label: "Satisfação do Cliente",
     prefix: "",
     suffix: "%",
     primaryColor: "#0f0f23",

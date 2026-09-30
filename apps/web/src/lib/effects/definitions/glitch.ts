@@ -8,7 +8,7 @@ export const glitchEffectDefinition: EffectDefinition = {
 	params: [
 		{
 			key: "amount",
-			label: "Amount",
+			label: "Quantidade",
 			type: "number",
 			default: 40,
 			min: 0,

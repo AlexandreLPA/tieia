@@ -84,7 +84,7 @@ export function useVideoBgRemoval() {
 				const startedAt = Date.now();
 				const tick = async () => {
 					if (Date.now() - startedAt > MAX_POLL_MS) {
-						reject(new Error("Video background removal timed out."));
+						reject(new Error("Tempo limite excedido na remoção de fundo do vídeo."));
 						return;
 					}
 					try {
@@ -108,7 +108,7 @@ export function useVideoBgRemoval() {
 							return;
 						}
 						if (status.status === "failed") {
-							reject(new Error(status.error || "Job failed."));
+							reject(new Error(status.error || "Falha no processamento."));
 							return;
 						}
 					} catch (err) {
@@ -134,12 +134,12 @@ export function useVideoBgRemoval() {
 		) => {
 			const result = status.result;
 			if (!result?.videoUrl) {
-				throw new Error("Job completed but produced no video.");
+				throw new Error("O processo foi concluído, mas não gerou nenhum vídeo.");
 			}
 
 			// Fetch the transparent WebM as a blob and register it as a media asset.
 			const resp = await fetch(aiClient.videoBgFileUrl(result.videoUrl));
-			if (!resp.ok) throw new Error(`Failed to download result (${resp.status}).`);
+			if (!resp.ok) throw new Error(`Falha ao baixar o resultado (${resp.status}).`);
 			const blob = await resp.blob();
 			const file = new File([blob], result.filename || `nobg-${Date.now()}.webm`, {
 				type: "video/webm",
@@ -187,7 +187,7 @@ export function useVideoBgRemoval() {
 			const source = resolveSourceClip();
 			if (!source) {
 				toast.error(
-					"Select a video clip with a backing file first.",
+					"Selecione primeiro um clipe de vídeo com um arquivo associado.",
 				);
 				return null;
 			}
@@ -200,10 +200,10 @@ export function useVideoBgRemoval() {
 			const estSeconds = estFrames; // ~1s/frame
 			if (
 				!window.confirm(
-					`Remove background from this clip?\n\n` +
-						`Estimated frames: ${estFrames} (${source.duration.toFixed(1)}s × ${fps} fps)\n` +
-						`Estimated time: ~${Math.round(estSeconds)}s on CPU ` +
-						`(faster on GPU). This runs per-frame with rembg.`,
+					`Remover o fundo deste clipe?\n\n` +
+						`Quadros estimados: ${estFrames} (${source.duration.toFixed(1)}s × ${fps} fps)\n` +
+						`Tempo estimado: ~${Math.round(estSeconds)}s na CPU ` +
+						`(mais rápido na GPU). Isso é executado quadro a quadro com o rembg.`,
 				)
 			) {
 				return null;
@@ -237,16 +237,16 @@ export function useVideoBgRemoval() {
 					completedAt: Date.now(),
 				});
 				setProgress({ phase: "done", progress: 1, processedFrames: finalStatus.processed_frames, totalFrames: finalStatus.total_frames, message: "Done." });
-				toast.success("Background removed — added as a new clip above the source.");
+				toast.success("Fundo removido — adicionado como um novo clipe acima da origem.");
 				return finalStatus;
 			} catch (err) {
-				const message = err instanceof Error ? err.message : "BG removal failed";
+				const message = err instanceof Error ? err.message : "Falha ao remover o fundo";
 				useBackgroundTasksStore.getState().updateTask(taskId, {
 					status: "error",
 					error: message,
 					completedAt: Date.now(),
 				});
-				toast.error("Background removal failed", { description: message });
+				toast.error("Falha ao remover o fundo", { description: message });
 				return null;
 			} finally {
 				setIsRunning(false);

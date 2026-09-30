@@ -48,7 +48,7 @@ const DEFAULT_PRESETS: SubtitlePreset[] = [
 	{
 		id: "capcut",
 		name: "CapCut",
-		description: "Bold, eye-catching style",
+		description: "Estilo arrojado e chamativo",
 		style: {
 			fontFamily: "Inter",
 			fontSize: 28,
@@ -63,8 +63,8 @@ const DEFAULT_PRESETS: SubtitlePreset[] = [
 	},
 	{
 		id: "classic",
-		name: "Classic",
-		description: "Traditional subtitle style",
+		name: "Clássico",
+		description: "Estilo tradicional de legenda",
 		style: {
 			fontFamily: "Arial",
 			fontSize: 22,
@@ -79,8 +79,8 @@ const DEFAULT_PRESETS: SubtitlePreset[] = [
 	},
 	{
 		id: "modern",
-		name: "Modern",
-		description: "Clean, minimal style",
+		name: "Moderno",
+		description: "Estilo limpo e minimalista",
 		style: {
 			fontFamily: "Inter",
 			fontSize: 24,
@@ -95,8 +95,8 @@ const DEFAULT_PRESETS: SubtitlePreset[] = [
 	},
 	{
 		id: "karaoke",
-		name: "Karaoke",
-		description: "Word-by-word highlight",
+		name: "Karaokê",
+		description: "Destaque palavra por palavra",
 		style: {
 			fontFamily: "Impact",
 			fontSize: 32,
@@ -124,12 +124,12 @@ const FONT_OPTIONS = [
 ];
 
 const ANIMATION_OPTIONS: { value: SubtitleAnimation; label: string }[] = [
-	{ value: "none", label: "None" },
-	{ value: "fade", label: "Fade" },
-	{ value: "slide", label: "Slide" },
-	{ value: "typewriter", label: "Typewriter" },
-	{ value: "bounce", label: "Bounce" },
-	{ value: "karaoke", label: "Karaoke" },
+	{ value: "none", label: "Nenhuma" },
+	{ value: "fade", label: "Esmaecer" },
+	{ value: "slide", label: "Deslizar" },
+	{ value: "typewriter", label: "Máquina de escrever" },
+	{ value: "bounce", label: "Saltitante" },
+	{ value: "karaoke", label: "Karaokê" },
 ];
 
 // ----- Props -----
@@ -154,7 +154,7 @@ export function SubtitleStyleEditor({
 	onApply,
 	isGenerating = false,
 	isApplying = false,
-	previewText = "The quick brown fox jumps over the lazy dog",
+	previewText = "A rápida raposa marrom salta sobre o cão preguiçoso",
 	className,
 }: SubtitleStyleEditorProps) {
 	const [activePreset, setActivePreset] = useState<string | null>(null);
@@ -212,7 +212,7 @@ export function SubtitleStyleEditor({
 			{/* Presets */}
 			<div>
 				<Label className="text-xs text-muted-foreground mb-2 block">
-					Presets
+					Predefinições
 				</Label>
 				<div className="grid grid-cols-2 gap-2">
 					{DEFAULT_PRESETS.map((preset) => (
@@ -254,7 +254,7 @@ export function SubtitleStyleEditor({
 					>
 						<CardContent className="p-3">
 							<div className="flex items-center justify-between">
-								<span className="text-xs font-medium">Custom</span>
+								<span className="text-xs font-medium">Personalizado</span>
 								{isCustom && (
 									<HugeiconsIcon
 										icon={Tick01Icon}
@@ -263,7 +263,7 @@ export function SubtitleStyleEditor({
 								)}
 							</div>
 							<p className="text-[10px] text-muted-foreground mt-0.5">
-								Full customization
+								Personalização completa
 							</p>
 						</CardContent>
 					</Card>
@@ -275,7 +275,7 @@ export function SubtitleStyleEditor({
 				<div className="flex flex-col gap-3 border-t pt-3">
 					{/* Font */}
 					<div className="flex items-center gap-3">
-						<Label className="text-xs w-20 shrink-0">Font</Label>
+						<Label className="text-xs w-20 shrink-0">Fonte</Label>
 						<Select
 							value={style.fontFamily}
 							onValueChange={(v) =>
@@ -297,7 +297,7 @@ export function SubtitleStyleEditor({
 
 					{/* Font size */}
 					<div className="flex items-center gap-3">
-						<Label className="text-xs w-20 shrink-0">Size</Label>
+						<Label className="text-xs w-20 shrink-0">Tamanho</Label>
 						<Slider
 							value={[style.fontSize]}
 							onValueChange={([v]) =>
@@ -315,7 +315,7 @@ export function SubtitleStyleEditor({
 
 					{/* Text color */}
 					<div className="flex items-center gap-3">
-						<Label className="text-xs w-20 shrink-0">Color</Label>
+						<Label className="text-xs w-20 shrink-0">Cor</Label>
 						<div className="flex items-center gap-2 flex-1">
 							<input
 								type="color"
@@ -338,7 +338,7 @@ export function SubtitleStyleEditor({
 
 					{/* Background color */}
 					<div className="flex items-center gap-3">
-						<Label className="text-xs w-20 shrink-0">Background</Label>
+						<Label className="text-xs w-20 shrink-0">Fundo</Label>
 						<div className="flex items-center gap-2 flex-1">
 							<input
 								type="color"
@@ -369,7 +369,7 @@ export function SubtitleStyleEditor({
 
 					{/* Outline */}
 					<div className="flex items-center gap-3">
-						<Label className="text-xs w-20 shrink-0">Outline</Label>
+						<Label className="text-xs w-20 shrink-0">Contorno</Label>
 						<div className="flex items-center gap-2 flex-1">
 							<input
 								type="color"
@@ -394,7 +394,7 @@ export function SubtitleStyleEditor({
 
 					{/* Position */}
 					<div className="flex items-center gap-3">
-						<Label className="text-xs w-20 shrink-0">Position</Label>
+						<Label className="text-xs w-20 shrink-0">Posição</Label>
 						<div className="flex gap-1 flex-1">
 							{(["top", "center", "bottom"] as SubtitlePosition[]).map(
 								(pos) => (
@@ -418,7 +418,7 @@ export function SubtitleStyleEditor({
 
 					{/* Animation */}
 					<div className="flex items-center gap-3">
-						<Label className="text-xs w-20 shrink-0">Animation</Label>
+						<Label className="text-xs w-20 shrink-0">Animação</Label>
 						<Select
 							value={style.animation}
 							onValueChange={(v: SubtitleAnimation) =>
@@ -451,12 +451,12 @@ export function SubtitleStyleEditor({
 					{isGenerating ? (
 						<>
 							<Spinner className="size-3 mr-1" />
-							Generating...
+							Gerando...
 						</>
 					) : (
 						<>
 							<HugeiconsIcon icon={TextIcon} className="size-3 mr-1" />
-							Generate Subtitles
+							Gerar legendas
 						</>
 					)}
 				</Button>
@@ -469,10 +469,10 @@ export function SubtitleStyleEditor({
 					{isApplying ? (
 						<>
 							<Spinner className="size-3 mr-1" />
-							Applying...
+							Aplicando...
 						</>
 					) : (
-						"Apply Style"
+						"Aplicar estilo"
 					)}
 				</Button>
 			</div>

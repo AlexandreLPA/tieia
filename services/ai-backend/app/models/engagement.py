@@ -95,14 +95,14 @@ class EnhancementSuggestion(BaseModel):
 def _grade_for_score(composite: float) -> tuple[str, str]:
     """Map a 0–100 composite score to (grade letter, label)."""
     if composite >= 85:
-        return "A", "Excellent"
+        return "A", "Excelente"
     if composite >= 70:
-        return "B", "Strong"
+        return "B", "Forte"
     if composite >= 50:
-        return "C", "Average"
+        return "C", "Na média"
     if composite >= 35:
-        return "D", "Below average"
-    return "F", "Needs work"
+        return "D", "Abaixo da média"
+    return "F", "Precisa melhorar"
 
 
 class EngagementScore(BaseModel):

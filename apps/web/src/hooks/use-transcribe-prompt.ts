@@ -6,11 +6,30 @@ import { useTranscriptStore } from "@/stores/transcript-store";
 import { useAIStatus } from "@/hooks/use-ai-status";
 import { toast } from "sonner";
 
+const DISMISSED_KEY_PREFIX = "opencut-transcribe-prompt-dismissed:";
+
+function wasAlreadyShown(projectId: string): boolean {
+	try {
+		return localStorage.getItem(DISMISSED_KEY_PREFIX + projectId) === "1";
+	} catch {
+		return false;
+	}
+}
+
+function markAsShown(projectId: string): void {
+	try {
+		localStorage.setItem(DISMISSED_KEY_PREFIX + projectId, "1");
+	} catch {
+		// Storage unavailable — worst case the prompt can reappear.
+	}
+}
+
 /**
  * Watches for video/audio elements on the timeline and prompts
  * the user to transcribe if they haven't already.
  *
- * Only shows the prompt once per session.
+ * Shows the prompt once per project — persisted in localStorage so it
+ * doesn't reappear on every page refresh.
  */
 export function useTranscribePrompt() {
 	const editor = useEditor();
@@ -24,6 +43,9 @@ export function useTranscribePrompt() {
 		if (segments.length > 0 || isTranscribing) return;
 		if (!isConnected) return;
 
+		const projectId = editor.project.getActive().metadata.id;
+		if (wasAlreadyShown(projectId)) return;
+
 		const tracks = editor.timeline.getTracks();
 		const hasMedia = tracks.some(
 			(track) =>
@@ -33,16 +55,18 @@ export function useTranscribePrompt() {
 
 		if (hasMedia) {
 			hasPrompted.current = true;
-			toast("Video detected — want to transcribe it?", {
+			markAsShown(projectId);
+			toast("Vídeo detectado — quer transcrevê-lo?", {
 				description:
-					"Transcribe your video to edit it like a text document. Delete sentences, remove filler words, reorder sections.",
+					"Transcreva seu vídeo para editá-lo como um documento de texto. Exclua frases, remova vícios de linguagem e reordene seções.",
 				duration: 10000,
+				closeButton: true,
 				action: {
-					label: "Transcribe",
+					label: "Transcrever",
 					onClick: () => {
 						// Trigger via the AI toolbar — user clicks the mic button
 						toast.info(
-							"Click the microphone button in the toolbar to start transcription.",
+							"Clique no botão de microfone na barra de ferramentas para iniciar a transcrição.",
 						);
 					},
 				},

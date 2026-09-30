@@ -436,7 +436,7 @@ class ModelRegistry:
                 info["gpu_available"] = True
                 device = torch.cuda.current_device()
                 props = torch.cuda.get_device_properties(device)
-                info["gpu_vram_mb"] = round(props.total_mem / 1024 / 1024)
+                info["gpu_vram_mb"] = round(props.total_memory / 1024 / 1024)
                 info["gpu_name"] = props.name
         except ImportError:
             pass

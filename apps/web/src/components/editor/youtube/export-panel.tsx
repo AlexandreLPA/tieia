@@ -32,7 +32,7 @@ export function ExportPanel() {
 	const addToAssets = async (clipIndex: number) => {
 		const activeProject = editor.project.getActive();
 		if (!activeProject) {
-			toast.error("No active project");
+			toast.error("Nenhum projeto ativo");
 			return;
 		}
 
@@ -55,10 +55,10 @@ export function ExportPanel() {
 				});
 			}
 
-			toast.success(`Reel ${clipIndex + 1} added to assets`);
+			toast.success(`Reel ${clipIndex + 1} adicionado às mídias`);
 		} catch (e) {
 			console.error("Failed to add reel to assets:", e);
-			toast.error("Failed to add reel to assets");
+			toast.error("Falha ao adicionar o reel às mídias");
 		} finally {
 			setAddingIndex(null);
 		}
@@ -102,10 +102,10 @@ export function ExportPanel() {
 								disabled={addingIndex === clip.clip_index}
 								onClick={() => { addToAssets(clip.clip_index).catch(() => {}); }}
 							>
-								{addingIndex === clip.clip_index ? "Adding..." : "Add to Editor"}
+								{addingIndex === clip.clip_index ? "Adicionando..." : "Adicionar ao Editor"}
 							</Button>
 							<Button size="sm" variant="outline" onClick={() => downloadClip(clip.clip_index)}>
-								Download
+								Baixar
 							</Button>
 						</div>
 					</div>
@@ -119,16 +119,16 @@ export function ExportPanel() {
 						className="flex-1"
 						onClick={() => { addAllToAssets().catch(() => {}); }}
 					>
-						Add All to Editor
+						Adicionar Tudo ao Editor
 					</Button>
 					<Button variant="outline" className="flex-1" onClick={downloadAll}>
-						Download All
+						Baixar Tudo
 					</Button>
 				</div>
 			)}
 
 			<Button variant="ghost" className="w-full" onClick={reset}>
-				Start Over
+				Começar de Novo
 			</Button>
 		</div>
 	);

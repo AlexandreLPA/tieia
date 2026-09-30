@@ -66,7 +66,7 @@ export function SettingsView() {
 				</Section>
 				<Section>
 					<SectionHeader>
-						<SectionTitle>Proxy Editing</SectionTitle>
+						<SectionTitle>Edição por proxy</SectionTitle>
 					</SectionHeader>
 					<SectionContent>
 						<ProxyEditingSection />
@@ -74,7 +74,7 @@ export function SettingsView() {
 				</Section>
 				<Section>
 					<SectionHeader>
-						<SectionTitle>AI Optimization</SectionTitle>
+						<SectionTitle>Otimização de IA</SectionTitle>
 					</SectionHeader>
 					<SectionContent>
 						<AIOptimizationSection />
@@ -82,7 +82,7 @@ export function SettingsView() {
 				</Section>
 				<Section>
 					<SectionHeader>
-						<SectionTitle>API Keys</SectionTitle>
+						<SectionTitle>Chaves de API</SectionTitle>
 					</SectionHeader>
 					<SectionContent>
 						<APIKeysSection />
@@ -133,19 +133,19 @@ function ProjectInfoContent() {
 	return (
 		<div className="flex flex-col gap-4">
 			<div className="flex flex-col gap-2">
-				<Label>Name</Label>
+				<Label>Nome</Label>
 				<span className="text-sm leading-none">
 					{activeProject.metadata.name}
 				</span>
 			</div>
 			<div className="flex flex-col gap-2">
-				<Label>Aspect ratio</Label>
+				<Label>Proporção</Label>
 				<Select
 					value={selectedPresetValue}
 					onValueChange={(value) => handleAspectRatioChange({ value })}
 				>
 					<SelectTrigger className="w-fit">
-						<SelectValue placeholder="Select an aspect ratio" />
+						<SelectValue placeholder="Selecione uma proporção" />
 					</SelectTrigger>
 					<SelectContent>
 						<SelectItem value={ORIGINAL_PRESET_VALUE}>Original</SelectItem>
@@ -164,13 +164,13 @@ function ProjectInfoContent() {
 				</Select>
 			</div>
 			<div className="flex flex-col gap-2">
-				<Label>Frame rate</Label>
+				<Label>Taxa de quadros</Label>
 				<Select
 					value={activeProject.settings.fps.toString()}
 					onValueChange={(value) => handleFpsChange({ value })}
 				>
 					<SelectTrigger className="w-fit">
-						<SelectValue placeholder="Select a frame rate" />
+						<SelectValue placeholder="Selecione uma taxa de quadros" />
 					</SelectTrigger>
 					<SelectContent>
 						{FPS_PRESETS.map((preset) => (
@@ -195,17 +195,17 @@ const PROXY_RESOLUTION_OPTIONS: Array<{
 	{
 		value: "480p",
 		label: "480p",
-		description: "Smallest files, fastest editing",
+		description: "Arquivos menores, edição mais rápida",
 	},
 	{
 		value: "720p",
 		label: "720p",
-		description: "Good balance of quality and speed",
+		description: "Bom equilíbrio entre qualidade e velocidade",
 	},
 	{
 		value: "1080p",
 		label: "1080p",
-		description: "Higher quality preview, larger files",
+		description: "Pré-visualização de maior qualidade, arquivos maiores",
 	},
 ];
 
@@ -295,12 +295,13 @@ function ProxyEditingSection() {
 	return (
 		<div className="flex flex-col gap-3">
 			<p className="text-[11px] text-muted-foreground leading-relaxed">
-				Generate lower-resolution copies of high-res videos (&gt;1080p) for
-				smooth preview playback. Exports always use original files.
+				Gera cópias em resolução menor dos vídeos em alta resolução (&gt;1080p)
+				para uma pré-visualização mais fluida. As exportações sempre usam os
+				arquivos originais.
 			</p>
 
 			<div className="flex items-center justify-between">
-				<Label className="text-xs">Enable proxy editing</Label>
+				<Label className="text-xs">Ativar edição por proxy</Label>
 				<button
 					type="button"
 					onClick={toggleProxy}
@@ -321,7 +322,7 @@ function ProxyEditingSection() {
 			{proxyEnabled && (
 				<>
 					<div className="flex flex-col gap-1.5">
-						<Label className="text-xs">Proxy resolution</Label>
+						<Label className="text-xs">Resolução do proxy</Label>
 						<Select
 							value={proxyResolution}
 							onValueChange={handleResolutionChange}
@@ -343,7 +344,7 @@ function ProxyEditingSection() {
 						<div className="flex flex-col gap-1.5">
 							<div className="flex items-center justify-between">
 								<Label className="text-xs">
-									High-res videos ({highResAssets.length})
+									Vídeos em alta resolução ({highResAssets.length})
 								</Label>
 								{highResAssets.some((a) => !a.proxy) && (
 									<button
@@ -352,7 +353,7 @@ function ProxyEditingSection() {
 										onClick={handleGenerateAll}
 										disabled={generatingIds.size > 0}
 									>
-										Generate all
+										Gerar todos
 									</button>
 								)}
 							</div>
@@ -400,7 +401,7 @@ function ProxyEditingSection() {
 													className="text-[9px] text-primary hover:underline shrink-0"
 													onClick={() => handleGenerate(asset.id)}
 												>
-													Generate
+													Gerar
 												</button>
 											)}
 											{isGenerating && (
@@ -411,7 +412,7 @@ function ProxyEditingSection() {
 														editor.media.cancelProxyGeneration(asset.id)
 													}
 												>
-													Cancel
+													Cancelar
 												</button>
 											)}
 											{asset.proxy && !isGenerating && (
@@ -420,7 +421,7 @@ function ProxyEditingSection() {
 													className="text-[9px] text-destructive hover:underline shrink-0"
 													onClick={() => handleDelete(asset.id)}
 												>
-													Delete
+													Excluir
 												</button>
 											)}
 										</div>
@@ -432,8 +433,8 @@ function ProxyEditingSection() {
 
 					{highResAssets.length === 0 && (
 						<p className="text-[10px] text-muted-foreground">
-							No high-resolution videos (&gt;1080p) in this project. Proxy
-							editing will apply to future imports.
+							Nenhum vídeo em alta resolução (&gt;1080p) neste projeto. A
+							edição por proxy será aplicada às próximas importações.
 						</p>
 					)}
 				</>
@@ -527,7 +528,7 @@ function AIOptimizationSection() {
 			}
 			return next;
 		});
-		toast.success(`${label} applied`);
+		toast.success(`Configuração aplicada: ${label}`);
 
 		// 3. Push to backend in background
 		aiClient.updateConfig(updates)
@@ -536,13 +537,13 @@ function AIOptimizationSection() {
 	}, [fetchStatus]);
 
 	if (loading) {
-		return <p className="text-[10px] text-muted-foreground">Loading optimization status...</p>;
+		return <p className="text-[10px] text-muted-foreground">Carregando status da otimização...</p>;
 	}
 
 	if (error) {
 		return (
 			<p className="text-[10px] text-muted-foreground">
-				AI backend not reachable. Start the backend to configure optimization.
+				Backend de IA inacessível. Inicie o backend para configurar a otimização.
 			</p>
 		);
 	}
@@ -603,12 +604,12 @@ function AIOptimizationSection() {
 							</span>
 						</span>
 						<Badge variant="outline" className="text-[8px] px-1.5 py-0 text-green-500 border-green-500/30">
-							{savingsPercent}% saved
+							{savingsPercent}% de economia
 						</Badge>
 					</div>
 					<div className="flex items-center justify-between text-[9px] text-muted-foreground">
 						<span>
-							{stack.kv_compression_ratio && `${stack.kv_compression_ratio.toFixed(1)}x KV compression`}
+							{stack.kv_compression_ratio && `${stack.kv_compression_ratio.toFixed(1)}x de compressão KV`}
 							{status.kv_cache_bits_effective && (
 								<span className="ml-1">
 									({status.kv_cache_bits_effective}-bit on {status.inference_service.compute_mode === "cuda" ? "GPU" : "CPU"})
@@ -616,16 +617,16 @@ function AIOptimizationSection() {
 							)}
 						</span>
 						{stack.source === "measured" ? (
-							<span className="text-green-500/80">live</span>
+							<span className="text-green-500/80">ao vivo</span>
 						) : (
-							<span>estimated</span>
+							<span>estimado</span>
 						)}
 					</div>
 					{status.kv_cache_bits_effective !== undefined &&
 						status.kv_cache_bits_requested !== undefined &&
 						status.kv_cache_bits_effective !== status.kv_cache_bits_requested && (
 							<div className="text-[9px] text-amber-500">
-								You selected {status.kv_cache_bits_requested}-bit, but {status.inference_service.compute_mode === "cuda" ? "GPU" : "CPU"} backend clamps to {status.kv_cache_bits_effective}-bit.
+								Você selecionou {status.kv_cache_bits_requested}-bit, mas o back-end de {status.inference_service.compute_mode === "cuda" ? "GPU" : "CPU"} limita a {status.kv_cache_bits_effective}-bit.
 							</div>
 						)}
 				</div>
@@ -633,7 +634,7 @@ function AIOptimizationSection() {
 
 			{/* Performance tier selector */}
 			<div className="flex flex-col gap-1.5">
-				<Label className="text-xs">Performance Tier</Label>
+				<Label className="text-xs">Nível de desempenho</Label>
 				<div className="flex flex-col gap-1">
 					{MODEL_TIERS.map((tier) => {
 						const isActive = activeTier === tier.name;
@@ -645,7 +646,7 @@ function AIOptimizationSection() {
 
 								onClick={() => {
 									if (isActive) return;
-									handleConfigUpdate({ AI_MODEL_TIER: tier.name }, `${tier.label} tier`);
+									handleConfigUpdate({ AI_MODEL_TIER: tier.name }, `Nível ${tier.label}`);
 								}}
 								className={cn(
 									"flex items-center justify-between rounded-md border px-2.5 py-1.5 text-left transition-colors",
@@ -671,7 +672,7 @@ function AIOptimizationSection() {
 											"text-[7px] px-1 py-0",
 											isActive ? "text-primary border-primary/40" : "text-amber-500 border-amber-500/40",
 										)}>
-											Best for {ramGb} GB
+											Ideal para {ramGb} GB
 										</Badge>
 									)}
 								</div>
@@ -689,9 +690,9 @@ function AIOptimizationSection() {
 
 			{/* KV Cache compression selector */}
 			<div className="flex flex-col gap-1.5">
-				<Label className="text-xs">KV Cache Compression</Label>
+				<Label className="text-xs">Compressão de Cache KV</Label>
 				<p className="text-[9px] text-muted-foreground">
-					Lower bits = more memory saved, slightly less accuracy.
+					Menos bits = mais memória economizada, com uma pequena perda de precisão.
 				</p>
 				<div className="flex flex-col gap-1">
 					{KV_CACHE_CONFIGS.map((config) => {
@@ -704,7 +705,7 @@ function AIOptimizationSection() {
 
 								onClick={() => {
 									if (isActive) return;
-									handleConfigUpdate({ KV_CACHE_BITS: config.bits }, `${config.bits}-bit compression`);
+									handleConfigUpdate({ KV_CACHE_BITS: config.bits }, `Compressão de ${config.bits} bits`);
 								}}
 								className={cn(
 									"flex items-center justify-between rounded-md border px-2.5 py-1.5 text-left transition-colors",
@@ -725,14 +726,14 @@ function AIOptimizationSection() {
 									)}
 									<span className="text-[10px] font-medium">{config.bits}-bit</span>
 									<span className="text-[9px] text-muted-foreground">
-										{config.compressionRatio}x compression
+										{config.compressionRatio}x de compressão
 									</span>
 									{isRecommended && (
 										<Badge variant="outline" className={cn(
 											"text-[7px] px-1 py-0",
 											isActive ? "text-primary border-primary/40" : "text-amber-500 border-amber-500/40",
 										)}>
-											Recommended
+											Recomendado
 										</Badge>
 									)}
 								</div>
@@ -755,7 +756,7 @@ function AIOptimizationSection() {
 
 			{/* Memory budget selector */}
 			<div className="flex flex-col gap-1.5">
-				<Label className="text-xs">Memory Budget</Label>
+				<Label className="text-xs">Orçamento de memória</Label>
 				<div className="flex flex-col gap-1">
 					{MEMORY_BUDGETS.filter((b) => b.value !== "auto").map((b) => {
 						const isActive = activeBudget === b.value;
@@ -767,7 +768,7 @@ function AIOptimizationSection() {
 
 								onClick={() => {
 									if (isActive) return;
-									handleConfigUpdate({ AI_MEMORY_BUDGET: b.value }, `${b.label} budget`);
+									handleConfigUpdate({ AI_MEMORY_BUDGET: b.value }, `Orçamento de ${b.label}`);
 								}}
 								className={cn(
 									"flex items-center justify-between rounded-md border px-2.5 py-1.5 text-left transition-colors",
@@ -792,7 +793,7 @@ function AIOptimizationSection() {
 											"text-[7px] px-1 py-0",
 											isActive ? "text-primary border-primary/40" : "text-amber-500 border-amber-500/40",
 										)}>
-											Best match
+											Melhor opção
 										</Badge>
 									)}
 								</div>
@@ -823,18 +824,18 @@ const COMPUTE_MODES: Array<{
 }> = [
 	{
 		value: "auto",
-		label: "Auto",
-		description: "Detect the best device (CUDA → MPS → CPU).",
+		label: "Automático",
+		description: "Detecta o melhor dispositivo (CUDA → MPS → CPU).",
 	},
 	{
 		value: "cpu",
 		label: "CPU",
-		description: "Force CPU inference. Works everywhere, slower.",
+		description: "Força a inferência em CPU. Funciona em qualquer lugar, porém mais lenta.",
 	},
 	{
 		value: "cuda",
 		label: "GPU (CUDA)",
-		description: "Force NVIDIA GPU. Requires a CUDA-capable host.",
+		description: "Força o uso de GPU NVIDIA. Requer uma máquina compatível com CUDA.",
 	},
 ];
 
@@ -853,9 +854,9 @@ function ComputeModeSelector({
 
 	return (
 		<div className="flex flex-col gap-1.5">
-			<Label className="text-xs">Compute Mode</Label>
+			<Label className="text-xs">Modo de computação</Label>
 			<p className="text-[9px] text-muted-foreground">
-				Choose where TurboQuant runs. Auto picks the fastest device on your machine.
+				Escolha onde o TurboQuant será executado. O modo Automático escolhe o dispositivo mais rápido da sua máquina.
 			</p>
 			<div className="flex flex-col gap-1">
 				{COMPUTE_MODES.map((mode) => {
@@ -868,11 +869,11 @@ function ComputeModeSelector({
 							disabled={disabled}
 							onClick={() => {
 								if (isActive || disabled) return;
-								onSelect(mode.value, `${mode.label} compute`);
+								onSelect(mode.value, `Computação: ${mode.label}`);
 							}}
 							title={
 								disabled
-									? "No GPU detected on this host"
+									? "Nenhuma GPU detectada nesta máquina"
 									: mode.description
 							}
 							className={cn(
@@ -906,12 +907,12 @@ function ComputeModeSelector({
 			</div>
 			<div className="flex items-center justify-between px-0.5 pt-0.5">
 				<span className="text-[9px] text-muted-foreground">
-					Running on: <span className="font-mono">{runningOn}</span>
-					{engineAvailable === false && " (engine unavailable)"}
+					Em execução: <span className="font-mono">{runningOn}</span>
+					{engineAvailable === false && " (mecanismo indisponível)"}
 				</span>
 				{typeof ratio === "number" && ratio > 0 && (
 					<Badge variant="outline" className="text-[8px] px-1 py-0 text-green-500 border-green-500/30">
-						{ratio.toFixed(1)}x KV compression
+						{ratio.toFixed(1)}x de compressão KV
 					</Badge>
 				)}
 			</div>
@@ -924,92 +925,92 @@ function ComputeModeSelector({
 const API_KEY_FIELDS = [
 	{
 		key: "FREESOUND_CLIENT_ID",
-		label: "Freesound Client ID",
-		placeholder: "Your client ID",
-		description: "Sound library search",
+		label: "ID de cliente do Freesound",
+		placeholder: "Seu ID de cliente",
+		description: "Busca na biblioteca de sons",
 		envVar: "FREESOUND_CLIENT_ID",
 		envValue: process.env.FREESOUND_CLIENT_ID || "",
-		info: "Enables searching and browsing thousands of free sounds from the Freesound library. Get your key at freesound.org/apiv2/apply",
+		info: "Permite buscar e explorar milhares de sons gratuitos da biblioteca Freesound. Obtenha sua chave em freesound.org/apiv2/apply",
 		required: true,
 	},
 	{
 		key: "FREESOUND_API_KEY",
-		label: "Freesound API Key",
-		placeholder: "Your API key",
-		description: "Sound preview and download",
+		label: "Chave de API do Freesound",
+		placeholder: "Sua chave de API",
+		description: "Pré-visualização e download de sons",
 		envVar: "FREESOUND_API_KEY",
 		envValue: process.env.FREESOUND_API_KEY || "",
-		info: "Required to preview and download sounds from Freesound. Without this key, the Sounds panel won't return results.",
+		info: "Necessária para pré-visualizar e baixar sons do Freesound. Sem essa chave, o painel de sons não retornará resultados.",
 		required: true,
 	},
 	{
 		key: "sarvam",
-		label: "Sarvam AI API Key",
+		label: "Chave de API do Sarvam AI",
 		placeholder: "sk_...",
-		description: "Indian language transcription, translation & TTS",
+		description: "Transcrição, tradução e TTS para idiomas indianos",
 		envVar: "OPENCUTAI_SARVAM_API_KEY",
 		envValue: process.env.NEXT_PUBLIC_SARVAM_API_KEY || process.env.OPENCUTAI_SARVAM_API_KEY || "",
-		info: "Enables transcription, translation, and text-to-speech for 22 Indian regional languages (Hindi, Bengali, Tamil, Telugu, etc.) via Sarvam AI. Get your key at dashboard.sarvam.ai — free credits on signup.",
+		info: "Permite transcrição, tradução e conversão de texto em fala (TTS) para 22 idiomas regionais indianos (hindi, bengali, tâmil, telugu, etc.) via Sarvam AI. Obtenha sua chave em dashboard.sarvam.ai — créditos gratuitos ao se cadastrar.",
 		required: false,
 	},
 	{
 		key: "smallest",
-		label: "Smallest AI API Key",
-		placeholder: "Your Smallest AI key",
-		description: "Lightning TTS (15 languages, 80+ voices) & Pulse STT (39 languages)",
+		label: "Chave de API do Smallest AI",
+		placeholder: "Sua chave do Smallest AI",
+		description: "Lightning TTS (15 idiomas, mais de 80 vozes) e Pulse STT (39 idiomas)",
 		envVar: "OPENCUTAI_SMALLEST_API_KEY",
 		envValue: process.env.NEXT_PUBLIC_SMALLEST_API_KEY || process.env.OPENCUTAI_SMALLEST_API_KEY || "",
-		info: "Enables ultra-low-latency text-to-speech with 80+ natural voices across 15 languages, and speech-to-text supporting 39 languages with speaker diarization and emotion detection. Get your key at app.smallest.ai.",
+		info: "Permite conversão de texto em fala com latência ultrabaixa e mais de 80 vozes naturais em 15 idiomas, além de conversão de fala em texto com suporte a 39 idiomas, identificação de locutor e detecção de emoções. Obtenha sua chave em app.smallest.ai.",
 		required: false,
 	},
 	{
 		key: "pexels",
-		label: "Pexels API Key",
-		placeholder: "Your Pexels API key",
-		description: "Free stock photos for B-roll suggestions",
+		label: "Chave de API do Pexels",
+		placeholder: "Sua chave de API do Pexels",
+		description: "Fotos de banco de imagens gratuitas para sugestões de B-roll",
 		envVar: "PEXELS_API_KEY",
 		envValue: process.env.PEXELS_API_KEY || "",
-		info: "Enables stock photo search in B-roll suggestions. Pexels offers free high-quality photos with 200 requests/hour. Get your key at pexels.com/api — instant signup, no payment required.",
+		info: "Permite a busca de fotos de banco de imagens nas sugestões de B-roll. O Pexels oferece fotos gratuitas de alta qualidade, com 200 solicitações por hora. Obtenha sua chave em pexels.com/api — cadastro instantâneo, sem necessidade de pagamento.",
 		required: false,
 	},
 	{
 		key: "seedance",
-		label: "Seedance API Key (PiAPI)",
-		placeholder: "Your PiAPI key for Seedance 2.0",
-		description: "Text-to-video generation via Seedance 2.0 (ByteDance)",
+		label: "Chave de API do Seedance (PiAPI)",
+		placeholder: "Sua chave PiAPI para o Seedance 2.0",
+		description: "Geração de texto em vídeo via Seedance 2.0 (ByteDance)",
 		envVar: "OPENCUTAI_SEEDANCE_API_KEY",
 		envValue: process.env.NEXT_PUBLIC_SEEDANCE_API_KEY || process.env.OPENCUTAI_SEEDANCE_API_KEY || "",
-		info: "Enables AI video generation from text prompts using Seedance 2.0 by ByteDance. Access via PiAPI — get your key at piapi.ai. Supports text-to-video in 16:9, 9:16, 1:1, and more. You can also use local generation without this key.",
+		info: "Permite gerar vídeos com IA a partir de prompts de texto usando o Seedance 2.0, da ByteDance. Acesso via PiAPI — obtenha sua chave em piapi.ai. Compatível com texto em vídeo nos formatos 16:9, 9:16, 1:1 e outros. Você também pode usar a geração local sem essa chave.",
 		required: false,
 	},
 	{
 		key: "replicate",
-		label: "Replicate API Token",
+		label: "Token de API do Replicate",
 		placeholder: "r8_...",
-		description: "Access Runway Gen-3, Pika, Kling, MiniMax, Stable Video & 10+ more models",
+		description: "Acesse Runway Gen-3, Pika, Kling, MiniMax, Stable Video e mais de 10 outros modelos",
 		envVar: "NEXT_PUBLIC_REPLICATE_API_TOKEN",
 		envValue: process.env.NEXT_PUBLIC_REPLICATE_API_TOKEN || "",
-		info: "One API key for 10+ video generation models: Runway Gen-3 Alpha, Pika 1.0, Kling v1.6, MiniMax Video-01, Stable Video Diffusion, and more. Pay-per-use billing. Get your token at replicate.com — $5 free credits on signup.",
+		info: "Uma única chave de API para mais de 10 modelos de geração de vídeo: Runway Gen-3 Alpha, Pika 1.0, Kling v1.6, MiniMax Video-01, Stable Video Diffusion e outros. Cobrança por uso. Obtenha seu token em replicate.com — $5 em créditos gratuitos ao se cadastrar.",
 		required: false,
 	},
 	{
 		key: "stability",
-		label: "Stability AI API Key",
+		label: "Chave de API do Stability AI",
 		placeholder: "sk-...",
-		description: "Stable Video Diffusion and future Stability video models",
+		description: "Stable Video Diffusion e futuros modelos de vídeo da Stability",
 		envVar: "NEXT_PUBLIC_STABILITY_API_KEY",
 		envValue: process.env.NEXT_PUBLIC_STABILITY_API_KEY || "",
-		info: "Enables Stable Video Diffusion for image-to-video animation and text-to-video generation. Get your key at platform.stability.ai — free credits available.",
+		info: "Permite usar o Stable Video Diffusion para animação de imagem em vídeo e geração de texto em vídeo. Obtenha sua chave em platform.stability.ai — créditos gratuitos disponíveis.",
 		required: false,
 	},
 	{
 		key: "luma",
-		label: "Luma AI API Key",
-		placeholder: "Your Luma AI key",
-		description: "Dream Machine — realistic motion and camera control",
+		label: "Chave de API do Luma AI",
+		placeholder: "Sua chave do Luma AI",
+		description: "Dream Machine — movimento realista e controle de câmera",
 		envVar: "NEXT_PUBLIC_LUMA_API_KEY",
 		envValue: process.env.NEXT_PUBLIC_LUMA_API_KEY || "",
-		info: "Enables Luma Dream Machine for high-quality video generation with realistic camera motion. Supports text-to-video and image-to-video. Get your key at lumalabs.ai.",
+		info: "Permite usar o Luma Dream Machine para gerar vídeos de alta qualidade com movimento de câmera realista. Compatível com texto em vídeo e imagem em vídeo. Obtenha sua chave em lumalabs.ai.",
 		required: false,
 	},
 ];
@@ -1062,7 +1063,7 @@ function APIKeysSection() {
 	return (
 		<div className="flex flex-col gap-3">
 			<p className="text-[11px] text-muted-foreground leading-relaxed">
-				Configure API keys for services. Keys are stored locally in your browser. You can also set them in <code className="text-[10px] font-mono bg-muted px-1 rounded">.env.local</code>.
+				Configure chaves de API para os serviços. As chaves são armazenadas localmente no seu navegador. Você também pode configurá-las no arquivo <code className="text-[10px] font-mono bg-muted px-1 rounded">.env.local</code>.
 			</p>
 
 			{API_KEY_FIELDS.map((field) => {
@@ -1092,12 +1093,12 @@ function APIKeysSection() {
 								<Label className="text-[11px]">{field.label}</Label>
 								{field.required && !hasValue && (
 									<Badge variant="outline" className="text-[8px] px-1 py-0 text-yellow-500 border-yellow-500/30">
-										Required
+										Obrigatório
 									</Badge>
 								)}
 								{isFromEnv && (
 									<Badge variant="secondary" className="text-[8px] px-1 py-0">
-										From env
+										Do ambiente
 									</Badge>
 								)}
 							</div>
@@ -1115,7 +1116,7 @@ function APIKeysSection() {
 									<PopoverContent side="left" align="start" className="w-64 p-3">
 										<p className="text-xs leading-relaxed">{field.info}</p>
 										<p className="text-[10px] text-muted-foreground mt-2 font-mono">
-											env: {field.envVar}
+											Ambiente: {field.envVar}
 										</p>
 									</PopoverContent>
 								</Popover>
@@ -1126,7 +1127,7 @@ function APIKeysSection() {
 											className="text-[9px] text-muted-foreground hover:text-foreground px-1"
 											onClick={() => toggleVisibility(field.key)}
 										>
-											{isVisible ? "Hide" : "Show"}
+											{isVisible ? "Ocultar" : "Mostrar"}
 										</button>
 										{!isFromEnv && (
 											<button
@@ -1134,7 +1135,7 @@ function APIKeysSection() {
 												className="text-[9px] text-destructive hover:text-destructive/80 px-1"
 												onClick={() => handleClear(field.key)}
 											>
-												Clear
+												Limpar
 											</button>
 										)}
 									</>

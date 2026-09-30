@@ -96,7 +96,7 @@ export function AIStatusIndicator({
 						isOpen && "bg-accent",
 						className,
 					)}
-					aria-label={`AI backend ${status.connected ? "connected" : "disconnected"}`}
+					aria-label={`Backend de IA ${status.connected ? "conectado" : "desconectado"}`}
 				>
 					<span className="relative flex size-2">
 						{status.connected && (
@@ -110,7 +110,7 @@ export function AIStatusIndicator({
 						/>
 					</span>
 					<span className="hidden sm:inline font-medium">
-						{status.connected ? "AI" : "AI Off"}
+						{status.connected ? "IA" : "IA off"}
 					</span>
 					{status.connected && status.modelsLoaded.length > 0 && (
 						<Badge
@@ -141,7 +141,7 @@ export function AIStatusIndicator({
 								)}
 							/>
 							<span className="text-sm font-semibold">
-								AI Monitor
+								Monitor de IA
 							</span>
 						</div>
 						<div className="flex items-center gap-1.5">
@@ -172,11 +172,11 @@ export function AIStatusIndicator({
 							{/* Quick stats row */}
 							<div className="grid grid-cols-3 divide-x">
 								<StatCell
-									label="Uptime"
+									label="Tempo ativo"
 									value={formatUptime(uptime)}
 								/>
 								<StatCell
-									label="Compute"
+									label="Processamento"
 									value={
 										status.gpuAvailable ? "GPU" : "CPU"
 									}
@@ -187,7 +187,7 @@ export function AIStatusIndicator({
 									}
 								/>
 								<StatCell
-									label="Version"
+									label="Versão"
 									value={
 										status.backendVersion ?? "0.1.0"
 									}
@@ -199,7 +199,7 @@ export function AIStatusIndicator({
 								<div className="px-3 py-2.5">
 									<div className="flex items-center justify-between mb-1.5">
 										<span className="text-[11px] text-muted-foreground">
-											Memory
+											Memória
 										</span>
 										<span className="text-[11px] font-mono tabular-nums">
 											{formatMb(status.memoryUsageMb)} /{" "}
@@ -220,15 +220,15 @@ export function AIStatusIndicator({
 							<div className="px-3 py-2.5">
 								<div className="flex items-center justify-between mb-2">
 									<span className="text-[11px] text-muted-foreground font-medium">
-										Services
+										Serviços
 									</span>
 								</div>
 								<div className="flex flex-col gap-1">
 									{([
 										{ key: "ollama" as const, label: "LLM" },
-										{ key: "tts" as const, label: "Voice" },
+										{ key: "tts" as const, label: "Voz" },
 										{ key: "whisper" as const, label: "Whisper" },
-										{ key: "image" as const, label: "Image" },
+										{ key: "image" as const, label: "Imagem" },
 									] as const).map(({ key, label }) => {
 										const svc = services[key];
 										const isRunning = svc.status === "running";
@@ -248,12 +248,12 @@ export function AIStatusIndicator({
 										const statusText = !isRunning
 											? "Offline"
 											: key === "ollama"
-												? ollamaModelName ? `Online (${ollamaModelName})` : "No model"
+												? ollamaModelName ? `Online (${ollamaModelName})` : "Nenhum modelo"
 												: !modelInstalled
-													? "Not installed"
+													? "Não instalado"
 													: modelLoaded
 														? "Online"
-														: "Not loaded";
+														: "Não carregado";
 
 										const dotColor = !isRunning
 											? "bg-red-500"
@@ -309,7 +309,7 @@ export function AIStatusIndicator({
 										icon={SparklesIcon}
 										className="size-3 mr-1"
 									/>
-									Manage AI services
+									Gerenciar serviços de IA
 									<HugeiconsIcon
 										icon={ArrowRight01Icon}
 										className="size-3 ml-auto"
@@ -322,7 +322,7 @@ export function AIStatusIndicator({
 										className="h-7 text-[11px] px-2.5"
 										onClick={onRefresh}
 									>
-										Refresh
+										Atualizar
 									</Button>
 								)}
 							</div>
@@ -336,10 +336,10 @@ export function AIStatusIndicator({
 							<div className="rounded-md bg-red-500/10 px-3 py-2.5">
 								<p className="text-xs font-medium text-red-400 mb-1">
 									{status.errorType === "connection_refused"
-										? "AI backend is not running"
+										? "O backend de IA não está em execução"
 										: status.errorType === "timeout"
-											? "AI backend is not responding"
-											: "Cannot connect to AI backend"}
+											? "O backend de IA não está respondendo"
+											: "Não foi possível conectar ao backend de IA"}
 								</p>
 								{status.error && (
 									<p className="text-[11px] text-red-400/70 leading-relaxed">
@@ -351,7 +351,7 @@ export function AIStatusIndicator({
 							{/* Quick start */}
 							<div className="flex flex-col gap-1.5">
 								<span className="text-[11px] text-muted-foreground font-medium">
-									Quick start
+									Início rápido
 								</span>
 								<code className="text-[11px] font-mono bg-muted rounded px-2.5 py-1.5 text-muted-foreground select-all block">
 									docker compose up -d
@@ -362,7 +362,7 @@ export function AIStatusIndicator({
 							{status.backendUrl && (
 								<div className="flex items-center justify-between text-[11px]">
 									<span className="text-muted-foreground">
-										Target
+										Destino
 									</span>
 									<code className="font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded text-[10px]">
 										{status.backendUrl}
@@ -380,7 +380,7 @@ export function AIStatusIndicator({
 										onSetupClick?.();
 									}}
 								>
-									Open setup guide
+									Abrir guia de configuração
 								</Button>
 								{onRefresh && (
 									<Button
@@ -389,7 +389,7 @@ export function AIStatusIndicator({
 										className="h-8 text-xs px-3"
 										onClick={onRefresh}
 									>
-										Retry
+										Tentar novamente
 									</Button>
 								)}
 							</div>

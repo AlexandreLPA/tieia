@@ -80,8 +80,8 @@ export function TextEditingPanel({ className }: { className?: string }) {
 		bgTasks.addTask({
 			id: taskId,
 			type: "speaker-diarization",
-			label: "Speaker detection",
-			progress: "Finding media file...",
+			label: "Detecção de falantes",
+			progress: "Localizando arquivo de mídia...",
 		});
 
 		try {
@@ -104,7 +104,7 @@ export function TextEditingPanel({ className }: { className?: string }) {
 			if (!foundMediaId) {
 				bgTasks.updateTask(taskId, {
 					status: "error",
-					error: "No video or audio found on the timeline.",
+					error: "Nenhum vídeo ou áudio encontrado na linha do tempo.",
 					completedAt: Date.now(),
 				});
 				return;
@@ -114,13 +114,13 @@ export function TextEditingPanel({ className }: { className?: string }) {
 			if (!mediaAsset?.file) {
 				bgTasks.updateTask(taskId, {
 					status: "error",
-					error: "Cannot access the media file.",
+					error: "Não foi possível acessar o arquivo de mídia.",
 					completedAt: Date.now(),
 				});
 				return;
 			}
 
-			bgTasks.updateTask(taskId, { progress: "Running speaker diarization..." });
+			bgTasks.updateTask(taskId, { progress: "Executando a diarização de falantes..." });
 
 			// Ensure proper file extension
 			let file = mediaAsset.file;
@@ -135,7 +135,7 @@ export function TextEditingPanel({ className }: { className?: string }) {
 			if (result.segments.length === 0) {
 				bgTasks.updateTask(taskId, {
 					status: "completed",
-					progress: "No speakers detected",
+					progress: "Nenhum falante detectado",
 					completedAt: Date.now(),
 				});
 				return;
@@ -146,18 +146,18 @@ export function TextEditingPanel({ className }: { className?: string }) {
 
 			bgTasks.updateTask(taskId, {
 				status: "completed",
-				progress: `${result.num_speakers} speakers detected (${result.method})`,
+				progress: `${result.num_speakers} falantes detectados (${result.method})`,
 				completedAt: Date.now(),
 			});
 		} catch (err) {
-			const message = err instanceof Error ? err.message : "Speaker detection failed";
+			const message = err instanceof Error ? err.message : "Falha na detecção de falantes";
 			let detail = message;
 			if (message.includes("Cannot connect") || message.includes("connection_refused")) {
-				detail = "AI backend not reachable. Start with: docker compose up -d ai-backend";
+				detail = "Backend de IA inacessível. Inicie com: docker compose up -d ai-backend";
 			} else if (message.includes("404")) {
-				detail = "Speaker endpoint not found. Restart the AI backend to load the new route: docker compose restart ai-backend";
+				detail = "Endpoint de falantes não encontrado. Reinicie o backend de IA para carregar a nova rota: docker compose restart ai-backend";
 			} else if (message.includes("503")) {
-				detail = "Speaker service is not running. Start with: docker compose up -d speaker-service";
+				detail = "O serviço de falantes não está em execução. Inicie com: docker compose up -d speaker-service";
 			}
 			bgTasks.updateTask(taskId, {
 				status: "error",
@@ -318,7 +318,7 @@ function TranslationView({
 		return (
 			<div className="flex-1 flex items-center justify-center p-4">
 				<p className="text-sm text-muted-foreground">
-					Translation not found.
+					Tradução não encontrada.
 				</p>
 			</div>
 		);

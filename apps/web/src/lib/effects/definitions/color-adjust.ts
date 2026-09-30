@@ -8,12 +8,12 @@ function getParam(effectParams: Record<string, unknown>, key: string, fallback: 
 
 export const colorAdjustEffectDefinition: EffectDefinition = {
 	type: "color-adjust",
-	name: "Color Adjust",
+	name: "Ajuste de Cor",
 	keywords: ["color", "brightness", "contrast", "saturation", "temperature", "adjust"],
 	params: [
 		{
 			key: "brightness",
-			label: "Brightness",
+			label: "Brilho",
 			type: "number",
 			default: 0,
 			min: -0.5,
@@ -22,7 +22,7 @@ export const colorAdjustEffectDefinition: EffectDefinition = {
 		},
 		{
 			key: "contrast",
-			label: "Contrast",
+			label: "Contraste",
 			type: "number",
 			default: 1,
 			min: 0.2,
@@ -31,7 +31,7 @@ export const colorAdjustEffectDefinition: EffectDefinition = {
 		},
 		{
 			key: "saturation",
-			label: "Saturation",
+			label: "Saturação",
 			type: "number",
 			default: 1,
 			min: 0,
@@ -40,7 +40,7 @@ export const colorAdjustEffectDefinition: EffectDefinition = {
 		},
 		{
 			key: "temperature",
-			label: "Temperature",
+			label: "Temperatura",
 			type: "number",
 			default: 0,
 			min: -1,
@@ -49,7 +49,7 @@ export const colorAdjustEffectDefinition: EffectDefinition = {
 		},
 		{
 			key: "vignette",
-			label: "Vignette",
+			label: "Vinheta",
 			type: "number",
 			default: 0,
 			min: 0,
@@ -86,12 +86,12 @@ export interface FilterPreset {
 export const FILTER_PRESETS: FilterPreset[] = [
 	{
 		id: "grayscale",
-		name: "Grayscale",
+		name: "Escala de Cinza",
 		params: { brightness: 0, contrast: 1, saturation: 0, temperature: 0, vignette: 0 },
 	},
 	{
 		id: "sepia",
-		name: "Sepia",
+		name: "Sépia",
 		params: { brightness: 0.05, contrast: 0.95, saturation: 0.3, temperature: 0.6, vignette: 0.2 },
 	},
 	{
@@ -101,27 +101,27 @@ export const FILTER_PRESETS: FilterPreset[] = [
 	},
 	{
 		id: "warm",
-		name: "Warm",
+		name: "Quente",
 		params: { brightness: 0.03, contrast: 1.05, saturation: 1.1, temperature: 0.5, vignette: 0 },
 	},
 	{
 		id: "cool",
-		name: "Cool",
+		name: "Frio",
 		params: { brightness: 0, contrast: 1.05, saturation: 0.9, temperature: -0.5, vignette: 0 },
 	},
 	{
 		id: "vivid",
-		name: "Vivid",
+		name: "Vívido",
 		params: { brightness: 0.02, contrast: 1.3, saturation: 1.8, temperature: 0, vignette: 0 },
 	},
 	{
 		id: "muted",
-		name: "Muted",
+		name: "Dessaturado",
 		params: { brightness: 0.05, contrast: 0.85, saturation: 0.5, temperature: 0, vignette: 0 },
 	},
 	{
 		id: "dramatic",
-		name: "Dramatic",
+		name: "Dramático",
 		params: { brightness: -0.08, contrast: 1.5, saturation: 0.7, temperature: -0.2, vignette: 0.6 },
 	},
 	{
@@ -141,17 +141,17 @@ export const FILTER_PRESETS: FilterPreset[] = [
 	},
 	{
 		id: "golden",
-		name: "Golden Hour",
+		name: "Hora Dourada",
 		params: { brightness: 0.05, contrast: 1.1, saturation: 1.2, temperature: 0.7, vignette: 0.3 },
 	},
 	{
 		id: "sunset-glow",
-		name: "Sunset Glow",
+		name: "Brilho do Pôr do Sol",
 		params: { brightness: 0.08, contrast: 1.15, saturation: 1.3, temperature: 0.8, vignette: 0.25 },
 	},
 	{
 		id: "moonlight",
-		name: "Moonlight",
+		name: "Luar",
 		params: { brightness: -0.1, contrast: 1.2, saturation: 0.3, temperature: -0.7, vignette: 0.5 },
 	},
 	{
@@ -161,17 +161,17 @@ export const FILTER_PRESETS: FilterPreset[] = [
 	},
 	{
 		id: "film-noir-bw",
-		name: "Film Noir B&W",
+		name: "Filme Noir P&B",
 		params: { brightness: -0.15, contrast: 1.8, saturation: 0, temperature: 0, vignette: 0.8 },
 	},
 	{
 		id: "dreamy",
-		name: "Dreamy",
+		name: "Sonhador",
 		params: { brightness: 0.15, contrast: 0.75, saturation: 0.7, temperature: 0.2, vignette: 0.15 },
 	},
 	{
 		id: "retro-vhs",
-		name: "Retro VHS",
+		name: "VHS Retrô",
 		params: { brightness: 0.05, contrast: 1.3, saturation: 1.4, temperature: 0.4, vignette: 0.1 },
 	},
 	{
@@ -191,7 +191,7 @@ export const FILTER_PRESETS: FilterPreset[] = [
 	},
 	{
 		id: "faded-film",
-		name: "Faded Film",
+		name: "Filme Desbotado",
 		params: { brightness: 0.12, contrast: 0.9, saturation: 0.55, temperature: 0.15, vignette: 0.3 },
 	},
 ];

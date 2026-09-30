@@ -3,12 +3,12 @@ import filmGrainShader from "./film-grain.frag.glsl";
 
 export const filmGrainEffectDefinition: EffectDefinition = {
 	type: "film-grain",
-	name: "Film Grain",
+	name: "Grão de Filme",
 	keywords: ["grain", "film", "noise", "texture", "vintage", "cinematic"],
 	params: [
 		{
 			key: "intensity",
-			label: "Intensity",
+			label: "Intensidade",
 			type: "number",
 			default: 20,
 			min: 0,

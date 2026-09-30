@@ -333,7 +333,7 @@ export function useEditorActions() {
 			);
 
 			if (videoElements.length === 0) {
-				toast.error("Select a video element to separate its audio");
+				toast.error("Selecione um elemento de vídeo para separar o áudio");
 				return;
 			}
 
@@ -375,7 +375,7 @@ export function useEditorActions() {
 				});
 			}
 
-			toast.success("Audio separated to new track");
+			toast.success("Áudio separado para uma nova faixa");
 		},
 		undefined,
 	);
@@ -422,7 +422,7 @@ export function useEditorActions() {
 			});
 
 			if (!blob) {
-				toast.error("Failed to capture frame");
+				toast.error("Falha ao capturar o quadro");
 				return;
 			}
 
@@ -457,7 +457,7 @@ export function useEditorActions() {
 				placement: { mode: "auto" },
 			});
 
-			toast.success("Freeze frame added");
+			toast.success("Quadro congelado adicionado");
 		},
 		undefined,
 	);
@@ -534,7 +534,7 @@ export function useEditorActions() {
 		() => {
 			const time = editor.playback.getCurrentTime();
 			editor.scenes.addMarker({ time, color: "red" });
-			toast.success("Marker added");
+			toast.success("Marcador adicionado");
 		},
 		undefined,
 	);
@@ -604,10 +604,10 @@ export function useEditorActions() {
 		"nest-clips",
 		() => {
 			if (selectedElements.length < 2) {
-				toast.error("Select at least 2 clips to nest");
+				toast.error("Selecione pelo menos 2 clipes para aninhar");
 				return;
 			}
-			toast.success("Clips nested into compound clip");
+			toast.success("Clipes aninhados em um clipe composto");
 		},
 		undefined,
 	);
@@ -616,10 +616,10 @@ export function useEditorActions() {
 		"unnest-clips",
 		() => {
 			if (selectedElements.length !== 1) {
-				toast.error("Select a compound clip to unnest");
+				toast.error("Selecione um clipe composto para desaninhar");
 				return;
 			}
-			toast.success("Compound clip unnested");
+			toast.success("Clipe composto desaninhado");
 		},
 		undefined,
 	);
@@ -698,14 +698,14 @@ export function useEditorActions() {
 		"find-similar-clips",
 		() => {
 			if (selectedElements.length === 0) {
-				toast.error("Select a video or image clip first");
+				toast.error("Selecione um clipe de vídeo ou imagem primeiro");
 				return;
 			}
 			const resolved = editor.timeline.getElementsWithTracks({
 				elements: [selectedElements[0]],
 			})[0];
 			if (!resolved || !hasMediaId(resolved.element)) {
-				toast.error("Select a video or image clip first");
+				toast.error("Selecione um clipe de vídeo ou imagem primeiro");
 				return;
 			}
 			requestFindSimilar(resolved.element.mediaId);

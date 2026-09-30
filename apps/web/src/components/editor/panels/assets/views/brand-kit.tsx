@@ -211,7 +211,7 @@ export function BrandKitView() {
 		const file = e.target.files?.[0];
 		if (!file) return;
 		if (!file.type.startsWith("image/")) {
-			toast.error("Please upload an image file (PNG, JPG, SVG).");
+			toast.error("Envie um arquivo de imagem (PNG, JPG, SVG).");
 			return;
 		}
 		const url = URL.createObjectURL(file);
@@ -227,7 +227,7 @@ export function BrandKitView() {
 	const handleApplyBrand = useCallback(async () => {
 		const totalDuration = editor.timeline.getTotalDuration();
 		if (totalDuration <= 0) {
-			toast.error("Add media to the timeline first.");
+			toast.error("Adicione mídia à linha do tempo primeiro.");
 			return;
 		}
 
@@ -239,13 +239,13 @@ export function BrandKitView() {
 		// 1. Channel name
 		if (config.channelName.trim()) {
 			const trackId = editor.timeline.addTrack({ type: "text", index: 0 });
-			editor.timeline.renameTrack({ trackId, name: "Brand: Name" });
+			editor.timeline.renameTrack({ trackId, name: "Marca: Nome" });
 			const nameX = posOffset.x > 0 ? -0.38 : 0.38;
 			editor.timeline.insertElement({
 				placement: { mode: "explicit", trackId },
 				element: {
 					...DEFAULT_TEXT_ELEMENT,
-					name: "Channel Name",
+					name: "Nome do Canal",
 					content: config.channelName,
 					fontSize: 3,
 					fontFamily: config.headingFont,
@@ -268,12 +268,12 @@ export function BrandKitView() {
 		const socialText = [config.socialHandle, config.websiteUrl].filter(Boolean).join("  ·  ");
 		if (socialText) {
 			const trackId = editor.timeline.addTrack({ type: "text", index: 0 });
-			editor.timeline.renameTrack({ trackId, name: "Brand: Social" });
+			editor.timeline.renameTrack({ trackId, name: "Marca: Social" });
 			editor.timeline.insertElement({
 				placement: { mode: "explicit", trackId },
 				element: {
 					...DEFAULT_TEXT_ELEMENT,
-					name: "Social Handle",
+					name: "Perfil Social",
 					content: socialText,
 					fontSize: 2.5,
 					fontFamily: config.bodyFont,
@@ -295,7 +295,7 @@ export function BrandKitView() {
 		// 3. CTA overlay (e.g. "Subscribe", "Follow for more")
 		if (config.ctaText.trim()) {
 			const trackId = editor.timeline.addTrack({ type: "text", index: 0 });
-			editor.timeline.renameTrack({ trackId, name: "Brand: CTA" });
+			editor.timeline.renameTrack({ trackId, name: "Marca: CTA" });
 			editor.timeline.insertElement({
 				placement: { mode: "explicit", trackId },
 				element: {
@@ -330,12 +330,12 @@ export function BrandKitView() {
 		// 4. Tagline
 		if (config.tagline.trim()) {
 			const trackId = editor.timeline.addTrack({ type: "text", index: 0 });
-			editor.timeline.renameTrack({ trackId, name: "Brand: Tagline" });
+			editor.timeline.renameTrack({ trackId, name: "Marca: Slogan" });
 			editor.timeline.insertElement({
 				placement: { mode: "explicit", trackId },
 				element: {
 					...DEFAULT_TEXT_ELEMENT,
-					name: "Tagline",
+					name: "Slogan",
 					content: config.tagline,
 					fontSize: 3,
 					fontFamily: config.bodyFont,
@@ -369,13 +369,13 @@ export function BrandKitView() {
 					},
 				});
 				const imgTrackId = editor.timeline.addTrack({ type: "video", index: 0 });
-				editor.timeline.renameTrack({ trackId: imgTrackId, name: "Brand: Logo" });
+				editor.timeline.renameTrack({ trackId: imgTrackId, name: "Marca: Logo" });
 				editor.timeline.insertElement({
 					placement: { mode: "explicit", trackId: imgTrackId },
 					element: {
 						type: "image",
 						mediaId,
-						name: "Brand Logo",
+						name: "Logo da Marca",
 						startTime: 0,
 						duration: totalDuration,
 						trimStart: 0,
@@ -394,36 +394,36 @@ export function BrandKitView() {
 				newTrackIds.push(imgTrackId);
 			} catch (err) {
 				console.error("Failed to add logo:", err);
-				toast.error("Failed to add logo.");
+				toast.error("Falha ao adicionar o logo.");
 			}
 		}
 
 		if (newTrackIds.length === 0) {
-			toast.info("Fill in at least one brand field first.");
+			toast.info("Preencha ao menos um campo da marca primeiro.");
 			return;
 		}
 
 		setAppliedTrackIds((prev) => [...prev, ...newTrackIds]);
-		toast.success(`Applied ${newTrackIds.length} brand element${newTrackIds.length > 1 ? "s" : ""}`);
+		toast.success(`${newTrackIds.length} elemento${newTrackIds.length > 1 ? "s" : ""} de marca aplicado${newTrackIds.length > 1 ? "s" : ""}`);
 	}, [editor, config]);
 
 	// ── Add Lower Third ──
 	const handleAddLowerThird = useCallback(() => {
 		const totalDuration = editor.timeline.getTotalDuration();
-		if (totalDuration <= 0) { toast.error("Add media first."); return; }
+		if (totalDuration <= 0) { toast.error("Adicione mídia primeiro."); return; }
 
 		const canvasSize = editor.project.getActive().settings.canvasSize;
 		const trackId = editor.timeline.addTrack({ type: "text", index: 0 });
-		editor.timeline.renameTrack({ trackId, name: "Brand: Lower Third" });
+		editor.timeline.renameTrack({ trackId, name: "Marca: Rodapé" });
 
-		const nameText = config.channelName || "Speaker Name";
-		const titleText = config.tagline || "Title / Role";
+		const nameText = config.channelName || "Nome do Apresentador";
+		const titleText = config.tagline || "Cargo / Função";
 
 		editor.timeline.insertElement({
 			placement: { mode: "explicit", trackId },
 			element: {
 				...DEFAULT_TEXT_ELEMENT,
-				name: "Lower Third",
+				name: "Rodapé",
 				content: `${nameText}\n${titleText}`,
 				fontSize: 4,
 				fontFamily: config.headingFont,
@@ -450,7 +450,7 @@ export function BrandKitView() {
 		});
 
 		setAppliedTrackIds((prev) => [...prev, trackId]);
-		toast.success("Lower third added");
+		toast.success("Rodapé adicionado");
 	}, [editor, config]);
 
 	// ── Helper: add logo image to a specific time range ──
@@ -472,13 +472,13 @@ export function BrandKitView() {
 			});
 
 			const imgTrackId = editor.timeline.addTrack({ type: "video", index: 0 });
-			editor.timeline.renameTrack({ trackId: imgTrackId, name: "Brand: Card Logo" });
+			editor.timeline.renameTrack({ trackId: imgTrackId, name: "Marca: Logo da Cartela" });
 			editor.timeline.insertElement({
 				placement: { mode: "explicit", trackId: imgTrackId },
 				element: {
 					type: "image",
 					mediaId,
-					name: "Card Logo",
+					name: "Logo da Cartela",
 					startTime,
 					duration,
 					trimStart: 0,
@@ -501,7 +501,7 @@ export function BrandKitView() {
 	// ── Add Intro Card ──
 	const handleAddIntroCard = useCallback(async () => {
 		const totalDuration = editor.timeline.getTotalDuration();
-		if (totalDuration <= 0) { toast.error("Add media first."); return; }
+		if (totalDuration <= 0) { toast.error("Adicione mídia primeiro."); return; }
 
 		const canvasSize = editor.project.getActive().settings.canvasSize;
 		const cardDuration = 3;
@@ -516,10 +516,10 @@ export function BrandKitView() {
 		// Add text card (positioned lower if logo exists)
 		const textY = config.logoFile ? 0.1 : 0;
 		const trackId = editor.timeline.addTrack({ type: "text", index: 0 });
-		editor.timeline.renameTrack({ trackId, name: "Brand: Intro" });
+		editor.timeline.renameTrack({ trackId, name: "Marca: Abertura" });
 
 		const content = [
-			config.channelName || "Channel Name",
+			config.channelName || "Nome do Canal",
 			config.tagline ? `\n${config.tagline}` : "",
 		].join("");
 
@@ -527,7 +527,7 @@ export function BrandKitView() {
 			placement: { mode: "explicit", trackId },
 			element: {
 				...DEFAULT_TEXT_ELEMENT,
-				name: "Intro Card",
+				name: "Cartela de Abertura",
 				content,
 				fontSize: 12,
 				fontFamily: config.headingFont,
@@ -555,13 +555,13 @@ export function BrandKitView() {
 		ids.push(trackId);
 
 		setAppliedTrackIds((prev) => [...prev, ...ids]);
-		toast.success("Intro card added at start");
+		toast.success("Cartela de abertura adicionada no início");
 	}, [editor, config, addLogoToTimeRange]);
 
 	// ── Add Outro Card ──
 	const handleAddOutroCard = useCallback(async () => {
 		const totalDuration = editor.timeline.getTotalDuration();
-		if (totalDuration <= 0) { toast.error("Add media first."); return; }
+		if (totalDuration <= 0) { toast.error("Adicione mídia primeiro."); return; }
 
 		const canvasSize = editor.project.getActive().settings.canvasSize;
 		const cardDuration = 4;
@@ -577,10 +577,10 @@ export function BrandKitView() {
 		// Add text card
 		const textY = config.logoFile ? 0.1 : 0;
 		const trackId = editor.timeline.addTrack({ type: "text", index: 0 });
-		editor.timeline.renameTrack({ trackId, name: "Brand: Outro" });
+		editor.timeline.renameTrack({ trackId, name: "Marca: Encerramento" });
 
 		const lines = [
-			config.ctaText || "Thanks for watching!",
+			config.ctaText || "Obrigado por assistir!",
 			config.socialHandle ? `\n${config.socialHandle}` : "",
 			config.websiteUrl ? `\n${config.websiteUrl}` : "",
 		].join("");
@@ -589,7 +589,7 @@ export function BrandKitView() {
 			placement: { mode: "explicit", trackId },
 			element: {
 				...DEFAULT_TEXT_ELEMENT,
-				name: "Outro Card",
+				name: "Cartela de Encerramento",
 				content: lines,
 				fontSize: 8,
 				fontFamily: config.headingFont,
@@ -617,7 +617,7 @@ export function BrandKitView() {
 		ids.push(trackId);
 
 		setAppliedTrackIds((prev) => [...prev, ...ids]);
-		toast.success("Outro card added at end");
+		toast.success("Cartela de encerramento adicionada no final");
 	}, [editor, config, addLogoToTimeRange]);
 
 	// ── Remove All ──
@@ -626,55 +626,55 @@ export function BrandKitView() {
 			try { editor.timeline.removeTrack({ trackId }); } catch { /* */ }
 		}
 		setAppliedTrackIds([]);
-		toast.success("Brand overlays removed");
+		toast.success("Sobreposições de marca removidas");
 	}, [editor, appliedTrackIds]);
 
 	return (
-		<PanelView title="Brand Kit">
+		<PanelView title="Kit de Marca">
 			<div className="flex flex-col gap-4 pb-6">
 				<p className="text-xs text-muted-foreground leading-relaxed">
-					Define your brand identity once and apply it consistently across all your clips.
+					Defina a identidade da sua marca uma vez e aplique-a de forma consistente em todos os seus clipes.
 				</p>
 
 				{/* ── Identity ── */}
 				<div className="flex flex-col gap-2">
-					<Label className="text-xs font-medium">Identity</Label>
-					<Input value={config.channelName} onChange={(e) => update({ channelName: e.target.value })} placeholder="Channel / Brand name" className="h-8 text-xs" />
-					<Input value={config.tagline} onChange={(e) => update({ tagline: e.target.value })} placeholder="Tagline or subtitle" className="h-8 text-xs" />
+					<Label className="text-xs font-medium">Identidade</Label>
+					<Input value={config.channelName} onChange={(e) => update({ channelName: e.target.value })} placeholder="Nome do canal / marca" className="h-8 text-xs" />
+					<Input value={config.tagline} onChange={(e) => update({ tagline: e.target.value })} placeholder="Slogan ou subtítulo" className="h-8 text-xs" />
 				</div>
 
 				{/* ── Social & CTA ── */}
 				<div className="border-t pt-3 flex flex-col gap-2">
-					<Label className="text-xs font-medium">Social & CTA</Label>
-					<Input value={config.socialHandle} onChange={(e) => update({ socialHandle: e.target.value })} placeholder="@handle" className="h-8 text-xs" />
-					<Input value={config.websiteUrl} onChange={(e) => update({ websiteUrl: e.target.value })} placeholder="website.com" className="h-8 text-xs" />
-					<Input value={config.ctaText} onChange={(e) => update({ ctaText: e.target.value })} placeholder="Subscribe for more!" className="h-8 text-xs" />
+					<Label className="text-xs font-medium">Social e CTA</Label>
+					<Input value={config.socialHandle} onChange={(e) => update({ socialHandle: e.target.value })} placeholder="@usuario" className="h-8 text-xs" />
+					<Input value={config.websiteUrl} onChange={(e) => update({ websiteUrl: e.target.value })} placeholder="seusite.com" className="h-8 text-xs" />
+					<Input value={config.ctaText} onChange={(e) => update({ ctaText: e.target.value })} placeholder="Inscreva-se para mais!" className="h-8 text-xs" />
 				</div>
 
 				{/* ── Brand Colors ── */}
 				<div className="border-t pt-3 flex flex-col gap-2">
-					<Label className="text-xs font-medium">Brand colors</Label>
+					<Label className="text-xs font-medium">Cores da marca</Label>
 					<div className="grid grid-cols-2 gap-2">
-						<ColorSwatch color={config.primaryColor} onChange={(c) => update({ primaryColor: c })} label="Primary" />
-						<ColorSwatch color={config.secondaryColor} onChange={(c) => update({ secondaryColor: c })} label="Secondary" />
-						<ColorSwatch color={config.accentColor} onChange={(c) => update({ accentColor: c })} label="Accent" />
-						<ColorSwatch color={config.textColor} onChange={(c) => update({ textColor: c })} label="Text" />
+						<ColorSwatch color={config.primaryColor} onChange={(c) => update({ primaryColor: c })} label="Primária" />
+						<ColorSwatch color={config.secondaryColor} onChange={(c) => update({ secondaryColor: c })} label="Secundária" />
+						<ColorSwatch color={config.accentColor} onChange={(c) => update({ accentColor: c })} label="Destaque" />
+						<ColorSwatch color={config.textColor} onChange={(c) => update({ textColor: c })} label="Texto" />
 					</div>
 				</div>
 
 				{/* ── Typography ── */}
 				<div className="border-t pt-3 flex flex-col gap-2">
-					<Label className="text-xs font-medium">Typography</Label>
+					<Label className="text-xs font-medium">Tipografia</Label>
 					<div className="flex flex-col gap-2.5">
 						<div className="flex flex-col gap-1">
-							<span className="text-[10px] text-muted-foreground">Heading font</span>
+							<span className="text-[10px] text-muted-foreground">Fonte de título</span>
 							<FontPicker
 								defaultValue={config.headingFont}
 								onValueChange={(v) => update({ headingFont: v })}
 							/>
 						</div>
 						<div className="flex flex-col gap-1">
-							<span className="text-[10px] text-muted-foreground">Body font</span>
+							<span className="text-[10px] text-muted-foreground">Fonte do corpo</span>
 							<FontPicker
 								defaultValue={config.bodyFont}
 								onValueChange={(v) => update({ bodyFont: v })}
@@ -689,15 +689,15 @@ export function BrandKitView() {
 					{config.logoPreviewUrl ? (
 						<div className="flex items-center gap-3">
 							<div className="size-12 rounded-md border bg-muted/50 flex items-center justify-center overflow-hidden">
-								<img src={config.logoPreviewUrl} alt="Brand logo" className="max-h-full max-w-full object-contain" />
+								<img src={config.logoPreviewUrl} alt="Logo da marca" className="max-h-full max-w-full object-contain" />
 							</div>
 							<Button variant="ghost" size="sm" className="h-7 text-xs text-muted-foreground hover:text-destructive" onClick={handleRemoveLogo}>
-								Remove
+								Remover
 							</Button>
 						</div>
 					) : (
 						<Button variant="outline" size="sm" className="w-full" onClick={() => fileInputRef.current?.click()}>
-							Upload logo
+							Enviar logo
 						</Button>
 					)}
 					<input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
@@ -706,21 +706,21 @@ export function BrandKitView() {
 						<Select value={config.logoPosition} onValueChange={(v) => update({ logoPosition: v as LogoPosition })}>
 							<SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
 							<SelectContent>
-								<SelectItem value="top-left">Top Left</SelectItem>
-								<SelectItem value="top-right">Top Right</SelectItem>
-								<SelectItem value="bottom-left">Bottom Left</SelectItem>
-								<SelectItem value="bottom-right">Bottom Right</SelectItem>
+								<SelectItem value="top-left">Superior Esquerda</SelectItem>
+								<SelectItem value="top-right">Superior Direita</SelectItem>
+								<SelectItem value="bottom-left">Inferior Esquerda</SelectItem>
+								<SelectItem value="bottom-right">Inferior Direita</SelectItem>
 							</SelectContent>
 						</Select>
 
 						<div className="flex items-center justify-between">
-							<span className="text-[10px] text-muted-foreground">Opacity</span>
+							<span className="text-[10px] text-muted-foreground">Opacidade</span>
 							<span className="text-[10px] text-muted-foreground tabular-nums">{Math.round(config.logoOpacity * 100)}%</span>
 						</div>
 						<Slider value={[config.logoOpacity]} onValueChange={([v]) => update({ logoOpacity: v })} min={0.1} max={1} step={0.05} />
 
 						<div className="flex items-center justify-between">
-							<span className="text-[10px] text-muted-foreground">Size</span>
+							<span className="text-[10px] text-muted-foreground">Tamanho</span>
 							<span className="text-[10px] text-muted-foreground tabular-nums">{Math.round(config.logoScale * 100)}%</span>
 						</div>
 						<Slider value={[config.logoScale]} onValueChange={([v]) => update({ logoScale: v })} min={0.05} max={0.5} step={0.01} />
@@ -729,16 +729,16 @@ export function BrandKitView() {
 
 				{/* ── Quick Add ── */}
 				<div className="border-t pt-3 flex flex-col gap-2">
-					<Label className="text-xs font-medium">Quick add</Label>
+					<Label className="text-xs font-medium">Adição rápida</Label>
 					<div className="grid grid-cols-2 gap-1.5">
 						<Button variant="outline" size="sm" className="text-[11px] h-8" onClick={handleAddLowerThird}>
-							Lower Third
+							Rodapé
 						</Button>
 						<Button variant="outline" size="sm" className="text-[11px] h-8" onClick={handleAddIntroCard}>
-							Intro Card
+							Cartela de Abertura
 						</Button>
 						<Button variant="outline" size="sm" className="text-[11px] h-8" onClick={handleAddOutroCard}>
-							Outro Card
+							Cartela de Encerramento
 						</Button>
 					</div>
 				</div>
@@ -746,11 +746,11 @@ export function BrandKitView() {
 				{/* ── Apply / Remove ── */}
 				<div className="border-t pt-3 flex flex-col gap-2">
 					<Button variant="default" size="sm" className="w-full" onClick={handleApplyBrand}>
-						Apply full brand overlay
+						Aplicar sobreposição de marca completa
 					</Button>
 					{appliedTrackIds.length > 0 && (
 						<Button variant="outline" size="sm" className="w-full text-destructive hover:text-destructive" onClick={handleRemoveBrand}>
-							Remove all brand overlays ({appliedTrackIds.length})
+							Remover todas as sobreposições de marca ({appliedTrackIds.length})
 						</Button>
 					)}
 				</div>

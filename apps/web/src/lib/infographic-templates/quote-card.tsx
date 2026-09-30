@@ -159,13 +159,13 @@ export const QuoteCard: FC<QuoteCardProps> = ({
 
 export const templateConfig = {
   id: "quote-card",
-  name: "Quote Card",
+  name: "Cartão de Citação",
   category: "text",
   defaultProps: {
     quote:
-      "The only way to do great work is to love what you do.",
+      "A única forma de fazer um ótimo trabalho é amar o que você faz.",
     attribution: "Steve Jobs",
-    attributionTitle: "Co-founder, Apple Inc.",
+    attributionTitle: "Cofundador, Apple Inc.",
     primaryColor: "#f59e0b",
     backgroundColor: "#1c1917",
     textColor: "#fafaf9",

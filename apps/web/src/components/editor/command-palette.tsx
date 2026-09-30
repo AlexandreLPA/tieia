@@ -29,8 +29,8 @@ function buildCommands(
 		commands.push({
 			id: `tab-${key}`,
 			label: tab.label,
-			description: `Open ${tab.label} panel`,
-			category: "Navigate",
+			description: `Abrir painel ${tab.label}`,
+			category: "Navegar",
 			keywords: [key, tab.label.toLowerCase(), "panel", "tab", "open"],
 			action: () => setActiveTab(key),
 		});
@@ -40,25 +40,25 @@ function buildCommands(
 	commands.push(
 		{
 			id: "vc-commit",
-			label: "Commit Changes",
-			description: "Save a version snapshot",
-			category: "Version Control",
+			label: "Fazer commit",
+			description: "Salva um snapshot da versão",
+			category: "Controle de Versão",
 			keywords: ["commit", "save", "version", "snapshot", "git"],
 			action: openCommitDialog,
 		},
 		{
 			id: "vc-history",
-			label: "Version History",
-			description: "View commit history (in Settings)",
-			category: "Version Control",
+			label: "Histórico de versões",
+			description: "Ver histórico de commits (nas Configurações)",
+			category: "Controle de Versão",
 			keywords: ["history", "versions", "log", "git", "timeline", "commits"],
 			action: () => setActiveTab("settings"),
 		},
 		{
 			id: "vc-branch",
-			label: "Switch Branch",
-			description: "Open branch switcher",
-			category: "Version Control",
+			label: "Trocar de branch",
+			description: "Abrir seletor de branch",
+			category: "Controle de Versão",
 			keywords: ["branch", "switch", "checkout", "git"],
 			action: () => {
 				setActiveTab("settings");
@@ -66,25 +66,25 @@ function buildCommands(
 		},
 		{
 			id: "vc-diff",
-			label: "View Changes",
-			description: "Diff uncommitted changes vs last commit",
-			category: "Version Control",
+			label: "Ver alterações",
+			description: "Compara alterações não commitadas com o último commit",
+			category: "Controle de Versão",
 			keywords: ["diff", "changes", "compare", "modifications"],
 			action: () => setActiveTab("settings"),
 		},
 		{
 			id: "vc-merge",
-			label: "Merge Branches",
-			description: "Merge another branch into current",
-			category: "Version Control",
+			label: "Mesclar branches",
+			description: "Mescla outra branch com a atual",
+			category: "Controle de Versão",
 			keywords: ["merge", "combine", "branch", "git"],
 			action: () => setActiveTab("settings"),
 		},
 		{
 			id: "vc-stash",
-			label: "Stash Changes",
-			description: "Temporarily shelve uncommitted changes",
-			category: "Version Control",
+			label: "Fazer stash",
+			description: "Guarda temporariamente as alterações não commitadas",
+			category: "Controle de Versão",
 			keywords: ["stash", "shelve", "save", "temporary"],
 			action: () => setActiveTab("settings"),
 		},
@@ -96,7 +96,7 @@ function buildCommands(
 		commands.push({
 			id: `action-${key}`,
 			label: def.description,
-			description: shortcut ? `Shortcut: ${shortcut}` : undefined,
+			description: shortcut ? `Atalho: ${shortcut}` : undefined,
 			category: capitalize(def.category),
 			keywords: [
 				key.replace(/-/g, " "),
@@ -117,65 +117,65 @@ function buildCommands(
 	commands.push(
 		{
 			id: "feature-ai-studio",
-			label: "AI Studio",
-			description: "AI-powered video editing tools",
-			category: "Features",
+			label: "Estúdio de IA",
+			description: "Ferramentas de edição de vídeo com IA",
+			category: "Recursos",
 			keywords: ["ai", "studio", "smart", "auto", "generate", "magic"],
 			action: () => setActiveTab("ai"),
 		},
 		{
 			id: "feature-captions",
-			label: "Captions & Transcript",
-			description: "Auto-generate subtitles and transcripts",
-			category: "Features",
+			label: "Legendas e Transcrição",
+			description: "Gera legendas e transcrições automaticamente",
+			category: "Recursos",
 			keywords: ["caption", "subtitle", "transcript", "speech", "text"],
 			action: () => setActiveTab("captions"),
 		},
 		{
 			id: "feature-visuals",
-			label: "Effects, Filters & Adjustment",
-			description: "Visual effects, color grading, and adjustments",
-			category: "Features",
+			label: "Efeitos, Filtros e Ajustes",
+			description: "Efeitos visuais, correção de cor e ajustes",
+			category: "Recursos",
 			keywords: ["effect", "filter", "color", "visual", "grade", "adjustment", "brightness", "contrast"],
 			action: () => setActiveTab("visuals"),
 		},
 		{
 			id: "feature-audio",
-			label: "Audio: Sounds, Voiceover & Podcast",
-			description: "Sound effects, AI voiceover, and podcast clips",
-			category: "Features",
+			label: "Áudio: Sons, Locução e Podcast",
+			description: "Efeitos sonoros, locução com IA e clipes de podcast",
+			category: "Recursos",
 			keywords: ["sound", "voice", "voiceover", "tts", "podcast", "clip", "audio", "music"],
 			action: () => setActiveTab("audio"),
 		},
 		{
 			id: "feature-elements",
-			label: "Elements: Stickers & Overlays",
-			description: "Stickers, emojis, and overlay transitions",
-			category: "Features",
+			label: "Elementos: Figurinhas e Sobreposições",
+			description: "Figurinhas, emojis e transições de sobreposição",
+			category: "Recursos",
 			keywords: ["sticker", "emoji", "overlay", "transition", "element"],
 			action: () => setActiveTab("elements"),
 		},
 		{
 			id: "feature-brand",
-			label: "Brand Kit",
-			description: "Brand colors, fonts, and templates",
-			category: "Features",
+			label: "Kit de Marca",
+			description: "Cores, fontes e modelos da marca",
+			category: "Recursos",
 			keywords: ["brand", "kit", "template", "logo", "identity"],
 			action: () => setActiveTab("brandkit"),
 		},
 		{
 			id: "feature-factcheck",
-			label: "Fact Check",
-			description: "AI-powered claim verification (in Settings)",
-			category: "Features",
+			label: "Verificação de Fatos",
+			description: "Verificação de afirmações com IA (nas Configurações)",
+			category: "Recursos",
 			keywords: ["fact", "check", "verify", "claim", "accuracy"],
 			action: () => setActiveTab("settings"),
 		},
 		{
 			id: "feature-export",
-			label: "Export Video",
-			description: "Render and download your video",
-			category: "Features",
+			label: "Exportar Vídeo",
+			description: "Renderiza e baixa seu vídeo",
+			category: "Recursos",
 			keywords: ["export", "render", "download", "mp4", "video", "output"],
 			action: () => {
 				// Export is in the header — just indicate it
@@ -354,7 +354,7 @@ export function CommandPalette() {
 							value={query}
 							onChange={(e) => setQuery(e.target.value)}
 							onKeyDown={handleKeyDown}
-							placeholder="Search features, actions, panels..."
+							placeholder="Buscar recursos, ações, painéis..."
 							className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/60"
 							autoComplete="off"
 							spellCheck={false}
@@ -371,7 +371,7 @@ export function CommandPalette() {
 					>
 						{results.length === 0 ? (
 							<div className="px-4 py-6 text-center text-sm text-muted-foreground/60">
-								No results for &quot;{query}&quot;
+								Nenhum resultado para &quot;{query}&quot;
 							</div>
 						) : (
 							grouped.map((group) => (
@@ -403,9 +403,9 @@ export function CommandPalette() {
 														</div>
 													)}
 												</div>
-												{cmd.description?.startsWith("Shortcut:") && (
+												{cmd.description?.startsWith("Atalho:") && (
 													<kbd className="text-[10px] text-muted-foreground/50 px-1.5 py-0.5 rounded border border-border/50 bg-muted/30 flex-shrink-0">
-														{cmd.description.replace("Shortcut: ", "")}
+														{cmd.description.replace("Atalho: ", "")}
 													</kbd>
 												)}
 											</button>
@@ -422,19 +422,19 @@ export function CommandPalette() {
 							<kbd className="px-1 py-0.5 rounded border border-border/50 bg-muted/30">
 								Up/Down
 							</kbd>{" "}
-							navigate
+							navegar
 						</span>
 						<span>
 							<kbd className="px-1 py-0.5 rounded border border-border/50 bg-muted/30">
 								Enter
 							</kbd>{" "}
-							select
+							selecionar
 						</span>
 						<span>
 							<kbd className="px-1 py-0.5 rounded border border-border/50 bg-muted/30">
 								Esc
 							</kbd>{" "}
-							close
+							fechar
 						</span>
 					</div>
 				</div>

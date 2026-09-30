@@ -93,18 +93,18 @@ export function ABTestingPanel({ className }: { className?: string }) {
 			<div className="px-4 py-3 border-b space-y-2">
 				<div className="flex items-center gap-2">
 					<HugeiconsIcon icon={Analytics01Icon} className="size-4 text-primary" />
-					<span className="text-xs font-medium">A/B Testing</span>
+					<span className="text-xs font-medium">Teste A/B</span>
 				</div>
 				<p className="text-[10px] text-muted-foreground">
-					Test thumbnails & hooks to maximize engagement.
+					Teste miniaturas e ganchos para maximizar o engajamento.
 				</p>
 			</div>
 
 			<div className="flex border-b shrink-0">
 				{([
-					{ key: "thumbnails" as ABTab, label: "Thumbnails", icon: Image02Icon },
-					{ key: "hooks" as ABTab, label: "Hooks", icon: SparklesIcon },
-					{ key: "analytics" as ABTab, label: "Analytics", icon: Analytics01Icon },
+					{ key: "thumbnails" as ABTab, label: "Miniaturas", icon: Image02Icon },
+					{ key: "hooks" as ABTab, label: "Ganchos", icon: SparklesIcon },
+					{ key: "analytics" as ABTab, label: "Análises", icon: Analytics01Icon },
 				]).map((tab) => (
 					<button
 						key={tab.key}
@@ -203,10 +203,10 @@ function ThumbnailsTab({
 	return (
 		<>
 			<div className="space-y-1.5">
-				<span className="text-[10px] text-muted-foreground">Headline (optional)</span>
+				<span className="text-[10px] text-muted-foreground">Título (opcional)</span>
 				<input
 					className="w-full rounded border bg-transparent px-2 py-1 text-[10px] placeholder:text-muted-foreground"
-					placeholder="e.g., TOP 10 TIPS"
+					placeholder="ex.: TOP 10 DICAS"
 					value={headline}
 					onChange={(e) => setHeadline(e.target.value)}
 				/>
@@ -215,14 +215,14 @@ function ThumbnailsTab({
 			<div className="flex gap-2">
 				<Button className="flex-1" size="sm" onClick={onGenerate} disabled={isGenerating}>
 					{isGenerating ? (
-						<><Spinner className="size-3 mr-1" /> Generating...</>
+						<><Spinner className="size-3 mr-1" /> Gerando...</>
 					) : (
-						"Generate & Score 4"
+						"Gerar e avaliar 4"
 					)}
 				</Button>
 				{hasExisting && (
 					<Button variant="outline" size="sm" onClick={onScoreExisting} disabled={loading}>
-						Score Existing
+						Avaliar existentes
 					</Button>
 				)}
 			</div>
@@ -230,10 +230,10 @@ function ThumbnailsTab({
 			{scores && scores.results.length > 0 && (
 				<div className="space-y-2">
 					<div className="flex items-center justify-between">
-						<span className="text-[10px] font-medium">Results</span>
+						<span className="text-[10px] font-medium">Resultados</span>
 						<Badge variant="outline" className="text-[8px]">
 							<HugeiconsIcon icon={Award01Icon} className="size-3 mr-1" />
-							Winner: #{scores.winner_index + 1} ({scores.winner_score})
+							Vencedor: #{scores.winner_index + 1} ({scores.winner_score})
 						</Badge>
 					</div>
 
@@ -250,10 +250,10 @@ function ThumbnailsTab({
 						>
 							<div className="flex items-center justify-between mb-1">
 								<div className="flex items-center gap-1.5">
-									<span className="text-[10px] font-medium">Variant {i + 1}</span>
+									<span className="text-[10px] font-medium">Variante {i + 1}</span>
 									{i === scores.winner_index && (
 										<Badge className="text-[7px] h-4 bg-green-500/20 text-green-400 border-green-500/30">
-											Recommended
+											Recomendada
 										</Badge>
 									)}
 								</div>
@@ -265,11 +265,11 @@ function ThumbnailsTab({
 								<span className="text-[16px] font-bold">{Math.round(s.overall)}</span>
 								<span className="text-[9px] text-muted-foreground">/100</span>
 							</div>
-							<ScoreBar label="Contrast" value={s.contrast} />
-							<ScoreBar label="Text Readability" value={s.text_readability} />
-							<ScoreBar label="Face Presence" value={s.face_presence} />
-							<ScoreBar label="Color Vibrancy" value={s.color_vibrancy} />
-							<ScoreBar label="Composition" value={s.composition} />
+							<ScoreBar label="Contraste" value={s.contrast} />
+							<ScoreBar label="Legibilidade do texto" value={s.text_readability} />
+							<ScoreBar label="Presença facial" value={s.face_presence} />
+							<ScoreBar label="Intensidade de cor" value={s.color_vibrancy} />
+							<ScoreBar label="Composição" value={s.composition} />
 							{s.suggestion && (
 								<p className="text-[8px] text-muted-foreground mt-1">{s.suggestion}</p>
 							)}
@@ -299,7 +299,7 @@ function HooksTab({
 			{!hasTranscript && (
 				<div className="rounded-lg border border-dashed p-4 text-center">
 					<p className="text-[10px] text-muted-foreground">
-						Add a transcript to generate hook variants.
+						Adicione uma transcrição para gerar variações de gancho.
 					</p>
 				</div>
 			)}
@@ -307,9 +307,9 @@ function HooksTab({
 			{hasTranscript && (
 				<Button className="w-full" size="sm" onClick={onGenerate} disabled={isGenerating}>
 					{isGenerating ? (
-						<><Spinner className="size-3 mr-1" /> Generating hooks...</>
+						<><Spinner className="size-3 mr-1" /> Gerando ganchos...</>
 					) : (
-						"Generate 5 Hook Variants"
+						"Gerar 5 variações de gancho"
 					)}
 				</Button>
 			)}
@@ -317,7 +317,7 @@ function HooksTab({
 			{variants && variants.variants.length > 0 && (
 				<div className="space-y-2">
 					<div className="flex items-center justify-between">
-						<span className="text-[10px] font-medium">Hook Variants ({variants.total})</span>
+						<span className="text-[10px] font-medium">Variações de gancho ({variants.total})</span>
 					</div>
 
 					{variants.variants.map((v, i) => {
@@ -332,11 +332,11 @@ function HooksTab({
 								)}
 							>
 								<div className="flex items-center justify-between">
-									<span className="text-[10px] font-medium">Variant {i + 1}</span>
+									<span className="text-[10px] font-medium">Variante {i + 1}</span>
 									<div className="flex items-center gap-1">
 										{isBest && (
 											<Badge className="text-[7px] h-4 bg-green-500/20 text-green-400 border-green-500/30">
-												Best
+												Melhor
 											</Badge>
 										)}
 										<Badge variant="outline" className={cn("text-[8px]", GRADE_COLORS[v.estimated_score >= 70 ? "A" : v.estimated_score >= 50 ? "C" : "F"])}>
@@ -370,9 +370,9 @@ function AnalyticsTab({
 	return (
 		<>
 			<div className="flex justify-between items-center">
-				<span className="text-[10px] font-medium">Score Analytics</span>
+				<span className="text-[10px] font-medium">Análise de pontuação</span>
 				<Button variant="ghost" size="sm" className="h-5 text-[8px]" onClick={onRefresh} disabled={loading}>
-					Refresh
+					Atualizar
 				</Button>
 			</div>
 
@@ -380,25 +380,25 @@ function AnalyticsTab({
 				<div className="rounded-lg border border-dashed p-4 text-center">
 					<HugeiconsIcon icon={Analytics01Icon} className="size-6 mx-auto mb-2 text-muted-foreground" />
 					<p className="text-[10px] text-muted-foreground">
-						No scores recorded yet. Score thumbnails or videos to build analytics.
+						Nenhuma pontuação registrada ainda. Avalie miniaturas ou vídeos para gerar análises.
 					</p>
 				</div>
 			) : (
 				<>
 					<div className="grid grid-cols-2 gap-2">
 						<div className={cn("rounded-lg border p-2 text-center", GRADE_BG[analytics.avg_composite >= 70 ? "A" : analytics.avg_composite >= 50 ? "C" : "F"])}>
-							<span className="text-[8px] text-muted-foreground">Avg Score</span>
+							<span className="text-[8px] text-muted-foreground">Pontuação média</span>
 							<div className="text-lg font-bold">{analytics.avg_composite}</div>
 						</div>
 						<div className="rounded-lg border p-2 text-center">
-							<span className="text-[8px] text-muted-foreground">Total Scored</span>
+							<span className="text-[8px] text-muted-foreground">Total avaliado</span>
 							<div className="text-lg font-bold">{analytics.total_scored}</div>
 						</div>
 					</div>
 
 					{analytics.grade_distribution && Object.keys(analytics.grade_distribution).length > 0 && (
 						<div className="space-y-1">
-							<span className="text-[10px] font-medium">Grade Distribution</span>
+							<span className="text-[10px] font-medium">Distribuição de notas</span>
 							<div className="flex gap-1">
 								{(["A", "B", "C", "D", "F"] as const).map((g) => {
 									const count = analytics.grade_distribution[g] ?? 0;
@@ -417,7 +417,7 @@ function AnalyticsTab({
 
 					{analytics.avg_sub_scores && Object.keys(analytics.avg_sub_scores).length > 0 && (
 						<div className="space-y-1">
-							<span className="text-[10px] font-medium">Avg Sub-Scores</span>
+							<span className="text-[10px] font-medium">Subpontuações médias</span>
 							{Object.entries(analytics.avg_sub_scores).map(([key, val]) => (
 								<ScoreBar key={key} label={key.replace(/_/g, " ")} value={val as number} />
 							))}
@@ -428,18 +428,18 @@ function AnalyticsTab({
 						<div className="rounded-lg border p-2 space-y-1">
 							<div className="flex items-center gap-1">
 								<HugeiconsIcon icon={FavouriteCircleIcon} className="size-3 text-green-400" />
-								<span className="text-[9px] font-medium text-green-400">Strongest: {analytics.strongest_signal.replace(/_/g, " ")}</span>
+								<span className="text-[9px] font-medium text-green-400">Ponto forte: {analytics.strongest_signal.replace(/_/g, " ")}</span>
 							</div>
 							<div className="flex items-center gap-1">
 								<HugeiconsIcon icon={ArrowLeft01Icon} className="size-3 text-orange-400" />
-								<span className="text-[9px] font-medium text-orange-400">Weakest: {analytics.weakest_signal.replace(/_/g, " ")}</span>
+								<span className="text-[9px] font-medium text-orange-400">Ponto fraco: {analytics.weakest_signal.replace(/_/g, " ")}</span>
 							</div>
 						</div>
 					)}
 
 					{analytics.trend && analytics.trend.length > 1 && (
 						<div className="space-y-1">
-							<span className="text-[10px] font-medium">Score Trend</span>
+							<span className="text-[10px] font-medium">Tendência de pontuação</span>
 							<div className="flex items-end gap-0.5 h-16">
 								{analytics.trend.map((point, i) => {
 									const height = analytics.avg_composite > 0
@@ -450,7 +450,7 @@ function AnalyticsTab({
 											key={i}
 											className="flex-1 rounded-t bg-primary/60 transition-all"
 											style={{ height: `${Math.max(4, height)}%` }}
-											title={`Score: ${point.avg_composite} (${point.count} scores)`}
+											title={`Pontuação: ${point.avg_composite} (${point.count} pontuações)`}
 										/>
 									);
 								})}

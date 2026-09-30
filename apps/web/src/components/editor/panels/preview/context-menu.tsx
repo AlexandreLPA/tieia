@@ -21,10 +21,10 @@ export function PreviewContextMenu({
 	return (
 		<ContextMenuContent className="w-56" container={containerRef.current}>
 			<ContextMenuItem onClick={onToggleFullscreen} inset>
-				Full screen
+				Tela cheia
 			</ContextMenuItem>
 			<ContextMenuItem onClick={() => editor.renderer.saveSnapshot()} inset>
-				Save snapshot
+				Salvar snapshot
 			</ContextMenuItem>
 			<ContextMenuCheckboxItem
 				checked={overlays.bookmarks}
@@ -32,9 +32,9 @@ export function PreviewContextMenu({
 					setOverlayVisibility({ overlay: "bookmarks", isVisible: !!checked })
 				}
 			>
-				Show bookmarks
+				Mostrar favoritos
 			</ContextMenuCheckboxItem>
-			<ContextMenuItem inset>Show grid</ContextMenuItem>
+			<ContextMenuItem inset>Mostrar grade</ContextMenuItem>
 		</ContextMenuContent>
 	);
 }

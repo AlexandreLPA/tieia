@@ -3,12 +3,12 @@ import motionBlurShader from "./motion-blur.frag.glsl";
 
 export const motionBlurEffectDefinition: EffectDefinition = {
 	type: "motion-blur",
-	name: "Motion Blur",
+	name: "Desfoque de Movimento",
 	keywords: ["motion", "blur", "speed", "movement", "trail", "smear"],
 	params: [
 		{
 			key: "amount",
-			label: "Amount",
+			label: "Quantidade",
 			type: "number",
 			default: 30,
 			min: 0,

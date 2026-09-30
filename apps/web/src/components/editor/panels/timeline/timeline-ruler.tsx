@@ -100,7 +100,7 @@ export function TimelineRuler({
 		<div
 			role="slider"
 			tabIndex={0}
-			aria-label="Timeline ruler"
+			aria-label="Régua da linha do tempo"
 			aria-valuemin={0}
 			aria-valuemax={effectiveDuration}
 			aria-valuenow={0}

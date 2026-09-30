@@ -104,22 +104,22 @@ export const useYouTubeReelsStore = create<YouTubeReelsState>()((set, get) => ({
 
 	startIngestion: async () => {
 		const { videoUrl, config } = get();
-		set({ phase: "processing", jobProgress: 0, jobMessage: "Fetching video metadata...", jobError: null });
+		set({ phase: "processing", jobProgress: 0, jobMessage: "Buscando metadados do vídeo...", jobError: null });
 
 		try {
 			const resp = await aiClient.youtubeIngest(videoUrl, true, config.language ?? undefined);
 			set({
 				videoMeta: resp.video_meta,
 				ingestJobId: resp.job_id,
-				jobMessage: "Downloading audio...",
+				jobMessage: "Baixando áudio...",
 			});
 
 			// Poll for download completion
 			get()._startPolling(resp.job_id, (result) => {
-				set({ phase: "configuring", jobMessage: "Audio ready. Configure clip settings." });
+				set({ phase: "configuring", jobMessage: "Áudio pronto. Configure as opções do clipe." });
 			});
 		} catch (e: unknown) {
-			const msg = e instanceof Error ? e.message : "Ingestion failed";
+			const msg = e instanceof Error ? e.message : "Falha na importação do vídeo";
 			set({ phase: "error", jobError: msg });
 		}
 	},
@@ -128,7 +128,7 @@ export const useYouTubeReelsStore = create<YouTubeReelsState>()((set, get) => ({
 		const { ingestJobId, config } = get();
 		if (!ingestJobId) return;
 
-		set({ phase: "processing", jobProgress: 0.1, jobMessage: "Starting clip detection..." });
+		set({ phase: "processing", jobProgress: 0.1, jobMessage: "Iniciando detecção de clipes..." });
 
 		try {
 			const resp = await aiClient.youtubeAnalyze(ingestJobId, {
@@ -146,11 +146,11 @@ export const useYouTubeReelsStore = create<YouTubeReelsState>()((set, get) => ({
 					phase: "reviewing",
 					detectedClips: clips,
 					selectedIndices: allIndices,
-					jobMessage: `Found ${clips.length} clips`,
+					jobMessage: `${clips.length} clipes encontrados`,
 				});
 			});
 		} catch (e: unknown) {
-			const msg = e instanceof Error ? e.message : "Analysis failed";
+			const msg = e instanceof Error ? e.message : "Falha na análise";
 			set({ phase: "error", jobError: msg });
 		}
 	},
@@ -162,7 +162,7 @@ export const useYouTubeReelsStore = create<YouTubeReelsState>()((set, get) => ({
 		const selected = detectedClips.filter((c) => selectedIndices.has(c.index));
 		if (selected.length === 0) return;
 
-		set({ phase: "exporting", jobProgress: 0, jobMessage: `Generating ${selected.length} reels...` });
+		set({ phase: "exporting", jobProgress: 0, jobMessage: `Gerando ${selected.length} reels...` });
 
 		try {
 			const resp = await aiClient.youtubeGenerateClips(
@@ -185,10 +185,10 @@ export const useYouTubeReelsStore = create<YouTubeReelsState>()((set, get) => ({
 
 			get()._startPolling(resp.job_id, (result) => {
 				const clips = (result.clips ?? []) as YouTubeReelsState["generatedClips"];
-				set({ phase: "done", generatedClips: clips, jobMessage: `Generated ${clips.length} reels` });
+				set({ phase: "done", generatedClips: clips, jobMessage: `${clips.length} reels gerados` });
 			});
 		} catch (e: unknown) {
-			const msg = e instanceof Error ? e.message : "Generation failed";
+			const msg = e instanceof Error ? e.message : "Falha na geração";
 			set({ phase: "error", jobError: msg });
 		}
 	},
@@ -215,7 +215,7 @@ export const useYouTubeReelsStore = create<YouTubeReelsState>()((set, get) => ({
 			try { await aiClient.youtubeCancel(jobId); } catch { /* ignore */ }
 		}
 		get()._stopPolling();
-		set({ phase: "idle", jobError: "Cancelled" });
+		set({ phase: "idle", jobError: "Cancelado" });
 	},
 
 	reset: () => {
@@ -258,14 +258,14 @@ export const useYouTubeReelsStore = create<YouTubeReelsState>()((set, get) => ({
 					onComplete(status.result);
 				} else if (status.status === "failed") {
 					get()._stopPolling();
-					set({ phase: "error", jobError: status.error || "Job failed" });
+					set({ phase: "error", jobError: status.error || "Falha na tarefa" });
 				}
 			} catch {
 				const failures = get()._pollFailures + 1;
 				set({ _pollFailures: failures });
 				if (failures >= 10) {
 					get()._stopPolling();
-					set({ phase: "error", jobError: "Lost connection to backend. Please try again." });
+					set({ phase: "error", jobError: "Conexão com o back-end perdida. Tente novamente." });
 				}
 			}
 		}, 2000);

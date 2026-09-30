@@ -48,10 +48,10 @@ export function ShortsComposerPanel({ className }: { className?: string }) {
 			<div className="px-4 py-3 border-b space-y-2">
 				<div className="flex items-center gap-2">
 					<HugeiconsIcon icon={Film02Icon} className="size-4 text-primary" />
-					<span className="text-xs font-medium">Auto-Compose Short</span>
+					<span className="text-xs font-medium">Compor Short automaticamente</span>
 				</div>
 				<p className="text-[10px] text-muted-foreground">
-					One-click: AI selects best clip, adds subtitles, B-roll, brand kit.
+					Um clique: a IA seleciona o melhor trecho e adiciona legendas, B-roll e kit de marca.
 				</p>
 			</div>
 
@@ -59,14 +59,14 @@ export function ShortsComposerPanel({ className }: { className?: string }) {
 				{!hasTranscript ? (
 					<div className="text-center py-8">
 						<p className="text-sm text-muted-foreground">
-							Transcribe your video first to auto-compose a short.
+							Transcreva seu vídeo primeiro para compor um short automaticamente.
 						</p>
 					</div>
 				) : (
 					<>
 						<div className="space-y-1.5">
 							<div className="flex justify-between text-[10px] text-muted-foreground">
-								<span>Target Duration</span>
+								<span>Duração desejada</span>
 								<span className="font-mono">{duration}s</span>
 							</div>
 							<Slider
@@ -79,7 +79,7 @@ export function ShortsComposerPanel({ className }: { className?: string }) {
 						</div>
 
 						<div className="space-y-1.5">
-							<span className="text-[10px] text-muted-foreground">Format</span>
+							<span className="text-[10px] text-muted-foreground">Formato</span>
 							<div className="grid grid-cols-3 gap-1">
 								{FORMAT_OPTIONS.map((opt) => (
 									<Button
@@ -105,7 +105,7 @@ export function ShortsComposerPanel({ className }: { className?: string }) {
 								className="flex-1 h-7 text-[9px]"
 								onClick={() => setSubtitles(!subtitles)}
 							>
-								Subtitles {subtitles ? "On" : "Off"}
+								Legendas {subtitles ? "Ativadas" : "Desativadas"}
 							</Button>
 							<Button
 								variant={broll ? "secondary" : "ghost"}
@@ -113,7 +113,7 @@ export function ShortsComposerPanel({ className }: { className?: string }) {
 								className="flex-1 h-7 text-[9px]"
 								onClick={() => setBroll(!broll)}
 							>
-								B-Roll {broll ? "On" : "Off"}
+								B-Roll {broll ? "Ativado" : "Desativado"}
 							</Button>
 						</div>
 
@@ -122,7 +122,7 @@ export function ShortsComposerPanel({ className }: { className?: string }) {
 							onClick={handleCompose}
 							disabled={isComposing}
 						>
-							{isComposing ? "Composing..." : `Compose ${duration}s ${format} Short`}
+							{isComposing ? "Compondo..." : `Compor Short ${format} de ${duration}s`}
 						</Button>
 					</>
 				)}

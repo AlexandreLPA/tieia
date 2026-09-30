@@ -16,16 +16,16 @@ export function OwnershipDialog({ onConfirm, onCancel }: OwnershipDialogProps) {
 		setChecks((prev) => prev.map((v, idx) => (idx === i ? !v : v)));
 
 	const labels = [
-		"I own or have rights to this video",
-		"I am authorized to create derivative works",
-		"I understand OpenCutAI does not verify ownership",
+		"Eu possuo ou tenho os direitos sobre este vídeo",
+		"Estou autorizado a criar obras derivadas",
+		"Entendo que o OpenCutAI não verifica a propriedade",
 	];
 
 	return (
 		<div className="rounded-lg border border-yellow-500/30 bg-yellow-500/5 p-4 space-y-4">
-			<h3 className="text-sm font-semibold text-yellow-400">Content Ownership Confirmation</h3>
+			<h3 className="text-sm font-semibold text-yellow-400">Confirmação de Propriedade do Conteúdo</h3>
 			<p className="text-xs text-muted-foreground">
-				By proceeding, you confirm that:
+				Ao continuar, você confirma que:
 			</p>
 			<div className="space-y-2">
 				{labels.map((label, i) => (
@@ -42,10 +42,10 @@ export function OwnershipDialog({ onConfirm, onCancel }: OwnershipDialogProps) {
 			</div>
 			<div className="flex gap-2 justify-end">
 				<Button variant="ghost" size="sm" onClick={onCancel}>
-					Cancel
+					Cancelar
 				</Button>
 				<Button size="sm" disabled={!allChecked} onClick={onConfirm}>
-					I Confirm & Proceed
+					Confirmar e Continuar
 				</Button>
 			</div>
 		</div>

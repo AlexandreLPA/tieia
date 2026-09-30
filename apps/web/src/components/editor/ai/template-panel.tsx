@@ -28,10 +28,10 @@ import { useBackgroundTasksStore } from "@/stores/background-tasks-store";
 import { useAIStore } from "@/stores/ai-store";
 
 const STYLE_OPTIONS = [
-	{ value: "engaging", label: "Engaging" },
-	{ value: "cinematic", label: "Cinematic" },
-	{ value: "educational", label: "Educational" },
-	{ value: "funny", label: "Funny" },
+	{ value: "engaging", label: "Envolvente" },
+	{ value: "cinematic", label: "Cinematográfico" },
+	{ value: "educational", label: "Educativo" },
+	{ value: "funny", label: "Engraçado" },
 ];
 
 const DURATION_OPTIONS = [
@@ -42,16 +42,16 @@ const DURATION_OPTIONS = [
 ];
 
 const LANGUAGE_OPTIONS = [
-	{ value: "en", label: "English" },
-	{ value: "es", label: "Spanish" },
-	{ value: "fr", label: "French" },
-	{ value: "de", label: "German" },
-	{ value: "pt", label: "Portuguese" },
-	{ value: "ja", label: "Japanese" },
-	{ value: "ko", label: "Korean" },
-	{ value: "zh", label: "Chinese" },
+	{ value: "en", label: "Inglês" },
+	{ value: "es", label: "Espanhol" },
+	{ value: "fr", label: "Francês" },
+	{ value: "de", label: "Alemão" },
+	{ value: "pt", label: "Português" },
+	{ value: "ja", label: "Japonês" },
+	{ value: "ko", label: "Coreano" },
+	{ value: "zh", label: "Chinês" },
 	{ value: "hi", label: "Hindi" },
-	{ value: "ar", label: "Arabic" },
+	{ value: "ar", label: "Árabe" },
 ];
 
 const STORAGE_KEY = "opencut-template-job";
@@ -220,7 +220,7 @@ export function TemplatePanel({ className }: TemplatePanelProps) {
 			id: taskId,
 			type: "template-generation",
 			label: `Template: ${saved.topic.slice(0, 40)}`,
-			progress: "Generating in background...",
+			progress: "Gerando em segundo plano...",
 		});
 
 		// Start polling immediately
@@ -240,17 +240,17 @@ export function TemplatePanel({ className }: TemplatePanelProps) {
 					clearJobStorage();
 					updateResumeTask(taskId, {
 						status: "completed",
-						progress: job.result.title || "Done",
+						progress: job.result.title || "Concluído",
 						completedAt: Date.now(),
 					});
 				} else if (job.status === "failed") {
 					if (intervalHandle) { clearInterval(intervalHandle); intervalHandle = null; }
-					setError(job.error ?? "Template generation failed");
+					setError(job.error ?? "Falha ao gerar o template");
 					setIsGenerating(false);
 					clearJobStorage();
 					updateResumeTask(taskId, {
 						status: "error",
-						error: job.error || "Try again with a different topic.",
+						error: job.error || "Tente novamente com um tópico diferente.",
 						completedAt: Date.now(),
 					});
 				}
@@ -299,7 +299,7 @@ export function TemplatePanel({ className }: TemplatePanelProps) {
 					if (capturedBgTaskId) {
 						useBackgroundTasksStore.getState().updateTask(capturedBgTaskId, {
 							status: "completed",
-							progress: job.result.title || "Done",
+							progress: job.result.title || "Concluído",
 							completedAt: Date.now(),
 						});
 					}
@@ -308,13 +308,13 @@ export function TemplatePanel({ className }: TemplatePanelProps) {
 						clearInterval(pollRef.current);
 						pollRef.current = null;
 					}
-					setError(job.error ?? "Template generation failed");
+					setError(job.error ?? "Falha ao gerar o template");
 					setIsGenerating(false);
 					clearJobStorage();
 					if (capturedBgTaskId) {
 						useBackgroundTasksStore.getState().updateTask(capturedBgTaskId, {
 							status: "error",
-							error: job.error || "Try again with a different topic.",
+							error: job.error || "Tente novamente com um tópico diferente.",
 							completedAt: Date.now(),
 						});
 					}
@@ -340,7 +340,7 @@ export function TemplatePanel({ className }: TemplatePanelProps) {
 			id: taskId,
 			type: "template-generation",
 			label: `Template: ${trimmed.slice(0, 40)}${trimmed.length > 40 ? "..." : ""}`,
-			progress: "Starting generation...",
+			progress: "Iniciando geração...",
 		});
 
 		try {
@@ -354,7 +354,7 @@ export function TemplatePanel({ className }: TemplatePanelProps) {
 				setIsGenerating(false);
 				updateBgTask(taskId, {
 					status: "completed",
-					progress: response.result.title || "Done",
+					progress: response.result.title || "Concluído",
 					completedAt: Date.now(),
 				});
 				return;
@@ -364,13 +364,13 @@ export function TemplatePanel({ className }: TemplatePanelProps) {
 			setJobId(response.job_id);
 			saveJobToStorage(response.job_id, trimmed, style);
 			startPolling(response.job_id);
-			updateBgTask(taskId, { progress: "Generating in background..." });
+			updateBgTask(taskId, { progress: "Gerando em segundo plano..." });
 		} catch (err) {
-			setError(err instanceof Error ? err.message : "Failed to start template generation");
+			setError(err instanceof Error ? err.message : "Falha ao iniciar a geração do template");
 			setIsGenerating(false);
 			updateBgTask(taskId, {
 				status: "error",
-				error: err instanceof Error ? err.message : "Generation failed",
+				error: err instanceof Error ? err.message : "Falha na geração",
 				completedAt: Date.now(),
 			});
 		}
@@ -431,7 +431,7 @@ export function TemplatePanel({ className }: TemplatePanelProps) {
 
 		// ── Step 2: Try loading background audio (graceful) ──
 		setIsLoadingAudio(true);
-		setAudioStatus("Searching for background audio...");
+		setAudioStatus("Buscando áudio de fundo...");
 
 		try {
 			// Check if Freesound API key is configured
@@ -441,7 +441,7 @@ export function TemplatePanel({ className }: TemplatePanelProps) {
 			);
 
 			if (!hasFreesoundKey) {
-				setAudioStatus("Add a Freesound API key in Settings to auto-import background audio.");
+				setAudioStatus("Adicione uma chave de API do Freesound em Configurações para importar áudio de fundo automaticamente.");
 				setIsLoadingAudio(false);
 				markTemplateImported(storedId);
 			setTemplateHistory(loadTemplateHistory());
@@ -457,14 +457,14 @@ export function TemplatePanel({ className }: TemplatePanelProps) {
 			}
 
 			if (sounds.length === 0) {
-				setAudioStatus("No matching audio found. Browse the Sounds tab to add background audio.");
+				setAudioStatus("Nenhum áudio correspondente encontrado. Procure na aba Sons para adicionar áudio de fundo.");
 				setIsLoadingAudio(false);
 				markTemplateImported(storedId);
 			setTemplateHistory(loadTemplateHistory());
 				return;
 			}
 
-			setAudioStatus("Loading audio to timeline...");
+			setAudioStatus("Carregando áudio na linha do tempo...");
 
 			const targetDuration = templateToImport.total_duration;
 			const sorted = [...sounds].sort((a, b) => {
@@ -478,7 +478,7 @@ export function TemplatePanel({ className }: TemplatePanelProps) {
 			const audioUrl = bestSound.previewUrl;
 
 			if (!audioUrl) {
-				setAudioStatus("Browse the Sounds tab to add background audio.");
+				setAudioStatus("Procure na aba Sons para adicionar áudio de fundo.");
 				setIsLoadingAudio(false);
 				markTemplateImported(storedId);
 			setTemplateHistory(loadTemplateHistory());
@@ -487,7 +487,7 @@ export function TemplatePanel({ className }: TemplatePanelProps) {
 
 			const response = await fetch(audioUrl);
 			if (!response.ok) {
-				setAudioStatus("Browse the Sounds tab to add background audio.");
+				setAudioStatus("Procure na aba Sons para adicionar áudio de fundo.");
 				setIsLoadingAudio(false);
 				markTemplateImported(storedId);
 			setTemplateHistory(loadTemplateHistory());
@@ -513,7 +513,7 @@ export function TemplatePanel({ className }: TemplatePanelProps) {
 
 			const element = buildLibraryAudioElement({
 				sourceUrl: audioUrl,
-				name: `BG: ${bestSound.name}`,
+				name: `Fundo: ${bestSound.name}`,
 				duration: clampedDuration,
 				startTime: 0,
 				buffer,
@@ -527,9 +527,9 @@ export function TemplatePanel({ className }: TemplatePanelProps) {
 				element,
 			});
 
-			setAudioStatus(`Added: ${bestSound.name}`);
+			setAudioStatus(`Adicionado: ${bestSound.name}`);
 		} catch {
-			setAudioStatus("Browse the Sounds tab to add background audio.");
+			setAudioStatus("Procure na aba Sons para adicionar áudio de fundo.");
 		} finally {
 			setIsLoadingAudio(false);
 			markTemplateImported(storedId);
@@ -553,13 +553,13 @@ export function TemplatePanel({ className }: TemplatePanelProps) {
 			<div className="px-4 py-3 border-b space-y-3">
 				<div>
 					<label className="text-xs font-medium text-muted-foreground mb-1.5 block">
-						Topic
+						Tópico
 					</label>
 					<Input
 						value={topic}
 						onChange={(e) => setTopic(e.target.value)}
 						onKeyDown={handleKeyDown}
-						placeholder='e.g. "5 tips for productivity"'
+						placeholder='ex.: "5 dicas de produtividade"'
 						disabled={isGenerating}
 						className="text-sm"
 					/>
@@ -568,7 +568,7 @@ export function TemplatePanel({ className }: TemplatePanelProps) {
 				<div className="flex gap-2">
 					<div className="flex-1">
 						<label className="text-xs font-medium text-muted-foreground mb-1.5 block">
-							Duration
+							Duração
 						</label>
 						<div className="flex gap-1">
 							{DURATION_OPTIONS.map((opt) => (
@@ -593,7 +593,7 @@ export function TemplatePanel({ className }: TemplatePanelProps) {
 
 				<div>
 					<label className="text-xs font-medium text-muted-foreground mb-1.5 block">
-						Style
+						Estilo
 					</label>
 					<div className="flex gap-1">
 						{STYLE_OPTIONS.map((opt) => (
@@ -617,7 +617,7 @@ export function TemplatePanel({ className }: TemplatePanelProps) {
 
 				<div>
 					<label className="text-xs font-medium text-muted-foreground mb-1.5 block">
-						Language
+						Idioma
 					</label>
 					<div className="flex flex-wrap gap-1">
 						{LANGUAGE_OPTIONS.map((opt) => (
@@ -648,16 +648,16 @@ export function TemplatePanel({ className }: TemplatePanelProps) {
 					{isGenerating ? (
 						<>
 							<Spinner className="size-3.5 mr-2" />
-							Generating in background...
+							Gerando em segundo plano...
 						</>
 					) : (
-						"Generate Template"
+						"Gerar Template"
 					)}
 				</Button>
 
 				{isGenerating && (
 					<p className="text-[10px] text-muted-foreground text-center">
-						You can switch tabs — the template generates in the background.
+						Você pode trocar de aba — o template é gerado em segundo plano.
 					</p>
 				)}
 			</div>
@@ -678,11 +678,11 @@ export function TemplatePanel({ className }: TemplatePanelProps) {
 								className="size-8 text-muted-foreground/40 mx-auto mb-2"
 							/>
 							<p className="text-sm text-muted-foreground">
-								Generate a content guide for your reel
+								Gere um guia de conteúdo para seu reel
 							</p>
 							<p className="text-xs text-muted-foreground/60 mt-1">
-								AI creates a production blueprint with voiceover scripts,
-								visual directions, and background audio
+								A IA cria um roteiro de produção com scripts de locução,
+								direções visuais e áudio de fundo
 							</p>
 						</div>
 					)}
@@ -691,7 +691,7 @@ export function TemplatePanel({ className }: TemplatePanelProps) {
 						<div className="text-center py-6 mb-2">
 							<Spinner className="size-5 mx-auto mb-2" />
 							<p className="text-xs text-muted-foreground">
-								Creating content guide...
+								Criando guia de conteúdo...
 							</p>
 						</div>
 					)}
@@ -710,7 +710,7 @@ export function TemplatePanel({ className }: TemplatePanelProps) {
 									onSaveToIdeas={() => {
 										const summary = `Template: ${stored.result.title}\n${stored.result.segments.map((s) => `${s.order}. ${s.title}: ${s.key_message}`).join("\n")}`;
 										saveIdea(summary);
-										toast.success("Saved to Ideas");
+										toast.success("Salvo em Ideias");
 									}}
 									onRemove={() => {
 										removeTemplateFromHistory(stored.id);
@@ -733,7 +733,7 @@ export function TemplatePanel({ className }: TemplatePanelProps) {
 								setActiveTemplateId(null);
 							}}
 						>
-							Clear all templates
+							Limpar todos os templates
 						</button>
 					)}
 				</div>
@@ -835,12 +835,12 @@ function TemplateHistoryCard({
 								{isLoadingAudio ? (
 									<>
 										<Spinner className="size-3.5 mr-2" />
-										Adding to timeline...
+										Adicionando à linha do tempo...
 									</>
 								) : (
 									<>
 										<HugeiconsIcon icon={ArrowDown01Icon} className="size-3.5 mr-2" />
-										Add to Timeline
+										Adicionar à linha do tempo
 									</>
 								)}
 							</Button>
@@ -848,7 +848,7 @@ function TemplateHistoryCard({
 						{stored.imported && (
 							<div className="flex items-center gap-1 text-[10px] text-green-500 justify-center">
 								<HugeiconsIcon icon={Tick01Icon} className="size-3" />
-								Added to Timeline
+								Adicionado à linha do tempo
 							</div>
 						)}
 						<div className="flex gap-1.5">
@@ -858,7 +858,7 @@ function TemplateHistoryCard({
 								className="flex-1 h-6 text-[9px]"
 								onClick={(e) => { e.stopPropagation(); onSaveToIdeas(); }}
 							>
-								Save to Ideas
+								Salvar em Ideias
 							</Button>
 							<Button
 								variant="ghost"
@@ -866,7 +866,7 @@ function TemplateHistoryCard({
 								className="h-6 text-[9px] text-muted-foreground hover:text-destructive"
 								onClick={(e) => { e.stopPropagation(); onRemove(); }}
 							>
-								Remove
+								Remover
 							</Button>
 						</div>
 					</div>
@@ -923,18 +923,18 @@ function SegmentCard({ segment }: { segment: ReelTemplateSegment }) {
 						<div>
 							<div className="flex items-center gap-1 mb-0.5">
 								<HugeiconsIcon icon={SparklesIcon} className="size-3 text-primary" />
-								<p className="text-[10px] font-medium text-primary uppercase tracking-wider">Key Message</p>
+								<p className="text-[10px] font-medium text-primary uppercase tracking-wider">Mensagem-chave</p>
 							</div>
 							<p className="text-xs font-semibold">{segment.key_message}</p>
 						</div>
 					) : (
-						<p className="text-[10px] text-muted-foreground/50 italic">No key message generated</p>
+						<p className="text-[10px] text-muted-foreground/50 italic">Nenhuma mensagem-chave gerada</p>
 					)}
 					{segment.narration?.trim() ? (
 						<div>
 							<div className="flex items-center gap-1 mb-0.5">
 								<HugeiconsIcon icon={Mic01Icon} className="size-3 text-muted-foreground" />
-								<p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Voiceover Script</p>
+								<p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Script de locução</p>
 							</div>
 							<p className="text-xs text-muted-foreground">{segment.narration}</p>
 						</div>
@@ -942,16 +942,16 @@ function SegmentCard({ segment }: { segment: ReelTemplateSegment }) {
 						<div>
 							<div className="flex items-center gap-1 mb-0.5">
 								<HugeiconsIcon icon={Mic01Icon} className="size-3 text-muted-foreground/40" />
-								<p className="text-[10px] font-medium text-muted-foreground/40 uppercase tracking-wider">Voiceover Script</p>
+								<p className="text-[10px] font-medium text-muted-foreground/40 uppercase tracking-wider">Script de locução</p>
 							</div>
-							<p className="text-[10px] text-muted-foreground/50 italic">No voiceover script — try regenerating or edit manually</p>
+							<p className="text-[10px] text-muted-foreground/50 italic">Nenhum script de locução — tente gerar novamente ou edite manualmente</p>
 						</div>
 					)}
 					{segment.visual_description?.trim() ? (
 						<div>
 							<div className="flex items-center gap-1 mb-0.5">
 								<HugeiconsIcon icon={ViewIcon} className="size-3 text-muted-foreground" />
-								<p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Visual Direction</p>
+								<p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Direção visual</p>
 							</div>
 							<p className="text-xs text-muted-foreground italic">{segment.visual_description}</p>
 						</div>
@@ -959,16 +959,16 @@ function SegmentCard({ segment }: { segment: ReelTemplateSegment }) {
 						<div>
 							<div className="flex items-center gap-1 mb-0.5">
 								<HugeiconsIcon icon={ViewIcon} className="size-3 text-muted-foreground/40" />
-								<p className="text-[10px] font-medium text-muted-foreground/40 uppercase tracking-wider">Visual Direction</p>
+								<p className="text-[10px] font-medium text-muted-foreground/40 uppercase tracking-wider">Direção visual</p>
 							</div>
-							<p className="text-[10px] text-muted-foreground/50 italic">No visual description — try regenerating or edit manually</p>
+							<p className="text-[10px] text-muted-foreground/50 italic">Nenhuma descrição visual — tente gerar novamente ou edite manualmente</p>
 						</div>
 					)}
 					{segment.audio_mood?.trim() && (
 						<div>
 							<div className="flex items-center gap-1 mb-0.5">
 								<HugeiconsIcon icon={MusicNote03Icon} className="size-3 text-muted-foreground" />
-								<p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Audio Mood</p>
+								<p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Clima do áudio</p>
 							</div>
 							<p className="text-xs text-muted-foreground">{segment.audio_mood}</p>
 						</div>

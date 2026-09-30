@@ -53,18 +53,18 @@ export function SmartReframePanel({ className }: { className?: string }) {
 			<div className="px-4 py-3 border-b space-y-2">
 				<div className="flex items-center gap-2">
 					<HugeiconsIcon icon={CropIcon} className="size-4 text-primary" />
-					<span className="text-xs font-medium">Smart Reframe</span>
+					<span className="text-xs font-medium">Reenquadramento inteligente</span>
 				</div>
 				<p className="text-[10px] text-muted-foreground">
-					Auto-detect faces and generate keyframes to keep subjects centered when
-					reframing for different aspect ratios (e.g., landscape to vertical).
+					Detecta rostos automaticamente e gera keyframes para manter os sujeitos
+					centralizados ao reenquadrar para diferentes proporções (ex.: paisagem para vertical).
 				</p>
 			</div>
 
 			<div className="px-4 py-3 space-y-4 flex-1 overflow-y-auto">
 				<div className="space-y-1.5">
 					<span className="text-[10px] font-medium text-muted-foreground">
-						Target Format
+						Formato de destino
 					</span>
 					<div className="grid grid-cols-2 gap-1.5">
 						{REFRAME_PRESETS.map((preset) => (
@@ -89,7 +89,7 @@ export function SmartReframePanel({ className }: { className?: string }) {
 
 				<div className="space-y-1.5">
 					<div className="flex justify-between text-[10px] text-muted-foreground">
-						<span>Smoothing</span>
+						<span>Suavização</span>
 						<span className="font-mono">{smoothing.toFixed(1)}s</span>
 					</div>
 					<Slider
@@ -100,13 +100,13 @@ export function SmartReframePanel({ className }: { className?: string }) {
 						step={0.1}
 					/>
 					<span className="text-[8px] text-muted-foreground">
-						Higher = smoother camera movement
+						Quanto maior, mais suave o movimento de câmera
 					</span>
 				</div>
 
 				<div className="space-y-1.5">
 					<div className="flex justify-between text-[10px] text-muted-foreground">
-						<span>Face Padding</span>
+						<span>Margem do rosto</span>
 						<span className="font-mono">{Math.round(padding * 100)}%</span>
 					</div>
 					<Slider
@@ -120,7 +120,7 @@ export function SmartReframePanel({ className }: { className?: string }) {
 
 				{status === "idle" && (
 					<Button className="w-full" onClick={handleStart}>
-						Analyze & Reframe
+						Analisar e reenquadrar
 					</Button>
 				)}
 
@@ -134,15 +134,15 @@ export function SmartReframePanel({ className }: { className?: string }) {
 						</div>
 						<p className="text-[10px] text-muted-foreground text-center">
 							{status === "detecting"
-								? "Detecting faces in video..."
-								: "Computing reframing keyframes..."}
+								? "Detectando rostos no vídeo..."
+								: "Calculando keyframes de reenquadramento..."}
 						</p>
 					</div>
 				)}
 
 				{status === "applying" && (
 					<p className="text-[10px] text-muted-foreground text-center">
-						Applying keyframes to timeline...
+						Aplicando keyframes à linha do tempo...
 					</p>
 				)}
 
@@ -150,7 +150,7 @@ export function SmartReframePanel({ className }: { className?: string }) {
 					<>
 						<div className="rounded border p-2 space-y-1">
 							<div className="flex items-center justify-between">
-								<span className="text-[9px] font-medium">Result</span>
+								<span className="text-[9px] font-medium">Resultado</span>
 								<span className="text-[8px] text-muted-foreground">
 									{result.preset.label}
 								</span>
@@ -160,29 +160,29 @@ export function SmartReframePanel({ className }: { className?: string }) {
 									<p className="text-[10px] font-mono font-medium">
 										{result.framesAnalyzed}
 									</p>
-									<p className="text-[7px] text-muted-foreground">Frames</p>
+									<p className="text-[7px] text-muted-foreground">Quadros</p>
 								</div>
 								<div>
 									<p className="text-[10px] font-mono font-medium">
 										{result.keyframes.positionX.length}
 									</p>
-									<p className="text-[7px] text-muted-foreground">X Keys</p>
+									<p className="text-[7px] text-muted-foreground">Chaves X</p>
 								</div>
 								<div>
 									<p className="text-[10px] font-mono font-medium">
 										{result.detectionResult.total_faces_detected}
 									</p>
-									<p className="text-[7px] text-muted-foreground">Faces</p>
+									<p className="text-[7px] text-muted-foreground">Rostos</p>
 								</div>
 							</div>
 						</div>
 
 						<div className="flex gap-2">
 							<Button className="flex-1" onClick={applyKeyframes}>
-								Apply to Timeline
+								Aplicar à linha do tempo
 							</Button>
 							<Button variant="outline" onClick={reset}>
-								Reset
+								Redefinir
 							</Button>
 						</div>
 					</>
@@ -197,7 +197,7 @@ export function SmartReframePanel({ className }: { className?: string }) {
 							className="mt-1.5 h-5 text-[8px]"
 							onClick={reset}
 						>
-							Try Again
+							Tentar novamente
 						</Button>
 					</div>
 				)}

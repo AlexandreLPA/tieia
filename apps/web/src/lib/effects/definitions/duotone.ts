@@ -8,19 +8,19 @@ export const duotoneEffectDefinition: EffectDefinition = {
 	params: [
 		{
 			key: "color1",
-			label: "Shadow Color",
+			label: "Cor das Sombras",
 			type: "color",
 			default: "#000022",
 		},
 		{
 			key: "color2",
-			label: "Highlight Color",
+			label: "Cor dos Realces",
 			type: "color",
 			default: "#ff6600",
 		},
 		{
 			key: "amount",
-			label: "Amount",
+			label: "Quantidade",
 			type: "number",
 			default: 80,
 			min: 0,

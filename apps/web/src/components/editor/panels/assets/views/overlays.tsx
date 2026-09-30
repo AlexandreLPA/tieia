@@ -44,11 +44,11 @@ export function OverlaysView() {
 	);
 
 	return (
-		<PanelView title="Overlays">
+		<PanelView title="Sobreposições">
 			<div className="flex flex-col gap-4">
 				<p className="text-xs text-muted-foreground leading-relaxed">
-					Add overlay layers for picture-in-picture, split screens, and
-					compositing. Select a clip first or use presets.
+					Adicione camadas de sobreposição para picture-in-picture, telas
+					divididas e composição. Selecione um clipe primeiro ou use os predefinidos.
 				</p>
 
 				{OVERLAY_CATEGORIES.map((category) => (
@@ -81,7 +81,7 @@ export function OverlaysView() {
 
 				<div className="flex flex-col gap-2 pt-2 border-t">
 					<h3 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-						Selected clip
+						Clipe selecionado
 					</h3>
 					<div className="grid grid-cols-2 gap-1.5">
 						<Button
@@ -90,7 +90,7 @@ export function OverlaysView() {
 							className="text-[10px] h-7"
 							onClick={() => applyToSelected(editor, { opacity: 0.5 })}
 						>
-							50% Opacity
+							50% de opacidade
 						</Button>
 						<Button
 							variant="outline"
@@ -98,7 +98,7 @@ export function OverlaysView() {
 							className="text-[10px] h-7"
 							onClick={() => applyToSelected(editor, { opacity: 0.3 })}
 						>
-							30% Opacity
+							30% de opacidade
 						</Button>
 						<Button
 							variant="outline"
@@ -108,7 +108,7 @@ export function OverlaysView() {
 								applyToSelected(editor, { blendMode: "screen" })
 							}
 						>
-							Screen Blend
+							Mesclagem Tela
 						</Button>
 						<Button
 							variant="outline"
@@ -118,7 +118,7 @@ export function OverlaysView() {
 								applyToSelected(editor, { blendMode: "multiply" })
 							}
 						>
-							Multiply Blend
+							Mesclagem Multiplicar
 						</Button>
 						<Button
 							variant="outline"
@@ -128,7 +128,7 @@ export function OverlaysView() {
 								applyToSelected(editor, { blendMode: "overlay" })
 							}
 						>
-							Overlay Blend
+							Mesclagem Sobrepor
 						</Button>
 						<Button
 							variant="outline"
@@ -138,7 +138,7 @@ export function OverlaysView() {
 								applyToSelected(editor, { blendMode: "difference" })
 							}
 						>
-							Difference
+							Diferença
 						</Button>
 					</div>
 				</div>
@@ -153,7 +153,7 @@ function applyToSelected(
 ) {
 	const selected = editor.selection.getSelectedElements();
 	if (selected.length === 0) {
-		toast.error("Select a clip first");
+		toast.error("Selecione um clipe primeiro");
 		return;
 	}
 	editor.timeline.updateElements({
@@ -163,7 +163,7 @@ function applyToSelected(
 			updates,
 		})),
 	});
-	toast.success("Applied to selected clip");
+	toast.success("Aplicado ao clipe selecionado");
 }
 
 function OverlayIcon({ preset }: { preset: OverlayPreset }) {
@@ -205,12 +205,12 @@ const OVERLAY_CATEGORIES: { name: string; presets: OverlayPreset[] }[] = [
 		presets: [
 			{
 				id: "pip-bottom-right",
-				name: "PiP Bottom Right",
-				description: "Small overlay in the bottom-right corner",
+				name: "PiP Inferior Direito",
+				description: "Sobreposição pequena no canto inferior direito",
 				category: "pip",
 				apply: ({ editor, selectedElement }) => {
 					if (!selectedElement) {
-						toast.error("Select a video clip to make it a PiP overlay");
+						toast.error("Selecione um clipe de vídeo para transformá-lo em uma sobreposição PiP");
 						return;
 					}
 					const canvas = editor.project.getActive().settings.canvasSize;
@@ -231,17 +231,17 @@ const OVERLAY_CATEGORIES: { name: string; presets: OverlayPreset[] }[] = [
 							},
 						}],
 					});
-					toast.success("PiP overlay applied — bottom right");
+					toast.success("Sobreposição PiP aplicada — inferior direito");
 				},
 			},
 			{
 				id: "pip-bottom-left",
-				name: "PiP Bottom Left",
-				description: "Small overlay in the bottom-left corner",
+				name: "PiP Inferior Esquerdo",
+				description: "Sobreposição pequena no canto inferior esquerdo",
 				category: "pip",
 				apply: ({ editor, selectedElement }) => {
 					if (!selectedElement) {
-						toast.error("Select a video clip to make it a PiP overlay");
+						toast.error("Selecione um clipe de vídeo para transformá-lo em uma sobreposição PiP");
 						return;
 					}
 					const canvas = editor.project.getActive().settings.canvasSize;
@@ -262,17 +262,17 @@ const OVERLAY_CATEGORIES: { name: string; presets: OverlayPreset[] }[] = [
 							},
 						}],
 					});
-					toast.success("PiP overlay applied — bottom left");
+					toast.success("Sobreposição PiP aplicada — inferior esquerdo");
 				},
 			},
 			{
 				id: "pip-top-right",
-				name: "PiP Top Right",
-				description: "Small overlay in the top-right corner",
+				name: "PiP Superior Direito",
+				description: "Sobreposição pequena no canto superior direito",
 				category: "pip",
 				apply: ({ editor, selectedElement }) => {
 					if (!selectedElement) {
-						toast.error("Select a video clip to make it a PiP overlay");
+						toast.error("Selecione um clipe de vídeo para transformá-lo em uma sobreposição PiP");
 						return;
 					}
 					const canvas = editor.project.getActive().settings.canvasSize;
@@ -293,17 +293,17 @@ const OVERLAY_CATEGORIES: { name: string; presets: OverlayPreset[] }[] = [
 							},
 						}],
 					});
-					toast.success("PiP overlay applied — top right");
+					toast.success("Sobreposição PiP aplicada — superior direito");
 				},
 			},
 			{
 				id: "pip-center",
-				name: "PiP Center",
-				description: "Medium overlay centered on screen",
+				name: "PiP Central",
+				description: "Sobreposição média centralizada na tela",
 				category: "pip",
 				apply: ({ editor, selectedElement }) => {
 					if (!selectedElement) {
-						toast.error("Select a video clip to make it a PiP overlay");
+						toast.error("Selecione um clipe de vídeo para transformá-lo em uma sobreposição PiP");
 						return;
 					}
 					editor.timeline.updateElements({
@@ -320,22 +320,22 @@ const OVERLAY_CATEGORIES: { name: string; presets: OverlayPreset[] }[] = [
 							},
 						}],
 					});
-					toast.success("PiP overlay applied — center");
+					toast.success("Sobreposição PiP aplicada — centro");
 				},
 			},
 		],
 	},
 	{
-		name: "Split Screen",
+		name: "Tela Dividida",
 		presets: [
 			{
 				id: "split-left",
-				name: "Left Half",
-				description: "Scale to fill the left half of the screen",
+				name: "Metade Esquerda",
+				description: "Redimensiona para preencher a metade esquerda da tela",
 				category: "split",
 				apply: ({ editor, selectedElement }) => {
 					if (!selectedElement) {
-						toast.error("Select a video clip");
+						toast.error("Selecione um clipe de vídeo");
 						return;
 					}
 					const canvas = editor.project.getActive().settings.canvasSize;
@@ -353,17 +353,17 @@ const OVERLAY_CATEGORIES: { name: string; presets: OverlayPreset[] }[] = [
 							},
 						}],
 					});
-					toast.success("Split screen — left half");
+					toast.success("Tela dividida — metade esquerda");
 				},
 			},
 			{
 				id: "split-right",
-				name: "Right Half",
-				description: "Scale to fill the right half of the screen",
+				name: "Metade Direita",
+				description: "Redimensiona para preencher a metade direita da tela",
 				category: "split",
 				apply: ({ editor, selectedElement }) => {
 					if (!selectedElement) {
-						toast.error("Select a video clip");
+						toast.error("Selecione um clipe de vídeo");
 						return;
 					}
 					const canvas = editor.project.getActive().settings.canvasSize;
@@ -381,17 +381,17 @@ const OVERLAY_CATEGORIES: { name: string; presets: OverlayPreset[] }[] = [
 							},
 						}],
 					});
-					toast.success("Split screen — right half");
+					toast.success("Tela dividida — metade direita");
 				},
 			},
 			{
 				id: "split-top",
-				name: "Top Half",
-				description: "Scale to fill the top half",
+				name: "Metade Superior",
+				description: "Redimensiona para preencher a metade superior",
 				category: "split",
 				apply: ({ editor, selectedElement }) => {
 					if (!selectedElement) {
-						toast.error("Select a video clip");
+						toast.error("Selecione um clipe de vídeo");
 						return;
 					}
 					const canvas = editor.project.getActive().settings.canvasSize;
@@ -409,17 +409,17 @@ const OVERLAY_CATEGORIES: { name: string; presets: OverlayPreset[] }[] = [
 							},
 						}],
 					});
-					toast.success("Split screen — top half");
+					toast.success("Tela dividida — metade superior");
 				},
 			},
 			{
 				id: "split-bottom",
-				name: "Bottom Half",
-				description: "Scale to fill the bottom half",
+				name: "Metade Inferior",
+				description: "Redimensiona para preencher a metade inferior",
 				category: "split",
 				apply: ({ editor, selectedElement }) => {
 					if (!selectedElement) {
-						toast.error("Select a video clip");
+						toast.error("Selecione um clipe de vídeo");
 						return;
 					}
 					const canvas = editor.project.getActive().settings.canvasSize;
@@ -437,22 +437,22 @@ const OVERLAY_CATEGORIES: { name: string; presets: OverlayPreset[] }[] = [
 							},
 						}],
 					});
-					toast.success("Split screen — bottom half");
+					toast.success("Tela dividida — metade inferior");
 				},
 			},
 		],
 	},
 	{
-		name: "Compositing",
+		name: "Composição",
 		presets: [
 			{
 				id: "ghost-overlay",
-				name: "Ghost Overlay",
-				description: "Semi-transparent overlay with screen blend",
+				name: "Sobreposição Fantasma",
+				description: "Sobreposição semitransparente com mesclagem tela",
 				category: "compositing",
 				apply: ({ editor, selectedElement }) => {
 					if (!selectedElement) {
-						toast.error("Select a clip");
+						toast.error("Selecione um clipe");
 						return;
 					}
 					editor.timeline.updateElements({
@@ -466,17 +466,17 @@ const OVERLAY_CATEGORIES: { name: string; presets: OverlayPreset[] }[] = [
 							},
 						}],
 					});
-					toast.success("Ghost overlay applied");
+					toast.success("Sobreposição fantasma aplicada");
 				},
 			},
 			{
 				id: "dark-overlay",
-				name: "Dark Overlay",
-				description: "Darken blend for moody compositing",
+				name: "Sobreposição Escura",
+				description: "Mesclagem escurecer para composições atmosféricas",
 				category: "compositing",
 				apply: ({ editor, selectedElement }) => {
 					if (!selectedElement) {
-						toast.error("Select a clip");
+						toast.error("Selecione um clipe");
 						return;
 					}
 					editor.timeline.updateElements({
@@ -490,17 +490,17 @@ const OVERLAY_CATEGORIES: { name: string; presets: OverlayPreset[] }[] = [
 							},
 						}],
 					});
-					toast.success("Dark overlay applied");
+					toast.success("Sobreposição escura aplicada");
 				},
 			},
 			{
 				id: "light-leak",
-				name: "Light Leak",
-				description: "Bright overlay with color dodge blend",
+				name: "Vazamento de Luz",
+				description: "Sobreposição clara com mesclagem subexposição de cor",
 				category: "compositing",
 				apply: ({ editor, selectedElement }) => {
 					if (!selectedElement) {
-						toast.error("Select a clip");
+						toast.error("Selecione um clipe");
 						return;
 					}
 					editor.timeline.updateElements({
@@ -514,17 +514,17 @@ const OVERLAY_CATEGORIES: { name: string; presets: OverlayPreset[] }[] = [
 							},
 						}],
 					});
-					toast.success("Light leak overlay applied");
+					toast.success("Sobreposição de vazamento de luz aplicada");
 				},
 			},
 			{
 				id: "reset-overlay",
-				name: "Reset to Normal",
-				description: "Reset to full size, normal blend, full opacity",
+				name: "Redefinir para Normal",
+				description: "Redefine para tamanho total, mesclagem normal e opacidade total",
 				category: "compositing",
 				apply: ({ editor, selectedElement }) => {
 					if (!selectedElement) {
-						toast.error("Select a clip");
+						toast.error("Selecione um clipe");
 						return;
 					}
 					editor.timeline.updateElements({
@@ -538,7 +538,7 @@ const OVERLAY_CATEGORIES: { name: string; presets: OverlayPreset[] }[] = [
 							},
 						}],
 					});
-					toast.success("Reset to normal");
+					toast.success("Redefinido para normal");
 				},
 			},
 		],

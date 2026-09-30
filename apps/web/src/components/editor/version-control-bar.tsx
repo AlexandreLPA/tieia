@@ -108,21 +108,21 @@ export function VersionControlBar({
 						type="button"
 						className="text-[11px] text-yellow-500/90 hover:text-yellow-400 font-medium px-1 transition-colors"
 						onClick={() => openCommitDialog()}
-						title="Commit changes (Ctrl+Shift+S)"
+						title="Fazer commit das alterações (Ctrl+Shift+S)"
 					>
-						{isCommitting ? "Saving..." : "Commit"}
+						{isCommitting ? "Salvando..." : "Commit"}
 					</button>
 					<button
 						type="button"
 						className="text-[10px] text-muted-foreground/60 hover:text-muted-foreground px-0.5 transition-colors"
 						onClick={handleQuickCommit}
-						title="Quick save without message"
+						title="Salvamento rápido sem mensagem"
 					>
-						Quick
+						Rápido
 					</button>
 				</>
 			) : (
-				<span className="text-[11px] text-muted-foreground/50 px-1">Clean</span>
+				<span className="text-[11px] text-muted-foreground/50 px-1">Sem alterações</span>
 			)}
 
 			<Separator orientation="vertical" className="h-4" />
@@ -132,7 +132,7 @@ export function VersionControlBar({
 				type="button"
 				className="text-[11px] text-muted-foreground hover:text-foreground px-1 transition-colors flex items-center gap-1"
 				onClick={onOpenDrawer}
-				title="Open version control panel"
+				title="Abrir painel de controle de versão"
 			>
 				<svg width="12" height="12" viewBox="0 0 16 16" fill="none" className="flex-shrink-0">
 					<path d="M5 3v6.5a3.5 3.5 0 1 0 3 3.46V3M11 3v3.5a3.5 3.5 0 0 1-3 3.46" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -140,7 +140,7 @@ export function VersionControlBar({
 					<circle cx="11" cy="3" r="1.5" stroke="currentColor" strokeWidth="1.5" />
 					<circle cx="5" cy="13" r="1.5" stroke="currentColor" strokeWidth="1.5" />
 				</svg>
-				History
+				Histórico
 			</button>
 		</div>
 	);
@@ -172,7 +172,7 @@ function BranchButton() {
 			}
 			if (isDirty) {
 				const ok = window.confirm(
-					"You have uncommitted changes. Switching branches will discard them. Continue?",
+					"Você tem alterações não commitadas. Trocar de branch vai descartá-las. Deseja continuar?",
 				);
 				if (!ok) return;
 			}
@@ -210,7 +210,7 @@ function BranchButton() {
 				<button
 					type="button"
 					className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-foreground px-1 transition-colors"
-					title="Switch branch"
+					title="Trocar branch"
 				>
 					<svg width="10" height="10" viewBox="0 0 16 16" fill="none">
 						<path d="M5 3v8M11 3v3.5a3.5 3.5 0 0 1-3 3.46" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -235,7 +235,7 @@ function BranchButton() {
 						>
 							<span className="truncate">{b.name}</span>
 							{b.name === currentBranch && (
-								<span className="text-primary text-[10px]">current</span>
+								<span className="text-primary text-[10px]">atual</span>
 							)}
 						</button>
 					))}
@@ -250,12 +250,12 @@ function BranchButton() {
 								if (e.key === "Enter") handleCreate();
 								if (e.key === "Escape") setCreating(false);
 							}}
-							placeholder="branch-name"
+							placeholder="nome-da-branch"
 							className="h-7 text-xs"
 							autoFocus
 						/>
 						<Button size="sm" className="h-7 text-xs px-2" onClick={handleCreate}>
-							Create
+							Criar
 						</Button>
 					</div>
 				) : (
@@ -264,7 +264,7 @@ function BranchButton() {
 						className="w-full text-left px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
 						onClick={() => setCreating(true)}
 					>
-						+ New branch
+						+ Nova branch
 					</button>
 				)}
 			</PopoverContent>

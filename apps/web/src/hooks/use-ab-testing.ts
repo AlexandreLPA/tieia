@@ -21,11 +21,11 @@ export function useABTesting() {
 		try {
 			const result = await aiClient.scoreThumbnails(imageUrls, headline);
 			setThumbnailScores(result);
-			toast.success(`Scored ${result.results.length} thumbnails`);
+			toast.success(`${result.results.length} miniaturas avaliadas`);
 			return result;
 		} catch (err) {
-			const msg = err instanceof Error ? err.message : "Thumbnail scoring failed";
-			toast.error("Scoring failed", { description: msg });
+			const msg = err instanceof Error ? err.message : "Falha ao avaliar as miniaturas";
+			toast.error("Falha na avaliação", { description: msg });
 			return null;
 		} finally {
 			setLoading(false);
@@ -43,11 +43,11 @@ export function useABTesting() {
 					max_variants: maxVariants ?? 5,
 				});
 				setHookVariants(result);
-				toast.success(`Generated ${result.total} hook variants`);
+				toast.success(`${result.total} variações de hook geradas`);
 				return result;
 			} catch (err) {
-				const msg = err instanceof Error ? err.message : "Hook generation failed";
-				toast.error("Hook generation failed", { description: msg });
+				const msg = err instanceof Error ? err.message : "Falha ao gerar variações de hook";
+				toast.error("Falha ao gerar hooks", { description: msg });
 				return null;
 			} finally {
 				setLoading(false);
@@ -78,7 +78,7 @@ export function useABTesting() {
 			setScoreHistory(result);
 			return result;
 		} catch (err) {
-			toast.error("Failed to load score history");
+			toast.error("Falha ao carregar o histórico de pontuações");
 			return null;
 		} finally {
 			setLoading(false);
@@ -92,7 +92,7 @@ export function useABTesting() {
 			setAnalytics(result);
 			return result;
 		} catch (err) {
-			toast.error("Failed to load analytics");
+			toast.error("Falha ao carregar as análises");
 			return null;
 		} finally {
 			setLoading(false);

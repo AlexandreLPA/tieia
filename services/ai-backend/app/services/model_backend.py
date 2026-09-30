@@ -39,13 +39,28 @@ class LLMBackend:
     def __init__(self) -> None:
         self._tq_available: bool | None = None  # cached check, reset periodically
         self._tq_check_count = 0
+        # Runtime overrides — set via /api/llm/set-cloud-model and
+        # /api/llm/set-local-backend, so switching backend doesn't need a
+        # container restart. None means "use the .env-configured default".
+        self._backend_mode_override: str | None = None
+        self._openrouter_model_override: str | None = None
 
     # ── Public properties ─────────────────────────────────────────────
 
     @property
     def backend_mode(self) -> str:
-        """Current backend preference: 'ollama', 'turboquant', or 'auto'."""
-        return settings.AI_LLM_BACKEND
+        """Current backend preference: 'ollama', 'turboquant', 'openrouter', or 'auto'."""
+        return self._backend_mode_override or settings.AI_LLM_BACKEND
+
+    @property
+    def openrouter_model(self) -> str:
+        return self._openrouter_model_override or settings.OPENROUTER_MODEL
+
+    def set_backend(self, mode: str, openrouter_model: str | None = None) -> None:
+        """Switch the active backend at runtime (no restart needed)."""
+        self._backend_mode_override = mode
+        if openrouter_model:
+            self._openrouter_model_override = openrouter_model
 
     @property
     def ollama_url(self) -> str:
@@ -266,6 +281,65 @@ class LLMBackend:
                     except (json.JSONDecodeError, IndexError):
                         continue
 
+    # ── OpenRouter (cloud) methods ────────────────────────────────────
+    # Scoped to this app only — no other codebase on this machine calls
+    # this module, so enabling this here cannot route anything else's data.
+
+    def _use_openrouter(self) -> bool:
+        return self.backend_mode == "openrouter" and bool(settings.OPENROUTER_API_KEY)
+
+    def _or_headers(self) -> dict[str, str]:
+        return {
+            "Authorization": f"Bearer {settings.OPENROUTER_API_KEY}",
+            "X-Title": "OpenCut AI",
+        }
+
+    @staticmethod
+    def _messages(prompt: str, system: str | None) -> list[dict[str, str]]:
+        messages: list[dict[str, str]] = []
+        if system:
+            messages.append({"role": "system", "content": system})
+        messages.append({"role": "user", "content": prompt})
+        return messages
+
+    async def _or_chat(self, messages: list[dict[str, str]]) -> str:
+        async with httpx.AsyncClient(timeout=httpx.Timeout(300, connect=10.0)) as client:
+            resp = await client.post(
+                f"{settings.OPENROUTER_BASE_URL}/chat/completions",
+                headers=self._or_headers(),
+                json={"model": self.openrouter_model, "messages": messages},
+            )
+            resp.raise_for_status()
+            choices = resp.json().get("choices", [])
+            return choices[0].get("message", {}).get("content") or "" if choices else ""
+
+    async def _or_generate_stream(self, prompt: str, system: str | None) -> AsyncIterator[str]:
+        async with httpx.AsyncClient(timeout=httpx.Timeout(300, connect=10.0)) as client:
+            async with client.stream(
+                "POST",
+                f"{settings.OPENROUTER_BASE_URL}/chat/completions",
+                headers=self._or_headers(),
+                json={
+                    "model": self.openrouter_model,
+                    "messages": self._messages(prompt, system),
+                    "stream": True,
+                },
+            ) as resp:
+                resp.raise_for_status()
+                async for line in resp.aiter_lines():
+                    if not line or not line.startswith("data: "):
+                        continue
+                    data_str = line[6:]
+                    if data_str.strip() == "[DONE]":
+                        break
+                    try:
+                        delta = json.loads(data_str).get("choices", [{}])[0].get("delta", {})
+                        token = delta.get("content") or ""
+                        if token:
+                            yield token
+                    except (json.JSONDecodeError, IndexError):
+                        continue
+
     # ── Unified public interface ──────────────────────────────────────
 
     async def generate(
@@ -275,7 +349,13 @@ class LLMBackend:
         system: str | None = None,
         format: str | None = None,
     ) -> str:
-        """Generate a completion — routes to TurboQuant or Ollama."""
+        """Generate a completion — routes to OpenRouter, TurboQuant or Ollama."""
+        if self._use_openrouter():
+            try:
+                return await self._or_chat(self._messages(prompt, system))
+            except Exception:
+                logger.warning("OpenRouter generate failed, falling back to local backend", exc_info=True)
+
         if await self._should_use_turboquant():
             try:
                 logger.debug("Routing generate to TurboQuant")
@@ -293,6 +373,14 @@ class LLMBackend:
         system: str | None = None,
     ) -> AsyncIterator[str]:
         """Stream tokens from the active backend."""
+        if self._use_openrouter():
+            try:
+                async for token in self._or_generate_stream(prompt, system):
+                    yield token
+                return
+            except Exception:
+                logger.warning("OpenRouter stream failed, falling back to local backend", exc_info=True)
+
         if await self._should_use_turboquant():
             try:
                 logger.debug("Routing generate_stream to TurboQuant")
@@ -318,6 +406,13 @@ class LLMBackend:
         Retries once on parse failure since smaller models sometimes
         produce malformed JSON on the first attempt.
         """
+        if self._use_openrouter():
+            try:
+                raw = await self._or_chat(self._messages(prompt, system))
+                return _parse_json_response(raw)
+            except Exception:
+                logger.warning("OpenRouter generate_json failed, falling back to local backend", exc_info=True)
+
         if await self._should_use_turboquant():
             try:
                 logger.debug("Routing generate_json to TurboQuant")
@@ -359,6 +454,8 @@ class LLMBackend:
 
     async def check_available(self) -> bool:
         """Check if any LLM backend is available."""
+        if self._use_openrouter():
+            return True
         if await self._is_turboquant_ready():
             return True
         # Fall back to checking Ollama
@@ -394,7 +491,12 @@ class LLMBackend:
             except Exception:
                 pass
 
-        active_backend = "turboquant" if tq_ready and self.backend_mode != "ollama" else "ollama"
+        if self._use_openrouter():
+            active_backend = "openrouter"
+        elif tq_ready and self.backend_mode != "ollama":
+            active_backend = "turboquant"
+        else:
+            active_backend = "ollama"
 
         return {
             "active_backend": active_backend,
@@ -410,6 +512,11 @@ class LLMBackend:
                 "url": self.turboquant_url,
                 "active_model": tq_model,
                 "kv_cache_bits": settings.KV_CACHE_BITS,
+            },
+            "openrouter": {
+                "available": self._use_openrouter(),
+                "configured": bool(settings.OPENROUTER_API_KEY),
+                "model": self.openrouter_model,
             },
         }
 

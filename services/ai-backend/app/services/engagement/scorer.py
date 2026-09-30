@@ -218,12 +218,17 @@ class EngagementScorer:
         has_bold_claim = any(
             w in text_lower
             for w in ["never", "always", "everyone", "nobody", "secret", "mistake",
-                       "wrong", "truth", "myth", "actually", "the real"]
+                       "wrong", "truth", "myth", "actually", "the real",
+                       "nunca", "sempre", "todo mundo", "ninguém", "segredo", "erro",
+                       "errado", "verdade", "mito", "na real", "ninguém te conta"]
         )
         has_open_loop = any(
             w in text_lower
             for w in ["here's why", "here's what", "here's how", "let me tell you",
-                       "wait until", "you won't believe", "the thing is", "but first"]
+                       "wait until", "you won't believe", "the thing is", "but first",
+                       "olha isso", "olha o que", "vou te contar", "deixa eu te contar",
+                       "espera até", "você não vai acreditar", "o negócio é", "mas antes",
+                       "é por isso que", "sabe por que"]
         )
 
         gap_count = sum([has_question, has_bold_claim, has_open_loop])
@@ -379,7 +384,8 @@ Score on 4 dimensions (each 0-25, total 0-100):
 3. Emotional impact: Does this trigger a strong emotion?
 4. Standalone value: Does this make sense without context?
 
-Respond with JSON: {{"hook": int, "shareability": int, "emotion": int, "standalone": int, "reason": "one line", "suggested_title": "catchy title"}}"""
+Respond with JSON: {{"hook": int, "shareability": int, "emotion": int, "standalone": int, "reason": "one line", "suggested_title": "catchy title"}}
+Keep the JSON keys in English, but write the "reason" and "suggested_title" values in Brazilian Portuguese."""
 
             data = await llm_backend.generate_json(prompt=prompt)
 
@@ -412,7 +418,7 @@ Respond with JSON: {{"hook": int, "shareability": int, "emotion": int, "standalo
             suggestions.append(EnhancementSuggestion(
                 signal="hook",
                 current_score=score.hook.composite,
-                suggestion="Add a text hook in the first 1.5 seconds to stop the scroll.",
+                suggestion="Coloque um gancho em texto nos primeiros 1,5 segundos para segurar quem está rolando o feed.",
                 action_type="auto_apply",
                 expected_impact="high",
             ))
@@ -421,7 +427,7 @@ Respond with JSON: {{"hook": int, "shareability": int, "emotion": int, "standalo
             suggestions.append(EnhancementSuggestion(
                 signal="hook",
                 current_score=score.hook.composite,
-                suggestion="Shift clip start to capture the speaker's face in the opening.",
+                suggestion="Ajuste o início do clipe para mostrar o rosto de quem fala logo na abertura.",
                 action_type="adjust_clip",
                 expected_impact="medium",
             ))
@@ -430,7 +436,7 @@ Respond with JSON: {{"hook": int, "shareability": int, "emotion": int, "standalo
             suggestions.append(EnhancementSuggestion(
                 signal="curiosity",
                 current_score=score.curiosity.composite,
-                suggestion="Add a question overlay to create a curiosity gap.",
+                suggestion="Adicione uma pergunta na tela para despertar curiosidade.",
                 action_type="auto_apply",
                 expected_impact="high",
             ))
@@ -439,7 +445,7 @@ Respond with JSON: {{"hook": int, "shareability": int, "emotion": int, "standalo
             suggestions.append(EnhancementSuggestion(
                 signal="energy",
                 current_score=score.energy.composite,
-                suggestion="Add a sound effect or music sting to boost audio energy.",
+                suggestion="Adicione um efeito sonoro ou trecho de música para dar mais energia ao áudio.",
                 action_type="open_tool",
                 expected_impact="medium",
             ))
@@ -448,7 +454,7 @@ Respond with JSON: {{"hook": int, "shareability": int, "emotion": int, "standalo
             suggestions.append(EnhancementSuggestion(
                 signal="face_presence",
                 current_score=score.face_presence.composite,
-                suggestion="Add B-roll or cutaway shots to reduce face time to 30-40%.",
+                suggestion="Intercale cenas de apoio (B-roll) para o rosto aparecer só uns 30-40% do tempo.",
                 action_type="manual",
                 expected_impact="medium",
             ))
@@ -457,7 +463,7 @@ Respond with JSON: {{"hook": int, "shareability": int, "emotion": int, "standalo
             suggestions.append(EnhancementSuggestion(
                 signal="emotional_arc",
                 current_score=score.emotional_arc.composite,
-                suggestion="Content pacing is flat. Consider adding a tension-building intro.",
+                suggestion="O ritmo está linear. Experimente uma abertura que crie expectativa.",
                 action_type="manual",
                 expected_impact="medium",
             ))

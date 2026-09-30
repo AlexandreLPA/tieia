@@ -30,9 +30,9 @@ import { TextIcon } from "@hugeicons/core-free-icons";
 import { toast } from "sonner";
 
 const FONT_TABS = [
-	{ key: "all", label: "All fonts" },
-	{ key: "favorites", label: "Favorites" },
-	{ key: "my-fonts", label: "My fonts" },
+	{ key: "all", label: "Todas as fontes" },
+	{ key: "favorites", label: "Favoritos" },
+	{ key: "my-fonts", label: "Minhas fontes" },
 ] as const;
 
 type FontTab = (typeof FONT_TABS)[number]["key"];
@@ -159,7 +159,7 @@ export function FontPicker({
 						<HugeiconsIcon icon={TextIcon} />
 					</span>
 					<span className="truncate" style={{ fontFamily: defaultValue }}>
-						{defaultValue ?? "Select a font"}
+						{defaultValue ?? "Selecione uma fonte"}
 					</span>
 				</div>
 				<ChevronDown className="size-3 shrink-0 opacity-50" />
@@ -181,7 +181,7 @@ export function FontPicker({
 					<Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 shrink-0 opacity-50" />
 					<Input
 						ref={searchInputRef}
-						placeholder="Search fonts..."
+						placeholder="Buscar fontes..."
 						value={search}
 						onChange={(event) => setSearch(event.target.value)}
 						size="xs"
@@ -207,16 +207,16 @@ export function FontPicker({
 				</div>
 				{status === "loading" && (
 					<div className="py-8 text-center text-sm text-muted-foreground">
-						Loading fonts...
+						Carregando fontes...
 					</div>
 				)}
 				{status === "error" && (
 					<div className="flex flex-col items-center gap-3 py-8 px-4">
 						<p className="text-sm text-muted-foreground text-center">
-							Failed to load font previews.
+							Falha ao carregar as prévias das fontes.
 						</p>
 						<Button variant="outline" size="sm" onClick={handleRetry}>
-							Retry
+							Tentar novamente
 						</Button>
 					</div>
 				)}
@@ -224,7 +224,7 @@ export function FontPicker({
 					fontNames.length > 0 &&
 					filteredFonts.length === 0 && (
 						<div className="py-6 text-center text-sm text-muted-foreground">
-							No fonts found.
+							Nenhuma fonte encontrada.
 						</div>
 					)}
 				{status === "idle" && atlas && filteredFonts.length > 0 && (
@@ -250,7 +250,7 @@ export function FontPicker({
 						onClick={() => fontFileRef.current?.click()}
 					>
 						<Upload className="!size-3.5" />
-						Load local fonts
+						Carregar fontes locais
 					</Button>
 					<input
 						ref={fontFileRef}
@@ -271,14 +271,14 @@ export function FontPicker({
 									document.fonts.add(face);
 									loaded.push(fontName);
 								} catch {
-									toast.error(`Failed to load ${file.name}`);
+									toast.error(`Falha ao carregar ${file.name}`);
 								}
 							}
 							if (loaded.length > 0) {
 								const updated = [...new Set([...customFonts, ...loaded])];
 								setCustomFonts(updated);
 								try { localStorage.setItem("opencut:custom-fonts", JSON.stringify(updated)); } catch {}
-								toast.success(`Loaded ${loaded.join(", ")}`);
+								toast.success(`Fontes carregadas: ${loaded.join(", ")}`);
 								setActiveTab("my-fonts");
 							}
 							if (fontFileRef.current) fontFileRef.current.value = "";

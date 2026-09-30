@@ -34,7 +34,7 @@ import {
 
 export function SettingsView() {
 	return (
-		<PanelView title="Project settings" contentClassName="px-0">
+		<PanelView title="Configurações do projeto" contentClassName="px-0">
 			<div className="flex flex-col gap-8">
 				<ProjectInfoView />
 				<BackgroundView />
@@ -102,19 +102,19 @@ function ProjectInfoView() {
 	return (
 		<div className="flex flex-col gap-4">
 			<PropertyItem direction="column">
-				<PropertyItemLabel>Name</PropertyItemLabel>
+				<PropertyItemLabel>Nome</PropertyItemLabel>
 				<PropertyItemValue>{activeProject.metadata.name}</PropertyItemValue>
 			</PropertyItem>
 
 			<PropertyItem direction="column">
-				<PropertyItemLabel>Aspect ratio</PropertyItemLabel>
+				<PropertyItemLabel>Proporção</PropertyItemLabel>
 				<PropertyItemValue>
 					<Select
 						value={selectedPresetValue}
 						onValueChange={(value) => handleAspectRatioChange({ value })}
 					>
 						<SelectTrigger>
-							<SelectValue placeholder="Select an aspect ratio" />
+							<SelectValue placeholder="Selecione uma proporção" />
 						</SelectTrigger>
 						<SelectContent>
 							<SelectItem value={originalPresetValue}>Original</SelectItem>
@@ -135,14 +135,14 @@ function ProjectInfoView() {
 			</PropertyItem>
 
 			<PropertyItem direction="column">
-				<PropertyItemLabel>Frame rate</PropertyItemLabel>
+				<PropertyItemLabel>Taxa de quadros</PropertyItemLabel>
 				<PropertyItemValue>
 					<Select
 						value={activeProject.settings.fps.toString()}
 						onValueChange={handleFpsChange}
 					>
 						<SelectTrigger>
-							<SelectValue placeholder="Select a frame rate" />
+							<SelectValue placeholder="Selecione uma taxa de quadros" />
 						</SelectTrigger>
 						<SelectContent>
 							{FPS_PRESETS.map((preset) => (
@@ -175,11 +175,11 @@ const BlurPreview = memo(
 			)}
 			onClick={onSelect}
 			type="button"
-			aria-label={`Select ${blur.label} blur`}
+			aria-label={`Selecionar desfoque ${blur.label}`}
 		>
 			<Image
 				src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-				alt={`Blur preview ${blur.label}`}
+				alt={`Pré-visualização de desfoque ${blur.label}`}
 				fill
 				className="object-cover"
 				style={{ filter: `blur(${blur.value}px)` }}
@@ -233,7 +233,7 @@ const BackgroundPreviews = memo(
 						}
 						onClick={() => handleColorSelect({ bg })}
 						type="button"
-						aria-label={`Select background ${useBackgroundColor ? bg : index + 1}`}
+						aria-label={`Selecionar plano de fundo ${useBackgroundColor ? bg : index + 1}`}
 					/>
 				)),
 			[
@@ -299,14 +299,14 @@ function BackgroundView() {
 	);
 
 	const backgroundSections = [
-		{ title: "Colors", backgrounds: colors, useBackgroundColor: true },
+		{ title: "Cores", backgrounds: colors, useBackgroundColor: true },
 		{ title: "Pattern craft", backgrounds: patternCraftGradients },
 		{ title: "Syntax UI", backgrounds: syntaxUIGradients },
 	];
 
 	return (
 		<div className="flex flex-col">
-			<PropertyGroup title="Blur" hasBorderTop={false} defaultExpanded={false}>
+			<PropertyGroup title="Desfoque" hasBorderTop={false} defaultExpanded={false}>
 				<div className="flex flex-wrap gap-2">{blurPreviews}</div>
 			</PropertyGroup>
 

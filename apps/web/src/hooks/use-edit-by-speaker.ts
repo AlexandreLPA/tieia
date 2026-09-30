@@ -74,7 +74,7 @@ export function useEditBySpeaker() {
 			const ranges = rangesForSpeaker(speakerId);
 			const ids = idsForSpeaker(speakerId);
 			if (ranges.length === 0) {
-				toast.error("No segments found for that speaker.");
+				toast.error("Nenhum segmento encontrado para esse falante.");
 				return;
 			}
 			const label =
@@ -100,7 +100,7 @@ export function useEditBySpeaker() {
 				editor.command.commitTransaction();
 			}
 			toast.success(
-				`Removed ${ranges.length} sections by ${label} (${ranges.reduce(
+				`${ranges.length} trechos de ${label} removidos (${ranges.reduce(
 					(sum, r) => sum + (r.end - r.start),
 					0,
 				).toFixed(1)}s).`,
@@ -118,7 +118,7 @@ export function useEditBySpeaker() {
 				.filter((s) => s.speaker === speakerId)
 				.sort((a, b) => a.start - b.start);
 			if (mine.length < 2) {
-				toast.error("Not enough segments from that speaker to tighten.");
+				toast.error("Não há segmentos suficientes desse falante para compactar.");
 				return;
 			}
 			const label =
@@ -137,7 +137,7 @@ export function useEditBySpeaker() {
 				}
 			}
 			if (cuts.length === 0) {
-				toast(`No gaps ≤ ${maxGap}s between ${label}'s segments.`);
+				toast(`Nenhum intervalo ≤ ${maxGap}s entre os segmentos de ${label}.`);
 				return;
 			}
 
@@ -147,7 +147,7 @@ export function useEditBySpeaker() {
 			compactTimeline(editor);
 			if (supportsTx) editor.command.commitTransaction();
 
-			toast.success(`Tightened ${cuts.length} gaps by ${label}.`);
+			toast.success(`${cuts.length} intervalos de ${label} compactados.`);
 		},
 		[editor],
 	);
@@ -191,8 +191,8 @@ export function useEditBySpeaker() {
 			}
 			toast.success(
 				muted > 0
-					? `Isolated speaker — muted ${muted} unrelated track${muted === 1 ? "" : "s"}.`
-					: "Nothing to mute — all tracks overlap this speaker.",
+					? `Falante isolado — ${muted} faixa${muted === 1 ? "" : "s"} não relacionada${muted === 1 ? "" : "s"} silenciada${muted === 1 ? "" : "s"}.`
+					: "Nada para silenciar — todas as faixas se sobrepõem a esse falante.",
 			);
 		},
 		[editor, rangesForSpeaker],

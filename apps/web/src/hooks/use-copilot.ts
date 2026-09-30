@@ -69,7 +69,7 @@ export function useCopilot() {
 
 				const jsonMatch = response.response.match(/\{[\s\S]*\}/);
 				if (!jsonMatch) {
-					throw new Error("AI did not return a valid plan");
+					throw new Error("A IA não retornou um plano válido");
 				}
 
 				const parsed = JSON.parse(jsonMatch[0]);
@@ -97,13 +97,13 @@ export function useCopilot() {
 					completedAt: Date.now(),
 				});
 			} catch (err) {
-				const msg = err instanceof Error ? err.message : "Planning failed";
+				const msg = err instanceof Error ? err.message : "Falha ao planejar";
 				bgTasks.updateTask(taskId, {
 					status: "error",
 					error: msg,
 					completedAt: Date.now(),
 				});
-				toast.error("Co-Pilot planning failed", { description: msg });
+				toast.error("Falha no planejamento do Co-Pilot", { description: msg });
 			} finally {
 				setIsPlanning(false);
 			}
@@ -191,7 +191,7 @@ export function useCopilot() {
 			completedAt: Date.now(),
 		});
 
-		toast.success("Co-Pilot finished executing plan");
+		toast.success("O Co-Pilot concluiu a execução do plano");
 	}, [plan, bgTasks]);
 
 	const cancel = useCallback(() => {

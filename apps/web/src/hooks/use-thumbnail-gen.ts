@@ -68,16 +68,16 @@ export function useThumbnailGen() {
 					completedAt: Date.now(),
 				});
 
-				toast.success(`Generated ${count} thumbnail${count > 1 ? "s" : ""}`);
+				toast.success(`${count} miniatura${count > 1 ? "s" : ""} gerada${count > 1 ? "s" : ""}`);
 				return results;
 			} catch (err) {
-				const msg = err instanceof Error ? err.message : "Thumbnail generation failed";
+				const msg = err instanceof Error ? err.message : "Falha ao gerar miniaturas";
 				bgTasks.updateTask(taskId, {
 					status: "error",
 					error: msg,
 					completedAt: Date.now(),
 				});
-				toast.error("Thumbnail generation failed", { description: msg });
+				toast.error("Falha ao gerar miniaturas", { description: msg });
 				return null;
 			}
 		},
@@ -122,7 +122,7 @@ export function useThumbnailGen() {
 				placement: { mode: "explicit", trackId: targetTrack.id },
 			});
 
-			toast.success("Thumbnail added to timeline");
+			toast.success("Miniatura adicionada à linha do tempo");
 		},
 		[editor],
 	);

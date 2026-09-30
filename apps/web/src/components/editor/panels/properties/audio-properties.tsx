@@ -92,13 +92,13 @@ export function AudioProperties({
 				<SectionContent>
 					<div className="flex items-start gap-2">
 						<SectionField
-							label="Level"
+							label="Nível"
 							className="flex-1"
 							beforeLabel={
 								<KeyframeToggle
 									isActive={volume.isKeyframedAtTime}
 									isDisabled={!isPlayheadWithinElementRange}
-									title="Toggle volume keyframe"
+									title="Alternar keyframe de volume"
 									onToggle={volume.toggleKeyframe}
 								/>
 							}
@@ -137,7 +137,7 @@ export function AudioProperties({
 									size="icon"
 									className="size-8 shrink-0"
 									onClick={handleToggleMute}
-									title={isMuted ? "Unmute" : "Mute"}
+									title={isMuted ? "Ativar som" : "Silenciar"}
 								>
 									<HugeiconsIcon
 										icon={isMuted ? VolumeOffIcon : VolumeHighIcon}

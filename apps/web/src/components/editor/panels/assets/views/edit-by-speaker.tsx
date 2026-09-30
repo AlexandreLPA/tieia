@@ -48,7 +48,7 @@ export function EditBySpeakerPanel() {
 
 	const handleDetect = useCallback(async () => {
 		if (!mediaFile) {
-			toast.error("Add a media file to the timeline first.");
+			toast.error("Adicione um arquivo de mídia à linha do tempo primeiro.");
 			return;
 		}
 		setIsDetecting(true);
@@ -56,11 +56,11 @@ export function EditBySpeakerPanel() {
 			const result = await aiClient.analyzeSpeakers(mediaFile);
 			useTranscriptStore.getState().applySpeakerDiarization(result.segments);
 			toast.success(
-				`Detected ${result.num_speakers} speaker${result.num_speakers === 1 ? "" : "s"}.`,
+				`${result.num_speakers} falante${result.num_speakers === 1 ? "" : "s"} detectado${result.num_speakers === 1 ? "" : "s"}.`,
 			);
 		} catch (err) {
-			const msg = err instanceof Error ? err.message : "Speaker detection failed";
-			toast.error("Speaker detection failed", { description: msg });
+			const msg = err instanceof Error ? err.message : "Falha na detecção de falantes";
+			toast.error("Falha na detecção de falantes", { description: msg });
 		} finally {
 			setIsDetecting(false);
 		}
@@ -73,7 +73,7 @@ export function EditBySpeakerPanel() {
 				if (op === "remove") {
 					if (
 						!window.confirm(
-							`Remove all segments by this speaker from the timeline? This cuts the underlying video/audio too. Undoable.`,
+							`Remover todos os segmentos deste falante da linha do tempo? Isso também corta o vídeo/áudio correspondente. É possível desfazer essa ação.`,
 						)
 					)
 						return;
@@ -94,23 +94,23 @@ export function EditBySpeakerPanel() {
 	return (
 		<div className="flex flex-col gap-4 p-3">
 			<div className="flex items-center justify-between">
-				<span className="text-xs font-medium">Edit by Speaker</span>
+				<span className="text-xs font-medium">Editar por Falante</span>
 				<Badge variant="outline" className="text-[8px] px-1 py-0">
-					Local · diarization
+					Local · diarização
 				</Badge>
 			</div>
 
 			<p className="text-[10px] text-muted-foreground leading-relaxed">
-				Operate on a single speaker at a time — remove their segments (cuts the
-				timeline too), tighten the gaps between their lines, or mute everything
-				else to isolate them. Runs entirely on-device.
+				Trabalhe com um falante por vez — remova os segmentos dele (isso também
+				corta a linha do tempo), reduza os intervalos entre as falas ou silencie
+				todo o resto para isolá-lo. Roda inteiramente no dispositivo.
 			</p>
 
 			{!hasSpeakers && (
 				<div className="flex flex-col gap-2 rounded-md border border-border p-3">
 					<span className="text-[10px] text-muted-foreground">
-						No speaker labels yet. Run detection to label each transcript segment
-						with its speaker.
+						Ainda não há rótulos de falantes. Execute a detecção para rotular
+						cada segmento da transcrição com seu falante.
 					</span>
 					<button
 						type="button"
@@ -123,7 +123,7 @@ export function EditBySpeakerPanel() {
 								: "bg-primary text-primary-foreground hover:bg-primary/90",
 						)}
 					>
-						{isDetecting ? "Detecting…" : "Detect speakers"}
+						{isDetecting ? "Detectando…" : "Detectar falantes"}
 					</button>
 				</div>
 			)}
@@ -131,9 +131,9 @@ export function EditBySpeakerPanel() {
 			{hasSpeakers && (
 				<div className="flex flex-col gap-1.5">
 					<div className="flex items-center justify-between">
-						<Label>Speakers</Label>
+						<Label>Falantes</Label>
 						<span className="text-[8px] text-muted-foreground">
-							{speakers.length} found
+							{speakers.length} encontrados
 						</span>
 					</div>
 					<div className="flex flex-col gap-2">
@@ -197,18 +197,18 @@ function SpeakerRow({
 
 			<div className="flex items-center gap-1">
 				<ActionButton onClick={onRemove} disabled={busy} tone="destructive">
-					Remove
+					Remover
 				</ActionButton>
 				<ActionButton onClick={onTighten} disabled={busy}>
-					Tighten
+					Encurtar
 				</ActionButton>
 				<ActionButton onClick={onIsolate} disabled={busy}>
-					Isolate
+					Isolar
 				</ActionButton>
 			</div>
 
 			<label className="flex items-center gap-1 text-[8px] text-muted-foreground">
-				<span>Max gap:</span>
+				<span>Intervalo máx.:</span>
 				<input
 					type="range"
 					min={0.2}

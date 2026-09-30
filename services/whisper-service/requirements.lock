@@ -72,6 +72,14 @@ numpy==2.4.4
     # via
     #   ctranslate2
     #   onnxruntime
+nvidia-cublas-cu12==12.9.2.10
+    # via
+    #   -r services/whisper-service/requirements.txt
+    #   nvidia-cudnn-cu12
+nvidia-cuda-nvrtc-cu12==12.9.86
+    # via nvidia-cublas-cu12
+nvidia-cudnn-cu12==9.26.0.51
+    # via -r services/whisper-service/requirements.txt
 onnxruntime==1.24.4
     # via faster-whisper
 packaging==26.0

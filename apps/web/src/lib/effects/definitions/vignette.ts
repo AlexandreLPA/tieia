@@ -3,12 +3,12 @@ import vignetteShader from "./vignette.frag.glsl";
 
 export const vignetteEffectDefinition: EffectDefinition = {
 	type: "vignette",
-	name: "Vignette",
+	name: "Vinheta",
 	keywords: ["vignette", "dark", "edges", "corner", "focus"],
 	params: [
 		{
 			key: "intensity",
-			label: "Intensity",
+			label: "Intensidade",
 			type: "number",
 			default: 50,
 			min: 0,

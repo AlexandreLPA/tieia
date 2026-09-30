@@ -33,7 +33,7 @@ export function YouTubeUrlInput({ onSubmit, disabled }: YouTubeUrlInputProps) {
 
 	return (
 		<div className="space-y-3">
-			<label className="text-sm font-medium text-foreground">YouTube Video URL</label>
+			<label className="text-sm font-medium text-foreground">URL do Vídeo do YouTube</label>
 			<div className="flex gap-2">
 				<input
 					type="url"
@@ -54,11 +54,11 @@ export function YouTubeUrlInput({ onSubmit, disabled }: YouTubeUrlInputProps) {
 					onClick={() => onSubmit(url)}
 					disabled={!isValid || disabled}
 				>
-					Continue
+					Continuar
 				</Button>
 			</div>
 			{url && !isValid && (
-				<p className="text-xs text-red-400">Enter a valid YouTube URL</p>
+				<p className="text-xs text-red-400">Insira uma URL válida do YouTube</p>
 			)}
 		</div>
 	);

@@ -1184,9 +1184,32 @@ class AIClient {
 	async llmStatus(): Promise<{
 		available: boolean;
 		default_model: string;
+		active_backend: string;
+		openrouter_configured: boolean;
+		openrouter_model: string;
 		models: { name: string; size: number; modified_at: string; details?: Record<string, unknown> }[];
 	}> {
 		return this.request("/api/llm/status");
+	}
+
+	async setCloudModel(modelId: string): Promise<{
+		status: string;
+		previous_backend: string;
+		current_backend: string;
+		current_model: string;
+	}> {
+		return this.request("/api/llm/set-cloud-model", {
+			method: "POST",
+			body: JSON.stringify({ model: modelId }),
+		});
+	}
+
+	async setLocalBackend(): Promise<{
+		status: string;
+		previous_backend: string;
+		current_backend: string;
+	}> {
+		return this.request("/api/llm/set-local-backend", { method: "POST" });
 	}
 
 	async pullModel(

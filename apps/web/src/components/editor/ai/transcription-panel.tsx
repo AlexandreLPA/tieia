@@ -369,14 +369,14 @@ export function TranscriptionPanel({
 							icon={TextIcon}
 							className="size-4 text-primary"
 						/>
-						<span className="text-sm font-medium">Transcript</span>
+						<span className="text-sm font-medium">Transcrição</span>
 						{status === "complete" && segments.length > 0 && (
 							<Badge variant="secondary" className="text-[10px]">
 								{segments.reduce(
 									(acc, s) => acc + s.words.length,
 									0,
 								)}{" "}
-								words
+								palavras
 							</Badge>
 						)}
 					</div>
@@ -396,12 +396,12 @@ export function TranscriptionPanel({
 											icon={Delete02Icon}
 											className="size-3 mr-1"
 										/>
-										Delete {selectedSegmentIds.size}
+										Excluir {selectedSegmentIds.size}
 									</Button>
 								</TooltipTrigger>
 								<TooltipContent>
-									Delete selected segments and cut
-									corresponding timeline ranges
+									Excluir os trechos selecionados e cortar os
+									intervalos correspondentes na linha do tempo
 								</TooltipContent>
 							</Tooltip>
 						)}
@@ -417,12 +417,12 @@ export function TranscriptionPanel({
 								{isDetectingSpeakers ? (
 									<>
 										<Spinner className="size-3 mr-1" />
-										Detecting...
+										Detectando...
 									</>
 								) : segments.some((s) => s.speaker) ? (
-									"Re-detect speakers"
+									"Detectar falantes novamente"
 								) : (
-									"Detect speakers"
+									"Detectar falantes"
 								)}
 							</Button>
 						)}
@@ -436,17 +436,17 @@ export function TranscriptionPanel({
 							{status === "transcribing" ? (
 								<>
 									<Spinner className="size-3 mr-1" />
-									Transcribing...
+									Transcrevendo...
 								</>
 							) : status === "complete" ? (
-								"Re-transcribe"
+								"Retranscrever"
 							) : (
 								<>
 									<HugeiconsIcon
 										icon={AiMicIcon}
 										className="size-3 mr-1"
 									/>
-									Transcribe
+									Transcrever
 								</>
 							)}
 						</Button>
@@ -458,7 +458,7 @@ export function TranscriptionPanel({
 					<div className="px-4 py-2 border-b">
 						<Progress value={progress} className="h-1.5" />
 						<p className="text-[11px] text-muted-foreground mt-1">
-							{Math.round(progress)}% complete
+							{Math.round(progress)}% concluído
 						</p>
 					</div>
 				)}
@@ -474,8 +474,8 @@ export function TranscriptionPanel({
 				{hasMarkedWords && (
 					<div className="flex items-center justify-between px-4 py-2 border-b bg-yellow-500/5">
 						<p className="text-xs text-muted-foreground">
-							Words marked for removal. Apply cuts to update the
-							timeline.
+							Palavras marcadas para remoção. Aplique os cortes
+							para atualizar a linha do tempo.
 						</p>
 						<div className="flex items-center gap-1.5">
 							<Button
@@ -487,7 +487,7 @@ export function TranscriptionPanel({
 									icon={Cancel01Icon}
 									className="size-3 mr-1"
 								/>
-								Clear
+								Limpar
 							</Button>
 							{onCutWords && (
 								<Button
@@ -498,7 +498,7 @@ export function TranscriptionPanel({
 										icon={Tick02Icon}
 										className="size-3 mr-1"
 									/>
-									Apply Cuts
+									Aplicar cortes
 								</Button>
 							)}
 						</div>
@@ -515,7 +515,7 @@ export function TranscriptionPanel({
 
 					return (
 						<div className="flex items-center gap-2 px-4 py-2 border-b flex-wrap">
-							<span className="text-[10px] text-muted-foreground font-medium shrink-0">Speakers:</span>
+							<span className="text-[10px] text-muted-foreground font-medium shrink-0">Falantes:</span>
 							{uniqueSpeakers.map((spkId, idx) => {
 								const displayName = speakerNames?.[spkId] ?? spkId;
 								const colorClass = speakerColors[idx % speakerColors.length];
@@ -563,7 +563,7 @@ export function TranscriptionPanel({
 											setEditingName(displayName);
 										}}
 										className="flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-medium hover:bg-accent transition-colors"
-										title="Click to rename"
+										title="Clique para renomear"
 									>
 										<span className={cn("size-2 rounded-full shrink-0", colorClass)} />
 										{displayName}
@@ -583,11 +583,11 @@ export function TranscriptionPanel({
 								className="size-10 text-muted-foreground/30 mb-3"
 							/>
 							<p className="text-sm text-muted-foreground">
-								No transcript yet
+								Ainda não há transcrição
 							</p>
 							<p className="text-xs text-muted-foreground/70 mt-1">
-								Click &quot;Transcribe&quot; to generate a
-								transcript from your video audio.
+								Clique em &quot;Transcrever&quot; para gerar uma
+								transcrição a partir do áudio do vídeo.
 							</p>
 						</div>
 					)}
@@ -760,7 +760,7 @@ export function TranscriptionPanel({
 																						setEditingName(speakerNames?.[rawId] ?? rawId);
 																					}}
 																					className="text-[11px] font-medium text-primary hover:text-primary/80 hover:underline decoration-dotted underline-offset-2 transition-colors"
-																					title="Click to rename speaker"
+																					title="Clique para renomear o falante"
 																				>
 																					{speakerNames?.[segment.speaker] ?? segment.speaker}
 																				</button>
@@ -873,8 +873,8 @@ export function TranscriptionPanel({
 																								}
 																							>
 																								{isMarked
-																									? "Unmark word"
-																									: "Mark for removal"}
+																									? "Desmarcar palavra"
+																									: "Marcar para remoção"}
 																							</ContextMenuItem>
 																							<ContextMenuSeparator />
 																							<ContextMenuItem
@@ -884,8 +884,8 @@ export function TranscriptionPanel({
 																									)
 																								}
 																							>
-																								Seek
-																								to{" "}
+																								Ir
+																								para{" "}
 																								{formatTimestamp(
 																									word.startTime,
 																								)}
@@ -925,12 +925,7 @@ export function TranscriptionPanel({
 																			</button>
 																		</TooltipTrigger>
 																		<TooltipContent>
-																			Delete
-																			segment
-																			and
-																			cut
-																			from
-																			timeline
+																			Excluir trecho e cortar da linha do tempo
 																		</TooltipContent>
 																	</Tooltip>
 																)}
@@ -949,7 +944,7 @@ export function TranscriptionPanel({
 																		}
 																		className="text-[10px] text-muted-foreground/60 hover:text-muted-foreground transition-colors font-mono"
 																	>
-																		[silence:{" "}
+																		[silêncio:{" "}
 																		{silenceBetween.duration.toFixed(
 																			1,
 																		)}

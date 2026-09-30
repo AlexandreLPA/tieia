@@ -8,12 +8,12 @@ const STATUS_CONFIG: Record<
 	SyncState["status"],
 	{ label: string; icon: string; color: string }
 > = {
-	idle: { label: "Not synced", icon: "—", color: "text-muted-foreground" },
-	syncing: { label: "Syncing...", icon: "↻", color: "text-blue-400" },
-	synced: { label: "Synced", icon: "✓", color: "text-green-400" },
-	unsynced: { label: "Unsynced", icon: "↑", color: "text-yellow-400" },
+	idle: { label: "Sem sincronização", icon: "—", color: "text-muted-foreground" },
+	syncing: { label: "Sincronizando...", icon: "↻", color: "text-blue-400" },
+	synced: { label: "Sincronizado", icon: "✓", color: "text-green-400" },
+	unsynced: { label: "Alterações pendentes", icon: "↑", color: "text-yellow-400" },
 	offline: { label: "Offline", icon: "⊘", color: "text-muted-foreground/60" },
-	error: { label: "Sync error", icon: "!", color: "text-red-400" },
+	error: { label: "Erro de sincronização", icon: "!", color: "text-red-400" },
 };
 
 export function SyncStatusIndicator({
@@ -93,27 +93,27 @@ export function SyncStatusIndicator({
 					className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground hover:text-foreground transition-colors"
 					onClick={handlePush}
 					disabled={state.status === "syncing"}
-					title="Push local commits to server"
+					title="Enviar versões locais para o servidor"
 				>
-					Push
+					Enviar
 				</button>
 				<button
 					type="button"
 					className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground hover:text-foreground transition-colors"
 					onClick={handlePull}
 					disabled={state.status === "syncing"}
-					title="Pull remote commits to local"
+					title="Baixar versões do servidor"
 				>
-					Pull
+					Baixar
 				</button>
 				<button
 					type="button"
 					className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground hover:text-foreground transition-colors"
 					onClick={handleSync}
 					disabled={state.status === "syncing"}
-					title="Push + Pull"
+					title="Enviar + Baixar"
 				>
-					Sync
+					Sincronizar
 				</button>
 			</div>
 

@@ -34,34 +34,34 @@ export interface CopilotExecutionOptions {
 
 export const COPILOT_PRESETS = [
 	{
-		label: "Make a 60s reel",
+		label: "Criar um reel de 60s",
 		prompt:
-			"Make this a 60-second vertical reel with captions and background music. Trim to the most engaging section.",
+			"Transforme isso em um reel vertical de 60 segundos com legendas e música de fundo. Corte para a parte mais envolvente.",
 	},
 	{
-		label: "Remove silences",
+		label: "Remover silêncios",
 		prompt:
-			"Remove all silence and filler words from this video. Clean up the audio.",
+			"Remova todos os silêncios e vícios de linguagem deste vídeo. Limpe o áudio.",
 	},
 	{
-		label: "Add chapters",
+		label: "Adicionar capítulos",
 		prompt:
-			"Analyze the content and add chapter markers at topic boundaries. Generate YouTube description.",
+			"Analise o conteúdo e adicione marcadores de capítulo nas mudanças de assunto. Gere a descrição para o YouTube.",
 	},
 	{
-		label: "Social clips",
+		label: "Clipes para redes sociais",
 		prompt:
-			"Find the best 3 short clips (15-30 seconds each) from this video and create separate timeline ranges for them.",
+			"Encontre os 3 melhores clipes curtos (15 a 30 segundos cada) deste vídeo e crie intervalos separados na linha do tempo para eles.",
 	},
 	{
-		label: "Polish audio",
+		label: "Aprimorar áudio",
 		prompt:
-			"Normalize audio to -14 LUFS for YouTube. Apply noise reduction. Auto-duck background music under speech.",
+			"Normalize o áudio para -14 LUFS para o YouTube. Aplique redução de ruído. Reduza automaticamente a música de fundo durante a fala.",
 	},
 	{
-		label: "Color grade",
+		label: "Correção de cor",
 		prompt:
-			"Apply cinematic color grading to all video clips. Add subtle vignette. Make skin tones warm and natural.",
+			"Aplique correção de cor cinematográfica em todos os clipes de vídeo. Adicione uma vinheta sutil. Deixe os tons de pele quentes e naturais.",
 	},
 ] as const;
 

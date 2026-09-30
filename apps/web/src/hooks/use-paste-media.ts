@@ -89,7 +89,7 @@ export function usePasteMedia() {
 				}
 			} catch (error) {
 				console.error("Failed to paste media:", error);
-				toast.error("Failed to paste media");
+				toast.error("Falha ao colar mídia");
 			}
 		};
 

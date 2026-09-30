@@ -274,7 +274,7 @@ export function AudioMixerPanel() {
 	if (audioTracks.length === 0) {
 		return (
 			<div className="flex flex-col items-center justify-center gap-2 p-4 text-muted-foreground">
-				<span className="text-[10px]">No audio tracks</span>
+				<span className="text-[10px]">Nenhuma faixa de áudio</span>
 			</div>
 		);
 	}
@@ -284,7 +284,7 @@ export function AudioMixerPanel() {
 			<div className="flex items-center justify-between">
 				<span className="text-[10px] font-medium">Mixer</span>
 				<span className="text-[9px] text-muted-foreground">
-					{audioTracks.length} track{audioTracks.length !== 1 ? "s" : ""}
+					{audioTracks.length} faixa{audioTracks.length !== 1 ? "s" : ""}
 				</span>
 			</div>
 

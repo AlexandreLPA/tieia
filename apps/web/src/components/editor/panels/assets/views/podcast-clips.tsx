@@ -65,8 +65,8 @@ export function PodcastClipsView() {
 		bgTasks.addTask({
 			id: taskId,
 			type: "popover-subs",
-			label: "Auto-reframe 9:16",
-			progress: "Finding media file...",
+			label: "Reenquadramento automático 9:16",
+			progress: "Localizando arquivo de mídia...",
 		});
 
 		try {
@@ -87,17 +87,17 @@ export function PodcastClipsView() {
 			}
 
 			if (!foundMediaId) {
-				bgTasks.updateTask(taskId, { status: "error", error: "No video found on timeline.", completedAt: Date.now() });
+				bgTasks.updateTask(taskId, { status: "error", error: "Nenhum vídeo encontrado na linha do tempo.", completedAt: Date.now() });
 				return;
 			}
 
 			const mediaAsset = editor.media.getAssets().find((a) => a.id === foundMediaId);
 			if (!mediaAsset?.file) {
-				bgTasks.updateTask(taskId, { status: "error", error: "Cannot access media file.", completedAt: Date.now() });
+				bgTasks.updateTask(taskId, { status: "error", error: "Não foi possível acessar o arquivo de mídia.", completedAt: Date.now() });
 				return;
 			}
 
-			bgTasks.updateTask(taskId, { progress: "Detecting faces..." });
+			bgTasks.updateTask(taskId, { progress: "Detectando rostos..." });
 
 			let file = mediaAsset.file;
 			if (!file.name?.includes(".")) {
@@ -107,11 +107,11 @@ export function PodcastClipsView() {
 			const faceResult = await aiClient.detectFaces(file, { sampleInterval: 0.5 });
 
 			if (faceResult.total_faces_detected === 0) {
-				bgTasks.updateTask(taskId, { status: "completed", progress: "No faces detected", completedAt: Date.now() });
+				bgTasks.updateTask(taskId, { status: "completed", progress: "Nenhum rosto detectado", completedAt: Date.now() });
 				return;
 			}
 
-			bgTasks.updateTask(taskId, { progress: "Applying crop transforms..." });
+			bgTasks.updateTask(taskId, { progress: "Aplicando ajustes de corte..." });
 
 			// Change canvas to 9:16
 			const canvasSize = editor.project.getActive().settings.canvasSize;
@@ -188,15 +188,15 @@ export function PodcastClipsView() {
 
 			bgTasks.updateTask(taskId, {
 				status: "completed",
-				progress: `Reframed ${faceResult.total_faces_detected} faces across ${faceResult.frames.length} frames`,
+				progress: `Reenquadrados ${faceResult.total_faces_detected} rostos em ${faceResult.frames.length} quadros`,
 				completedAt: Date.now(),
 			});
 		} catch (err) {
-			const message = err instanceof Error ? err.message : "Auto-reframe failed";
+			const message = err instanceof Error ? err.message : "Falha no reenquadramento automático";
 			let detail = message;
-			if (message.includes("404")) detail = "Face endpoint not found. Restart the AI backend.";
-			else if (message.includes("503")) detail = "Face service not running. Start with: docker compose up -d face-service";
-			else if (message.includes("Cannot connect")) detail = "AI backend not reachable.";
+			if (message.includes("404")) detail = "Endpoint de rosto não encontrado. Reinicie o backend de IA.";
+			else if (message.includes("503")) detail = "Serviço de rosto não está em execução. Inicie com: docker compose up -d face-service";
+			else if (message.includes("Cannot connect")) detail = "Backend de IA não está acessível.";
 			bgTasks.updateTask(taskId, { status: "error", error: detail, completedAt: Date.now() });
 		} finally {
 			setIsReframing(false);
@@ -213,8 +213,8 @@ export function PodcastClipsView() {
 		bgTasks.addTask({
 			id: taskId,
 			type: "clip-finder",
-			label: "Find best clips",
-			progress: "Analyzing transcript with AI...",
+			label: "Encontrar os melhores clipes",
+			progress: "Analisando transcrição com IA...",
 		});
 
 		try {
@@ -224,22 +224,22 @@ export function PodcastClipsView() {
 			if (result.clips.length === 0) {
 				bgTasks.updateTask(taskId, {
 					status: "completed",
-					progress: "No high-scoring clips found",
+					progress: "Nenhum clipe com boa pontuação encontrado",
 					completedAt: Date.now(),
 				});
 			} else {
 				bgTasks.updateTask(taskId, {
 					status: "completed",
-					progress: `${result.clips.length} clips found`,
+					progress: `${result.clips.length} clipes encontrados`,
 					completedAt: Date.now(),
 				});
 			}
 		} catch (err) {
-			const message = err instanceof Error ? err.message : "Failed to find clips";
+			const message = err instanceof Error ? err.message : "Falha ao encontrar clipes";
 			const detail = message.includes("Cannot connect") || message.includes("connection_refused")
-				? "Cannot connect to AI backend. Make sure it is running with Ollama (docker compose up -d)."
+				? "Não foi possível conectar ao backend de IA. Verifique se está em execução com o Ollama (docker compose up -d)."
 				: message.includes("503")
-					? "Ollama LLM is not available. Start it with: docker compose up -d ollama"
+					? "O LLM do Ollama não está disponível. Inicie com: docker compose up -d ollama"
 					: message;
 			bgTasks.updateTask(taskId, {
 				status: "error",
@@ -255,7 +255,7 @@ export function PodcastClipsView() {
 	const handlePreviewClip = useCallback(
 		(clip: ClipCandidate) => {
 			editor.playback.seek({ time: clip.start });
-			toast.info(`Seeking to ${clip.title}`, {
+			toast.info(`Indo para ${clip.title}`, {
 				description: `${clip.start.toFixed(1)}s - ${clip.end.toFixed(1)}s`,
 			});
 		},
@@ -271,8 +271,8 @@ export function PodcastClipsView() {
 			bgTasks.addTask({
 				id: taskId,
 				type: "popover-subs",
-				label: `Apply: ${clip.title}`,
-				progress: "Preparing clip segments...",
+				label: `Aplicar: ${clip.title}`,
+				progress: "Preparando segmentos do clipe...",
 			});
 
 			try {
@@ -297,7 +297,7 @@ export function PodcastClipsView() {
 				let clipKeywords: { word: string; color: string }[] = [];
 				if (enableKeywordHighlight) {
 					try {
-						bgTasks.updateTask(taskId, { progress: "Extracting keywords..." });
+						bgTasks.updateTask(taskId, { progress: "Extraindo palavras-chave..." });
 						const kwResult = await aiClient.extractKeywords(
 							clipSegments.map((s, i) => ({
 								id: i,
@@ -318,7 +318,7 @@ export function PodcastClipsView() {
 				let cards: QuestionCard[] = [];
 				if (enableQuestionCards) {
 					try {
-						bgTasks.updateTask(taskId, { progress: "Generating topic cards..." });
+						bgTasks.updateTask(taskId, { progress: "Gerando cartões de tópicos..." });
 						const cardsResult = await aiClient.generateQuestionCards(
 							clipSegments.map((s, i) => ({
 								id: i,
@@ -336,7 +336,7 @@ export function PodcastClipsView() {
 					}
 				}
 
-				bgTasks.updateTask(taskId, { progress: "Adding to timeline..." });
+				bgTasks.updateTask(taskId, { progress: "Adicionando à linha do tempo..." });
 				const canvasSize = editor.project.getActive().settings.canvasSize;
 
 				// Build card time ranges so subtitles can skip them
@@ -358,8 +358,8 @@ export function PodcastClipsView() {
 				for (let t = 0; t < trackBuckets.length; t++) {
 					const subTrackId = editor.timeline.addTrack({ type: "text", index: 0 });
 					const label = trackBuckets.length === 1
-						? "Popover Subs"
-						: `Popover Subs ${t + 1}`;
+						? "Legendas Popover"
+						: `Legendas Popover ${t + 1}`;
 					editor.timeline.renameTrack({ trackId: subTrackId, name: label });
 
 					for (const el of trackBuckets[t]) {
@@ -373,7 +373,7 @@ export function PodcastClipsView() {
 				// Add question card track if cards were generated
 				if (cards.length > 0) {
 					const cardTrackId = editor.timeline.addTrack({ type: "text", index: 0 });
-					editor.timeline.renameTrack({ trackId: cardTrackId, name: "Topic Cards" });
+					editor.timeline.renameTrack({ trackId: cardTrackId, name: "Cartões de Tópicos" });
 
 					for (const card of cards) {
 						const cardElement = buildQuestionCardElement({
@@ -390,14 +390,14 @@ export function PodcastClipsView() {
 					}
 				}
 
-				const summary = `${subtitleElements.length} words across ${trackBuckets.length} tracks${cards.length > 0 ? `, ${cards.length} cards` : ""}`;
+				const summary = `${subtitleElements.length} palavras em ${trackBuckets.length} faixas${cards.length > 0 ? `, ${cards.length} cartões` : ""}`;
 				bgTasks.updateTask(taskId, {
 					status: "completed",
 					progress: summary,
 					completedAt: Date.now(),
 				});
 			} catch (err) {
-				const message = err instanceof Error ? err.message : "Failed to apply clip";
+				const message = err instanceof Error ? err.message : "Falha ao aplicar clipe";
 				bgTasks.updateTask(taskId, {
 					status: "error",
 					error: message,
@@ -420,15 +420,15 @@ export function PodcastClipsView() {
 		bgTasks.addTask({
 			id: taskId,
 			type: "popover-subs",
-			label: "Popover subtitles",
-			progress: "Starting...",
+			label: "Legendas Popover",
+			progress: "Iniciando...",
 		});
 
 		try {
 			let kws: { word: string; color: string }[] = [];
 			if (enableKeywordHighlight) {
 				try {
-					bgTasks.updateTask(taskId, { progress: "Extracting keywords..." });
+					bgTasks.updateTask(taskId, { progress: "Extraindo palavras-chave..." });
 					const kwResult = await aiClient.extractKeywords(segments);
 					kws = kwResult.keywords;
 					setKeywords(kws);
@@ -437,7 +437,7 @@ export function PodcastClipsView() {
 				}
 			}
 
-			bgTasks.updateTask(taskId, { progress: "Building popover elements..." });
+			bgTasks.updateTask(taskId, { progress: "Construindo elementos Popover..." });
 			const canvasSize = editor.project.getActive().settings.canvasSize;
 
 			const subtitleElements = buildPopoverSubtitleElements({
@@ -459,8 +459,8 @@ export function PodcastClipsView() {
 			for (let t = 0; t < trackBuckets.length; t++) {
 				const trackId = editor.timeline.addTrack({ type: "text", index: 0 });
 				const label = trackBuckets.length === 1
-					? "Popover Subs"
-					: `Popover Subs ${t + 1}`;
+					? "Legendas Popover"
+					: `Legendas Popover ${t + 1}`;
 				editor.timeline.renameTrack({ trackId, name: label });
 
 				for (const el of trackBuckets[t]) {
@@ -473,11 +473,11 @@ export function PodcastClipsView() {
 
 			bgTasks.updateTask(taskId, {
 				status: "completed",
-				progress: `${subtitleElements.length} words across ${trackBuckets.length} tracks`,
+				progress: `${subtitleElements.length} palavras em ${trackBuckets.length} faixas`,
 				completedAt: Date.now(),
 			});
 		} catch (err) {
-			const message = err instanceof Error ? err.message : "Failed to add popover subtitles";
+			const message = err instanceof Error ? err.message : "Falha ao adicionar legendas Popover";
 			bgTasks.updateTask(taskId, {
 				status: "error",
 				error: message,
@@ -498,8 +498,8 @@ export function PodcastClipsView() {
 		bgTasks.addTask({
 			id: taskId,
 			type: "question-cards",
-			label: "Question cards",
-			progress: "Analyzing topic shifts...",
+			label: "Cartões de perguntas",
+			progress: "Analisando mudanças de tópico...",
 		});
 
 		try {
@@ -509,16 +509,16 @@ export function PodcastClipsView() {
 			if (result.cards.length === 0) {
 				bgTasks.updateTask(taskId, {
 					status: "completed",
-					progress: "No topic shifts detected",
+					progress: "Nenhuma mudança de tópico detectada",
 					completedAt: Date.now(),
 				});
 				return;
 			}
 
-			bgTasks.updateTask(taskId, { progress: "Adding cards to timeline..." });
+			bgTasks.updateTask(taskId, { progress: "Adicionando cartões à linha do tempo..." });
 
 			const cardTrackId = editor.timeline.addTrack({ type: "text", index: 0 });
-			editor.timeline.renameTrack({ trackId: cardTrackId, name: "Topic Cards" });
+			editor.timeline.renameTrack({ trackId: cardTrackId, name: "Cartões de Tópicos" });
 
 			for (const card of result.cards) {
 				const cardElement = buildQuestionCardElement({
@@ -536,15 +536,15 @@ export function PodcastClipsView() {
 
 			bgTasks.updateTask(taskId, {
 				status: "completed",
-				progress: `${result.cards.length} cards added`,
+				progress: `${result.cards.length} cartões adicionados`,
 				completedAt: Date.now(),
 			});
 		} catch (err) {
-			const message = err instanceof Error ? err.message : "Failed to generate question cards";
+			const message = err instanceof Error ? err.message : "Falha ao gerar cartões de perguntas";
 			const detail = message.includes("Cannot connect") || message.includes("connection_refused")
-				? "Cannot connect to AI backend. Make sure Ollama is running."
+				? "Não foi possível conectar ao backend de IA. Verifique se o Ollama está em execução."
 				: message.includes("503")
-					? "Ollama LLM is not available. Start it with: docker compose up -d ollama"
+					? "O LLM do Ollama não está disponível. Inicie com: docker compose up -d ollama"
 					: message;
 			bgTasks.updateTask(taskId, {
 				status: "error",
@@ -559,21 +559,21 @@ export function PodcastClipsView() {
 	const isProcessing = isFindingClips || isApplying;
 
 	return (
-		<PanelView title="Podcast Clips">
+		<PanelView title="Clipes de Podcast">
 			<div className="flex flex-col gap-4 pb-4">
 				{!hasTranscript ? (
 					<div className="flex flex-col gap-3">
 						<p className="text-xs text-muted-foreground leading-relaxed">
-							Transcribe your video first using the Transcript tab, then come back here to create podcast-style clips.
+							Transcreva seu vídeo primeiro usando a aba Transcrição e depois volte aqui para criar clipes no estilo podcast.
 						</p>
 					</div>
 				) : (
 					<>
 						{/* ── Smart Clip Finder ── */}
 						<div className="flex flex-col gap-2">
-							<Label className="text-xs font-medium">Find best clips</Label>
+							<Label className="text-xs font-medium">Encontrar os melhores clipes</Label>
 							<p className="text-[11px] text-muted-foreground leading-relaxed">
-								AI analyzes your transcript and finds the most viral-worthy moments. You can switch tabs while it runs.
+								A IA analisa sua transcrição e encontra os momentos com maior potencial viral. Você pode trocar de aba enquanto ela roda.
 							</p>
 							<Button
 								variant="default"
@@ -584,10 +584,10 @@ export function PodcastClipsView() {
 							>
 								{isFindingClips && <Spinner className="mr-1 size-3" />}
 								{isFindingClips
-									? "Finding clips..."
+									? "Buscando clipes..."
 									: clips.length > 0
-										? "Re-scan for clips"
-										: "Find best clips"}
+										? "Buscar novamente"
+										: "Encontrar os melhores clipes"}
 							</Button>
 						</div>
 
@@ -595,9 +595,9 @@ export function PodcastClipsView() {
 						{clips.length > 0 && (
 							<div className="flex flex-col gap-2">
 								<div className="flex items-center justify-between">
-									<Label className="text-xs font-medium">Clip candidates</Label>
+									<Label className="text-xs font-medium">Clipes candidatos</Label>
 									<span className="text-[10px] text-muted-foreground tabular-nums">
-										{clips.length} found
+										{clips.length} encontrados
 									</span>
 								</div>
 								<div className="flex flex-col gap-1.5 max-h-60 overflow-y-auto">
@@ -648,7 +648,7 @@ export function PodcastClipsView() {
 													onClick={() => handlePreviewClip(clip)}
 													disabled={isProcessing}
 												>
-													Preview
+													Prévia
 												</Button>
 												<Button
 													variant="default"
@@ -657,7 +657,7 @@ export function PodcastClipsView() {
 													onClick={() => handleApplyClip(clip)}
 													disabled={isProcessing}
 												>
-													Apply
+													Aplicar
 												</Button>
 											</div>
 										</div>
@@ -668,7 +668,7 @@ export function PodcastClipsView() {
 
 						{/* ── Subtitle Style ── */}
 						<div className="border-t pt-3 flex flex-col gap-2">
-							<Label className="text-xs font-medium">Popover subtitle style</Label>
+							<Label className="text-xs font-medium">Estilo de legenda Popover</Label>
 							<Select
 								value={subtitlePreset}
 								onValueChange={(v) => setSubtitlePreset(v as PopoverSubtitlePreset)}
@@ -697,19 +697,19 @@ export function PodcastClipsView() {
 								disabled={isProcessing}
 							>
 								{isApplying && <Spinner className="mr-1 size-3" />}
-								Add popover subtitles
+								Adicionar legendas Popover
 							</Button>
 						</div>
 
 						{/* ── Auto Features ── */}
 						<div className="border-t pt-3 flex flex-col gap-3">
-							<Label className="text-xs font-medium">Auto features</Label>
+							<Label className="text-xs font-medium">Recursos automáticos</Label>
 
 							<div className="flex items-center justify-between">
 								<div className="flex flex-col">
-									<span className="text-xs">Keyword highlighting</span>
+									<span className="text-xs">Destaque de palavras-chave</span>
 									<span className="text-[10px] text-muted-foreground">
-										Color-code important words via AI
+										Destaca palavras importantes por cor usando IA
 									</span>
 								</div>
 								<Switch
@@ -720,9 +720,9 @@ export function PodcastClipsView() {
 
 							<div className="flex items-center justify-between">
 								<div className="flex flex-col">
-									<span className="text-xs">Question cards</span>
+									<span className="text-xs">Cartões de perguntas</span>
 									<span className="text-[10px] text-muted-foreground">
-										AI topic intro slides between segments
+										Slides de introdução de tópicos gerados por IA entre os segmentos
 									</span>
 								</div>
 								<Switch
@@ -734,9 +734,9 @@ export function PodcastClipsView() {
 
 						{/* ── Auto-Reframe ── */}
 						<div className="border-t pt-3 flex flex-col gap-2">
-							<Label className="text-xs font-medium">Auto-reframe for Shorts</Label>
+							<Label className="text-xs font-medium">Reenquadramento automático para Shorts</Label>
 							<p className="text-[11px] text-muted-foreground leading-relaxed">
-								Detect faces and auto-crop 16:9 video to 9:16 vertical, centering on the active speaker.
+								Detecta rostos e corta automaticamente o vídeo de 16:9 para 9:16 vertical, centralizando no falante ativo.
 							</p>
 							<Button
 								variant="outline"
@@ -746,15 +746,15 @@ export function PodcastClipsView() {
 								disabled={isProcessing || isReframing}
 							>
 								{isReframing && <Spinner className="mr-1 size-3" />}
-								{isReframing ? "Reframing..." : "Auto-reframe 9:16"}
+								{isReframing ? "Reenquadrando..." : "Reenquadramento automático 9:16"}
 							</Button>
 						</div>
 
 						{/* ── Question Cards ── */}
 						<div className="border-t pt-3 flex flex-col gap-2">
-							<Label className="text-xs font-medium">Topic cards</Label>
+							<Label className="text-xs font-medium">Cartões de tópicos</Label>
 							<p className="text-[11px] text-muted-foreground leading-relaxed">
-								AI topic questions overlaid on video. Subtitles are hidden during cards.
+								Perguntas de tópicos geradas por IA sobrepostas ao vídeo. As legendas ficam ocultas durante os cartões.
 							</p>
 
 							<Select
@@ -780,9 +780,9 @@ export function PodcastClipsView() {
 
 							<div className="flex items-center justify-between">
 								<div className="flex flex-col">
-									<span className="text-xs">Transparent background</span>
+									<span className="text-xs">Fundo transparente</span>
 									<span className="text-[10px] text-muted-foreground">
-										Show video behind card text
+										Mostra o vídeo atrás do texto do cartão
 									</span>
 								</div>
 								<Switch
@@ -799,7 +799,7 @@ export function PodcastClipsView() {
 								disabled={isProcessing}
 							>
 								{isApplying && <Spinner className="mr-1 size-3" />}
-								Generate question cards
+								Gerar cartões de perguntas
 							</Button>
 
 							{questionCards.length > 0 && (
@@ -835,7 +835,7 @@ export function PodcastClipsView() {
 						{/* ── Keywords (if extracted) ── */}
 						{keywords.length > 0 && (
 							<div className="border-t pt-3 flex flex-col gap-2">
-								<Label className="text-xs font-medium">Detected keywords</Label>
+								<Label className="text-xs font-medium">Palavras-chave detectadas</Label>
 								<div className="flex flex-wrap gap-1">
 									{keywords.slice(0, 20).map((kw, idx) => (
 										<Badge

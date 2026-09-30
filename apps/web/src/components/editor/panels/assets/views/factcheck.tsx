@@ -26,10 +26,10 @@ interface FactCheckResult {
 }
 
 const VERDICT_STYLES: Record<string, { bg: string; text: string; label: string }> = {
-	True: { bg: "bg-green-500/10", text: "text-green-600 dark:text-green-400", label: "True" },
-	False: { bg: "bg-red-500/10", text: "text-red-600 dark:text-red-400", label: "False" },
-	"Partially True": { bg: "bg-yellow-500/10", text: "text-yellow-600 dark:text-yellow-400", label: "Partial" },
-	Unverifiable: { bg: "bg-muted", text: "text-muted-foreground", label: "Unverifiable" },
+	True: { bg: "bg-green-500/10", text: "text-green-600 dark:text-green-400", label: "Verdadeiro" },
+	False: { bg: "bg-red-500/10", text: "text-red-600 dark:text-red-400", label: "Falso" },
+	"Partially True": { bg: "bg-yellow-500/10", text: "text-yellow-600 dark:text-yellow-400", label: "Parcial" },
+	Unverifiable: { bg: "bg-muted", text: "text-muted-foreground", label: "Não verificável" },
 };
 
 function getVerdictStyle(verdict: string) {
@@ -45,13 +45,13 @@ export function FactCheckView() {
 
 	const handleFactCheck = useCallback(async () => {
 		if (segments.length === 0) {
-			setError("No transcript available. Generate a transcript first.");
+			setError("Nenhuma transcrição disponível. Gere uma transcrição primeiro.");
 			return;
 		}
 
 		const fullText = segments.map((s) => s.text).join(" ");
 		if (fullText.trim().length < 10) {
-			setError("Transcript text is too short to fact-check.");
+			setError("O texto da transcrição é muito curto para verificação de fatos.");
 			return;
 		}
 
@@ -63,12 +63,12 @@ export function FactCheckView() {
 			const res = await aiClient.factCheck(fullText);
 			setResult(res);
 			if (res.claims.length === 0) {
-				toast.info("No verifiable claims found in the transcript.");
+				toast.info("Nenhuma afirmação verificável encontrada na transcrição.");
 			}
 		} catch (err) {
-			const msg = err instanceof Error ? err.message : "Fact-check failed";
+			const msg = err instanceof Error ? err.message : "Falha na verificação de fatos";
 			if (msg.includes("Cannot connect") || msg.includes("503")) {
-				setError("AI backend is not available. Make sure it is running.");
+				setError("O backend de IA não está disponível. Verifique se ele está em execução.");
 			} else {
 				setError(msg);
 			}
@@ -92,7 +92,7 @@ export function FactCheckView() {
 				placement: { mode: "explicit", trackId: textTrackId },
 				element: {
 					...DEFAULT_TEXT_ELEMENT,
-					name: `Fact Check`,
+					name: `Verificação de Fatos`,
 					content: overlayText,
 					duration: 5,
 					startTime: currentTime,
@@ -118,7 +118,7 @@ export function FactCheckView() {
 				},
 			});
 
-			toast.success("Fact-check overlay added at playhead position");
+			toast.success("Sobreposição de verificação de fatos adicionada na posição do cursor de reprodução");
 		},
 		[editor],
 	);
@@ -126,10 +126,10 @@ export function FactCheckView() {
 	const hasTranscript = segments.length > 0;
 
 	return (
-		<PanelView title="Fact Check">
+		<PanelView title="Verificação de Fatos">
 			<div className="flex flex-col gap-4">
 				<p className="text-xs text-muted-foreground leading-relaxed">
-					Analyze your transcript for factual claims and verify them. Add fact-check overlays to your video.
+					Analise sua transcrição em busca de afirmações factuais e verifique-as. Adicione sobreposições de verificação de fatos ao seu vídeo.
 				</p>
 
 				{error && (
@@ -144,12 +144,12 @@ export function FactCheckView() {
 					disabled={isChecking || !hasTranscript}
 				>
 					{isChecking && <Spinner className="mr-1" />}
-					{isChecking ? "Analyzing claims..." : "Fact-check transcript"}
+					{isChecking ? "Analisando afirmações..." : "Verificar fatos da transcrição"}
 				</Button>
 
 				{!hasTranscript && (
 					<p className="text-xs text-muted-foreground text-center">
-						Generate a transcript first to enable fact-checking.
+						Gere uma transcrição primeiro para habilitar a verificação de fatos.
 					</p>
 				)}
 
@@ -180,7 +180,7 @@ export function FactCheckView() {
 												style.text,
 											)}
 										>
-											{claim.verdict}
+											{style.label}
 										</span>
 									</div>
 
@@ -190,7 +190,7 @@ export function FactCheckView() {
 
 									{claim.source && (
 										<p className="text-[10px] text-muted-foreground/70">
-											Source: {claim.source}
+											Fonte: {claim.source}
 										</p>
 									)}
 
@@ -200,7 +200,7 @@ export function FactCheckView() {
 										className="self-start h-6 text-[10px]"
 										onClick={() => handleAddOverlay(claim)}
 									>
-										Add to video
+										Adicionar ao vídeo
 									</Button>
 								</div>
 							);
@@ -211,7 +211,7 @@ export function FactCheckView() {
 				{result && result.claims.length === 0 && (
 					<div className="rounded-md bg-muted/50 px-3 py-4 text-center">
 						<p className="text-xs text-muted-foreground">
-							No verifiable factual claims found in the transcript.
+							Nenhuma afirmação factual verificável encontrada na transcrição.
 						</p>
 					</div>
 				)}

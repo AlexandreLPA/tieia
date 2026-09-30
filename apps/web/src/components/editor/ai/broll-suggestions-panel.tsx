@@ -126,7 +126,7 @@ export function BRollSuggestionsPanel({
 			setSuggestions(cached);
 			setImageStates({});
 			setPexelsResults({});
-			toast.success(`Loaded ${cached.length} cached suggestions`);
+			toast.success(`${cached.length} sugestões em cache carregadas`);
 			return;
 		}
 
@@ -140,8 +140,8 @@ export function BRollSuggestionsPanel({
 		bgTasks.addTask({
 			id: taskId,
 			type: "broll-suggestions",
-			label: "B-Roll suggestions",
-			progress: "Analyzing transcript...",
+			label: "Sugestões de B-Roll",
+			progress: "Analisando transcrição...",
 		});
 
 		try {
@@ -165,14 +165,14 @@ export function BRollSuggestionsPanel({
 
 			bgTasks.updateTask(taskId, {
 				status: "completed",
-				progress: `${result.suggestions.length} suggestions`,
+				progress: `${result.suggestions.length} sugestões`,
 				completedAt: Date.now(),
 			});
 			if (result.suggestions.length === 0) {
-				toast.info("No B-roll suggestions — the content works well as-is.");
+				toast.info("Nenhuma sugestão de B-roll — o conteúdo já funciona bem como está.");
 			}
 		} catch (err) {
-			const msg = err instanceof Error ? err.message : "Analysis failed";
+			const msg = err instanceof Error ? err.message : "Falha na análise";
 			setError(msg);
 			bgTasks.updateTask(taskId, {
 				status: "error",
@@ -212,7 +212,7 @@ export function BRollSuggestionsPanel({
 					...prev,
 					[idx]: { status: "error" },
 				}));
-				toast.error("Image generation failed");
+				toast.error("Falha ao gerar a imagem");
 				return null;
 			}
 		},
@@ -241,7 +241,7 @@ export function BRollSuggestionsPanel({
 				[idx]: { ...prev[idx], inserted: true },
 			}));
 
-			toast.success(`Inserted at ${suggestion.startTime.toFixed(1)}s`);
+			toast.success(`Inserido em ${suggestion.startTime.toFixed(1)}s`);
 		},
 		[editor],
 	);
@@ -270,7 +270,7 @@ export function BRollSuggestionsPanel({
 			);
 
 		if (targets.length === 0) {
-			toast.info("All high-priority images already generated");
+			toast.info("Todas as imagens de alta prioridade já foram geradas");
 			return;
 		}
 
@@ -282,7 +282,7 @@ export function BRollSuggestionsPanel({
 		bgTasks.addTask({
 			id: taskId,
 			type: "broll-batch",
-			label: `Generating ${targets.length} B-roll images`,
+			label: `Gerando ${targets.length} imagens de B-roll`,
 			progress: `0 / ${targets.length}`,
 		});
 
@@ -302,13 +302,13 @@ export function BRollSuggestionsPanel({
 		bgTasks.updateTask(taskId, {
 			status: batchCancelRef.current ? "error" : "completed",
 			progress: batchCancelRef.current
-				? `Cancelled at ${completed}/${targets.length}`
-				: `${completed} images generated and inserted`,
+				? `Cancelado em ${completed}/${targets.length}`
+				: `${completed} imagens geradas e inseridas`,
 			completedAt: Date.now(),
 		});
 
 		if (!batchCancelRef.current) {
-			toast.success(`${completed} B-roll images generated and added to timeline`);
+			toast.success(`${completed} imagens de B-roll geradas e adicionadas à linha do tempo`);
 		}
 	}, [suggestions, imageStates, bgTasks, handleGenerateAndInsert]);
 
@@ -372,10 +372,10 @@ export function BRollSuggestionsPanel({
 								videoUrl: pollResult.videoUrl,
 							},
 						}));
-						toast.success("Video B-roll generated");
+						toast.success("Vídeo de B-roll gerado");
 					} else {
 						throw new Error(
-							pollResult.error ?? "Video generation timed out",
+							pollResult.error ?? "Tempo esgotado ao gerar o vídeo",
 						);
 					}
 				} else if (result.status === "completed" && result.videoUrl) {
@@ -383,17 +383,17 @@ export function BRollSuggestionsPanel({
 						...prev,
 						[idx]: { status: "done", videoUrl: result.videoUrl },
 					}));
-					toast.success("Video B-roll generated");
+					toast.success("Vídeo de B-roll gerado");
 				} else {
-					throw new Error(result.error ?? "Video generation failed");
+					throw new Error(result.error ?? "Falha ao gerar o vídeo");
 				}
 			} catch (err) {
-				const msg = err instanceof Error ? err.message : "Video gen failed";
+				const msg = err instanceof Error ? err.message : "Falha ao gerar o vídeo";
 				setVideoGenStates((prev) => ({
 					...prev,
 					[idx]: { status: "error" },
 				}));
-				toast.error("Video B-roll failed", { description: msg });
+				toast.error("Falha no B-roll em vídeo", { description: msg });
 			}
 		},
 		[editor],
@@ -416,10 +416,10 @@ export function BRollSuggestionsPanel({
 						[idx]: data.photos ?? [],
 					}));
 				} else {
-					toast.error("Stock image search failed. Check API key in Settings.");
+					toast.error("Falha na busca de imagens de banco. Verifique a chave de API em Configurações.");
 				}
 			} catch {
-				toast.error("Stock image search not available");
+				toast.error("Busca de imagens de banco não disponível");
 			} finally {
 				setSearchingStock(null);
 			}
@@ -434,7 +434,7 @@ export function BRollSuggestionsPanel({
 			const duration = suggestion.endTime - suggestion.startTime;
 			const element = buildImageElement({
 				mediaId: `pexels-${photo.id}-${Date.now()}`,
-				name: `Stock: ${photo.alt || photo.photographer}`,
+				name: `Banco: ${photo.alt || photo.photographer}`,
 				duration: Math.max(duration, 2),
 				startTime: suggestion.startTime,
 			});
@@ -444,7 +444,7 @@ export function BRollSuggestionsPanel({
 				placement: { mode: "auto" },
 			});
 
-			toast.success(`Stock image inserted at ${suggestion.startTime.toFixed(1)}s`);
+			toast.success(`Imagem de banco inserida em ${suggestion.startTime.toFixed(1)}s`);
 		},
 		[editor],
 	);
@@ -455,7 +455,7 @@ export function BRollSuggestionsPanel({
 			<div className="px-4 py-3 border-b space-y-2">
 				<div className="flex items-center gap-2">
 					<HugeiconsIcon icon={ViewIcon} className="size-4 text-primary" />
-					<span className="text-xs font-medium">B-Roll Suggestions</span>
+					<span className="text-xs font-medium">Sugestões de B-Roll</span>
 					{suggestions.length > 0 && (
 						<Badge variant="secondary" className="text-[8px] px-1 py-0">
 							{suggestions.length}
@@ -465,7 +465,7 @@ export function BRollSuggestionsPanel({
 
 				{!hasTranscript ? (
 					<p className="text-[10px] text-muted-foreground">
-						Transcribe your video first to get B-roll suggestions.
+						Transcreva seu vídeo primeiro para receber sugestões de B-roll.
 					</p>
 				) : (
 					<>
@@ -478,14 +478,14 @@ export function BRollSuggestionsPanel({
 							{isAnalyzing ? (
 								<>
 									<Spinner className="size-3.5 mr-2" />
-									Analyzing transcript...
+									Analisando transcrição...
 								</>
 							) : suggestions.length > 0 ? (
-								"Re-analyze"
+								"Reanalisar"
 							) : (
 								<>
 									<HugeiconsIcon icon={SparklesIcon} className="size-3.5 mr-2" />
-									Suggest B-Roll
+									Sugerir B-Roll
 								</>
 							)}
 						</Button>
@@ -502,7 +502,7 @@ export function BRollSuggestionsPanel({
 								{isBatchGenerating ? (
 									<>
 										<Spinner className="size-3.5 mr-2" />
-										Generating {batchProgress.done}/{batchProgress.total}...
+										Gerando {batchProgress.done}/{batchProgress.total}...
 										<button
 											type="button"
 											className="ml-2 text-[9px] text-destructive hover:underline"
@@ -511,13 +511,13 @@ export function BRollSuggestionsPanel({
 												batchCancelRef.current = true;
 											}}
 										>
-											Cancel
+											Cancelar
 										</button>
 									</>
 								) : (
 									<>
 										<HugeiconsIcon icon={ArrowDown01Icon} className="size-3.5 mr-2" />
-										Apply All High Priority ({highPrioritySuggestions.length})
+										Aplicar todas de alta prioridade ({highPrioritySuggestions.length})
 									</>
 								)}
 							</Button>
@@ -542,11 +542,11 @@ export function BRollSuggestionsPanel({
 								className="size-8 text-muted-foreground/40 mx-auto mb-2"
 							/>
 							<p className="text-sm text-muted-foreground">
-								AI will analyze your transcript
+								A IA vai analisar sua transcrição
 							</p>
 							<p className="text-xs text-muted-foreground/60 mt-1">
-								and suggest visuals, stock footage keywords,
-								and image generation prompts for each segment
+								e sugerir imagens, palavras-chave para banco de vídeos
+								e prompts de geração de imagem para cada trecho
 							</p>
 						</div>
 					)}
@@ -555,7 +555,7 @@ export function BRollSuggestionsPanel({
 						<div className="text-center py-8">
 							<Spinner className="size-6 mx-auto mb-2" />
 							<p className="text-sm text-muted-foreground">
-								Analyzing transcript for visual opportunities...
+								Analisando a transcrição em busca de oportunidades visuais...
 							</p>
 						</div>
 					)}
@@ -672,7 +672,7 @@ function BRollCard({
 						handleSeek();
 					}}
 					className="flex items-center justify-center size-5 rounded-full bg-primary/10 text-primary shrink-0 hover:bg-primary/20"
-					title="Jump to segment"
+					title="Ir para o trecho"
 				>
 					<span className="text-[9px] font-mono font-bold">
 						{suggestion.startTime.toFixed(0)}s
@@ -737,7 +737,7 @@ function BRollCard({
 										}}
 									>
 										<HugeiconsIcon icon={ArrowDown01Icon} className="size-3 mr-1" />
-										Insert at {suggestion.startTime.toFixed(1)}s
+										Inserir em {suggestion.startTime.toFixed(1)}s
 									</Button>
 								</div>
 							)}
@@ -747,7 +747,7 @@ function BRollCard({
 					{/* Segment text */}
 					<div>
 						<p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-0.5">
-							Transcript
+							Transcrição
 						</p>
 						<p className="text-xs text-muted-foreground italic">
 							&ldquo;{suggestion.segmentText}&rdquo;
@@ -762,7 +762,7 @@ function BRollCard({
 						<div className="flex items-center gap-1 mb-0.5">
 							<HugeiconsIcon icon={ViewIcon} className="size-3 text-primary" />
 							<p className="text-[10px] font-medium text-primary uppercase tracking-wider">
-								Visual Direction
+								Direção visual
 							</p>
 						</div>
 						<p className="text-xs">{suggestion.visualDescription}</p>
@@ -773,7 +773,7 @@ function BRollCard({
 						<div className="flex items-center gap-1 mb-0.5">
 							<HugeiconsIcon icon={Image01Icon} className="size-3 text-muted-foreground" />
 							<p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-								Image Prompt
+								Prompt de imagem
 							</p>
 						</div>
 						<p className="text-xs text-muted-foreground font-mono bg-muted/30 rounded px-2 py-1">
@@ -786,7 +786,7 @@ function BRollCard({
 						<div className="flex items-center gap-1 mb-1">
 							<HugeiconsIcon icon={Search01Icon} className="size-3 text-muted-foreground" />
 							<p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-								Stock Footage
+								Banco de vídeos
 							</p>
 						</div>
 						<div className="flex flex-wrap gap-1">
@@ -806,7 +806,7 @@ function BRollCard({
 					{pexelsPhotos && pexelsPhotos.length > 0 && (
 						<div>
 							<p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">
-								Stock Results
+								Resultados do banco
 							</p>
 							<div className="grid grid-cols-3 gap-1">
 								{pexelsPhotos.map((photo) => (
@@ -818,7 +818,7 @@ function BRollCard({
 											e.stopPropagation();
 											onInsertStockPhoto(photo);
 										}}
-										title={`${photo.alt || "Stock photo"} by ${photo.photographer}`}
+										title={`${photo.alt || "Foto de banco"} por ${photo.photographer}`}
 									>
 										<img
 											src={photo.src.small}
@@ -829,14 +829,14 @@ function BRollCard({
 								))}
 							</div>
 							<p className="text-[9px] text-muted-foreground mt-1">
-								Click a photo to insert it at {suggestion.startTime.toFixed(1)}s
+								Clique em uma foto para inseri-la em {suggestion.startTime.toFixed(1)}s
 							</p>
 						</div>
 					)}
 
 					{/* Mood */}
 					<div className="flex items-center gap-1.5">
-						<p className="text-[10px] text-muted-foreground">Mood:</p>
+						<p className="text-[10px] text-muted-foreground">Clima:</p>
 						<Badge variant="outline" className="text-[9px] px-1.5 py-0">
 							{suggestion.mood}
 						</Badge>
@@ -855,7 +855,7 @@ function BRollCard({
 									}}
 								>
 									<HugeiconsIcon icon={ArrowDown01Icon} className="size-3 mr-1" />
-									Add to Timeline
+									Adicionar à linha do tempo
 								</Button>
 							) : imageState.inserted ? (
 								<Button
@@ -865,7 +865,7 @@ function BRollCard({
 									disabled
 								>
 									<HugeiconsIcon icon={Tick01Icon} className="size-3 mr-1" />
-									Added
+									Adicionado
 								</Button>
 							) : (
 								<Button
@@ -881,12 +881,12 @@ function BRollCard({
 									{imageState.status === "generating" ? (
 										<>
 											<Spinner className="size-3 mr-1" />
-											Generating...
+											Gerando...
 										</>
 									) : (
 										<>
 											<HugeiconsIcon icon={SparklesIcon} className="size-3 mr-1" />
-											Generate &amp; Insert
+											Gerar e inserir
 										</>
 									)}
 								</Button>
@@ -906,7 +906,7 @@ function BRollCard({
 								) : (
 									<HugeiconsIcon icon={Search01Icon} className="size-3 mr-1" />
 								)}
-								Search Pexels
+								Buscar no Pexels
 							</Button>
 						</div>
 						{imageState.status !== "done" && (
@@ -920,7 +920,7 @@ function BRollCard({
 									onGenerateImage();
 								}}
 							>
-								Generate preview only (don&apos;t insert)
+								Gerar apenas a prévia (não inserir)
 							</Button>
 						)}
 						{onGenerateVideo && videoGenState && (
@@ -951,15 +951,15 @@ function BRollCard({
 											<>
 												<Spinner className="size-3 mr-1" />
 												{videoGenState.status === "polling"
-													? `Rendering ${Math.round((videoGenState.progress ?? 0) * 100)}%...`
-													: "Starting..."}
+													? `Renderizando ${Math.round((videoGenState.progress ?? 0) * 100)}%...`
+													: "Iniciando..."}
 											</>
 										) : videoGenState.status === "error" ? (
-											"Retry Video B-Roll"
+											"Tentar novamente o B-Roll em vídeo"
 										) : (
 											<>
 												<HugeiconsIcon icon={SparklesIcon} className="size-3 mr-1" />
-												Generate Video B-Roll
+												Gerar B-Roll em vídeo
 											</>
 										)}
 									</Button>

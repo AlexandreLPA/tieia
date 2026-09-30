@@ -61,16 +61,16 @@ export function useMusicGen() {
 					completedAt: Date.now(),
 				});
 
-				toast.success(`Generated ${duration.toFixed(1)}s of ${params.genre} music`);
+				toast.success(`Música ${params.genre} gerada: ${duration.toFixed(1)}s`);
 				return { url, duration, waveformPeaks };
 			} catch (err) {
-				const msg = err instanceof Error ? err.message : "Music generation failed";
+				const msg = err instanceof Error ? err.message : "Falha ao gerar música";
 				bgTasks.updateTask(taskId, {
 					status: "error",
 					error: msg,
 					completedAt: Date.now(),
 				});
-				toast.error("Music generation failed", { description: msg });
+				toast.error("Falha ao gerar música", { description: msg });
 				return null;
 			}
 		},
@@ -114,7 +114,7 @@ export function useMusicGen() {
 				placement: { mode: "explicit", trackId: targetTrack.id },
 			});
 
-			toast.success("Music added to timeline");
+			toast.success("Música adicionada à linha do tempo");
 		},
 		[editor],
 	);

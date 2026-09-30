@@ -11,11 +11,11 @@
 // ---------------------------------------------------------------------------
 
 export const MEMORY_BUDGETS = [
-	{ value: "auto", label: "Auto-detect", description: "Automatically detect available RAM" },
-	{ value: "4GB", label: "4 GB", description: "Entry-level: Lite models only" },
-	{ value: "8GB", label: "8 GB", description: "Standard: 3B models with quantization" },
-	{ value: "16GB", label: "16 GB", description: "Pro: 7B-8B models with TurboQuant" },
-	{ value: "32GB", label: "32 GB", description: "Full: All models, full context" },
+	{ value: "auto", label: "Detecção automática", description: "Detecta automaticamente a RAM disponível" },
+	{ value: "4GB", label: "4 GB", description: "Básico: somente modelos Lite" },
+	{ value: "8GB", label: "8 GB", description: "Padrão: modelos de 3B com quantização" },
+	{ value: "16GB", label: "16 GB", description: "Pro: modelos de 7B-8B com TurboQuant" },
+	{ value: "32GB", label: "32 GB", description: "Completo: todos os modelos, contexto completo" },
 ] as const;
 
 // ---------------------------------------------------------------------------
@@ -26,26 +26,26 @@ export const MODEL_TIERS = [
 	{
 		name: "lite" as const,
 		label: "Lite",
-		description: "Minimal footprint — runs on 4-8 GB RAM. Includes Kimi K2 Q3 (3-bit)",
+		description: "Consumo mínimo — funciona com 4-8 GB de RAM. Inclui Kimi K2 Q3 (3-bit)",
 		ramRange: "4-8 GB",
 		defaultModel: "llama3.2:1b",
-		quality: "Good",
+		quality: "Bom",
 	},
 	{
 		name: "standard" as const,
 		label: "Standard",
-		description: "Best quality/size balance — 8-16 GB RAM. Includes Kimi K2 Q4, Gemma 4 E2B (5B)",
+		description: "Melhor equilíbrio entre qualidade e tamanho — 8-16 GB de RAM. Inclui Kimi K2 Q4, Gemma 4 E2B (5B)",
 		ramRange: "8-16 GB",
 		defaultModel: "llama3.2:3b-instruct-q4_K_M",
-		quality: "Great",
+		quality: "Ótimo",
 	},
 	{
 		name: "pro" as const,
 		label: "Pro",
-		description: "Maximum quality — 16-32+ GB RAM or GPU. Includes Kimi K2 Q5, Gemma 4 E4B, 26B MoE, 31B Dense",
+		description: "Qualidade máxima — 16-32+ GB de RAM ou GPU. Inclui Kimi K2 Q5, Gemma 4 E4B, 26B MoE, 31B Dense",
 		ramRange: "16-32+ GB",
 		defaultModel: "llama3.1:8b-instruct-q4_K_M",
-		quality: "Excellent",
+		quality: "Excelente",
 	},
 ] as const;
 
@@ -53,32 +53,37 @@ export const MODEL_TIERS = [
 // KV cache quantization configurations
 // ---------------------------------------------------------------------------
 
+// NOTE: the `quality` values below ("Near-lossless" / "Minor degradation" /
+// "Noticeable loss") are matched by exact string in
+// components/editor/panels/assets/views/settings.tsx to pick a badge color
+// (config.quality === "Near-lossless", etc). They must stay in English
+// verbatim — only `label` and `description` are translated here.
 export const KV_CACHE_CONFIGS = [
 	{
 		bits: 4,
-		label: "4-bit (Recommended)",
+		label: "4-bit (Recomendado)",
 		compressionRatio: 3.8,
 		cosineSimilarity: 0.9986,
 		quality: "Near-lossless",
-		description: "Safe for all production workloads. 74% memory reduction.",
+		description: "Seguro para todas as cargas de trabalho em produção. Redução de 74% na memória.",
 		recommended: true,
 	},
 	{
 		bits: 3,
-		label: "3-bit (Efficiency)",
+		label: "3-bit (Eficiência)",
 		compressionRatio: 5.0,
 		cosineSimilarity: 0.9953,
 		quality: "Minor degradation",
-		description: "Good for most tasks. 80% memory reduction.",
+		description: "Bom para a maioria das tarefas. Redução de 80% na memória.",
 		recommended: false,
 	},
 	{
 		bits: 2,
-		label: "2-bit (Aggressive)",
+		label: "2-bit (Agressivo)",
 		compressionRatio: 7.3,
 		cosineSimilarity: 0.9874,
 		quality: "Noticeable loss",
-		description: "Extreme compression. Avoid for creative tasks. 86% memory reduction.",
+		description: "Compressão extrema. Evite para tarefas criativas. Redução de 86% na memória.",
 		recommended: false,
 	},
 ] as const;
@@ -88,7 +93,7 @@ export const KV_CACHE_CONFIGS = [
 // ---------------------------------------------------------------------------
 
 export const QUANTIZATION_LABELS: Record<string, string> = {
-	fp16: "FP16 (Full precision)",
+	fp16: "FP16 (Precisão total)",
 	q8_0: "Q8 (8-bit)",
 	q5_K_M: "Q5_K_M (5-bit)",
 	q4_K_M: "Q4_K_M (4-bit)",
@@ -104,12 +109,12 @@ export const STACK_BENCHMARKS = {
 	withoutTurboQuant: {
 		"ollama_3b_whisper_base_tts": { label: "Ollama 3B + Whisper + TTS", memoryGb: 12 },
 		"ollama_7b_whisper_medium_tts_sd": { label: "Ollama 7B + Whisper Medium + TTS + SD", memoryGb: 30 },
-		"full_stack": { label: "Full stack (all services)", memoryGb: 35 },
+		"full_stack": { label: "Full stack (todos os serviços)", memoryGb: 35 },
 	},
 	withTurboQuant: {
 		"ollama_3b_whisper_base_tts": { label: "Ollama 3B + Whisper + TTS", memoryGb: 5 },
 		"ollama_7b_whisper_medium_tts_sd": { label: "Ollama 7B + Whisper Medium + TTS + SD", memoryGb: 12 },
-		"full_stack": { label: "Full stack (all services)", memoryGb: 15 },
+		"full_stack": { label: "Full stack (todos os serviços)", memoryGb: 15 },
 	},
 } as const;
 

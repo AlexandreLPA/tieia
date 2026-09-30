@@ -41,7 +41,7 @@ export function AutoChaptersPanel() {
 		const mediaAssets = editor.media.getAssets();
 		const videoAsset = mediaAssets.find((a) => a.type === "video");
 		if (!videoAsset) {
-			toast.error("No video asset found");
+			toast.error("Nenhum arquivo de vídeo encontrado");
 			return;
 		}
 
@@ -50,8 +50,8 @@ export function AutoChaptersPanel() {
 		addTask({
 			id: taskId,
 			type: "dubbing",
-			label: "Analyzing video structure",
-			progress: "Analyzing...",
+			label: "Analisando a estrutura do vídeo",
+			progress: "Analisando...",
 		});
 
 		try {
@@ -64,20 +64,20 @@ export function AutoChaptersPanel() {
 
 			updateTask(taskId, {
 				status: "completed",
-				progress: `${result.chapters.length} chapters found`,
+				progress: `${result.chapters.length} capítulos encontrados`,
 				completedAt: Date.now(),
 			});
 
-			toast.success(`Found ${result.chapters.length} chapters`);
+			toast.success(`${result.chapters.length} capítulos encontrados`);
 		} catch (error) {
 			const message =
-				error instanceof Error ? error.message : "Analysis failed";
+				error instanceof Error ? error.message : "Falha na análise";
 			updateTask(taskId, {
 				status: "error",
 				error: message,
 				completedAt: Date.now(),
 			});
-			toast.error("Structure analysis failed", { description: message });
+			toast.error("Falha na análise de estrutura", { description: message });
 		} finally {
 			setIsAnalyzing(false);
 		}
@@ -93,9 +93,9 @@ export function AutoChaptersPanel() {
 	const handleCopyYouTube = useCallback(async () => {
 		try {
 			await copyYouTubeChapters(chapters);
-			toast.success("YouTube chapters copied to clipboard");
+			toast.success("Capítulos do YouTube copiados para a área de transferência");
 		} catch {
-			toast.error("Failed to copy");
+			toast.error("Falha ao copiar");
 		}
 	}, [chapters]);
 
@@ -106,32 +106,33 @@ export function AutoChaptersPanel() {
 				title: suggestedTitle ?? undefined,
 				description: suggestedDescription ?? undefined,
 			});
-			toast.success("Full YouTube description copied to clipboard");
+			toast.success("Descrição completa do YouTube copiada para a área de transferência");
 		} catch {
-			toast.error("Failed to copy");
+			toast.error("Falha ao copiar");
 		}
 	}, [chapters, suggestedTitle, suggestedDescription]);
 
 	return (
 		<div className="flex flex-col gap-4 p-3">
 			<div className="flex items-center justify-between">
-				<span className="text-xs font-medium">Auto Chapters</span>
+				<span className="text-xs font-medium">Capítulos Automáticos</span>
 				{chapters.length > 0 && (
 					<Badge variant="secondary" className="text-[8px] px-1 py-0">
-						{chapters.length} chapters
+						{chapters.length} capítulos
 					</Badge>
 				)}
 			</div>
 
 			<p className="text-[10px] text-muted-foreground leading-relaxed">
-				Analyzes your video's structure to detect topic changes, key moments,
-				and natural chapter boundaries. Click any chapter to jump to it.
+				Analisa a estrutura do seu vídeo para detectar mudanças de tópico,
+				momentos-chave e divisões naturais de capítulo. Clique em qualquer
+				capítulo para pular até ele.
 			</p>
 
 			{suggestedTitle && (
 				<div className="rounded-md border p-2">
 					<span className="text-[9px] text-muted-foreground">
-						Suggested title
+						Título sugerido
 					</span>
 					<p className="text-[11px] font-medium">{suggestedTitle}</p>
 					{suggestedDescription && (
@@ -188,12 +189,12 @@ export function AutoChaptersPanel() {
 						className="w-full h-7 text-[10px]"
 						onClick={() => setShowExport(!showExport)}
 					>
-						YouTube Export {showExport ? "▲" : "▼"}
+						Exportar para o YouTube {showExport ? "▲" : "▼"}
 					</Button>
 
 					{showExport && (
 						<div className="rounded border p-2 space-y-2">
-							<span className="text-[9px] text-muted-foreground">Preview</span>
+							<span className="text-[9px] text-muted-foreground">Prévia</span>
 							<pre className="text-[9px] font-mono bg-muted/50 rounded p-2 overflow-x-auto whitespace-pre-wrap">
 								{chapters
 									.map((ch) => `${formatTimeYouTube(ch.start)} ${ch.title}`)
@@ -206,7 +207,7 @@ export function AutoChaptersPanel() {
 									className="flex-1 h-6 text-[9px]"
 									onClick={handleCopyYouTube}
 								>
-									Copy Chapters
+									Copiar capítulos
 								</Button>
 								<Button
 									variant="secondary"
@@ -214,7 +215,7 @@ export function AutoChaptersPanel() {
 									className="flex-1 h-6 text-[9px]"
 									onClick={handleCopyFullDescription}
 								>
-									Copy Full Description
+									Copiar descrição completa
 								</Button>
 							</div>
 						</div>
@@ -225,8 +226,8 @@ export function AutoChaptersPanel() {
 			{chapters.length === 0 && !isAnalyzing && (
 				<div className="flex flex-col items-center gap-2 py-4 text-center">
 					<p className="text-[10px] text-muted-foreground">
-						No chapters detected yet. Analyze your video to detect topic
-						changes.
+						Nenhum capítulo detectado ainda. Analise seu vídeo para detectar
+						mudanças de tópico.
 					</p>
 				</div>
 			)}
@@ -242,7 +243,7 @@ export function AutoChaptersPanel() {
 						: "bg-primary text-primary-foreground hover:bg-primary/90",
 				)}
 			>
-				{isAnalyzing ? "Analyzing..." : "Detect Chapters"}
+				{isAnalyzing ? "Analisando..." : "Detectar capítulos"}
 			</button>
 		</div>
 	);

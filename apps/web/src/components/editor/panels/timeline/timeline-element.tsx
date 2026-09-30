@@ -313,7 +313,7 @@ export function TimelineElement({
 					action="split"
 					icon={<HugeiconsIcon icon={ScissorIcon} />}
 				>
-					Split
+					Dividir
 				</ActionMenuItem>
 				<CopyMenuItem />
 				{canElementHaveAudio(element) && hasAudio && (
@@ -335,7 +335,7 @@ export function TimelineElement({
 						action="duplicate-selected"
 						icon={<HugeiconsIcon icon={Copy01Icon} />}
 					>
-						Duplicate
+						Duplicar
 					</ActionMenuItem>
 				)}
 				{selectedElements.length === 1 && hasMediaId(element) && (
@@ -346,13 +346,13 @@ export function TimelineElement({
 								handleRevealInMedia({ event })
 							}
 						>
-							Reveal media
+							Localizar mídia
 						</ContextMenuItem>
 						<ContextMenuItem
 							icon={<HugeiconsIcon icon={Exchange01Icon} />}
 							disabled
 						>
-							Replace media
+							Substituir mídia
 						</ContextMenuItem>
 					</>
 				)}
@@ -491,7 +491,7 @@ function ResizeHandle({
 			)}
 			onMouseDown={(event) => handleResizeStart({ event, elementId, side })}
 			onClick={(event) => event.stopPropagation()}
-			aria-label={`${isLeft ? "Left" : "Right"} resize handle`}
+			aria-label={`Alça de redimensionamento à ${isLeft ? "esquerda" : "direita"}`}
 		></button>
 	);
 }
@@ -564,7 +564,7 @@ function KeyframeIndicators({
 						indicatorTime: indicator.time,
 					})
 				}
-				aria-label="Select keyframe"
+				aria-label="Selecionar keyframe"
 			>
 				<HugeiconsIcon
 					icon={KeyframeIcon}
@@ -904,7 +904,7 @@ function CopyMenuItem() {
 			action="copy-selected"
 			icon={<HugeiconsIcon icon={Copy01Icon} />}
 		>
-			Copy
+			Copiar
 		</ActionMenuItem>
 	);
 }
@@ -931,7 +931,7 @@ function MuteMenuItem({
 
 	return (
 		<ActionMenuItem action="toggle-elements-muted-selected" icon={getIcon()}>
-			{isMuted ? "Unmute" : "Mute"}
+			{isMuted ? "Ativar som" : "Silenciar"}
 		</ActionMenuItem>
 	);
 }
@@ -963,7 +963,7 @@ function VisibilityMenuItem({
 			action="toggle-elements-visibility-selected"
 			icon={getIcon()}
 		>
-			{isHidden ? "Show" : "Hide"}
+			{isHidden ? "Mostrar" : "Ocultar"}
 		</ActionMenuItem>
 	);
 }
@@ -986,8 +986,8 @@ function DeleteMenuItem({
 			icon={<HugeiconsIcon icon={Delete02Icon} />}
 		>
 			{isMultipleSelected && isCurrentElementSelected
-				? `Delete ${selectedCount} elements`
-				: `Delete ${elementType === "text" ? "text" : "clip"}`}
+				? `Excluir ${selectedCount} elementos`
+				: `Excluir ${elementType === "text" ? "texto" : "clipe"}`}
 		</ActionMenuItem>
 	);
 }

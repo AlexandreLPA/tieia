@@ -32,13 +32,13 @@ export function BatchExportPanel({ className }: { className?: string }) {
 			.map((preset) => createQueueItem(preset!));
 
 		if (items.length === 0) {
-			toast.error("Select at least one export preset");
+			toast.error("Selecione ao menos um predefinido de exportação");
 			return;
 		}
 
 		setQueue((prev) => [...prev, ...items]);
 		setSelectedPresets(new Set());
-		toast.success(`Added ${items.length} exports to queue`);
+		toast.success(`${items.length} exportações adicionadas à fila`);
 	}, [selectedPresets]);
 
 	const handleExportAll = useCallback(async () => {
@@ -87,7 +87,7 @@ export function BatchExportPanel({ className }: { className?: string }) {
 							? {
 									...q,
 									status: "error",
-									error: err instanceof Error ? err.message : "Export failed",
+									error: err instanceof Error ? err.message : "Falha na exportação",
 									completedAt: Date.now(),
 								}
 							: q,
@@ -96,7 +96,7 @@ export function BatchExportPanel({ className }: { className?: string }) {
 			}
 		}
 
-		toast.success("Batch export complete");
+		toast.success("Exportação em lote concluída");
 	}, [queue, editor]);
 
 	const removeFromQueue = useCallback((id: string) => {
@@ -108,7 +108,7 @@ export function BatchExportPanel({ className }: { className?: string }) {
 			<div className="px-4 py-3 border-b space-y-2">
 				<div className="flex items-center gap-2">
 					<HugeiconsIcon icon={Download04Icon} className="size-4 text-primary" />
-					<span className="text-xs font-medium">Batch Export</span>
+					<span className="text-xs font-medium">Exportação em Lote</span>
 					{queue.length > 0 && (
 						<Badge variant="secondary" className="text-[8px] px-1 py-0">
 							{queue.length}
@@ -120,7 +120,7 @@ export function BatchExportPanel({ className }: { className?: string }) {
 			<ScrollArea className="flex-1 min-h-0">
 				<div className="px-4 py-3 space-y-3">
 					<div className="space-y-1.5">
-						<span className="text-[10px] font-medium text-muted-foreground">Presets</span>
+						<span className="text-[10px] font-medium text-muted-foreground">Predefinições</span>
 						<div className="grid grid-cols-2 gap-1">
 							{PLATFORM_PRESETS.map((preset) => (
 								<button
@@ -139,13 +139,13 @@ export function BatchExportPanel({ className }: { className?: string }) {
 						</div>
 						<Button size="sm" variant="outline" className="w-full h-7 text-[10px]" onClick={addToQueue}>
 							<HugeiconsIcon icon={Add01Icon} className="size-3 mr-1" />
-							Add Selected to Queue
+							Adicionar selecionados à fila
 						</Button>
 					</div>
 
 					{queue.length > 0 && (
 						<div className="space-y-1.5">
-							<span className="text-[10px] font-medium text-muted-foreground">Queue</span>
+							<span className="text-[10px] font-medium text-muted-foreground">Fila</span>
 							{queue.map((item) => (
 								<div key={item.id} className="rounded border p-2 flex items-center gap-2">
 									<div className="flex-1 min-w-0">
@@ -159,9 +159,9 @@ export function BatchExportPanel({ className }: { className?: string }) {
 											item.status === "exporting" && "text-primary",
 											item.status === "queued" && "text-muted-foreground",
 										)}>
-											{item.status === "queued" && "Queued"}
-											{item.status === "exporting" && `Exporting ${item.progress}%`}
-											{item.status === "completed" && "Completed"}
+											{item.status === "queued" && "Na fila"}
+											{item.status === "exporting" && `Exportando ${item.progress}%`}
+											{item.status === "completed" && "Concluído"}
 											{item.status === "error" && item.error}
 										</span>
 									</div>
@@ -177,7 +177,7 @@ export function BatchExportPanel({ className }: { className?: string }) {
 								</div>
 							))}
 							<Button size="sm" className="w-full" onClick={handleExportAll}>
-								Export All ({queue.filter((q) => q.status === "queued").length})
+								Exportar tudo ({queue.filter((q) => q.status === "queued").length})
 							</Button>
 						</div>
 					)}

@@ -23,24 +23,24 @@ interface GuideStep {
 const GUIDE_STEPS: GuideStep[] = [
 	{
 		icon: Upload04Icon,
-		title: "Import a video",
-		description: "Drag a file here or use the media panel on the left",
+		title: "Importe um vídeo",
+		description: "Arraste um arquivo aqui ou use o painel de mídia à esquerda",
 	},
 	{
 		icon: AiMicIcon,
-		title: "Transcribe it",
-		description: "Click the mic button to convert speech to editable text",
+		title: "Transcreva",
+		description: "Clique no botão do microfone para converter a fala em texto editável",
 		shortcut: "Toolbar",
 	},
 	{
 		icon: TextIcon,
-		title: "Edit the transcript",
-		description: "Delete sentences, remove filler words, reorder sections",
+		title: "Edite a transcrição",
+		description: "Exclua frases, remova palavras de preenchimento, reordene seções",
 	},
 	{
 		icon: SparklesIcon,
-		title: "Export your video",
-		description: "Choose a platform preset and export with one click",
+		title: "Exporte seu vídeo",
+		description: "Escolha uma predefinição de plataforma e exporte com um clique",
 	},
 ];
 
@@ -60,9 +60,9 @@ export function EmptyEditorGuide({ className }: { className?: string }) {
 			)}
 		>
 			<div className="text-center">
-				<h3 className="text-sm font-medium">Get started</h3>
+				<h3 className="text-sm font-medium">Comece agora</h3>
 				<p className="text-xs text-muted-foreground mt-1">
-					Edit video by editing text
+					Edite o vídeo editando o texto
 				</p>
 			</div>
 
@@ -84,7 +84,7 @@ export function EmptyEditorGuide({ className }: { className?: string }) {
 
 			<div className="text-center">
 				<p className="text-[10px] text-muted-foreground">
-					Press <kbd className="px-1 py-0.5 rounded bg-muted text-[9px] font-mono">Ctrl+K</kbd> for AI commands
+					Pressione <kbd className="px-1 py-0.5 rounded bg-muted text-[9px] font-mono">Ctrl+K</kbd> para comandos de IA
 				</p>
 			</div>
 
@@ -93,7 +93,7 @@ export function EmptyEditorGuide({ className }: { className?: string }) {
 				<div className="flex flex-col gap-2 w-full max-w-52 min-h-0">
 					<div className="flex items-center justify-between">
 						<h4 className="text-xs font-medium">
-							Ideas{" "}
+							Ideias{" "}
 							<span className="text-muted-foreground">({savedIdeas.length})</span>
 						</h4>
 					</div>

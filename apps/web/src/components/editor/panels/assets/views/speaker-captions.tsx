@@ -44,7 +44,7 @@ export function SpeakerCaptionsPanel({ className }: { className?: string }) {
 
 	const handleApplyToTimeline = useCallback(() => {
 		if (captionSegments.length === 0) {
-			toast.error("No caption segments to apply");
+			toast.error("Nenhum segmento de legenda para aplicar");
 			return;
 		}
 
@@ -82,14 +82,14 @@ export function SpeakerCaptionsPanel({ className }: { className?: string }) {
 			});
 		}
 
-		toast.success(`Applied ${captionSegments.length} speaker-labeled captions`);
+		toast.success(`${captionSegments.length} legendas com identificação de locutor aplicadas`);
 	}, [captionSegments, editor]);
 
 	if (segments.length === 0) {
 		return (
 			<div className={cn("p-4 text-center", className)}>
 				<p className="text-sm text-muted-foreground">
-					Transcribe your video first to enable speaker captions.
+					Transcreva seu vídeo primeiro para ativar as legendas por locutor.
 				</p>
 			</div>
 		);
@@ -99,9 +99,9 @@ export function SpeakerCaptionsPanel({ className }: { className?: string }) {
 		<div className={cn("flex flex-col h-full", className)}>
 			<div className="px-4 py-3 border-b space-y-2">
 				<div className="flex items-center justify-between">
-					<span className="text-xs font-medium">Speaker Captions</span>
+					<span className="text-xs font-medium">Legendas por locutor</span>
 					<Badge variant="secondary" className="text-[8px] px-1 py-0">
-						{uniqueSpeakers.length} speakers
+						{uniqueSpeakers.length} locutores
 					</Badge>
 				</div>
 			</div>
@@ -115,9 +115,9 @@ export function SpeakerCaptionsPanel({ className }: { className?: string }) {
 						/>
 						<Input
 							className="h-7 text-[10px]"
-							value={speakerNames[speaker] ?? `Speaker ${index + 1}`}
+							value={speakerNames[speaker] ?? `Locutor ${index + 1}`}
 							onChange={(e) => handleRenameSpeaker(speaker, e.target.value)}
-							placeholder={`Speaker ${index + 1}`}
+							placeholder={`Locutor ${index + 1}`}
 						/>
 					</div>
 				))}
@@ -150,7 +150,7 @@ export function SpeakerCaptionsPanel({ className }: { className?: string }) {
 
 			<div className="px-4 py-3 border-t">
 				<Button size="sm" className="w-full" onClick={handleApplyToTimeline}>
-					Apply {captionSegments.length} Speaker Captions to Timeline
+					Aplicar {captionSegments.length} legendas por locutor à linha do tempo
 				</Button>
 			</div>
 		</div>

@@ -6,18 +6,18 @@ function formatTranscriptionError(error: unknown): string {
 	if (error instanceof AIClientError) {
 		switch (error.errorType) {
 			case "connection_refused":
-				return "Cannot connect to AI backend. Start the backend server first (see AI Setup Guide).";
+				return "Não é possível conectar ao back-end de IA. Inicie o servidor de back-end primeiro (veja Configuração de IA).";
 			case "timeout":
-				return "Transcription request timed out. The model may still be loading — try again in a moment.";
+				return "A solicitação de transcrição expirou. O modelo ainda pode estar carregando — tente novamente em instantes.";
 			case "backend_error":
 				return error.statusCode === 400
-					? "Invalid file format. Supported: mp4, mkv, avi, mov, webm, wav, mp3, m4a, ogg, flac, aac."
-					: `Backend error: ${error.message}`;
+					? "Formato de arquivo inválido. Suportados: mp4, mkv, avi, mov, webm, wav, mp3, m4a, ogg, flac, aac."
+					: `Erro no back-end: ${error.message}`;
 			default:
 				return error.message;
 		}
 	}
-	return error instanceof Error ? error.message : "Transcription failed";
+	return error instanceof Error ? error.message : "Falha na transcrição";
 }
 
 export function useTranscription() {

@@ -9,10 +9,10 @@ import { cn } from "@/utils/ui";
 import { toast } from "sonner";
 
 const FPS_PRESETS = [
-	{ value: 4, label: "4 fps", note: "Fastest · coarsest" },
-	{ value: 8, label: "8 fps", note: "Balanced (default)" },
-	{ value: 12, label: "12 fps", note: "Smoother · slower" },
-	{ value: 15, label: "15 fps", note: "Best · GPU recommended" },
+	{ value: 4, label: "4 fps", note: "Mais rápido · menos preciso" },
+	{ value: 8, label: "8 fps", note: "Equilibrado (padrão)" },
+	{ value: 12, label: "12 fps", note: "Mais suave · mais lento" },
+	{ value: 15, label: "15 fps", note: "Melhor · GPU recomendada" },
 ];
 
 export function VideoBgRemovalPanel() {
@@ -31,7 +31,7 @@ export function VideoBgRemovalPanel() {
 
 	const handleRun = useCallback(() => {
 		if (!hasVideoClip) {
-			toast.error("Add a video clip to the timeline first.");
+			toast.error("Adicione um clipe de vídeo à linha do tempo primeiro.");
 			return;
 		}
 		run({ fps, maxDuration, nonDestructive });
@@ -43,7 +43,7 @@ export function VideoBgRemovalPanel() {
 		<div className="flex flex-col gap-4 p-3">
 			<div className="flex items-center justify-between">
 				<div className="flex items-center gap-1.5">
-					<span className="text-xs font-medium">Video BG Removal</span>
+					<span className="text-xs font-medium">Remoção de fundo de vídeo</span>
 				</div>
 				<Badge variant="outline" className="text-[8px] px-1 py-0">
 					Local · rembg
@@ -51,9 +51,9 @@ export function VideoBgRemovalPanel() {
 			</div>
 
 			<p className="text-[10px] text-muted-foreground leading-relaxed">
-				Remove the background from any video clip — no green screen needed.
-				Runs per-frame with rembg, fully on your machine. Result is added as a
-				new transparent clip above the source.
+				Remova o fundo de qualquer clipe de vídeo — sem precisar de tela verde.
+				Funciona quadro a quadro com o rembg, totalmente na sua máquina. O
+				resultado é adicionado como um novo clipe transparente acima da fonte.
 			</p>
 
 			<div className="flex items-start gap-1 rounded-md border border-amber-500/30 bg-amber-500/5 px-2 py-1.5">
@@ -61,13 +61,14 @@ export function VideoBgRemovalPanel() {
 					<path d="M8 2C4.7 2 2 4.7 2 8s2.7 6 6 6 6-2.7 6-6-2.7-6-6-6zm0 3v3m0 2.5h.01" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
 				</svg>
 				<span className="text-[9px] text-amber-700 dark:text-amber-400 leading-relaxed">
-					Per-frame rembg is slow on CPU (~1s/frame). Keep clips short, or use a
-					GPU host. You'll see a time estimate before it starts.
+					O rembg quadro a quadro é lento em CPU (~1s/quadro). Mantenha os clipes
+					curtos ou use uma máquina com GPU. Você verá uma estimativa de tempo
+					antes de começar.
 				</span>
 			</div>
 
 			<div className="flex flex-col gap-1.5">
-				<Label className="text-[10px]">Sampling rate</Label>
+				<Label className="text-[10px]">Taxa de amostragem</Label>
 				<div className="grid grid-cols-2 gap-1">
 					{FPS_PRESETS.map((p) => (
 						<button
@@ -92,7 +93,7 @@ export function VideoBgRemovalPanel() {
 
 			<div className="flex flex-col gap-1.5">
 				<Label className="text-[10px]">
-					Max duration: {maxDuration}s
+					Duração máxima: {maxDuration}s
 				</Label>
 				<input
 					type="range"
@@ -115,7 +116,7 @@ export function VideoBgRemovalPanel() {
 					className="size-3 accent-primary"
 				/>
 				<span className="text-[10px] text-muted-foreground">
-					Non-destructive (add new clip above source)
+					Não destrutivo (adiciona um novo clipe acima da fonte)
 				</span>
 			</label>
 
@@ -124,12 +125,12 @@ export function VideoBgRemovalPanel() {
 					<div className="flex items-center justify-between">
 						<span className="text-[9px] font-medium capitalize">
 							{progress.phase === "extracting"
-								? "Extracting frames…"
+								? "Extraindo quadros…"
 								: progress.phase === "processing"
-									? "Removing backgrounds…"
+									? "Removendo fundos…"
 									: progress.phase === "encoding"
-										? "Encoding transparent video…"
-										: "Working…"}
+										? "Codificando vídeo transparente…"
+										: "Processando…"}
 						</span>
 						<span className="text-[9px] text-muted-foreground">
 							{progress.totalFrames
@@ -160,7 +161,7 @@ export function VideoBgRemovalPanel() {
 						: "bg-primary text-primary-foreground hover:bg-primary/90",
 				)}
 			>
-				{isRunning ? "Processing…" : "Remove Background"}
+				{isRunning ? "Processando…" : "Remover fundo"}
 			</button>
 		</div>
 	);

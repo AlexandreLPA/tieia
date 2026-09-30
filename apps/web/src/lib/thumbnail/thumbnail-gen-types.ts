@@ -16,11 +16,11 @@ export interface ThumbnailGenResult {
 }
 
 export const THUMBNAIL_STYLES = [
-	{ value: "cinematic", label: "Cinematic", desc: "Dramatic lighting, film grain" },
-	{ value: "bold-text", label: "Bold Text", desc: "Large text, high contrast" },
-	{ value: "minimal", label: "Minimal", desc: "Clean, simple, lots of space" },
-	{ value: "gradient", label: "Gradient", desc: "Colorful gradient backgrounds" },
-	{ value: "collage", label: "Collage", desc: "Multi-image layout" },
+	{ value: "cinematic", label: "Cinematográfico", desc: "Iluminação dramática, grão de filme" },
+	{ value: "bold-text", label: "Texto em Negrito", desc: "Texto grande, alto contraste" },
+	{ value: "minimal", label: "Minimalista", desc: "Limpo, simples, bastante espaço" },
+	{ value: "gradient", label: "Gradiente", desc: "Fundos com gradientes coloridos" },
+	{ value: "collage", label: "Colagem", desc: "Layout com múltiplas imagens" },
 ] as const;
 
 export const THUMBNAIL_SIZES = [
@@ -31,11 +31,11 @@ export const THUMBNAIL_SIZES = [
 ] as const;
 
 export const COLOR_SCHEMES = [
-	{ value: "vibrant", label: "Vibrant" },
-	{ value: "dark", label: "Dark" },
-	{ value: "warm", label: "Warm" },
-	{ value: "cool", label: "Cool" },
-	{ value: "mono", label: "Mono" },
+	{ value: "vibrant", label: "Vibrante" },
+	{ value: "dark", label: "Escuro" },
+	{ value: "warm", label: "Quente" },
+	{ value: "cool", label: "Frio" },
+	{ value: "mono", label: "Monocromático" },
 ] as const;
 
 export const DEFAULT_THUMBNAIL_PARAMS: ThumbnailGenParams = {

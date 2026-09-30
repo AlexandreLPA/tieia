@@ -18,10 +18,10 @@ export interface ScriptToVideoConfig {
 }
 
 export const SCRIPT_STYLES = [
-	{ value: "documentary", label: "Documentary" },
-	{ value: "explainer", label: "Explainer" },
-	{ value: "social", label: "Social Media" },
-	{ value: "cinematic", label: "Cinematic" },
+	{ value: "documentary", label: "Documentário" },
+	{ value: "explainer", label: "Explicativo" },
+	{ value: "social", label: "Redes Sociais" },
+	{ value: "cinematic", label: "Cinematográfico" },
 	{ value: "tutorial", label: "Tutorial" },
 ] as const;
 

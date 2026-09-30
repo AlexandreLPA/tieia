@@ -57,7 +57,7 @@ export function TemplateGalleryPanel({ className }: { className?: string }) {
 				editor.timeline.addTrack({ type: track.type as any });
 			}
 
-			toast.success(`Applied "${template.name}" template`);
+			toast.success(`Modelo "${template.name}" aplicado`);
 		},
 		[editor],
 	);
@@ -67,10 +67,10 @@ export function TemplateGalleryPanel({ className }: { className?: string }) {
 			<div className="px-4 py-3 border-b space-y-2">
 				<div className="flex items-center gap-2">
 					<HugeiconsIcon icon={GridIcon} className="size-4 text-primary" />
-					<span className="text-xs font-medium">Templates</span>
+					<span className="text-xs font-medium">Modelos</span>
 				</div>
 				<p className="text-[10px] text-muted-foreground">
-					Start with a pre-built project template.
+					Comece com um modelo de projeto pronto.
 				</p>
 			</div>
 
@@ -78,7 +78,7 @@ export function TemplateGalleryPanel({ className }: { className?: string }) {
 				<div className="px-4 py-3 space-y-3">
 					<input
 						className="w-full rounded border bg-transparent px-2 py-1 text-[10px] placeholder:text-muted-foreground"
-						placeholder="Search templates..."
+						placeholder="Buscar modelos..."
 						value={search}
 						onChange={(e) => setSearch(e.target.value)}
 					/>
@@ -90,7 +90,7 @@ export function TemplateGalleryPanel({ className }: { className?: string }) {
 							className="h-5 text-[8px] px-1.5"
 							onClick={() => setCategory("all")}
 						>
-							All
+							Todos
 						</Button>
 						{TEMPLATE_CATEGORIES.map((cat) => (
 							<Button
@@ -131,7 +131,7 @@ export function TemplateGalleryPanel({ className }: { className?: string }) {
 								</span>
 								<span className="text-[7px] text-muted-foreground">|</span>
 								<span className="text-[7px] text-muted-foreground">
-									{template.tracks.length} tracks
+									{template.tracks.length} faixas
 								</span>
 								<span className="text-[7px] text-muted-foreground">|</span>
 								{template.tags.slice(0, 3).map((tag) => (
@@ -148,7 +148,7 @@ export function TemplateGalleryPanel({ className }: { className?: string }) {
 
 					{filtered.length === 0 && (
 						<p className="text-[10px] text-muted-foreground text-center py-4">
-							No templates match your search.
+							Nenhum modelo corresponde à sua busca.
 						</p>
 					)}
 				</div>

@@ -238,7 +238,7 @@ export function Timeline() {
 				"panel bg-background relative flex h-full flex-col overflow-hidden rounded-sm border"
 			}
 			{...dragProps}
-			aria-label="Timeline"
+			aria-label="Linha do tempo"
 		>
 			<TimelineToolbar
 				zoomLevel={zoomLevel}
@@ -449,7 +449,7 @@ export function Timeline() {
 														invokeAction("paste-copied");
 													}}
 												>
-													Paste elements
+													Colar elementos
 												</ContextMenuItem>
 												<ContextMenuItem
 													onClick={(event) => {
@@ -462,8 +462,8 @@ export function Timeline() {
 													<HugeiconsIcon icon={VolumeHighIcon} />
 													<span>
 														{canTracktHaveAudio(track) && track.muted
-															? "Unmute track"
-															: "Mute track"}
+															? "Ativar som da faixa"
+															: "Silenciar faixa"}
 													</span>
 												</ContextMenuItem>
 												<ContextMenuItem
@@ -477,8 +477,8 @@ export function Timeline() {
 													<HugeiconsIcon icon={ViewIcon} />
 													<span>
 														{canTrackBeHidden(track) && track.hidden
-															? "Show track"
-															: "Hide track"}
+															? "Mostrar faixa"
+															: "Ocultar faixa"}
 													</span>
 												</ContextMenuItem>
 												<ContextMenuItem
@@ -491,7 +491,7 @@ export function Timeline() {
 														variant="destructive"
 													>
 														<HugeiconsIcon icon={Delete02Icon} />
-														Delete track
+														Excluir faixa
 													</ContextMenuItem>
 												</ContextMenuContent>
 											</ContextMenu>
@@ -513,7 +513,7 @@ export function Timeline() {
 				onClick={() => setShowMixer((prev) => !prev)}
 				className="flex items-center justify-center border-t py-0.5 text-[9px] text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
 			>
-				{showMixer ? "Hide Mixer" : "Show Mixer"}
+				{showMixer ? "Ocultar mixer" : "Mostrar mixer"}
 			</button>
 		</section>
 	);
@@ -676,7 +676,7 @@ function TrackLabel({ track }: { track: TimelineTrack }) {
 			</TooltipTrigger>
 			<TooltipContent side="right" sideOffset={8}>
 				<p className="text-xs font-medium">{displayName}</p>
-				<p className="text-[10px] text-muted-foreground">Click to rename</p>
+				<p className="text-[10px] text-muted-foreground">Clique para renomear</p>
 			</TooltipContent>
 		</Tooltip>
 	);

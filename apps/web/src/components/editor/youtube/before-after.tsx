@@ -21,11 +21,11 @@ const SUB_SCORES = ["hook", "curiosity", "energy", "audio_sync", "face_presence"
 
 const LABELS: Record<string, string> = {
 	hook: "Hook",
-	curiosity: "Curiosity",
-	energy: "Energy",
-	audio_sync: "Beat Sync",
-	face_presence: "Face",
-	emotional_arc: "Arc",
+	curiosity: "Curiosidade",
+	energy: "Energia",
+	audio_sync: "Batida",
+	face_presence: "Rosto",
+	emotional_arc: "Arco",
 	virality: "Viral",
 };
 
@@ -37,7 +37,7 @@ export function BeforeAfterComparison({ before, after }: BeforeAfterProps) {
 		<div className="space-y-3 rounded-lg border p-3 bg-card">
 			{/* Header */}
 			<div className="flex items-center justify-between">
-				<span className="text-xs font-semibold">Before / After Enhancement</span>
+				<span className="text-xs font-semibold">Comparação Antes / Depois</span>
 				<Badge
 					variant="outline"
 					className={cn(
@@ -45,14 +45,14 @@ export function BeforeAfterComparison({ before, after }: BeforeAfterProps) {
 						delta > 0 ? "border-green-500/50 text-green-400" : delta < 0 ? "border-red-500/50 text-red-400" : "text-muted-foreground",
 					)}
 				>
-					{delta > 0 ? "+" : ""}{delta} points
+					{delta > 0 ? "+" : ""}{delta} pontos
 				</Badge>
 			</div>
 
 			{/* Grade comparison */}
 			<div className="flex items-center justify-center gap-4">
 				<div className="text-center">
-					<span className="text-[10px] text-muted-foreground">Before</span>
+					<span className="text-[10px] text-muted-foreground">Antes</span>
 					<div className={cn("text-2xl font-bold", GRADE_COLORS[before.grade])}>
 						{before.grade}
 					</div>
@@ -62,7 +62,7 @@ export function BeforeAfterComparison({ before, after }: BeforeAfterProps) {
 				<span className="text-lg text-muted-foreground">→</span>
 
 				<div className="text-center">
-					<span className="text-[10px] text-muted-foreground">After</span>
+					<span className="text-[10px] text-muted-foreground">Depois</span>
 					<div className={cn("text-2xl font-bold", GRADE_COLORS[after.grade])}>
 						{after.grade}
 					</div>
@@ -75,7 +75,7 @@ export function BeforeAfterComparison({ before, after }: BeforeAfterProps) {
 					"text-center text-xs",
 					after.composite > before.composite ? "text-green-400" : "text-red-400",
 				)}>
-					{after.composite > before.composite ? "Grade improved" : "Grade changed"}: {before.grade} → {after.grade}
+					{after.composite > before.composite ? "Nota melhorou" : "Nota alterada"}: {before.grade} → {after.grade}
 				</p>
 			)}
 

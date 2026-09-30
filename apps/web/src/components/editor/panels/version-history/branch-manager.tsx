@@ -51,7 +51,7 @@ export function BranchManager({
 	const handleDelete = useCallback(
 		async (name: string) => {
 			const confirmed = window.confirm(
-				`Delete branch "${name}"? This cannot be undone.`,
+				`Excluir a ramificação "${name}"? Essa ação não pode ser desfeita.`,
 			);
 			if (!confirmed) return;
 
@@ -59,7 +59,7 @@ export function BranchManager({
 				await editor.version.deleteBranch(name);
 				await loadBranches();
 			} catch (err) {
-				const msg = err instanceof Error ? err.message : "Delete failed";
+				const msg = err instanceof Error ? err.message : "Falha ao excluir";
 				window.alert(msg);
 			}
 		},
@@ -87,7 +87,7 @@ export function BranchManager({
 				await loadBranches();
 				syncStatus(editor.version.status());
 			} catch (err) {
-				const msg = err instanceof Error ? err.message : "Update failed";
+				const msg = err instanceof Error ? err.message : "Falha ao atualizar";
 				window.alert(msg);
 			}
 		},
@@ -98,7 +98,7 @@ export function BranchManager({
 		<Dialog open={isOpen} onOpenChange={onOpenChange}>
 			<DialogContent className="max-w-md">
 				<DialogHeader>
-					<DialogTitle>Manage Branches</DialogTitle>
+					<DialogTitle>Gerenciar ramificações</DialogTitle>
 				</DialogHeader>
 
 				<DialogBody className="gap-0 p-0">
@@ -110,17 +110,17 @@ export function BranchManager({
 										<Input
 											value={editName}
 											onChange={(e) => setEditName(e.target.value)}
-											placeholder="Branch name"
+											placeholder="Nome da ramificação"
 											className="text-sm"
 										/>
 										<Input
 											value={editDescription}
 											onChange={(e) => setEditDescription(e.target.value)}
-											placeholder="Description (optional)"
+											placeholder="Descrição (opcional)"
 											className="text-xs"
 										/>
 										<div className="flex items-center gap-2">
-											<label className="text-xs text-muted-foreground">Color:</label>
+											<label className="text-xs text-muted-foreground">Cor:</label>
 											<input
 												type="color"
 												value={editColor || "#6366f1"}
@@ -134,13 +134,13 @@ export function BranchManager({
 												variant="outline"
 												onClick={() => setEditingBranch(null)}
 											>
-												Cancel
+												Cancelar
 											</Button>
 											<Button
 												size="sm"
 												onClick={() => saveEditing(branch)}
 											>
-												Save
+												Salvar
 											</Button>
 										</div>
 									</div>
@@ -159,7 +159,7 @@ export function BranchManager({
 												</span>
 												{branch.name === currentBranch && (
 													<span className="text-[10px] px-1 py-0.5 rounded bg-primary/10 text-primary">
-														current
+														atual
 													</span>
 												)}
 											</div>
@@ -169,9 +169,9 @@ export function BranchManager({
 												</div>
 											)}
 											<div className="text-[10px] text-muted-foreground/50 mt-0.5">
-												Created {formatDate(branch.createdAt)}
+												Criada em {formatDate(branch.createdAt)}
 												{branch.createdFromBranch !== branch.name &&
-													` from ${branch.createdFromBranch}`}
+													` a partir de ${branch.createdFromBranch}`}
 											</div>
 										</div>
 										<div className="flex gap-1 flex-shrink-0">
@@ -180,7 +180,7 @@ export function BranchManager({
 												className="text-xs text-muted-foreground hover:text-foreground px-1.5 py-0.5 rounded hover:bg-muted"
 												onClick={() => startEditing(branch)}
 											>
-												Edit
+												Editar
 											</button>
 											{branch.name !== "main" &&
 												branch.name !== currentBranch && (
@@ -189,7 +189,7 @@ export function BranchManager({
 														className="text-xs text-destructive/70 hover:text-destructive px-1.5 py-0.5 rounded hover:bg-destructive/10"
 														onClick={() => handleDelete(branch.name)}
 													>
-														Delete
+														Excluir
 													</button>
 												)}
 										</div>
@@ -202,7 +202,7 @@ export function BranchManager({
 
 				<DialogFooter>
 					<Button variant="outline" onClick={() => onOpenChange(false)}>
-						Close
+						Fechar
 					</Button>
 				</DialogFooter>
 			</DialogContent>

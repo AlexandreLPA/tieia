@@ -93,7 +93,7 @@ export function AudioEffectsChainPanel({ trackId, trackType, className }: AudioE
 	return (
 		<div className={cn("flex flex-col gap-2", className)}>
 			<div className="flex items-center justify-between">
-				<span className="text-xs font-medium">Audio Effects</span>
+				<span className="text-xs font-medium">Efeitos de áudio</span>
 			</div>
 
 			{effects.map((effect) => {

@@ -39,9 +39,9 @@ import {
 import { getApiKey } from "@/lib/api-keys";
 
 const MODE_LABELS: Record<VideoGenMode, { label: string; icon: typeof VideoReplayIcon; desc: string }> = {
-	"text-to-video": { label: "Text → Video", icon: VideoReplayIcon, desc: "Generate video from a text prompt" },
-	"image-to-video": { label: "Image → Video", icon: Image01Icon, desc: "Animate an image into a video" },
-	"video-to-video": { label: "Video → Video", icon: VideoReplayIcon, desc: "Transform an existing video" },
+	"text-to-video": { label: "Texto → Vídeo", icon: VideoReplayIcon, desc: "Gere um vídeo a partir de um prompt de texto" },
+	"image-to-video": { label: "Imagem → Vídeo", icon: Image01Icon, desc: "Anime uma imagem transformando-a em vídeo" },
+	"video-to-video": { label: "Vídeo → Vídeo", icon: VideoReplayIcon, desc: "Transforme um vídeo existente" },
 };
 
 export function VideoGenerationPanel({ className }: { className?: string }) {
@@ -97,10 +97,10 @@ export function VideoGenerationPanel({ className }: { className?: string }) {
 			<div className="px-4 py-3 border-b space-y-2">
 				<div className="flex items-center gap-2">
 					<HugeiconsIcon icon={VideoReplayIcon} className="size-4 text-primary" />
-					<span className="text-xs font-medium">AI Video Generation</span>
+					<span className="text-xs font-medium">Geração de vídeo com IA</span>
 				</div>
 				<p className="text-[10px] text-muted-foreground">
-					Generate video from text, images, or existing clips using multiple AI providers.
+					Gere vídeos a partir de texto, imagens ou clipes existentes usando múltiplos provedores de IA.
 				</p>
 			</div>
 
@@ -126,7 +126,7 @@ export function VideoGenerationPanel({ className }: { className?: string }) {
 
 				{/* Provider Filter */}
 				<div className="space-y-1">
-					<span className="text-[9px] font-medium text-muted-foreground">Provider</span>
+					<span className="text-[9px] font-medium text-muted-foreground">Provedor</span>
 					<div className="flex flex-wrap gap-1">
 						<button
 							className={cn(
@@ -137,7 +137,7 @@ export function VideoGenerationPanel({ className }: { className?: string }) {
 							)}
 							onClick={() => setProviderFilter("all")}
 						>
-							All
+							Todos
 						</button>
 						{VIDEO_PROVIDER_CONFIGS.map((pc) => (
 							<button
@@ -169,10 +169,10 @@ export function VideoGenerationPanel({ className }: { className?: string }) {
 
 				{/* Model Selection */}
 				<div className="space-y-1">
-					<span className="text-[9px] font-medium text-muted-foreground">Model</span>
+					<span className="text-[9px] font-medium text-muted-foreground">Modelo</span>
 					<Select value={selectedModel} onValueChange={setSelectedModel}>
 						<SelectTrigger className="h-7 text-[10px]">
-							<SelectValue placeholder="Select model" />
+							<SelectValue placeholder="Selecionar modelo" />
 						</SelectTrigger>
 						<SelectContent>
 							{availableModels.map((m) => (
@@ -192,7 +192,7 @@ export function VideoGenerationPanel({ className }: { className?: string }) {
 
 				{/* Aspect Ratio */}
 				<div className="space-y-1">
-					<span className="text-[9px] font-medium text-muted-foreground">Aspect Ratio</span>
+					<span className="text-[9px] font-medium text-muted-foreground">Proporção</span>
 					<div className="flex flex-wrap gap-1">
 						{VIDEO_ASPECT_RATIOS.filter((r) => !model || model.aspectRatios.includes(r.id)).map((ar) => (
 							<button
@@ -214,7 +214,7 @@ export function VideoGenerationPanel({ className }: { className?: string }) {
 				{/* Duration */}
 				<div className="space-y-1">
 					<div className="flex justify-between text-[9px]">
-						<span className="font-medium text-muted-foreground">Duration</span>
+						<span className="font-medium text-muted-foreground">Duração</span>
 						<span className="font-mono">{duration}s</span>
 					</div>
 					<Slider
@@ -229,7 +229,7 @@ export function VideoGenerationPanel({ className }: { className?: string }) {
 				{/* Image URL (for image-to-video) */}
 				{genMode === "image-to-video" && (
 					<div className="space-y-1">
-						<span className="text-[9px] font-medium text-muted-foreground">Source Image URL</span>
+						<span className="text-[9px] font-medium text-muted-foreground">URL da imagem de origem</span>
 						<div className="flex gap-1">
 							<input
 								type="url"
@@ -243,7 +243,7 @@ export function VideoGenerationPanel({ className }: { className?: string }) {
 							/>
 						</div>
 						<p className="text-[8px] text-muted-foreground">
-							Paste a URL to an image. Use the Image Generation tool to create one first.
+							Cole a URL de uma imagem. Use a ferramenta de geração de imagens para criar uma primeiro.
 						</p>
 					</div>
 				)}
@@ -260,14 +260,14 @@ export function VideoGenerationPanel({ className }: { className?: string }) {
 							disabled={enhancing || !prompt.trim()}
 						>
 							<HugeiconsIcon icon={SparklesIcon} className="size-3 mr-0.5" />
-							{enhancing ? "Enhancing..." : "Enhance"}
+							{enhancing ? "Aprimorando..." : "Aprimorar"}
 						</Button>
 					</div>
 					<Textarea
 						ref={promptRef}
 						value={prompt}
 						onChange={(e) => setPrompt(e.target.value)}
-						placeholder="Describe the video you want to generate..."
+						placeholder="Descreva o vídeo que você deseja gerar..."
 						className="min-h-[60px] text-[10px] resize-none"
 						rows={3}
 					/>
@@ -279,11 +279,11 @@ export function VideoGenerationPanel({ className }: { className?: string }) {
 						<div className="flex items-center gap-1">
 							<HugeiconsIcon icon={InformationSquareIcon} className="size-3 text-yellow-500" />
 							<span className="text-[9px] font-medium text-yellow-500">
-								{providerConfig.label} API Key Required
+								Chave de API do {providerConfig.label} necessária
 							</span>
 						</div>
 						<p className="text-[8px] text-muted-foreground">
-							Add your {providerConfig.label} API key in Settings → API Keys to use {model.name}.
+							Adicione sua chave de API do {providerConfig.label} em Configurações → Chaves de API para usar {model.name}.
 						</p>
 						<a
 							href={providerConfig.signupUrl}
@@ -291,7 +291,7 @@ export function VideoGenerationPanel({ className }: { className?: string }) {
 							rel="noopener noreferrer"
 							className="text-[8px] text-primary hover:underline"
 						>
-							Get API key →
+							Obter chave de API →
 						</a>
 					</div>
 				)}
@@ -304,7 +304,7 @@ export function VideoGenerationPanel({ className }: { className?: string }) {
 						disabled={!prompt.trim() || !hasApiKey || !model}
 					>
 						<HugeiconsIcon icon={VideoReplayIcon} className="size-4 mr-1.5" />
-						Generate Video
+						Gerar vídeo
 						{model && <Badge variant="secondary" className="ml-2 text-[7px]">{model.costLabel}</Badge>}
 					</Button>
 				)}
@@ -321,7 +321,7 @@ export function VideoGenerationPanel({ className }: { className?: string }) {
 						<div className="flex items-center justify-center gap-1.5">
 							<Spinner className="size-3" />
 							<span className="text-[10px] text-muted-foreground">
-								{status === "generating" ? "Starting generation..." : `Polling for result... ${progress}%`}
+								{status === "generating" ? "Iniciando geração..." : `Consultando resultado... ${progress}%`}
 							</span>
 						</div>
 						<Button
@@ -332,7 +332,7 @@ export function VideoGenerationPanel({ className }: { className?: string }) {
 								clearError();
 							}}
 						>
-							Cancel
+							Cancelar
 						</Button>
 					</div>
 				)}
@@ -341,7 +341,7 @@ export function VideoGenerationPanel({ className }: { className?: string }) {
 				{status === "done" && currentJob?.videoUrl && (
 					<div className="rounded border p-2 space-y-2">
 						<div className="flex items-center justify-between">
-							<span className="text-[9px] font-medium">Result</span>
+							<span className="text-[9px] font-medium">Resultado</span>
 							<Badge variant="secondary" className="text-[7px]">{model?.name}</Badge>
 						</div>
 						<video
@@ -356,7 +356,7 @@ export function VideoGenerationPanel({ className }: { className?: string }) {
 								onClick={() => handleAddToTimeline(currentJob.videoUrl!)}
 							>
 								<HugeiconsIcon icon={Add01Icon} className="size-3 mr-1" />
-								Add to Timeline
+								Adicionar à linha do tempo
 							</Button>
 							<a
 								href={currentJob.videoUrl}
@@ -379,7 +379,7 @@ export function VideoGenerationPanel({ className }: { className?: string }) {
 							className="mt-1.5 h-5 text-[8px]"
 							onClick={clearError}
 						>
-							Try Again
+							Tentar novamente
 						</Button>
 					</div>
 				)}
@@ -388,7 +388,7 @@ export function VideoGenerationPanel({ className }: { className?: string }) {
 				{jobs.length > 1 && (
 					<div className="space-y-1">
 						<span className="text-[9px] font-medium text-muted-foreground">
-							Previous Generations ({jobs.length})
+							Gerações anteriores ({jobs.length})
 						</span>
 						<div className="space-y-1 max-h-32 overflow-y-auto">
 							{jobs.slice(1).map((job) => (

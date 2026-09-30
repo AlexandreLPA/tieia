@@ -16,6 +16,8 @@ import { useTranscriptStore } from "@/stores/transcript-store";
 import { useEditor } from "@/hooks/use-editor";
 import { cn } from "@/utils/ui";
 import { toast } from "sonner";
+import { useAIStore } from "@/stores/ai-store";
+import { useAssetsPanelStore } from "@/stores/assets-panel-store";
 
 const GRADE_COLORS: Record<string, string> = {
 	A: "text-green-400",
@@ -34,14 +36,50 @@ const GRADE_BG: Record<string, string> = {
 };
 
 const SCORE_LABELS: Record<string, string> = {
-	hook: "Hook Strength",
-	curiosity: "Curiosity Gap",
-	energy: "Audio Energy",
-	audio_sync: "Beat Sync",
-	face_presence: "Face Presence",
-	emotional_arc: "Emotional Arc",
-	virality: "Viral Potential",
+	hook: "Gancho",
+	curiosity: "Curiosidade",
+	energy: "Energia do áudio",
+	audio_sync: "Ritmo da música",
+	face_presence: "Presença de rosto",
+	emotional_arc: "Arco emocional",
+	virality: "Potencial viral",
 };
+
+const IMPACT_LABELS: Record<string, string> = {
+	high: "alto",
+	medium: "médio",
+	low: "baixo",
+};
+
+function buildScorePrompt(score: EngagementScoreResult): string {
+	const breakdown = Object.entries(SCORE_LABELS)
+		.map(([key, label]) => {
+			const sub = score[key as keyof EngagementScoreResult];
+			const val =
+				typeof sub === "object" && sub !== null && "composite" in sub
+					? Math.round((sub as { composite: number }).composite)
+					: 0;
+			return `- ${label}: ${val}/100`;
+		})
+		.join("\n");
+
+	const suggestions =
+		score.suggestions.length > 0
+			? score.suggestions
+					.map((s) => `- [impacto ${IMPACT_LABELS[s.expected_impact] ?? s.expected_impact}] ${s.suggestion}`)
+					.join("\n")
+			: "Nenhuma sugestão gerada.";
+
+	return `Meu vídeo acabou de tirar ${score.grade} (${Math.round(score.composite)}/100) na Pontuação Viral.
+
+Detalhamento:
+${breakdown}
+
+Sugestões que o app já gerou:
+${suggestions}
+
+Com base nesse detalhamento, explique em linguagem simples por que a nota está baixa e o que está pesando nela. Depois me dê edições concretas e específicas que eu posso fazer no editor para melhorar. Comece pelos sinais mais fracos. Responda em português do Brasil.`;
+}
 
 interface ViralityScoreModalProps {
 	open: boolean;
@@ -54,6 +92,8 @@ export function ViralityScoreModal({ open, onOpenChange }: ViralityScoreModalPro
 	const [score, setScore] = useState<EngagementScoreResult | null>(null);
 	const [isAnalyzing, setIsAnalyzing] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const setPendingAutoPrompt = useAIStore((s) => s.setPendingAutoPrompt);
+	const setActiveTab = useAssetsPanelStore((s) => s.setActiveTab);
 
 	const tracks = editor.timeline.getTracks();
 	const hasVideo = tracks.some((t) =>
@@ -73,21 +113,28 @@ export function ViralityScoreModal({ open, onOpenChange }: ViralityScoreModalPro
 				: 30;
 
 			const result = await aiClient.engagementScore({
-				transcript_text: transcriptText || "Video content without transcript",
+				transcript_text: transcriptText,
 				start: 0,
 				end: lastEnd,
-				title: "Current Project",
+				title: "Projeto atual",
 			});
 			setScore(result);
-			toast.success(`Virality Score: ${result.grade} (${Math.round(result.composite)}/100)`);
+			toast.success(`Pontuação Viral: ${result.grade} (${Math.round(result.composite)}/100)`);
 		} catch (e) {
-			const msg = e instanceof Error ? e.message : "Scoring failed";
+			const msg = e instanceof Error ? e.message : "Falha ao calcular a pontuação";
 			setError(msg);
-			toast.error("Failed to check virality score");
+			toast.error("Não foi possível calcular a Pontuação Viral");
 		} finally {
 			setIsAnalyzing(false);
 		}
 	}, [segments]);
+
+	const handleAskAI = useCallback(() => {
+		if (!score) return;
+		setPendingAutoPrompt(buildScorePrompt(score));
+		setActiveTab("ai");
+		onOpenChange(false);
+	}, [score, setPendingAutoPrompt, setActiveTab, onOpenChange]);
 
 	// Reset when modal closes
 	const handleOpenChange = (v: boolean) => {
@@ -102,18 +149,18 @@ export function ViralityScoreModal({ open, onOpenChange }: ViralityScoreModalPro
 		<Dialog open={open} onOpenChange={handleOpenChange}>
 			<DialogContent className="max-w-md">
 				<DialogHeader>
-					<DialogTitle>Virality Score</DialogTitle>
+					<DialogTitle>Pontuação Viral</DialogTitle>
 				</DialogHeader>
 				<DialogBody className="space-y-4">
 					{/* No video state */}
 					{!hasVideo && (
 						<div className="rounded-lg border border-yellow-500/30 bg-yellow-500/5 p-4 text-center space-y-2">
-							<p className="text-sm font-medium text-yellow-400">No video on timeline</p>
+							<p className="text-sm font-medium text-yellow-400">Nenhum vídeo na timeline</p>
 							<p className="text-xs text-muted-foreground">
-								Add a video to your timeline first, then check its virality score before publishing.
+								Adicione um vídeo na timeline primeiro e depois confira a pontuação viral antes de publicar.
 							</p>
 							<Button variant="outline" size="sm" onClick={() => handleOpenChange(false)}>
-								Got it
+								Entendi
 							</Button>
 						</div>
 					)}
@@ -122,10 +169,15 @@ export function ViralityScoreModal({ open, onOpenChange }: ViralityScoreModalPro
 					{hasVideo && !score && !isAnalyzing && !error && (
 						<div className="text-center space-y-3">
 							<p className="text-sm text-muted-foreground">
-								Rate your video's viral potential before publishing. Get a score with actionable suggestions to improve engagement.
+								Avalie o potencial viral do seu vídeo antes de publicar e receba sugestões práticas para melhorar o engajamento.
 							</p>
+							{segments.length === 0 && (
+								<p className="rounded-lg border border-yellow-500/30 bg-yellow-500/5 p-2 text-xs text-yellow-400">
+									Sem transcrição a nota fica imprecisa: esta checagem avalia principalmente o texto falado. Transcreva o vídeo antes (botão do microfone).
+								</p>
+							)}
 							<Button className="w-full" onClick={handleCheck}>
-								Check Virality Score
+								Calcular Pontuação Viral
 							</Button>
 						</div>
 					)}
@@ -134,7 +186,7 @@ export function ViralityScoreModal({ open, onOpenChange }: ViralityScoreModalPro
 					{isAnalyzing && (
 						<div className="flex flex-col items-center gap-3 py-6">
 							<Spinner className="h-6 w-6" />
-							<p className="text-sm text-muted-foreground">Analyzing your video...</p>
+							<p className="text-sm text-muted-foreground">Analisando seu vídeo...</p>
 						</div>
 					)}
 
@@ -145,7 +197,7 @@ export function ViralityScoreModal({ open, onOpenChange }: ViralityScoreModalPro
 								<p className="text-sm text-red-400">{error}</p>
 							</div>
 							<Button variant="outline" className="w-full" onClick={handleCheck}>
-								Retry
+								Tentar de novo
 							</Button>
 						</div>
 					)}
@@ -167,17 +219,17 @@ export function ViralityScoreModal({ open, onOpenChange }: ViralityScoreModalPro
 							{/* Verdict */}
 							<div className="rounded-lg border p-3 text-center">
 								{score.composite >= 70 ? (
-									<p className="text-sm font-medium text-green-400">Ready to go viral!</p>
+									<p className="text-sm font-medium text-green-400">Pronto para viralizar!</p>
 								) : score.composite >= 50 ? (
-									<p className="text-sm font-medium text-yellow-400">Good potential, check suggestions below</p>
+									<p className="text-sm font-medium text-yellow-400">Bom potencial, veja as sugestões abaixo</p>
 								) : (
-									<p className="text-sm font-medium text-red-400">Needs improvement before publishing</p>
+									<p className="text-sm font-medium text-red-400">Precisa melhorar antes de publicar</p>
 								)}
 							</div>
 
 							{/* Sub-scores */}
 							<div className="space-y-2">
-								<h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Breakdown</h4>
+								<h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Detalhamento</h4>
 								{Object.entries(SCORE_LABELS).map(([key, label]) => {
 									const sub = score[key as keyof EngagementScoreResult];
 									const val = typeof sub === "object" && sub !== null && "composite" in sub
@@ -186,7 +238,7 @@ export function ViralityScoreModal({ open, onOpenChange }: ViralityScoreModalPro
 
 									return (
 										<div key={key} className="flex items-center gap-2">
-											<span className="text-xs text-muted-foreground w-24 flex-shrink-0">{label}</span>
+											<span className="text-xs text-muted-foreground w-28 flex-shrink-0">{label}</span>
 											<div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
 												<div
 													className={cn(
@@ -205,7 +257,7 @@ export function ViralityScoreModal({ open, onOpenChange }: ViralityScoreModalPro
 							{/* Suggestions */}
 							{score.suggestions.length > 0 && (
 								<div className="space-y-2">
-									<h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Suggestions</h4>
+									<h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Sugestões</h4>
 									{score.suggestions.map((s, i) => (
 										<div key={i} className="flex items-start gap-2 text-xs">
 											<span className={cn(
@@ -219,13 +271,18 @@ export function ViralityScoreModal({ open, onOpenChange }: ViralityScoreModalPro
 							)}
 
 							{/* Actions */}
-							<div className="flex gap-2">
-								<Button variant="outline" className="flex-1" onClick={handleCheck}>
-									Re-check
+							<div className="space-y-2">
+								<Button className="w-full" onClick={handleAskAI}>
+									Pedir para a IA explicar e corrigir
 								</Button>
-								<Button className="flex-1" onClick={() => handleOpenChange(false)}>
-									Done
-								</Button>
+								<div className="flex gap-2">
+									<Button variant="outline" className="flex-1" onClick={handleCheck}>
+										Calcular de novo
+									</Button>
+									<Button variant="outline" className="flex-1" onClick={() => handleOpenChange(false)}>
+										Fechar
+									</Button>
+								</div>
 							</div>
 						</div>
 					)}

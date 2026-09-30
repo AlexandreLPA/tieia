@@ -3,12 +3,12 @@ import blurFragmentShader from "./blur.frag.glsl";
 
 export const blurEffectDefinition: EffectDefinition = {
 	type: "blur",
-	name: "Blur",
+	name: "Desfoque",
 	keywords: ["blur", "soft", "defocus"],
 	params: [
 		{
 			key: "intensity",
-			label: "Intensity",
+			label: "Intensidade",
 			type: "number",
 			default: 15,
 			min: 0,

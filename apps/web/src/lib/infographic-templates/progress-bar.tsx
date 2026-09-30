@@ -142,10 +142,10 @@ export const ProgressBar: FC<ProgressBarProps> = ({
 
 export const templateConfig = {
   id: "progress-bar",
-  name: "Progress Bar",
+  name: "Barra de Progresso",
   category: "data",
   defaultProps: {
-    label: "Project Completion",
+    label: "Conclusão do Projeto",
     percentage: 73,
     primaryColor: "#3b82f6",
     trackColor: "#1e3a5f",

@@ -25,32 +25,32 @@ export function LoudnessPanel({ className }: { className?: string }) {
 			<div className="px-4 py-3 border-b space-y-2">
 				<div className="flex items-center gap-2">
 					<HugeiconsIcon icon={VolumeHighIcon} className="size-4 text-primary" />
-					<span className="text-xs font-medium">Loudness Normalization</span>
+					<span className="text-xs font-medium">Normalização de Loudness</span>
 				</div>
 				<p className="text-[10px] text-muted-foreground">
-					Measure and normalize audio to broadcast loudness standards.
+					Meça e normalize o áudio de acordo com os padrões de loudness para broadcast.
 				</p>
 			</div>
 
 			<div className="px-4 py-3 space-y-4 flex-1 overflow-y-auto">
 				{measurement && (
 					<div className="rounded border p-2 space-y-1.5">
-						<span className="text-[10px] font-medium">Current Measurement</span>
+						<span className="text-[10px] font-medium">Medição Atual</span>
 						<div className="grid grid-cols-2 gap-1 text-[9px]">
 							<div>
-								<span className="text-muted-foreground">Integrated: </span>
+								<span className="text-muted-foreground">Integrado: </span>
 								<span className="font-mono">{measurement.integrated} LUFS</span>
 							</div>
 							<div>
-								<span className="text-muted-foreground">True Peak: </span>
+								<span className="text-muted-foreground">Pico Real: </span>
 								<span className="font-mono">{measurement.truePeak} dBTP</span>
 							</div>
 							<div>
-								<span className="text-muted-foreground">Short Term: </span>
+								<span className="text-muted-foreground">Curto Prazo: </span>
 								<span className="font-mono">{measurement.shortTerm} LUFS</span>
 							</div>
 							<div>
-								<span className="text-muted-foreground">Range: </span>
+								<span className="text-muted-foreground">Faixa: </span>
 								<span className="font-mono">{measurement.range} LU</span>
 							</div>
 						</div>
@@ -62,11 +62,11 @@ export function LoudnessPanel({ className }: { className?: string }) {
 					className="w-full h-7 text-[10px]"
 					onClick={analyze}
 				>
-					{measurement ? "Re-analyze" : "Analyze Loudness"}
+					{measurement ? "Reanalisar" : "Analisar Loudness"}
 				</Button>
 
 				<div className="space-y-1.5">
-					<span className="text-[10px] text-muted-foreground">Target Preset</span>
+					<span className="text-[10px] text-muted-foreground">Predefinição de destino</span>
 					<div className="grid grid-cols-2 gap-1">
 						{LOUDNESS_PRESETS.map((preset) => (
 							<button
@@ -98,7 +98,7 @@ export function LoudnessPanel({ className }: { className?: string }) {
 
 				<div className="space-y-1.5">
 					<div className="flex justify-between text-[10px] text-muted-foreground">
-						<span>Target LUFS</span>
+						<span>LUFS de destino</span>
 						<span className="font-mono">{targetLufs} LUFS</span>
 					</div>
 					<Slider
@@ -118,12 +118,12 @@ export function LoudnessPanel({ className }: { className?: string }) {
 					onClick={handleNormalize}
 					disabled={!measurement}
 				>
-					Normalize to {targetLufs} LUFS
+					Normalizar para {targetLufs} LUFS
 				</Button>
 
 				{measurement && (
 					<div className="text-[9px] text-muted-foreground text-center">
-						Gain adjustment:{" "}
+						Ajuste de ganho:{" "}
 						<span className="font-mono">
 							{targetLufs - measurement.integrated > 0 ? "+" : ""}
 							{Math.round((targetLufs - measurement.integrated) * 100) / 100} dB

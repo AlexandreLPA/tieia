@@ -7,16 +7,16 @@ function formatCommandError(error: unknown): string {
 	if (error instanceof AIClientError) {
 		switch (error.errorType) {
 			case "connection_refused":
-				return "Cannot connect to AI backend. The server needs to be running for AI commands to work.";
+				return "Não é possível conectar ao back-end de IA. O servidor precisa estar em execução para os comandos de IA funcionarem.";
 			case "timeout":
-				return "Command timed out. The LLM may still be loading — try again in a moment.";
+				return "O comando expirou. O LLM ainda pode estar carregando — tente novamente em instantes.";
 			case "backend_error":
-				return `AI backend error: ${error.message}. Check that Ollama is running with a model loaded.`;
+				return `Erro no back-end de IA: ${error.message}. Verifique se o Ollama está em execução com um modelo carregado.`;
 			default:
 				return error.message;
 		}
 	}
-	return error instanceof Error ? error.message : "Command execution failed";
+	return error instanceof Error ? error.message : "Falha na execução do comando";
 }
 
 export function useAICommand() {

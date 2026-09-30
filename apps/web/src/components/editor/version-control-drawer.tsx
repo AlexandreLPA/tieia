@@ -55,7 +55,7 @@ export function VersionControlDrawer({
 	const handleRestore = useCallback(async () => {
 		if (!selectedCommitId) return;
 		const ok = window.confirm(
-			"This will replace your current timeline. Uncommitted changes will be lost. Continue?",
+			"Isso vai substituir sua linha do tempo atual. As alterações não commitadas serão perdidas. Deseja continuar?",
 		);
 		if (!ok) return;
 
@@ -80,13 +80,13 @@ export function VersionControlDrawer({
 					{/* Header */}
 					<SheetHeader className="px-4 pt-4 pb-2">
 						<div className="flex items-center justify-between">
-							<SheetTitle className="text-base">Version Control</SheetTitle>
+							<SheetTitle className="text-base">Controle de Versão</SheetTitle>
 							<div className="flex items-center gap-1.5">
 								<span className="text-[11px] text-muted-foreground px-1.5 py-0.5 rounded bg-muted">
 									{currentBranch}
 								</span>
 								{isDirty && (
-									<span className="w-2 h-2 rounded-full bg-yellow-500" title="Uncommitted changes" />
+									<span className="w-2 h-2 rounded-full bg-yellow-500" title="Alterações não commitadas" />
 								)}
 							</div>
 						</div>
@@ -96,8 +96,8 @@ export function VersionControlDrawer({
 					<div className="flex border-b border-border px-4">
 						{(
 							[
-								["history", "History"],
-								["diff", "Changes"],
+								["history", "Histórico"],
+								["diff", "Alterações"],
 							] as const
 						).map(([key, label]) => (
 							<button
@@ -132,7 +132,7 @@ export function VersionControlDrawer({
 									onClick={handleRestore}
 									disabled={isRestoring}
 								>
-									{isRestoring ? "Restoring..." : "Restore this version"}
+									{isRestoring ? "Restaurando..." : "Restaurar esta versão"}
 								</Button>
 							</div>
 						</>
@@ -145,7 +145,7 @@ export function VersionControlDrawer({
 							Commit
 						</Button>
 						<Button size="sm" variant="outline" onClick={() => setMergeDialogOpen(true)}>
-							Merge
+							Mesclar
 						</Button>
 						<Button size="sm" variant="outline" onClick={() => setBranchManagerOpen(true)}>
 							Branches

@@ -183,7 +183,7 @@ export function useTextTimelineBridge() {
 			compactTimeline();
 
 			toast.success(
-				`Cut ${cuts.length} ${cuts.length === 1 ? "section" : "sections"} from timeline`,
+				`${cuts.length} ${cuts.length === 1 ? "trecho removido" : "trechos removidos"} da linha do tempo`,
 			);
 		},
 		[editor, compactTimeline],
@@ -391,7 +391,7 @@ export function useTextTimelineBridge() {
 					}
 					editor.command.commitTransaction();
 				}
-				toast.info("Segments reordered in transcript");
+				toast.info("Segmentos reordenados na transcrição");
 				return;
 			}
 
@@ -472,7 +472,7 @@ export function useTextTimelineBridge() {
 				}
 				editor.command.commitTransaction();
 			}
-			toast.success("Segments reordered");
+			toast.success("Segmentos reordenados");
 		},
 		[editor],
 	);
@@ -499,9 +499,9 @@ export function useTextTimelineBridge() {
 	 */
 	const handleTranscribe = useCallback(async () => {
 		if (!isConnected) {
-			toast.error("AI backend is not connected", {
+			toast.error("O backend de IA não está conectado", {
 				description:
-					"Start the AI backend to enable transcription. Click the AI status indicator for setup instructions.",
+					"Inicie o backend de IA para habilitar a transcrição. Clique no indicador de status da IA para ver as instruções de configuração.",
 			});
 			return;
 		}
@@ -524,9 +524,9 @@ export function useTextTimelineBridge() {
 		}
 
 		if (!foundMediaId) {
-			toast.error("No video or audio found", {
+			toast.error("Nenhum vídeo ou áudio encontrado", {
 				description:
-					"Import a video or audio file first, then transcribe it.",
+					"Importe um arquivo de vídeo ou áudio primeiro e depois transcreva-o.",
 			});
 			return;
 		}
@@ -537,8 +537,8 @@ export function useTextTimelineBridge() {
 			.find((asset) => asset.id === foundMediaId);
 
 		if (!mediaAsset?.file) {
-			toast.error("Cannot access media file", {
-				description: "The media file could not be read for transcription.",
+			toast.error("Não foi possível acessar o arquivo de mídia", {
+				description: "O arquivo de mídia não pôde ser lido para transcrição.",
 			});
 			return;
 		}
@@ -552,9 +552,9 @@ export function useTextTimelineBridge() {
 				splitTimelineAtSegmentBoundaries(result.segments);
 			}
 
-			toast.success("Transcription complete", {
+			toast.success("Transcrição concluída", {
 				description:
-					"Your video has been split into segments. Delete or reorder segments to edit the video.",
+					"Seu vídeo foi dividido em segmentos. Exclua ou reordene os segmentos para editar o vídeo.",
 			});
 		} catch {
 			// Error is already set in useTranscription hook

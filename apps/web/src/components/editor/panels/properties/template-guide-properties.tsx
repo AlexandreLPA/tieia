@@ -128,12 +128,12 @@ export function TemplateGuideProperties({
 				parsed.mood || "cinematic",
 			);
 			setPrompt(result.prompt);
-			toast.success("Prompt generated");
+			toast.success("Prompt gerado");
 		} catch (err) {
 			toast.error(
 				err instanceof Error
 					? err.message
-					: "Failed to generate prompt. Make sure AI backend is running.",
+					: "Não foi possível gerar o prompt. Verifique se o back-end de IA está em execução.",
 			);
 		} finally {
 			setIsGeneratingPrompt(false);
@@ -145,7 +145,7 @@ export function TemplateGuideProperties({
 	const handleGenerateImage = useCallback(async () => {
 		const p = prompt.trim();
 		if (!p) {
-			toast.error("Generate or write a prompt first");
+			toast.error("Gere ou escreva um prompt primeiro");
 			return;
 		}
 		setIsGeneratingMedia(true);
@@ -158,9 +158,9 @@ export function TemplateGuideProperties({
 				guidanceScale: 7.5,
 			});
 			setGeneratedUrl(result.imageUrl);
-			toast.success("Image generated");
+			toast.success("Imagem gerada");
 		} catch {
-			toast.error("Image generation failed");
+			toast.error("Falha ao gerar imagem");
 		} finally {
 			setIsGeneratingMedia(false);
 		}
@@ -171,7 +171,7 @@ export function TemplateGuideProperties({
 	const handleGenerateVideo = useCallback(async () => {
 		const p = prompt.trim();
 		if (!p) {
-			toast.error("Generate or write a prompt first");
+			toast.error("Gere ou escreva um prompt primeiro");
 			return;
 		}
 		setIsGeneratingMedia(true);
@@ -186,9 +186,9 @@ export function TemplateGuideProperties({
 
 			if (result.status === "completed" && result.videoUrl) {
 				setGeneratedUrl(result.videoUrl);
-				toast.success("Video generated");
+				toast.success("Vídeo gerado");
 			} else if (result.jobId) {
-				toast.info("Video generation started — this may take a few minutes");
+				toast.info("Geração de vídeo iniciada — isso pode levar alguns minutos");
 				// Poll for result
 				const poll = setInterval(async () => {
 					try {
@@ -197,11 +197,11 @@ export function TemplateGuideProperties({
 							clearInterval(poll);
 							setGeneratedUrl(job.videoUrl);
 							setIsGeneratingMedia(false);
-							toast.success("Video ready");
+							toast.success("Vídeo pronto");
 						} else if (job.status === "failed") {
 							clearInterval(poll);
 							setIsGeneratingMedia(false);
-							toast.error(job.error || "Video generation failed");
+							toast.error(job.error || "Falha ao gerar vídeo");
 						}
 					} catch {
 						/* keep polling */
@@ -211,7 +211,7 @@ export function TemplateGuideProperties({
 			}
 		} catch (err) {
 			toast.error(
-				err instanceof Error ? err.message : "Video generation failed",
+				err instanceof Error ? err.message : "Falha ao gerar vídeo",
 			);
 		}
 		setIsGeneratingMedia(false);
@@ -236,7 +236,7 @@ export function TemplateGuideProperties({
 
 		setInserted(true);
 		toast.success(
-			`Inserted at ${element.startTime.toFixed(1)}s (${element.duration.toFixed(1)}s)`,
+			`Inserido em ${element.startTime.toFixed(1)}s (${element.duration.toFixed(1)}s)`,
 		);
 	}, [generatedUrl, element, parsed.title, editor]);
 
@@ -267,7 +267,7 @@ export function TemplateGuideProperties({
 				{parsed.keyMessage && (
 					<Section showTopBorder={false}>
 						<SectionHeader>
-							<SectionTitle>Key Message</SectionTitle>
+							<SectionTitle>Mensagem-chave</SectionTitle>
 						</SectionHeader>
 						<SectionContent>
 							<p className="text-sm font-semibold">{parsed.keyMessage}</p>
@@ -284,7 +284,7 @@ export function TemplateGuideProperties({
 									icon={Mic01Icon}
 									className="size-3 text-muted-foreground"
 								/>
-								<SectionTitle>Voiceover Script</SectionTitle>
+								<SectionTitle>Roteiro de locução</SectionTitle>
 							</div>
 						</SectionHeader>
 						<SectionContent>
@@ -304,7 +304,7 @@ export function TemplateGuideProperties({
 									icon={ViewIcon}
 									className="size-3 text-primary"
 								/>
-								<SectionTitle>Visual Direction</SectionTitle>
+								<SectionTitle>Direção visual</SectionTitle>
 							</div>
 						</SectionHeader>
 						<SectionContent>
@@ -324,7 +324,7 @@ export function TemplateGuideProperties({
 									icon={MusicNote03Icon}
 									className="size-3 text-muted-foreground"
 								/>
-								<SectionTitle>Mood</SectionTitle>
+								<SectionTitle>Clima</SectionTitle>
 							</div>
 						</SectionHeader>
 						<SectionContent>
@@ -343,7 +343,7 @@ export function TemplateGuideProperties({
 								icon={SparklesIcon}
 								className="size-3 text-primary"
 							/>
-							<SectionTitle>Generate Visual</SectionTitle>
+							<SectionTitle>Gerar visual</SectionTitle>
 						</div>
 					</SectionHeader>
 					<SectionContent>
@@ -369,13 +369,13 @@ export function TemplateGuideProperties({
 												className="size-2.5 mr-1"
 											/>
 										)}
-										{prompt ? "Regenerate" : "Generate Prompt"}
+										{prompt ? "Gerar novamente" : "Gerar prompt"}
 									</Button>
 								</div>
 								<Textarea
 									value={prompt}
 									onChange={(e) => setPrompt(e.target.value)}
-									placeholder="Click 'Generate Prompt' or write your own..."
+									placeholder="Clique em 'Gerar prompt' ou escreva o seu próprio..."
 									rows={3}
 									className="text-[11px] font-mono"
 								/>
@@ -403,7 +403,7 @@ export function TemplateGuideProperties({
 							{/* Provider toggle */}
 							<div className="flex items-center justify-between">
 								<span className="text-[10px] text-muted-foreground">
-									Provider
+									Provedor
 								</span>
 								<div className="flex gap-1">
 									<button
@@ -451,7 +451,7 @@ export function TemplateGuideProperties({
 												className="size-3 mr-1"
 											/>
 										)}
-										Generate Image
+										Gerar imagem
 									</Button>
 									<Button
 										size="sm"
@@ -468,7 +468,7 @@ export function TemplateGuideProperties({
 												className="size-3 mr-1"
 											/>
 										)}
-										Generate Video
+										Gerar vídeo
 									</Button>
 								</div>
 
@@ -482,7 +482,7 @@ export function TemplateGuideProperties({
 											icon={ArrowDown01Icon}
 											className="size-3 mr-1"
 										/>
-										Insert at {element.startTime.toFixed(1)}s
+										Inserir em {element.startTime.toFixed(1)}s
 									</Button>
 								)}
 
@@ -497,7 +497,7 @@ export function TemplateGuideProperties({
 											icon={Tick01Icon}
 											className="size-3 mr-1 text-green-500"
 										/>
-										Added to Timeline
+										Adicionado à linha do tempo
 									</Button>
 								)}
 							</div>

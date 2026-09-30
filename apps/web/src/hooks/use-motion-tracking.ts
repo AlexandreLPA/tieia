@@ -55,16 +55,16 @@ export function useMotionTracking(): UseMotionTrackingReturn {
 				const opts: TrackingOptions = { ...DEFAULT_TRACKING_OPTIONS, ...options };
 				const tracks = editor.timeline.getTracks();
 				const tlTrack = tracks.find((t) => t.id === trackId);
-				if (!tlTrack) throw new Error("Track not found");
+				if (!tlTrack) throw new Error("Trilha não encontrada");
 
 				const element = tlTrack.elements.find((e) => e.id === elementId);
-				if (!element || element.type !== "video") throw new Error("Element must be a video");
+				if (!element || element.type !== "video") throw new Error("O elemento precisa ser um vídeo");
 
 				const videoEl = element as VideoElement;
-				if (!videoEl.mediaId) throw new Error("Video has no media source");
+				if (!videoEl.mediaId) throw new Error("O vídeo não tem uma fonte de mídia");
 
 				const media = editor.media.getAssetById(videoEl.mediaId);
-				if (!media?.file) throw new Error("Media file not available");
+				if (!media?.file) throw new Error("Arquivo de mídia não disponível");
 
 				const video = document.createElement("video");
 				video.src = URL.createObjectURL(media.file);
@@ -73,13 +73,13 @@ export function useMotionTracking(): UseMotionTrackingReturn {
 
 				await new Promise<void>((resolve, reject) => {
 					video.onloadedmetadata = () => resolve();
-					video.onerror = () => reject(new Error("Failed to load video"));
+					video.onerror = () => reject(new Error("Falha ao carregar o vídeo"));
 				});
 
 				const duration = video.duration;
 				const canvas = document.createElement("canvas");
 				const ctx = canvas.getContext("2d", { willReadFrequently: true });
-				if (!ctx) throw new Error("Canvas 2D not available");
+				if (!ctx) throw new Error("Canvas 2D não disponível");
 
 				const sampleInterval = opts.sampleInterval;
 				const totalFrames = Math.ceil(duration / sampleInterval);
@@ -165,7 +165,7 @@ export function useMotionTracking(): UseMotionTrackingReturn {
 				setStatus("done");
 			} catch (err) {
 				setStatus("error");
-				setError(err instanceof Error ? err.message : "Motion tracking failed");
+				setError(err instanceof Error ? err.message : "Falha no rastreamento de movimento");
 			}
 		},
 		[editor],
@@ -227,7 +227,7 @@ export function useMotionTracking(): UseMotionTrackingReturn {
 			setStatus("done");
 		} catch (err) {
 			setStatus("error");
-			setError(err instanceof Error ? err.message : "Failed to apply tracking data");
+			setError(err instanceof Error ? err.message : "Falha ao aplicar os dados de rastreamento");
 		}
 	}, [track, editor]);
 

@@ -66,7 +66,7 @@ export function MergeDialog({
 				setStep("preview");
 			}
 		} catch (err) {
-			setError(err instanceof Error ? err.message : "Merge failed");
+			setError(err instanceof Error ? err.message : "Falha ao mesclar");
 		} finally {
 			setLoading(false);
 		}
@@ -98,7 +98,7 @@ export function MergeDialog({
 			setStep("done");
 			setTimeout(() => onOpenChange(false), 1500);
 		} catch (err) {
-			setError(err instanceof Error ? err.message : "Merge commit failed");
+			setError(err instanceof Error ? err.message : "Falha ao concluir a mesclagem");
 		} finally {
 			setLoading(false);
 		}
@@ -117,8 +117,8 @@ export function MergeDialog({
 				<DialogHeader>
 					<DialogTitle>
 						{step === "done"
-							? "Merge Complete"
-							: `Merge into ${currentBranch}`}
+							? "Mesclagem concluída"
+							: `Mesclar em ${currentBranch}`}
 					</DialogTitle>
 				</DialogHeader>
 
@@ -133,13 +133,13 @@ export function MergeDialog({
 					{step === "select" && (
 						<div className="space-y-3">
 							<div>
-								<Label>Source branch</Label>
+								<Label>Ramificação de origem</Label>
 								<select
 									value={sourceBranch}
 									onChange={(e) => setSourceBranch(e.target.value)}
 									className="w-full mt-1 rounded-md border border-border bg-background px-3 py-2 text-sm"
 								>
-									<option value="">Select branch to merge...</option>
+									<option value="">Selecionar ramificação para mesclar...</option>
 									{branches.map((b) => (
 										<option key={b.id} value={b.name}>
 											{b.name}
@@ -149,9 +149,9 @@ export function MergeDialog({
 							</div>
 							{sourceBranch && (
 								<div className="text-xs text-muted-foreground">
-									This will merge changes from{" "}
+									Isso vai mesclar as alterações de{" "}
 									<span className="font-medium text-foreground">{sourceBranch}</span>{" "}
-									into{" "}
+									em{" "}
 									<span className="font-medium text-foreground">{currentBranch}</span>
 								</div>
 							)}
@@ -163,9 +163,9 @@ export function MergeDialog({
 						<div className="space-y-3">
 							<div className="flex items-center gap-2 text-sm">
 								<span className="w-2 h-2 rounded-full bg-green-500" />
-								<span className="text-green-400 font-medium">Clean merge</span>
+								<span className="text-green-400 font-medium">Mesclagem sem conflitos</span>
 								<span className="text-muted-foreground">
-									— {mergeResult.autoResolved.length} change{mergeResult.autoResolved.length !== 1 ? "s" : ""} will be applied
+									— {mergeResult.autoResolved.length} {mergeResult.autoResolved.length !== 1 ? "alterações serão aplicadas" : "alteração será aplicada"}
 								</span>
 							</div>
 
@@ -182,7 +182,7 @@ export function MergeDialog({
 							<Separator />
 
 							<div>
-								<Label>Merge commit message</Label>
+								<Label>Mensagem da versão de mesclagem</Label>
 								<Input
 									value={commitMessage}
 									onChange={(e) => setCommitMessage(e.target.value)}
@@ -204,7 +204,7 @@ export function MergeDialog({
 					{step === "done" && (
 						<div className="text-center py-4">
 							<div className="text-sm text-green-400 font-medium">
-								Merge committed successfully
+								Mesclagem salva com sucesso
 							</div>
 						</div>
 					)}
@@ -213,19 +213,19 @@ export function MergeDialog({
 				{step !== "done" && (
 					<DialogFooter>
 						<Button variant="outline" onClick={handleAbort}>
-							{step === "select" ? "Cancel" : "Abort Merge"}
+							{step === "select" ? "Cancelar" : "Cancelar mesclagem"}
 						</Button>
 						{step === "select" && (
 							<Button
 								onClick={handlePreview}
 								disabled={!sourceBranch || loading}
 							>
-								{loading ? "Analyzing..." : "Preview Merge"}
+								{loading ? "Analisando..." : "Pré-visualizar mesclagem"}
 							</Button>
 						)}
 						{step === "preview" && (
 							<Button onClick={handleCompleteMerge} disabled={loading}>
-								{loading ? "Merging..." : "Confirm Merge"}
+								{loading ? "Mesclando..." : "Confirmar mesclagem"}
 							</Button>
 						)}
 						{step === "conflicts" && resolver && (
@@ -237,7 +237,7 @@ export function MergeDialog({
 								}}
 								disabled={!resolver.isFullyResolved()}
 							>
-								Continue ({resolver.getResolvedCount()}/{resolver.getConflictCount()} resolved)
+								Continuar ({resolver.getResolvedCount()}/{resolver.getConflictCount()} resolvidos)
 							</Button>
 						)}
 					</DialogFooter>

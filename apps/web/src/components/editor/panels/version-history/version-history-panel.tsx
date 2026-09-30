@@ -83,7 +83,7 @@ export function VersionHistoryPanel() {
 		if (!selectedCommitId) return;
 
 		const confirmed = window.confirm(
-			"This will replace your current timeline. Uncommitted changes will be lost. Continue?",
+			"Isso vai substituir sua linha do tempo atual. As alterações não salvas serão perdidas. Deseja continuar?",
 		);
 		if (!confirmed) return;
 
@@ -116,7 +116,7 @@ export function VersionHistoryPanel() {
 				</div>
 				<div className="flex items-center gap-1">
 					{isDirty && (
-						<span className="w-2 h-2 rounded-full bg-yellow-500" title="Uncommitted changes" />
+						<span className="w-2 h-2 rounded-full bg-yellow-500" title="Alterações não salvas" />
 					)}
 					<button
 						type="button"
@@ -126,7 +126,7 @@ export function VersionHistoryPanel() {
 								? "bg-primary/10 text-primary"
 								: "bg-muted text-muted-foreground hover:text-foreground"
 						}`}
-						title={autoCommitEnabled ? "Auto-commit enabled (every 10min)" : "Enable auto-commit"}
+						title={autoCommitEnabled ? "Salvamento automático ativado (a cada 10 min)" : "Ativar salvamento automático"}
 					>
 						{autoCommitEnabled ? "Auto" : "Auto"}
 					</button>
@@ -137,8 +137,8 @@ export function VersionHistoryPanel() {
 			<div className="flex border-b border-border">
 				{(
 					[
-						["history", "History"],
-						["diff", "Diff"],
+						["history", "Histórico"],
+						["diff", "Diferenças"],
 					] as const
 				).map(([key, label]) => (
 					<button
@@ -173,7 +173,7 @@ export function VersionHistoryPanel() {
 							onClick={handleRestore}
 							disabled={isRestoring}
 						>
-							{isRestoring ? "Restoring..." : "Restore this version"}
+							{isRestoring ? "Restaurando..." : "Restaurar esta versão"}
 						</Button>
 					</div>
 				</>
@@ -187,14 +187,14 @@ export function VersionHistoryPanel() {
 					className="flex-1"
 					onClick={() => openCommitDialog()}
 				>
-					Commit
+					Salvar
 				</Button>
 				<Button
 					size="sm"
 					variant="outline"
 					onClick={() => setMergeDialogOpen(true)}
 				>
-					Merge
+					Mesclar
 				</Button>
 				<Button
 					size="sm"
@@ -208,7 +208,7 @@ export function VersionHistoryPanel() {
 					variant="outline"
 					onClick={() => setBranchManagerOpen(true)}
 				>
-					Branches
+					Ramificações
 				</Button>
 			</div>
 

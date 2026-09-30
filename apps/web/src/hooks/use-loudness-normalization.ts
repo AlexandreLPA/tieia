@@ -137,7 +137,7 @@ export function useLoudnessNormalization() {
 	const normalize = useCallback(
 		async (config: NormalizationConfig = DEFAULT_NORMALIZATION) => {
 			if (!measurement) {
-				toast.error("Analyze first to measure current loudness");
+				toast.error("Analise primeiro para medir o loudness atual");
 				return;
 			}
 
@@ -158,7 +158,7 @@ export function useLoudnessNormalization() {
 				}
 			}
 
-			toast.success(`Normalized to ${config.targetLUFS} LUFS (${gainDb > 0 ? "+" : ""}${gainDb} dB)`);
+			toast.success(`Normalizado para ${config.targetLUFS} LUFS (${gainDb > 0 ? "+" : ""}${gainDb} dB)`);
 		},
 		[editor, measurement],
 	);

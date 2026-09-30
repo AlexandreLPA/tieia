@@ -146,15 +146,15 @@ export const ListOverlay: FC<ListOverlayProps> = ({
 
 export const templateConfig = {
   id: "list-overlay",
-  name: "List Overlay",
+  name: "Sobreposição de Lista",
   category: "text",
   defaultProps: {
-    title: "Key Takeaways",
+    title: "Principais Conclusões",
     items: [
-      "Increased efficiency by 40%",
-      "Reduced costs across all departments",
-      "Improved customer satisfaction scores",
-      "Streamlined onboarding process",
+      "Aumento de eficiência em 40%",
+      "Redução de custos em todos os departamentos",
+      "Melhoria nos índices de satisfação do cliente",
+      "Processo de integração simplificado",
     ],
     primaryColor: "#10b981",
     accentColor: "#6ee7b7",

@@ -78,11 +78,11 @@ export function ClipEffectsProperties({
 					variant="ghost"
 					size="icon"
 					onClick={closeClipEffects}
-					aria-label="Back to properties"
+					aria-label="Voltar às propriedades"
 				>
 					<HugeiconsIcon icon={ArrowLeft01Icon} />
 				</Button>
-				<span className="text-sm font-medium">Effects</span>
+				<span className="text-sm font-medium">Efeitos</span>
 			</div>
 			<ScrollArea className="flex-1 scrollbar-hidden">
 				{effects.map((effect, index) => (
@@ -171,7 +171,7 @@ function ClipEffectSection({
 						<Button
 							variant={effect.enabled ? "secondary" : "ghost"}
 							size="icon"
-							aria-label={`Toggle ${definition.name}`}
+							aria-label={`Alternar ${definition.name}`}
 							onClick={toggleEffect}
 						>
 							<HugeiconsIcon
@@ -181,7 +181,7 @@ function ClipEffectSection({
 						<Button
 							variant="ghost"
 							size="icon"
-							aria-label={`Remove ${definition.name}`}
+							aria-label={`Remover ${definition.name}`}
 							onClick={removeEffect}
 						>
 							<HugeiconsIcon icon={Delete02Icon} />

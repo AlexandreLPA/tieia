@@ -44,7 +44,7 @@ export function StickersView() {
 
 	return (
 		<PanelView
-			title="Stickers"
+			title="Figurinhas"
 			actions={
 				<div className="flex items-center">
 					<Select
@@ -54,7 +54,7 @@ export function StickersView() {
 						}
 					>
 						<SelectTrigger variant="outline" size="sm" className="mr-1.5">
-							<SelectValue placeholder="All" />
+							<SelectValue placeholder="Todas" />
 						</SelectTrigger>
 						<SelectContent>
 							{Object.entries(STICKER_CATEGORIES).map(([category, label]) => (
@@ -115,7 +115,7 @@ function EmptyView({ message }: { message: string }) {
 				className="text-muted-foreground size-10"
 			/>
 			<div className="flex flex-col gap-2 text-center">
-				<p className="text-lg font-medium">No stickers found</p>
+				<p className="text-lg font-medium">Nenhuma figurinha encontrada</p>
 				<p className="text-muted-foreground text-sm text-balance">{message}</p>
 			</div>
 		</div>
@@ -160,7 +160,7 @@ function StickersContentView() {
 							icon={ClockIcon}
 							className="text-muted-foreground size-4"
 						/>
-						<span className="text-sm font-medium">Recent</span>
+						<span className="text-sm font-medium">Recentes</span>
 						<TooltipProvider>
 							<Tooltip>
 								<TooltipTrigger asChild>
@@ -176,7 +176,7 @@ function StickersContentView() {
 									</button>
 								</TooltipTrigger>
 								<TooltipContent>
-									<p>Clear recent stickers</p>
+									<p>Limpar figurinhas recentes</p>
 								</TooltipContent>
 							</Tooltip>
 						</TooltipProvider>
@@ -195,13 +195,13 @@ function StickersContentView() {
 						<div className="flex flex-col gap-3">
 							<div className="flex items-center justify-between">
 								<span className="text-muted-foreground text-sm">
-									{searchResults.total} results
+									{searchResults.total} resultados
 								</span>
 							</div>
 							<StickerGrid items={itemsToDisplay} shouldCapSize />
 						</div>
 					) : searchQuery ? (
-						<EmptyView message={`No stickers found for "${searchQuery}"`} />
+						<EmptyView message={`Nenhuma figurinha encontrada para "${searchQuery}"`} />
 					) : null}
 				</div>
 			)}
@@ -236,7 +236,7 @@ function StickerItem({ item, shouldCapSize = false }: StickerItemProps) {
 			});
 		} catch (error) {
 			console.error("Failed to add sticker:", error);
-			toast.error("Failed to add sticker to timeline");
+			toast.error("Falha ao adicionar figurinha à linha do tempo");
 		}
 	};
 

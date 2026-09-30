@@ -34,18 +34,18 @@ export function SceneDetectionPanel({ className }: { className?: string }) {
 			<div className="px-4 py-3 border-b space-y-2">
 				<div className="flex items-center gap-2">
 					<HugeiconsIcon icon={Film02Icon} className="size-4 text-primary" />
-					<span className="text-xs font-medium">Scene Detection</span>
+					<span className="text-xs font-medium">Detecção de Cenas</span>
 				</div>
 				<p className="text-[10px] text-muted-foreground">
-					Detect visual scene changes using client-side frame analysis. No data
-					leaves your machine.
+					Detecta mudanças visuais de cena analisando os quadros localmente.
+					Nenhum dado sai da sua máquina.
 				</p>
 			</div>
 
 			<div className="px-4 py-3 space-y-4 flex-1 overflow-y-auto">
 				<div className="space-y-1.5">
 					<div className="flex justify-between text-[10px] text-muted-foreground">
-						<span>Sensitivity Threshold</span>
+						<span>Limite de Sensibilidade</span>
 						<span className="font-mono">{threshold.toFixed(2)}</span>
 					</div>
 					<Slider
@@ -56,13 +56,13 @@ export function SceneDetectionPanel({ className }: { className?: string }) {
 						step={0.05}
 					/>
 					<span className="text-[8px] text-muted-foreground">
-						Lower = more detections
+						Menor = mais detecções
 					</span>
 				</div>
 
 				<div className="space-y-1.5">
 					<div className="flex justify-between text-[10px] text-muted-foreground">
-						<span>Sample Interval</span>
+						<span>Intervalo de Amostragem</span>
 						<span className="font-mono">{sampleInterval}s</span>
 					</div>
 					<Slider
@@ -79,15 +79,14 @@ export function SceneDetectionPanel({ className }: { className?: string }) {
 					onClick={handleDetect}
 					disabled={isDetecting}
 				>
-					{isDetecting ? "Detecting..." : "Detect Scene Changes"}
+					{isDetecting ? "Detectando..." : "Detectar Mudanças de Cena"}
 				</Button>
 
 				{scenes.length > 0 && (
 					<>
 						<div className="flex items-center justify-between">
 							<span className="text-[10px] font-medium text-muted-foreground">
-								Found {scenes.length} scene change
-								{scenes.length !== 1 ? "s" : ""}
+								{scenes.length} mudança{scenes.length !== 1 ? "s" : ""} de cena encontrada{scenes.length !== 1 ? "s" : ""}
 							</span>
 							<Button
 								variant="secondary"
@@ -95,7 +94,7 @@ export function SceneDetectionPanel({ className }: { className?: string }) {
 								className="h-5 text-[8px]"
 								onClick={splitAtScenes}
 							>
-								Split at Scenes
+								Dividir nas Cenas
 							</Button>
 						</div>
 
@@ -108,7 +107,7 @@ export function SceneDetectionPanel({ className }: { className?: string }) {
 									{scene.frameBefore && (
 										<img
 											src={scene.frameBefore}
-											alt="Before"
+											alt="Antes"
 											className="w-12 h-auto rounded"
 										/>
 									)}
@@ -129,13 +128,13 @@ export function SceneDetectionPanel({ className }: { className?: string }) {
 											</span>
 										</div>
 										<span className="text-[8px] text-muted-foreground">
-											Confidence: {Math.round(scene.confidence * 100)}%
+											Confiança: {Math.round(scene.confidence * 100)}%
 										</span>
 									</div>
 									{scene.frameAfter && (
 										<img
 											src={scene.frameAfter}
-											alt="After"
+											alt="Depois"
 											className="w-12 h-auto rounded"
 										/>
 									)}
@@ -147,7 +146,7 @@ export function SceneDetectionPanel({ className }: { className?: string }) {
 
 				{scenes.length === 0 && !isDetecting && (
 					<p className="text-[10px] text-muted-foreground text-center py-4">
-						Run detection to find scene changes in your video.
+						Execute a detecção para encontrar mudanças de cena no seu vídeo.
 					</p>
 				)}
 			</div>

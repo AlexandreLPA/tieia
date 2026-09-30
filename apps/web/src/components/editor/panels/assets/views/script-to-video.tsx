@@ -33,30 +33,30 @@ export function ScriptToVideoPanel({ className }: { className?: string }) {
 			<div className="px-4 py-3 border-b space-y-2">
 				<div className="flex items-center gap-2">
 					<HugeiconsIcon icon={File01Icon} className="size-4 text-primary" />
-					<span className="text-xs font-medium">Script to Video</span>
+					<span className="text-xs font-medium">Roteiro para Vídeo</span>
 				</div>
 				<p className="text-[10px] text-muted-foreground">
-					Write or paste a script. AI generates voiceover, visuals, and timeline.
+					Escreva ou cole um roteiro. A IA gera narração, elementos visuais e a linha do tempo.
 				</p>
 			</div>
 
 			<div className="px-4 py-3 space-y-4 flex-1 overflow-y-auto">
 				<div className="space-y-1.5">
-					<span className="text-[10px] text-muted-foreground">Script</span>
+					<span className="text-[10px] text-muted-foreground">Roteiro</span>
 					<textarea
 						className="w-full rounded border bg-transparent px-2 py-1 text-[10px] resize-none h-40 placeholder:text-muted-foreground font-mono"
-						placeholder={`# Title Scene\nWrite your narration here...\n\nEach paragraph becomes a scene.\nLines starting with # become title cards.\n\n# Conclusion\nWrap up your video here.`}
+						placeholder={`# Cena de Título\nEscreva sua narração aqui...\n\nCada parágrafo se torna uma cena.\nLinhas que começam com # viram cartões de título.\n\n# Conclusão\nFinalize seu vídeo aqui.`}
 						value={script}
 						onChange={(e) => setScript(e.target.value)}
 					/>
 					<span className="text-[8px] text-muted-foreground">
-						{script.split("\n").filter((l) => l.trim()).length} sections,{" "}
-						{script.split(/\s+/).filter(Boolean).length} words
+						{script.split("\n").filter((l) => l.trim()).length} seções,{" "}
+						{script.split(/\s+/).filter(Boolean).length} palavras
 					</span>
 				</div>
 
 				<div className="space-y-1.5">
-					<span className="text-[10px] text-muted-foreground">Style</span>
+					<span className="text-[10px] text-muted-foreground">Estilo</span>
 					<div className="flex flex-wrap gap-1">
 						{SCRIPT_STYLES.map((s) => (
 							<Button
@@ -77,7 +77,7 @@ export function ScriptToVideoPanel({ className }: { className?: string }) {
 					onClick={handleGenerate}
 					disabled={isGenerating || !script.trim()}
 				>
-					{isGenerating ? "Generating Video..." : "Generate from Script"}
+					{isGenerating ? "Gerando Vídeo..." : "Gerar a partir do Roteiro"}
 				</Button>
 			</div>
 		</div>

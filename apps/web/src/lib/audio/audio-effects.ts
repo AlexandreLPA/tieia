@@ -39,11 +39,11 @@ export const AUDIO_EFFECT_DEFINITIONS: Record<AudioEffectType, AudioEffectDefini
 		name: "EQ",
 		keywords: ["equalizer", "eq", "tone", "frequency", "bass", "treble"],
 		params: [
-			{ key: "lowGain", label: "Low", type: "number", default: 0, min: -12, max: 12, step: 0.5, unit: "dB" },
-			{ key: "midGain", label: "Mid", type: "number", default: 0, min: -12, max: 12, step: 0.5, unit: "dB" },
-			{ key: "highGain", label: "High", type: "number", default: 0, min: -12, max: 12, step: 0.5, unit: "dB" },
-			{ key: "lowFreq", label: "Low Freq", type: "number", default: 320, min: 60, max: 1000, step: 10, unit: "Hz" },
-			{ key: "highFreq", label: "High Freq", type: "number", default: 3200, min: 1000, max: 16000, step: 100, unit: "Hz" },
+			{ key: "lowGain", label: "Graves", type: "number", default: 0, min: -12, max: 12, step: 0.5, unit: "dB" },
+			{ key: "midGain", label: "Médios", type: "number", default: 0, min: -12, max: 12, step: 0.5, unit: "dB" },
+			{ key: "highGain", label: "Agudos", type: "number", default: 0, min: -12, max: 12, step: 0.5, unit: "dB" },
+			{ key: "lowFreq", label: "Freq. Graves", type: "number", default: 320, min: 60, max: 1000, step: 10, unit: "Hz" },
+			{ key: "highFreq", label: "Freq. Agudos", type: "number", default: 3200, min: 1000, max: 16000, step: 100, unit: "Hz" },
 		],
 		createNodes: (ctx, params) => {
 			const low = ctx.createBiquadFilter();
@@ -116,9 +116,9 @@ export const AUDIO_EFFECT_DEFINITIONS: Record<AudioEffectType, AudioEffectDefini
 		name: "Reverb",
 		keywords: ["reverb", "room", "hall", "ambience", "echo", "space"],
 		params: [
-			{ key: "roomSize", label: "Room Size", type: "number", default: 50, min: 0, max: 100, step: 1, unit: "%" },
-			{ key: "damping", label: "Damping", type: "number", default: 50, min: 0, max: 100, step: 1, unit: "%" },
-			{ key: "wetLevel", label: "Wet Level", type: "number", default: 30, min: 0, max: 100, step: 1, unit: "%" },
+			{ key: "roomSize", label: "Tamanho da Sala", type: "number", default: 50, min: 0, max: 100, step: 1, unit: "%" },
+			{ key: "damping", label: "Amortecimento", type: "number", default: 50, min: 0, max: 100, step: 1, unit: "%" },
+			{ key: "wetLevel", label: "Nível Wet", type: "number", default: 30, min: 0, max: 100, step: 1, unit: "%" },
 		],
 		createNodes: (ctx, params) => {
 			// unity fan-out node so both the wet (convolver) and dry paths
@@ -165,9 +165,9 @@ export const AUDIO_EFFECT_DEFINITIONS: Record<AudioEffectType, AudioEffectDefini
 		name: "De-esser",
 		keywords: ["de-esser", "sibilance", "ess", "shh", "harsh", "sss"],
 		params: [
-			{ key: "frequency", label: "Frequency", type: "number", default: 6000, min: 2000, max: 12000, step: 100, unit: "Hz" },
+			{ key: "frequency", label: "Frequência", type: "number", default: 6000, min: 2000, max: 12000, step: 100, unit: "Hz" },
 			{ key: "threshold", label: "Threshold", type: "number", default: -30, min: -60, max: 0, step: 1, unit: "dB" },
-			{ key: "reduction", label: "Reduction", type: "number", default: 10, min: 0, max: 30, step: 1, unit: "dB" },
+			{ key: "reduction", label: "Redução", type: "number", default: 10, min: 0, max: 30, step: 1, unit: "dB" },
 		],
 		createNodes: (ctx, params) => {
 			const filter = ctx.createBiquadFilter();
@@ -191,7 +191,7 @@ export const AUDIO_EFFECT_DEFINITIONS: Record<AudioEffectType, AudioEffectDefini
 		name: "Limiter",
 		keywords: ["limiter", "brick", "wall", "ceiling", "clip", "protect"],
 		params: [
-			{ key: "ceiling", label: "Ceiling", type: "number", default: -1, min: -6, max: 0, step: 0.1, unit: "dB" },
+			{ key: "ceiling", label: "Teto", type: "number", default: -1, min: -6, max: 0, step: 0.1, unit: "dB" },
 			{ key: "release", label: "Release", type: "number", default: 50, min: 10, max: 500, step: 10, unit: "ms" },
 		],
 		createNodes: (ctx, params) => {

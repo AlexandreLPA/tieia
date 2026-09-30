@@ -87,11 +87,11 @@ function ContentSection({
 	return (
 		<Section collapsible sectionKey="text:content" showTopBorder={false}>
 			<SectionHeader>
-				<SectionTitle>Content</SectionTitle>
+				<SectionTitle>Conteúdo</SectionTitle>
 			</SectionHeader>
 			<SectionContent>
 				<Textarea
-					placeholder="Name"
+					placeholder="Nome"
 					value={content.displayValue}
 					className="min-h-20"
 					onFocus={content.onFocus}
@@ -152,11 +152,11 @@ function TypographySection({
 	return (
 		<Section collapsible sectionKey="text:typography">
 			<SectionHeader>
-				<SectionTitle>Typography</SectionTitle>
+				<SectionTitle>Tipografia</SectionTitle>
 			</SectionHeader>
 			<SectionContent>
 				<SectionFields>
-					<SectionField label="Font">
+					<SectionField label="Fonte">
 						<FontPicker
 							defaultValue={element.fontFamily}
 							onValueChange={(value) =>
@@ -172,7 +172,7 @@ function TypographySection({
 							}
 						/>
 					</SectionField>
-					<SectionField label="Size">
+					<SectionField label="Tamanho">
 						<NumberField
 							value={fontSize.displayValue}
 							min={MIN_FONT_SIZE}
@@ -198,12 +198,12 @@ function TypographySection({
 						/>
 					</SectionField>
 					<SectionField
-						label="Color"
+						label="Cor"
 						beforeLabel={
 							<KeyframeToggle
 								isActive={textColor.isKeyframedAtTime}
 								isDisabled={!isPlayheadWithinElementRange}
-								title="Toggle text color keyframe"
+								title="Alternar keyframe de cor do texto"
 								onToggle={textColor.toggleKeyframe}
 							/>
 						}
@@ -268,11 +268,11 @@ function SpacingSection({
 	return (
 		<Section collapsible sectionKey="text:spacing" showBottomBorder={false}>
 			<SectionHeader>
-				<SectionTitle>Spacing</SectionTitle>
+				<SectionTitle>Espaçamento</SectionTitle>
 			</SectionHeader>
 			<SectionContent>
 				<div className="flex items-start gap-2">
-					<SectionField label="Letter spacing" className="w-1/2">
+					<SectionField label="Espaçamento entre letras" className="w-1/2">
 						<NumberField
 							value={letterSpacing.displayValue}
 							onFocus={letterSpacing.onFocus}
@@ -298,7 +298,7 @@ function SpacingSection({
 							icon={<OcTextWidthIcon size={14} />}
 						/>
 					</SectionField>
-					<SectionField label="Line height" className="w-1/2">
+					<SectionField label="Altura da linha" className="w-1/2">
 						<NumberField
 							value={lineHeight.displayValue}
 							onFocus={lineHeight.onFocus}
@@ -532,7 +532,7 @@ function BackgroundSection({
 					</Button>
 				}
 			>
-				<SectionTitle>Background</SectionTitle>
+				<SectionTitle>Fundo</SectionTitle>
 			</SectionHeader>
 			<SectionContent
 				className={cn(
@@ -541,12 +541,12 @@ function BackgroundSection({
 			>
 				<SectionFields>
 					<SectionField
-						label="Color"
+						label="Cor"
 						beforeLabel={
 							<KeyframeToggle
 								isActive={bgColor.isKeyframedAtTime}
 								isDisabled={!isPlayheadWithinElementRange}
-								title="Toggle background color keyframe"
+								title="Alternar keyframe de cor do fundo"
 								onToggle={bgColor.toggleKeyframe}
 							/>
 						}
@@ -570,13 +570,13 @@ function BackgroundSection({
 					</SectionField>
 					<div className="flex items-start gap-2">
 						<SectionField
-							label="Width"
+							label="Largura"
 							className="w-1/2"
 							beforeLabel={
 								<KeyframeToggle
 									isActive={paddingX.isKeyframedAtTime}
 									isDisabled={!isPlayheadWithinElementRange}
-									title="Toggle background width keyframe"
+									title="Alternar keyframe de largura do fundo"
 									onToggle={paddingX.toggleKeyframe}
 								/>
 							}
@@ -601,13 +601,13 @@ function BackgroundSection({
 							/>
 						</SectionField>
 						<SectionField
-							label="Height"
+							label="Altura"
 							className="w-1/2"
 							beforeLabel={
 								<KeyframeToggle
 									isActive={paddingY.isKeyframedAtTime}
 									isDisabled={!isPlayheadWithinElementRange}
-									title="Toggle background height keyframe"
+									title="Alternar keyframe de altura do fundo"
 									onToggle={paddingY.toggleKeyframe}
 								/>
 							}
@@ -634,13 +634,13 @@ function BackgroundSection({
 					</div>
 					<div className="flex items-start gap-2">
 						<SectionField
-							label="X-offset"
+							label="Deslocamento X"
 							className="w-1/2"
 							beforeLabel={
 								<KeyframeToggle
 									isActive={offsetX.isKeyframedAtTime}
 									isDisabled={!isPlayheadWithinElementRange}
-									title="Toggle x-offset keyframe"
+									title="Alternar keyframe de deslocamento X"
 									onToggle={offsetX.toggleKeyframe}
 								/>
 							}
@@ -664,13 +664,13 @@ function BackgroundSection({
 							/>
 						</SectionField>
 						<SectionField
-							label="Y-offset"
+							label="Deslocamento Y"
 							className="w-1/2"
 							beforeLabel={
 								<KeyframeToggle
 									isActive={offsetY.isKeyframedAtTime}
 									isDisabled={!isPlayheadWithinElementRange}
-									title="Toggle y-offset keyframe"
+									title="Alternar keyframe de deslocamento Y"
 									onToggle={offsetY.toggleKeyframe}
 								/>
 							}
@@ -695,12 +695,12 @@ function BackgroundSection({
 						</SectionField>
 					</div>
 					<SectionField
-						label="Corner radius"
+						label="Raio da borda"
 						beforeLabel={
 							<KeyframeToggle
 								isActive={cornerRadius.isKeyframedAtTime}
 								isDisabled={!isPlayheadWithinElementRange}
-								title="Toggle corner radius keyframe"
+								title="Alternar keyframe de raio da borda"
 								onToggle={cornerRadius.toggleKeyframe}
 							/>
 						}

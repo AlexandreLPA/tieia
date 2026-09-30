@@ -174,7 +174,7 @@ export function SmartSuggestions({
 												icon={Tick01Icon}
 												className="size-3 mr-1"
 											/>
-											{suggestion.actionLabel ?? "Apply"}
+											{suggestion.actionLabel ?? "Aplicar"}
 										</Button>
 										<Button
 											variant="ghost"
@@ -186,7 +186,7 @@ export function SmartSuggestions({
 												icon={Cancel01Icon}
 												className="size-3 mr-1"
 											/>
-											Dismiss
+											Dispensar
 										</Button>
 									</div>
 								</div>
@@ -195,7 +195,7 @@ export function SmartSuggestions({
 									size="icon"
 									onClick={() => handleDismiss(suggestion.id)}
 									className="size-5 shrink-0 -mt-0.5 -mr-1"
-									aria-label="Close"
+									aria-label="Fechar"
 								>
 									<HugeiconsIcon
 										icon={Cancel01Icon}
@@ -210,7 +210,7 @@ export function SmartSuggestions({
 
 			{queuedCount > 0 && (
 				<p className="text-[10px] text-muted-foreground text-center">
-					+{queuedCount} more suggestion{queuedCount !== 1 ? "s" : ""}
+					+{queuedCount} sugest{queuedCount !== 1 ? "ões" : "ão"} a mais
 				</p>
 			)}
 		</div>

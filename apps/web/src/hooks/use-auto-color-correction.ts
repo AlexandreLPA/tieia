@@ -74,7 +74,7 @@ export function useAutoColorCorrection() {
 					completedAt: Date.now(),
 				});
 
-				toast.success(`Applied "${profile.name}" color correction to all video clips`);
+				toast.success(`Correção de cor "${profile.name}" aplicada a todos os clipes de vídeo`);
 			} catch (err) {
 				bgTasks.updateTask(taskId, {
 					status: "error",

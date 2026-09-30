@@ -79,7 +79,7 @@ export function MediaView() {
 	const processFiles = async ({ files }: { files: FileList }) => {
 		if (!files || files.length === 0) return;
 		if (!activeProject) {
-			toast.error("No active project");
+			toast.error("Nenhum projeto ativo");
 			return;
 		}
 
@@ -99,7 +99,7 @@ export function MediaView() {
 			}
 		} catch (error) {
 			console.error("Error processing files:", error);
-			toast.error("Failed to process files");
+			toast.error("Falha ao processar os arquivos");
 		} finally {
 			setIsProcessing(false);
 			setProgress(0);
@@ -123,7 +123,7 @@ export function MediaView() {
 		event.stopPropagation();
 
 		if (!activeProject) {
-			toast.error("No active project");
+			toast.error("Nenhum projeto ativo");
 			return;
 		}
 
@@ -201,7 +201,7 @@ export function MediaView() {
 			<input {...fileInputProps} />
 
 			<PanelView
-				title="Assets"
+				title="Mídia"
 				actions={
 					<MediaActions
 						mediaViewMode={mediaViewMode}
@@ -325,7 +325,7 @@ function MediaItemWithContextMenu({
 			<ContextMenuTrigger>{children}</ContextMenuTrigger>
 			<ContextMenuContent>
 				<ContextMenuItem onClick={() => onSetLabel(item.id)}>
-					{item.label ? "Edit label" : "Add label"}
+					{item.label ? "Editar rótulo" : "Adicionar rótulo"}
 				</ContextMenuItem>
 				{item.type !== "audio" && (
 					<ContextMenuItem
@@ -334,15 +334,15 @@ function MediaItemWithContextMenu({
 							setActiveTab("search");
 						}}
 					>
-						Find similar clips
+						Encontrar clipes semelhantes
 					</ContextMenuItem>
 				)}
-				<ContextMenuItem>Export clips</ContextMenuItem>
+				<ContextMenuItem>Exportar clipes</ContextMenuItem>
 				<ContextMenuItem
 					variant="destructive"
 					onClick={(event) => onRemove({ event, id: item.id })}
 				>
-					Delete
+					Excluir
 				</ContextMenuItem>
 			</ContextMenuContent>
 		</ContextMenu>
@@ -469,7 +469,7 @@ function MediaLabelRow({
 				onChange={(e) => onDraftChange(e.target.value)}
 				onBlur={onSave}
 				onKeyDown={onKeyDown}
-				placeholder="e.g. Drone shot, Cam A"
+				placeholder="ex.: Tomada com drone, Câmera A"
 				className={cn(
 					"w-full rounded border bg-transparent outline-none focus:ring-1 focus:ring-ring",
 					compact ? "h-5 px-1 text-[9px]" : "mt-0.5 px-1 py-0.5 text-[10px]",
@@ -492,7 +492,7 @@ function MediaLabelRow({
 						? "ml-1 shrink-0 bg-muted/40 px-1.5 py-0.5 text-[9px]"
 						: "mt-0.5 w-full bg-muted/60 px-1 py-0.5 text-[10px]",
 				)}
-				title={`Label: ${item.label} (click to edit)`}
+				title={`Rótulo: ${item.label} (clique para editar)`}
 			>
 				{item.label}
 			</button>
@@ -511,7 +511,7 @@ function MediaLabelRow({
 			}}
 			className="mt-0.5 w-full truncate rounded px-1 py-0.5 text-left text-[10px] text-muted-foreground/40 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-muted/40"
 		>
-			+ Add label
+			+ Adicionar rótulo
 		</button>
 	);
 }
@@ -621,7 +621,7 @@ function MediaPreview({
 		return (
 			<MediaTypePlaceholder
 				icon={Video01Icon}
-				label="Video"
+				label="Vídeo"
 				duration={item.duration}
 				variant="muted"
 			/>
@@ -632,7 +632,7 @@ function MediaPreview({
 		return (
 			<MediaTypePlaceholder
 				icon={MusicNote03Icon}
-				label="Audio"
+				label="Áudio"
 				duration={item.duration}
 				variant="bordered"
 			/>
@@ -640,7 +640,7 @@ function MediaPreview({
 	}
 
 	return (
-		<MediaTypePlaceholder icon={Image02Icon} label="Unknown" variant="muted" />
+		<MediaTypePlaceholder icon={Image02Icon} label="Desconhecido" variant="muted" />
 	);
 }
 
@@ -685,8 +685,8 @@ function MediaActions({
 					<TooltipContent>
 						<p>
 							{mediaViewMode === "grid"
-								? "Switch to list view"
-								: "Switch to grid view"}
+								? "Mudar para visualização em lista"
+								: "Mudar para visualização em grade"}
 						</p>
 					</TooltipContent>
 				</Tooltip>
@@ -706,28 +706,28 @@ function MediaActions({
 						</TooltipTrigger>
 						<DropdownMenuContent align="end">
 							<SortMenuItem
-								label="Name"
+								label="Nome"
 								sortKey="name"
 								currentSortBy={sortBy}
 								currentSortOrder={sortOrder}
 								onSort={onSort}
 							/>
 							<SortMenuItem
-								label="Type"
+								label="Tipo"
 								sortKey="type"
 								currentSortBy={sortBy}
 								currentSortOrder={sortOrder}
 								onSort={onSort}
 							/>
 							<SortMenuItem
-								label="Duration"
+								label="Duração"
 								sortKey="duration"
 								currentSortBy={sortBy}
 								currentSortOrder={sortOrder}
 								onSort={onSort}
 							/>
 							<SortMenuItem
-								label="File size"
+								label="Tamanho do arquivo"
 								sortKey="size"
 								currentSortBy={sortBy}
 								currentSortOrder={sortOrder}
@@ -737,8 +737,8 @@ function MediaActions({
 					</DropdownMenu>
 					<TooltipContent>
 						<p>
-							Sort by {sortBy} (
-							{sortOrder === "asc" ? "ascending" : "descending"})
+							Ordenado por {sortBy} (
+							{sortOrder === "asc" ? "crescente" : "decrescente"})
 						</p>
 					</TooltipContent>
 				</Tooltip>
@@ -751,7 +751,7 @@ function MediaActions({
 				className="items-center justify-center gap-1.5"
 			>
 				<HugeiconsIcon icon={CloudUploadIcon} />
-				Import
+				Importar
 			</Button>
 		</div>
 	);
@@ -800,10 +800,10 @@ function MediaTypeBadge({ type }: { type: string }) {
 }
 
 const FILTER_TABS: { key: MediaTypeFilter; label: string; icon: IconSvgElement }[] = [
-	{ key: "all", label: "All", icon: GridViewIcon },
-	{ key: "video", label: "Videos", icon: Video01Icon },
-	{ key: "image", label: "Images", icon: Image02Icon },
-	{ key: "audio", label: "Audio", icon: MusicNote03Icon },
+	{ key: "all", label: "Todos", icon: GridViewIcon },
+	{ key: "video", label: "Vídeos", icon: Video01Icon },
+	{ key: "image", label: "Imagens", icon: Image02Icon },
+	{ key: "audio", label: "Áudio", icon: MusicNote03Icon },
 ];
 
 function MediaTypeFilterBar({

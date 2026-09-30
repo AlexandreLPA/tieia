@@ -24,10 +24,10 @@ export function YouTubeReelsPanel() {
 		<div className="space-y-4 p-1">
 			{/* Header */}
 			<div className="flex items-center justify-between">
-				<h2 className="text-sm font-semibold">YouTube to Reels</h2>
+				<h2 className="text-sm font-semibold">YouTube para Reels</h2>
 				{phase !== "idle" && phase !== "input" && (
 					<Button variant="ghost" size="sm" className="text-xs h-7" onClick={reset}>
-						Reset
+						Redefinir
 					</Button>
 				)}
 			</div>
@@ -36,7 +36,7 @@ export function YouTubeReelsPanel() {
 			{(phase === "idle" || phase === "input") && (
 				<>
 					<p className="text-xs text-muted-foreground">
-						Paste your YouTube video URL to automatically find and generate engaging short-form clips.
+						Cole a URL do vídeo do YouTube para encontrar e gerar automaticamente clipes curtos e envolventes.
 					</p>
 					<YouTubeUrlInput
 						onSubmit={(url) => {
@@ -94,10 +94,10 @@ export function YouTubeReelsPanel() {
 			{phase === "error" && (
 				<div className="space-y-3">
 					<div className="rounded-lg border border-red-500/30 bg-red-500/5 p-3">
-						<p className="text-sm text-red-400">{jobError || "Something went wrong"}</p>
+						<p className="text-sm text-red-400">{jobError || "Algo deu errado"}</p>
 					</div>
 					<Button variant="outline" size="sm" onClick={reset}>
-						Try Again
+						Tentar novamente
 					</Button>
 				</div>
 			)}

@@ -35,8 +35,8 @@ export interface PopoverSubtitleConfig {
 export const POPOVER_SUBTITLE_PRESETS: PopoverSubtitleConfig[] = [
 	{
 		id: "word-pop",
-		name: "Word Pop",
-		description: "Each spoken word pops in and stays visible",
+		name: "Palavra Pop",
+		description: "Cada palavra falada aparece com efeito pop e permanece visível",
 		fontSize: 5,
 		fontFamily: "Inter",
 		fontWeight: "bold",
@@ -53,7 +53,7 @@ export const POPOVER_SUBTITLE_PRESETS: PopoverSubtitleConfig[] = [
 	{
 		id: "hormozi",
 		name: "Hormozi",
-		description: "Large bold words pop in one by one, colored keywords",
+		description: "Palavras grandes em negrito aparecem uma a uma, com palavras-chave coloridas",
 		fontSize: 6,
 		fontFamily: "Inter",
 		fontWeight: "bold",
@@ -69,8 +69,8 @@ export const POPOVER_SUBTITLE_PRESETS: PopoverSubtitleConfig[] = [
 	},
 	{
 		id: "highlight",
-		name: "Highlight",
-		description: "Color flash on keywords with pop-in effect",
+		name: "Destaque",
+		description: "Flash de cor nas palavras-chave com efeito pop",
 		fontSize: 4.5,
 		fontFamily: "Inter",
 		fontWeight: "bold",
@@ -86,8 +86,8 @@ export const POPOVER_SUBTITLE_PRESETS: PopoverSubtitleConfig[] = [
 	},
 	{
 		id: "classic-podcast",
-		name: "Classic Podcast",
-		description: "Clean bottom subtitles, words appear as spoken",
+		name: "Podcast Clássico",
+		description: "Legendas limpas na parte inferior, palavras aparecem conforme são faladas",
 		fontSize: 4,
 		fontFamily: "Inter",
 		fontWeight: "bold",
@@ -341,7 +341,7 @@ export function buildPopoverSubtitleElements({
 			elements.push({
 				...DEFAULT_TEXT_ELEMENT,
 				type: "text",
-				name: `Popover Sub ${elementIndex}`,
+				name: `Legenda Popover ${elementIndex}`,
 				content: word.word,
 				fontSize: config.fontSize,
 				fontFamily: config.fontFamily,

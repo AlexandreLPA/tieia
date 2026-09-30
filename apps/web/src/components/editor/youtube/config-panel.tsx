@@ -18,11 +18,11 @@ export function ConfigPanel({ onStart }: { onStart: () => void }) {
 
 	return (
 		<div className="space-y-4">
-			<h3 className="text-sm font-semibold">Clip Settings</h3>
+			<h3 className="text-sm font-semibold">Configurações do Clipe</h3>
 
 			<div className="grid grid-cols-2 gap-3">
 				<div className="space-y-1">
-					<Label className="text-xs">Max Duration</Label>
+					<Label className="text-xs">Duração Máxima</Label>
 					<Select
 						value={String(config.maxDuration)}
 						onValueChange={(v) => setConfig({ maxDuration: Number(v) })}
@@ -31,16 +31,16 @@ export function ConfigPanel({ onStart }: { onStart: () => void }) {
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="15">15 seconds</SelectItem>
-							<SelectItem value="30">30 seconds</SelectItem>
-							<SelectItem value="60">60 seconds</SelectItem>
-							<SelectItem value="90">90 seconds</SelectItem>
+							<SelectItem value="15">15 segundos</SelectItem>
+							<SelectItem value="30">30 segundos</SelectItem>
+							<SelectItem value="60">60 segundos</SelectItem>
+							<SelectItem value="90">90 segundos</SelectItem>
 						</SelectContent>
 					</Select>
 				</div>
 
 				<div className="space-y-1">
-					<Label className="text-xs">Max Clips</Label>
+					<Label className="text-xs">Máximo de Clipes</Label>
 					<Select
 						value={String(config.maxClips)}
 						onValueChange={(v) => setConfig({ maxClips: Number(v) })}
@@ -49,16 +49,16 @@ export function ConfigPanel({ onStart }: { onStart: () => void }) {
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="5">5 clips</SelectItem>
-							<SelectItem value="10">10 clips</SelectItem>
-							<SelectItem value="20">20 clips</SelectItem>
-							<SelectItem value="30">30 clips</SelectItem>
+							<SelectItem value="5">5 clipes</SelectItem>
+							<SelectItem value="10">10 clipes</SelectItem>
+							<SelectItem value="20">20 clipes</SelectItem>
+							<SelectItem value="30">30 clipes</SelectItem>
 						</SelectContent>
 					</Select>
 				</div>
 
 				<div className="space-y-1">
-					<Label className="text-xs">Output Format</Label>
+					<Label className="text-xs">Formato de Saída</Label>
 					<Select
 						value={config.outputFormat}
 						onValueChange={(v) => setConfig({ outputFormat: v as "9:16" | "1:1" | "4:5" })}
@@ -68,14 +68,14 @@ export function ConfigPanel({ onStart }: { onStart: () => void }) {
 						</SelectTrigger>
 						<SelectContent>
 							<SelectItem value="9:16">9:16 (Reels/Shorts)</SelectItem>
-							<SelectItem value="1:1">1:1 (Square)</SelectItem>
-							<SelectItem value="4:5">4:5 (Instagram Feed)</SelectItem>
+							<SelectItem value="1:1">1:1 (Quadrado)</SelectItem>
+							<SelectItem value="4:5">4:5 (Feed do Instagram)</SelectItem>
 						</SelectContent>
 					</Select>
 				</div>
 
 				<div className="space-y-1">
-					<Label className="text-xs">Caption Style</Label>
+					<Label className="text-xs">Estilo de Legenda</Label>
 					<Select
 						value={config.captionStyle}
 						onValueChange={(v) => setConfig({ captionStyle: v as "modern" | "karaoke" | "classic" | "none" })}
@@ -84,10 +84,10 @@ export function ConfigPanel({ onStart }: { onStart: () => void }) {
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="modern">Modern</SelectItem>
-							<SelectItem value="karaoke">Karaoke</SelectItem>
-							<SelectItem value="classic">Classic</SelectItem>
-							<SelectItem value="none">No Captions</SelectItem>
+							<SelectItem value="modern">Moderno</SelectItem>
+							<SelectItem value="karaoke">Karaokê</SelectItem>
+							<SelectItem value="classic">Clássico</SelectItem>
+							<SelectItem value="none">Sem Legendas</SelectItem>
 						</SelectContent>
 					</Select>
 				</div>
@@ -95,17 +95,17 @@ export function ConfigPanel({ onStart }: { onStart: () => void }) {
 
 			<div className="space-y-2">
 				<div className="flex items-center justify-between">
-					<Label className="text-xs">Auto-Reframe (16:9 to 9:16)</Label>
+					<Label className="text-xs">Reenquadramento Automático (16:9 para 9:16)</Label>
 					<Switch checked={config.autoReframe} onCheckedChange={(v) => setConfig({ autoReframe: v })} />
 				</div>
 				<div className="flex items-center justify-between">
-					<Label className="text-xs">Add Hook Text</Label>
+					<Label className="text-xs">Adicionar Texto de Hook</Label>
 					<Switch checked={config.addHook} onCheckedChange={(v) => setConfig({ addHook: v })} />
 				</div>
 			</div>
 
 			<Button className="w-full" onClick={onStart}>
-				Find Clips
+				Buscar Clipes
 			</Button>
 		</div>
 	);

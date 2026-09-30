@@ -16,7 +16,7 @@ function formatTime(seconds: number): string {
 export function AudioRecordingPanel({ className }: { className?: string }) {
 	const { state, startRecording, pauseRecording, resumeRecording, stopRecording, addToTimeline } =
 		useAudioRecording();
-	const [recordingName, setRecordingName] = useState("Recording");
+	const [recordingName, setRecordingName] = useState("Gravação");
 	const [recordingCount, setRecordingCount] = useState(1);
 
 	const handleStop = useCallback(async () => {
@@ -33,22 +33,22 @@ export function AudioRecordingPanel({ className }: { className?: string }) {
 			<div className="px-4 py-3 border-b space-y-2">
 				<div className="flex items-center gap-2">
 					<HugeiconsIcon icon={RecordIcon} className="size-4 text-primary" />
-					<span className="text-xs font-medium">Audio Recording</span>
+					<span className="text-xs font-medium">Gravação de Áudio</span>
 				</div>
 				<p className="text-[10px] text-muted-foreground">
-					Record audio directly to your timeline.
+					Grave áudio diretamente na sua linha do tempo.
 				</p>
 			</div>
 
 			<div className="px-4 py-3 space-y-4 flex-1">
 				{!state.isRecording && (
 					<div className="space-y-1.5">
-						<span className="text-[10px] text-muted-foreground">Recording Name</span>
+						<span className="text-[10px] text-muted-foreground">Nome da gravação</span>
 						<input
 							className="w-full rounded border bg-transparent px-2 py-1 text-[10px] placeholder:text-muted-foreground"
 							value={recordingName}
 							onChange={(e) => setRecordingName(e.target.value)}
-							placeholder="Recording name..."
+							placeholder="Nome da gravação..."
 						/>
 					</div>
 				)}
@@ -65,7 +65,7 @@ export function AudioRecordingPanel({ className }: { className?: string }) {
 								{formatTime(state.duration)}
 							</span>
 							{state.isPaused && (
-								<span className="block text-[9px] text-yellow-500 mt-1">PAUSED</span>
+								<span className="block text-[9px] text-yellow-500 mt-1">PAUSADO</span>
 							)}
 						</div>
 
@@ -94,7 +94,7 @@ export function AudioRecordingPanel({ className }: { className?: string }) {
 									onClick={pauseRecording}
 								>
 									<HugeiconsIcon icon={PauseIcon} className="size-4 mr-1" />
-									Pause
+									Pausar
 								</Button>
 							) : (
 								<Button
@@ -103,7 +103,7 @@ export function AudioRecordingPanel({ className }: { className?: string }) {
 									onClick={resumeRecording}
 								>
 									<HugeiconsIcon icon={PlayIcon} className="size-4 mr-1" />
-									Resume
+									Retomar
 								</Button>
 							)}
 							<Button
@@ -112,7 +112,7 @@ export function AudioRecordingPanel({ className }: { className?: string }) {
 								onClick={handleStop}
 							>
 								<HugeiconsIcon icon={StopCircleIcon} className="size-4 mr-1" />
-								Stop & Add
+								Parar e adicionar
 							</Button>
 						</div>
 					</>
@@ -121,7 +121,7 @@ export function AudioRecordingPanel({ className }: { className?: string }) {
 				{!state.isRecording && (
 					<Button className="w-full h-10" onClick={startRecording}>
 						<HugeiconsIcon icon={RecordIcon} className="size-4 mr-2" />
-						Start Recording
+						Iniciar gravação
 					</Button>
 				)}
 			</div>

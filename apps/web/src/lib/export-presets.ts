@@ -38,7 +38,7 @@ export const PLATFORM_PRESETS: ExportPreset[] = [
 	},
 	{
 		id: "instagram-square",
-		name: "Instagram Square",
+		name: "Instagram Quadrado",
 		format: "mp4",
 		quality: "high",
 		canvasSize: { width: 1080, height: 1080 },
@@ -46,7 +46,7 @@ export const PLATFORM_PRESETS: ExportPreset[] = [
 	},
 	{
 		id: "instagram-portrait",
-		name: "Instagram Portrait",
+		name: "Instagram Retrato",
 		format: "mp4",
 		quality: "high",
 		canvasSize: { width: 1080, height: 1350 },
@@ -58,23 +58,23 @@ export const PLATFORM_PRESETS: ExportPreset[] = [
 		format: "mp4",
 		quality: "medium",
 		canvasSize: { width: 1280, height: 720 },
-		description: "720p, max 140s",
+		description: "720p, máx. 140s",
 	},
 	{
 		id: "podcast-audio",
-		name: "Podcast (Audio Only)",
+		name: "Podcast (Somente Áudio)",
 		format: "mp4",
 		quality: "high",
 		canvasSize: { width: 1920, height: 1080 },
-		description: "Audio only, 320kbps",
+		description: "Somente áudio, 320kbps",
 	},
 	{
 		id: "web-email",
-		name: "Web / Email",
+		name: "Web / E-mail",
 		format: "webm",
 		quality: "medium",
 		canvasSize: { width: 1280, height: 720 },
-		description: "WebM, 720p, small file",
+		description: "WebM, 720p, arquivo pequeno",
 	},
 ];
 

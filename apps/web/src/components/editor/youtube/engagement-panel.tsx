@@ -47,11 +47,11 @@ export function EngagementPanel({ className }: { className?: string }) {
 				title: "Current Project",
 			});
 			setScore(result);
-			toast.success(`Engagement Score: ${result.grade} (${Math.round(result.composite)}/100)`);
+			toast.success(`Pontuação de Engajamento: ${result.grade} (${Math.round(result.composite)}/100)`);
 		} catch (e) {
-			const msg = e instanceof Error ? e.message : "Scoring failed";
+			const msg = e instanceof Error ? e.message : "Falha na pontuação";
 			setError(msg);
-			toast.error("Failed to check engagement score");
+			toast.error("Falha ao verificar a pontuação de engajamento");
 		} finally {
 			setAnalyzing(false);
 		}
@@ -61,22 +61,22 @@ export function EngagementPanel({ className }: { className?: string }) {
 		<div className={className}>
 			<div className="space-y-4 p-1">
 				<div className="flex items-center justify-between">
-					<h3 className="text-sm font-semibold">Engagement Score</h3>
+					<h3 className="text-sm font-semibold">Pontuação de Engajamento</h3>
 					{score && (
 						<Button variant="ghost" size="sm" className="text-xs h-7" onClick={clear}>
-							Clear
+							Limpar
 						</Button>
 					)}
 				</div>
 
 				<p className="text-xs text-muted-foreground">
-					Check how engaging your video is before publishing. Get a score with actionable suggestions.
+					Veja o quão envolvente é o seu vídeo antes de publicar. Obtenha uma pontuação com sugestões práticas.
 				</p>
 
 				{/* Idle state */}
 				{!score && !isAnalyzing && !error && (
 					<Button className="w-full" onClick={handleCheck}>
-						Check Engagement Score
+						Verificar Pontuação de Engajamento
 					</Button>
 				)}
 
@@ -84,7 +84,7 @@ export function EngagementPanel({ className }: { className?: string }) {
 				{isAnalyzing && (
 					<div className="flex items-center gap-2 text-sm text-muted-foreground">
 						<Spinner className="h-4 w-4" />
-						<span>Analyzing engagement...</span>
+						<span>Analisando engajamento...</span>
 					</div>
 				)}
 
@@ -93,7 +93,7 @@ export function EngagementPanel({ className }: { className?: string }) {
 					<div className="space-y-2">
 						<p className="text-xs text-red-400">{error}</p>
 						<Button variant="outline" size="sm" onClick={handleCheck}>
-							Retry
+							Tentar novamente
 						</Button>
 					</div>
 				)}
@@ -105,18 +105,18 @@ export function EngagementPanel({ className }: { className?: string }) {
 						<div className="rounded-lg border p-3 text-center space-y-1">
 							{score.composite >= 70 ? (
 								<>
-									<p className="text-sm font-medium text-green-400">Ready to publish!</p>
-									<p className="text-xs text-muted-foreground">Your video has strong engagement potential.</p>
+									<p className="text-sm font-medium text-green-400">Pronto para publicar!</p>
+									<p className="text-xs text-muted-foreground">Seu vídeo tem grande potencial de engajamento.</p>
 								</>
 							) : score.composite >= 50 ? (
 								<>
-									<p className="text-sm font-medium text-yellow-400">Good, but could improve</p>
-									<p className="text-xs text-muted-foreground">Check the suggestions below.</p>
+									<p className="text-sm font-medium text-yellow-400">Bom, mas pode melhorar</p>
+									<p className="text-xs text-muted-foreground">Veja as sugestões abaixo.</p>
 								</>
 							) : (
 								<>
-									<p className="text-sm font-medium text-red-400">Needs work</p>
-									<p className="text-xs text-muted-foreground">Apply the suggestions to boost engagement.</p>
+									<p className="text-sm font-medium text-red-400">Precisa melhorar</p>
+									<p className="text-xs text-muted-foreground">Aplique as sugestões para aumentar o engajamento.</p>
 								</>
 							)}
 						</div>
@@ -125,12 +125,12 @@ export function EngagementPanel({ className }: { className?: string }) {
 
 						{lastAnalyzedAt && (
 							<p className="text-[10px] text-muted-foreground text-right">
-								Checked {new Date(lastAnalyzedAt).toLocaleTimeString()}
+								Verificado em {new Date(lastAnalyzedAt).toLocaleTimeString()}
 							</p>
 						)}
 
 						<Button variant="outline" className="w-full" onClick={handleCheck}>
-							Re-check Score
+							Verificar Novamente
 						</Button>
 					</>
 				)}

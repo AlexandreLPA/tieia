@@ -12,12 +12,12 @@ export function VisualsCombinedView() {
 			tabs={[
 				{
 					key: "transitions",
-					label: "Transitions",
+					label: "Transições",
 					content: <TransitionsView />,
 				},
-				{ key: "effects", label: "Effects", content: <EffectsView /> },
-				{ key: "filters", label: "Filters", content: <FiltersView /> },
-				{ key: "adjustment", label: "Adjust", content: <AdjustmentView /> },
+				{ key: "effects", label: "Efeitos", content: <EffectsView /> },
+				{ key: "filters", label: "Filtros", content: <FiltersView /> },
+				{ key: "adjustment", label: "Ajustes", content: <AdjustmentView /> },
 			]}
 		/>
 	);

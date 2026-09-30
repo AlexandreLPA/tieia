@@ -57,7 +57,7 @@ export function AIToolbarButtons({
 }: AIToolbarButtonsProps) {
 	const isDisabled = !isConnected;
 	const disabledReason = isDisabled
-		? "AI backend is not connected. Click to set up."
+		? "O backend de IA não está conectado. Clique para configurar."
 		: undefined;
 
 	const handleDisabledClick = () => {
@@ -76,7 +76,7 @@ export function AIToolbarButtons({
 						size="icon"
 						onClick={isDisabled ? handleDisabledClick : onTranscribe}
 						disabled={isTranscribing}
-						aria-label="Transcribe audio"
+						aria-label="Transcrever áudio"
 						className={cn(isDisabled && "opacity-50")}
 					>
 						<HugeiconsIcon
@@ -89,7 +89,7 @@ export function AIToolbarButtons({
 					</Button>
 				</TooltipTrigger>
 				<TooltipContent>
-					{disabledReason ?? "Transcribe"}
+					{disabledReason ?? "Transcrever"}
 				</TooltipContent>
 			</Tooltip>
 
@@ -102,7 +102,7 @@ export function AIToolbarButtons({
 							size="icon"
 							onClick={handleDisabledClick}
 							className="opacity-50"
-							aria-label="AI Generate"
+							aria-label="Gerar com IA"
 						>
 							<HugeiconsIcon
 								icon={SparklesIcon}
@@ -119,8 +119,8 @@ export function AIToolbarButtons({
 							variant="ghost"
 							size="icon"
 							disabled={isGenerating}
-							aria-label="AI Generate"
-							title="AI Generate"
+							aria-label="Gerar com IA"
+							title="Gerar com IA"
 						>
 							<HugeiconsIcon
 								icon={SparklesIcon}
@@ -136,25 +136,25 @@ export function AIToolbarButtons({
 							onClick={onGenerateImage}
 							icon={<HugeiconsIcon icon={Image01Icon} />}
 						>
-							Image
+							Imagem
 						</DropdownMenuItem>
 						<DropdownMenuItem
 							onClick={onGenerateVoiceover}
 							icon={<HugeiconsIcon icon={AiMicIcon} />}
 						>
-							Voiceover
+							Locução
 						</DropdownMenuItem>
 						<DropdownMenuItem
 							onClick={onGenerateInfographic}
 							icon={<HugeiconsIcon icon={TextIcon} />}
 						>
-							Infographic
+							Infográfico
 						</DropdownMenuItem>
 						<DropdownMenuItem
 							onClick={onRemoveBackground}
 							icon={<HugeiconsIcon icon={Upload04Icon} />}
 						>
-							Remove BG
+							Remover fundo
 						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>
@@ -167,14 +167,14 @@ export function AIToolbarButtons({
 						variant="ghost"
 						size="icon"
 						onClick={isDisabled ? handleDisabledClick : onAddSubtitles}
-						aria-label="Add subtitles"
+						aria-label="Adicionar legendas"
 						className={cn(isDisabled && "opacity-50")}
 					>
 						<HugeiconsIcon icon={TextIcon} className="size-4" />
 					</Button>
 				</TooltipTrigger>
 				<TooltipContent>
-					{disabledReason ?? "Subtitles"}
+					{disabledReason ?? "Legendas"}
 				</TooltipContent>
 			</Tooltip>
 
@@ -185,14 +185,14 @@ export function AIToolbarButtons({
 						variant="ghost"
 						size="icon"
 						onClick={isDisabled ? handleDisabledClick : onCleanAudio}
-						aria-label="Clean audio"
+						aria-label="Limpar áudio"
 						className={cn(isDisabled && "opacity-50")}
 					>
 						<HugeiconsIcon icon={SparklesIcon} className="size-4" />
 					</Button>
 				</TooltipTrigger>
 				<TooltipContent>
-					{disabledReason ?? "Clean audio"}
+					{disabledReason ?? "Limpar áudio"}
 				</TooltipContent>
 			</Tooltip>
 		</div>

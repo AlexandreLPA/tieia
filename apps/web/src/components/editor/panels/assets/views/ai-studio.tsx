@@ -38,26 +38,26 @@ import { ABTestingPanel } from "@/components/editor/panels/assets/views/ab-testi
 // ----- Thinking Messages -----
 
 const THINKING_MESSAGES = [
-	"Rewinding the creative tape...",
-	"Adjusting the white balance on this idea...",
-	"Adding a dramatic zoom to my thoughts...",
-	"Scrubbing through the timeline of possibilities...",
-	"Applying a smooth transition between neurons...",
-	"Color grading this response for maximum impact...",
-	"Removing the awkward silence from my thinking...",
-	"Adding B-roll to my train of thought...",
-	"Stabilizing this shaky idea...",
-	"Rendering a rough cut of my answer...",
-	"Trimming the fat, keeping the hook...",
-	"Keyframing the perfect response...",
-	"De-noising my thought process...",
-	"Jump cutting to the good part...",
-	"Pulling focus on what matters...",
-	"Adding a lens flare for dramatic effect...",
-	"Speed ramping through the boring bits...",
-	"Checking if this take is a keeper...",
-	"Syncing audio with my brainwaves...",
-	"Applying the viral filter to this answer...",
+	"Rebobinando a fita da criatividade...",
+	"Ajustando o balanço de branco desta ideia...",
+	"Aplicando um zoom dramático nos meus pensamentos...",
+	"Percorrendo a linha do tempo das possibilidades...",
+	"Aplicando uma transição suave entre os neurônios...",
+	"Corrigindo a cor desta resposta para o máximo impacto...",
+	"Removendo o silêncio constrangedor do meu raciocínio...",
+	"Adicionando B-roll ao fio dos meus pensamentos...",
+	"Estabilizando esta ideia tremida...",
+	"Renderizando um corte bruto da minha resposta...",
+	"Cortando os excessos, mantendo o gancho...",
+	"Criando keyframes para a resposta perfeita...",
+	"Removendo o ruído do meu processo de pensamento...",
+	"Fazendo um corte seco direto para a parte boa...",
+	"Puxando o foco para o que importa...",
+	"Adicionando um lens flare para efeito dramático...",
+	"Acelerando o ritmo nas partes chatas...",
+	"Verificando se esta tomada é boa...",
+	"Sincronizando o áudio com minhas ondas cerebrais...",
+	"Aplicando o filtro viral nesta resposta...",
 ];
 
 function useThinkingMessage(isThinking: boolean) {
@@ -101,54 +101,54 @@ const VIDEO_WORKFLOWS: {
 }[] = [
 	{
 		id: "youtube",
-		title: "YouTube video",
-		description: "Plan, script, and produce a YouTube video",
+		title: "Vídeo para o YouTube",
+		description: "Planeje, roteirize e produza um vídeo para o YouTube",
 		steps: [
 			{
 				id: "brainstorm",
-				label: "Brainstorm the idea",
+				label: "Brainstorm da ideia",
 				description:
-					"Describe your topic and audience. AI helps refine your angle.",
+					"Descreva seu tema e público. A IA ajuda a refinar sua abordagem.",
 				icon: SparklesIcon,
 				action: "brainstorm",
 			},
 			{
 				id: "outline",
-				label: "Create an outline",
+				label: "Crie um esboço",
 				description:
-					"AI generates a structured outline with key points and timestamps.",
+					"A IA gera um esboço estruturado com pontos-chave e marcações de tempo.",
 				icon: TextIcon,
 				action: "outline",
 			},
 			{
 				id: "script",
-				label: "Write the script",
+				label: "Escreva o roteiro",
 				description:
-					"Turn the outline into a full script with intro, body, and CTA.",
+					"Transforme o esboço em um roteiro completo com introdução, desenvolvimento e CTA.",
 				icon: TextIcon,
 				action: "script",
 			},
 			{
 				id: "record",
-				label: "Record and import",
+				label: "Grave e importe",
 				description:
-					"Record your video following the script, then import it here.",
+					"Grave seu vídeo seguindo o roteiro e depois importe-o aqui.",
 				icon: AiMicIcon,
 				action: "import",
 			},
 			{
 				id: "transcribe",
-				label: "Transcribe and edit",
+				label: "Transcreva e edite",
 				description:
-					"Transcribe the recording, then edit text to edit video.",
+					"Transcreva a gravação e depois edite o texto para editar o vídeo.",
 				icon: AiMicIcon,
 				action: "transcribe",
 			},
 			{
 				id: "polish",
-				label: "Polish with AI",
+				label: "Aprimore com IA",
 				description:
-					"Remove fillers, silences, add subtitles, generate thumbnail.",
+					"Remova vícios de linguagem e silêncios, adicione legendas e gere a miniatura.",
 				icon: Image01Icon,
 				action: "polish",
 			},
@@ -156,46 +156,46 @@ const VIDEO_WORKFLOWS: {
 	},
 	{
 		id: "short",
-		title: "Short-form content",
-		description: "TikTok, Reels, or YouTube Shorts",
+		title: "Conteúdo em formato curto",
+		description: "TikTok, Reels ou YouTube Shorts",
 		steps: [
 			{
 				id: "hook",
-				label: "Craft the hook",
+				label: "Crie o gancho",
 				description:
-					"AI helps write a 3-second hook that stops the scroll.",
+					"A IA ajuda a escrever um gancho de 3 segundos que prende a atenção.",
 				icon: SparklesIcon,
 				action: "hook",
 			},
 			{
 				id: "script",
-				label: "Script the content",
+				label: "Roteirize o conteúdo",
 				description:
-					"Keep it tight — AI structures your message for 30-60 seconds.",
+					"Mantenha direto ao ponto — a IA estrutura sua mensagem para 30-60 segundos.",
 				icon: TextIcon,
 				action: "script-short",
 			},
 			{
 				id: "record",
-				label: "Record vertically",
+				label: "Grave na vertical",
 				description:
-					"Film in 9:16 portrait mode following the script.",
+					"Filme no formato retrato 9:16 seguindo o roteiro.",
 				icon: AiMicIcon,
 				action: "import",
 			},
 			{
 				id: "edit",
-				label: "Fast-cut edit",
+				label: "Edição com cortes rápidos",
 				description:
-					"Remove silences and filler for punchy pacing.",
+					"Remova silêncios e vícios de linguagem para um ritmo mais dinâmico.",
 				icon: SparklesIcon,
 				action: "fast-edit",
 			},
 			{
 				id: "subtitles",
-				label: "Add bold subtitles",
+				label: "Adicione legendas chamativas",
 				description:
-					"Most viewers watch muted — add animated captions.",
+					"A maioria assiste sem som — adicione legendas animadas.",
 				icon: TextIcon,
 				action: "subtitles",
 			},
@@ -203,45 +203,45 @@ const VIDEO_WORKFLOWS: {
 	},
 	{
 		id: "podcast",
-		title: "Podcast episode",
-		description: "Record, clean, and clip a podcast",
+		title: "Episódio de podcast",
+		description: "Grave, limpe e corte trechos de um podcast",
 		steps: [
 			{
 				id: "plan",
-				label: "Plan the episode",
+				label: "Planeje o episódio",
 				description:
-					"AI helps structure topics, questions, and talking points.",
+					"A IA ajuda a estruturar temas, perguntas e pontos de discussão.",
 				icon: SparklesIcon,
 				action: "plan-podcast",
 			},
 			{
 				id: "import",
-				label: "Import recording",
-				description: "Import your podcast recording.",
+				label: "Importe a gravação",
+				description: "Importe a gravação do seu podcast.",
 				icon: AiMicIcon,
 				action: "import",
 			},
 			{
 				id: "clean",
-				label: "Clean the audio",
+				label: "Limpe o áudio",
 				description:
-					"Remove background noise and normalize levels.",
+					"Remova ruídos de fundo e normalize os níveis.",
 				icon: SparklesIcon,
 				action: "clean-audio",
 			},
 			{
 				id: "transcribe",
-				label: "Transcribe and find clips",
+				label: "Transcreva e encontre cortes",
 				description:
-					"Transcribe to easily navigate and find the best moments.",
+					"Transcreva para navegar facilmente e encontrar os melhores momentos.",
 				icon: TextIcon,
 				action: "transcribe",
 			},
 			{
 				id: "clip",
-				label: "Create highlight clips",
+				label: "Crie cortes de destaque",
 				description:
-					"AI identifies the best segments for social media clips.",
+					"A IA identifica os melhores trechos para cortes de redes sociais.",
 				icon: Image01Icon,
 				action: "highlights",
 			},
@@ -253,59 +253,59 @@ const VIDEO_WORKFLOWS: {
 
 const STARTER_PROMPTS = [
 	{
-		label: "Help me plan a YouTube video about...",
-		prompt: "Help me plan a YouTube video. I want to make a video about ",
+		label: "Me ajude a planejar um vídeo para o YouTube sobre...",
+		prompt: "Me ajude a planejar um vídeo para o YouTube. Quero fazer um vídeo sobre ",
 	},
 	{
-		label: "Write a script for a 60-second reel",
+		label: "Escreva um roteiro para um reel de 60 segundos",
 		prompt:
-			"Write a script for a 60-second vertical video/reel about ",
+			"Escreva um roteiro para um vídeo vertical/reel de 60 segundos sobre ",
 	},
 	{
-		label: "Give me 5 video ideas about...",
-		prompt: "Give me 5 unique video content ideas about ",
+		label: "Me dê 5 ideias de vídeo sobre...",
+		prompt: "Me dê 5 ideias únicas de conteúdo em vídeo sobre ",
 	},
 	{
-		label: "Help me write a video intro",
+		label: "Me ajude a escrever uma introdução de vídeo",
 		prompt:
-			"Help me write a compelling 10-second video intro for a video about ",
+			"Me ajude a escrever uma introdução de vídeo cativante de 10 segundos para um vídeo sobre ",
 	},
 	{
-		label: "Create an outline for a tutorial",
+		label: "Crie um esboço para um tutorial",
 		prompt:
-			"Create a detailed outline for a tutorial video about ",
+			"Crie um esboço detalhado para um vídeo tutorial sobre ",
 	},
 	{
-		label: "Suggest a thumbnail concept",
+		label: "Sugira um conceito de miniatura",
 		prompt:
-			"Describe a compelling thumbnail concept for a video about ",
+			"Descreva um conceito de miniatura cativante para um vídeo sobre ",
 	},
 ];
 
 const TRANSCRIPT_PROMPTS = [
 	{
-		label: "Make it more concise",
-		prompt: "Rewrite this transcript to be more concise. Remove redundant phrases and tighten the language while keeping the same meaning:\n\n",
+		label: "Deixar mais conciso",
+		prompt: "Reescreva esta transcrição para ficar mais concisa. Remova frases redundantes e torne a linguagem mais direta, mantendo o mesmo significado:\n\n",
 	},
 	{
-		label: "Make it more professional",
-		prompt: "Rewrite this transcript in a more professional and polished tone:\n\n",
+		label: "Deixar mais profissional",
+		prompt: "Reescreva esta transcrição em um tom mais profissional e refinado:\n\n",
 	},
 	{
-		label: "Simplify the language",
-		prompt: "Rewrite this transcript using simpler, more accessible language that a general audience can understand:\n\n",
+		label: "Simplificar a linguagem",
+		prompt: "Reescreva esta transcrição usando uma linguagem mais simples e acessível, que qualquer público consiga entender:\n\n",
 	},
 	{
-		label: "Add more energy",
-		prompt: "Rewrite this transcript to be more engaging and energetic, with stronger hooks and more dynamic phrasing:\n\n",
+		label: "Adicionar mais energia",
+		prompt: "Reescreva esta transcrição para ficar mais envolvente e energética, com ganchos mais fortes e frases mais dinâmicas:\n\n",
 	},
 	{
-		label: "Fix grammar and flow",
-		prompt: "Fix any grammar issues and improve the flow of this transcript while keeping the original meaning:\n\n",
+		label: "Corrigir gramática e fluidez",
+		prompt: "Corrija problemas de gramática e melhore a fluidez desta transcrição, mantendo o significado original:\n\n",
 	},
 	{
-		label: "Summarize key points",
-		prompt: "Summarize the key points from this transcript in bullet points:\n\n",
+		label: "Resumir os pontos principais",
+		prompt: "Resuma os pontos principais desta transcrição em tópicos:\n\n",
 	},
 ];
 
@@ -322,6 +322,8 @@ export function AIStudioView() {
 	const addMessage = useAIStore((s) => s.addStudioMessage);
 	const updateMessage = useAIStore((s) => s.updateStudioMessage);
 	const clearMessages = useAIStore((s) => s.clearStudioMessages);
+	const pendingAutoPrompt = useAIStore((s) => s.pendingAutoPrompt);
+	const setPendingAutoPrompt = useAIStore((s) => s.setPendingAutoPrompt);
 	const transcriptSegments = useTranscriptStore((s) => s.segments);
 	const hasTranscript = transcriptSegments.length > 0;
 
@@ -356,13 +358,13 @@ export function AIStudioView() {
 		}
 	}, [messages, isThinking]);
 
-	const handleSend = useCallback(async () => {
-		const trimmed = inputValue.trim();
+	const handleSend = useCallback(async (overrideText?: string) => {
+		const trimmed = (overrideText ?? inputValue).trim();
 		if (!trimmed || isThinking) return;
 
 		if (!isConnected) {
-			toast.error("AI backend is not connected", {
-				description: "Start the AI backend to use AI Studio.",
+			toast.error("O back-end de IA não está conectado", {
+				description: "Inicie o back-end de IA para usar o Estúdio de IA.",
 			});
 			return;
 		}
@@ -372,7 +374,7 @@ export function AIStudioView() {
 			role: "user",
 			content: trimmed,
 		});
-		setInputValue("");
+		if (!overrideText) setInputValue("");
 		setIsThinking(true);
 
 		const assistantId = generateUUID();
@@ -382,7 +384,9 @@ export function AIStudioView() {
 			let prompt = trimmed;
 			let systemPrompt: string | undefined;
 
-			if (mode === "transcript" && hasTranscript) {
+			// A prompt handed in from elsewhere (e.g. the Virality Score modal)
+			// is already fully self-contained — skip the transcript-mode injection.
+			if (!overrideText && mode === "transcript" && hasTranscript) {
 				const fullText = transcriptSegments.map((s) => s.text).join(" ");
 				systemPrompt =
 					"You are a video script editor. The user has a video transcript and wants you to help edit, rewrite, or improve it. " +
@@ -417,18 +421,18 @@ export function AIStudioView() {
 					addMessage({
 						id: assistantId,
 						role: "assistant",
-						content: "Here's what I suggest based on your request.",
+						content: "Aqui está o que eu sugiro com base no seu pedido.",
 					});
 				} else {
-					updateMessage(assistantId, "Here's what I suggest based on your request.");
+					updateMessage(assistantId, "Aqui está o que eu sugiro com base no seu pedido.");
 				}
 			}
 		} catch (error) {
 			const detail = error instanceof Error ? error.message : "";
 			const isOllamaDown = detail.includes("503") || detail.includes("Ollama");
 			const errorContent = isOllamaDown
-				? "Ollama is not running or no LLM model is loaded. Open the AI Setup guide (click the AI indicator in the header) to pull a model like `llama3.2:1b`."
-				: `Something went wrong: ${detail || "Unknown error"}. Make sure the AI backend and Ollama are running with a model loaded.`;
+				? "O Ollama não está em execução ou nenhum modelo de LLM foi carregado. Abra o Guia de configuração de IA (clique no indicador de IA no cabeçalho) para baixar um modelo como `llama3.2:1b`."
+				: `Algo deu errado: ${detail || "Erro desconhecido"}. Verifique se o back-end de IA e o Ollama estão em execução com um modelo carregado.`;
 
 			if (!messageAdded) {
 				addMessage({ id: assistantId, role: "assistant", content: errorContent });
@@ -439,6 +443,16 @@ export function AIStudioView() {
 			setIsThinking(false);
 		}
 	}, [inputValue, isThinking, isConnected, mode, hasTranscript, transcriptSegments, addMessage, updateMessage]);
+
+	// Auto-send a prompt handed in from elsewhere in the app (e.g. "Ask AI"
+	// on the Virality Score modal), then clear it so it only fires once.
+	useEffect(() => {
+		if (pendingAutoPrompt) {
+			const prompt = pendingAutoPrompt;
+			setPendingAutoPrompt(null);
+			handleSend(prompt);
+		}
+	}, [pendingAutoPrompt, setPendingAutoPrompt, handleSend]);
 
 	const handleKeyDown = useCallback(
 		(event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -511,7 +525,7 @@ export function AIStudioView() {
 							className="h-6 text-[10px] px-2"
 							onClick={() => setMode("transcript")}
 						>
-							Script
+							Roteiro
 						</Button>
 					)}
 					<Button
@@ -528,7 +542,7 @@ export function AIStudioView() {
 						className="h-6 text-[10px] px-2"
 						onClick={() => setMode("templates")}
 					>
-						Templates
+						Modelos
 					</Button>
 					<Button
 						variant={mode === "ideas" ? "secondary" : "ghost"}
@@ -536,7 +550,7 @@ export function AIStudioView() {
 						className="h-6 text-[10px] px-2 gap-1"
 						onClick={() => setMode("ideas")}
 					>
-						Ideas
+						Ideias
 						{savedIdeas.length > 0 && (
 							<span className="bg-primary text-primary-foreground rounded-full text-[8px] size-4 flex items-center justify-center font-bold">
 								{savedIdeas.length}
@@ -570,7 +584,7 @@ export function AIStudioView() {
 							className="h-6 text-[10px] px-2"
 							onClick={() => setMode("edit-speaker")}
 						>
-							Speakers
+							Falantes
 						</Button>
 					)}
 					{hasTranscript && (
@@ -580,7 +594,7 @@ export function AIStudioView() {
 							className="h-6 text-[10px] px-2"
 							onClick={() => setMode("dubbing")}
 						>
-							Dub
+							Dublagem
 						</Button>
 					)}
 					<Button
@@ -589,7 +603,7 @@ export function AIStudioView() {
 						className="h-6 text-[10px] px-2"
 						onClick={() => setMode("video-bg")}
 					>
-						BG Remove
+						Remover fundo
 					</Button>
 					{hasTranscript && (
 						<Button
@@ -598,7 +612,7 @@ export function AIStudioView() {
 							className="h-6 text-[10px] px-2"
 							onClick={() => setMode("chapters")}
 						>
-							Chapters
+							Capítulos
 						</Button>
 					)}
 					<Button
@@ -607,7 +621,7 @@ export function AIStudioView() {
 						className="h-6 text-[10px] px-2"
 						onClick={() => setMode("workflow")}
 					>
-						Workflows
+						Fluxos de trabalho
 					</Button>
 					<Button
 						variant={mode === "youtube-reels" ? "secondary" : "ghost"}
@@ -623,7 +637,7 @@ export function AIStudioView() {
 						className="h-6 text-[10px] px-2"
 						onClick={() => setMode("reframe")}
 					>
-						Reframe
+						Reenquadrar
 					</Button>
 					<Button
 						variant={mode === "tracking" ? "secondary" : "ghost"}
@@ -631,7 +645,7 @@ export function AIStudioView() {
 						className="h-6 text-[10px] px-2"
 						onClick={() => setMode("tracking")}
 					>
-						Tracking
+						Rastreamento
 					</Button>
 					<Button
 						variant={mode === "ab-testing" ? "secondary" : "ghost"}
@@ -639,7 +653,7 @@ export function AIStudioView() {
 						className="h-6 text-[10px] px-2"
 						onClick={() => setMode("ab-testing")}
 					>
-						A/B Test
+						Teste A/B
 					</Button>
 				</div>
 			</div>
@@ -647,9 +661,9 @@ export function AIStudioView() {
 			{/* Not connected banner */}
 			{!isConnected && (
 				<div className="mx-2 mt-2 rounded-lg bg-yellow-500/10 px-3 py-2 text-[11px] text-yellow-500 shrink-0">
-					<p className="font-medium">AI backend not connected</p>
+					<p className="font-medium">Back-end de IA não conectado</p>
 					<p className="text-yellow-500/70 mt-0.5">
-						Start the backend to use AI brainstorming.
+						Inicie o back-end para usar o brainstorm com IA.
 					</p>
 					<Button
 						variant="outline"
@@ -657,7 +671,7 @@ export function AIStudioView() {
 						className="h-6 text-[10px] mt-1.5"
 						onClick={toggleSetupGuide}
 					>
-						Setup guide
+						Guia de configuração
 					</Button>
 				</div>
 			)}
@@ -678,10 +692,10 @@ export function AIStudioView() {
 										className="size-8 text-muted-foreground/30 mx-auto mb-2"
 									/>
 									<p className="text-xs font-medium">
-										Edit script with AI
+										Edite o roteiro com IA
 									</p>
 									<p className="text-[10px] text-muted-foreground mt-0.5">
-										Rewrite, improve, or transform your transcript
+										Reescreva, aprimore ou transforme sua transcrição
 									</p>
 								</div>
 
@@ -718,11 +732,11 @@ export function AIStudioView() {
 										className="size-8 text-muted-foreground/30 mx-auto mb-2"
 									/>
 									<p className="text-xs font-medium">
-										Brainstorm with AI
+										Brainstorm com IA
 									</p>
 									<p className="text-[10px] text-muted-foreground mt-0.5">
-										Plan your video, write scripts, generate
-										ideas
+										Planeje seu vídeo, escreva roteiros, gere
+										ideias
 									</p>
 								</div>
 
@@ -795,17 +809,17 @@ export function AIStudioView() {
 												className="h-5 px-1.5 text-[10px] text-muted-foreground hover:text-foreground gap-1"
 												onClick={() => {
 													saveIdea(msg.content);
-													toast.success("Idea saved", {
-														description: "View it in the Ideas tab.",
+													toast.success("Ideia salva", {
+														description: "Veja na aba Ideias.",
 														action: {
-															label: "View",
+															label: "Ver",
 															onClick: () => setMode("ideas"),
 														},
 													});
 												}}
 											>
 												<HugeiconsIcon icon={Bookmark01Icon} className="size-3" />
-												Save idea
+												Salvar ideia
 											</Button>
 										</div>
 									</div>
@@ -839,10 +853,10 @@ export function AIStudioView() {
 								onKeyDown={handleKeyDown}
 								placeholder={
 									!isConnected
-										? "Connect AI backend first"
+										? "Conecte o back-end de IA primeiro"
 										: mode === "transcript"
-											? "Tell AI how to edit the transcript..."
-											: "Describe your video idea..."
+											? "Diga à IA como editar a transcrição..."
+											: "Descreva a ideia do seu vídeo..."
 								}
 								disabled={!isConnected}
 								rows={1}
@@ -865,7 +879,7 @@ export function AIStudioView() {
 									inputValue.trim() ? "default" : "secondary"
 								}
 								className="size-[36px] shrink-0"
-								onClick={handleSend}
+								onClick={() => handleSend()}
 								disabled={
 									!inputValue.trim() ||
 									isThinking ||
@@ -883,7 +897,7 @@ export function AIStudioView() {
 							</Button>
 						</div>
 						<p className="text-[9px] text-muted-foreground mt-1 text-center">
-							Enter to send &middot; Shift+Enter for new line
+							Enter para enviar &middot; Shift+Enter para nova linha
 						</p>
 					</div>
 				</>
@@ -966,9 +980,9 @@ export function AIStudioView() {
 								icon={Bookmark01Icon}
 								className="size-8 text-muted-foreground/30"
 							/>
-							<p className="text-xs font-medium">No saved ideas yet</p>
+							<p className="text-xs font-medium">Nenhuma ideia salva ainda</p>
 							<p className="text-[10px] text-muted-foreground leading-relaxed">
-								Chat with AI and hit &ldquo;Save idea&rdquo; on any response to collect it here.
+								Converse com a IA e clique em &ldquo;Salvar ideia&rdquo; em qualquer resposta para guardá-la aqui.
 							</p>
 							<Button
 								variant="outline"
@@ -977,14 +991,14 @@ export function AIStudioView() {
 								onClick={() => setMode("chat")}
 							>
 								<HugeiconsIcon icon={SparklesIcon} className="size-3 mr-1" />
-								Start brainstorming
+								Começar brainstorm
 							</Button>
 						</div>
 					) : (
 						<>
 							<div className="flex items-center justify-between px-1 mb-2">
 								<p className="text-[11px] text-muted-foreground">
-									{savedIdeas.length} saved idea{savedIdeas.length !== 1 ? "s" : ""}
+									{savedIdeas.length} ideia{savedIdeas.length !== 1 ? "s" : ""} salva{savedIdeas.length !== 1 ? "s" : ""}
 								</p>
 								<Button
 									variant="ghost"
@@ -993,7 +1007,7 @@ export function AIStudioView() {
 									onClick={clearIdeas}
 								>
 									<HugeiconsIcon icon={Delete02Icon} className="size-3 mr-0.5" />
-									Clear all
+									Limpar tudo
 								</Button>
 							</div>
 							<div className="flex flex-col gap-2">
@@ -1047,8 +1061,8 @@ export function AIStudioView() {
 			{mode === "workflow" && !activeWorkflow && (
 				<div className="flex-1 min-h-0 overflow-y-auto px-2 py-3">
 					<p className="text-[11px] text-muted-foreground px-1 mb-2">
-						Follow a step-by-step guide to create your video from
-						idea to export.
+						Siga um guia passo a passo para criar seu vídeo, da
+						ideia à exportação.
 					</p>
 					{VIDEO_WORKFLOWS.map((workflow) => (
 						<button
@@ -1072,7 +1086,7 @@ export function AIStudioView() {
 									variant="secondary"
 									className="text-[9px] mt-1.5"
 								>
-									{workflow.steps.length} steps
+									{workflow.steps.length} etapas
 								</Badge>
 							</div>
 							<HugeiconsIcon
@@ -1093,7 +1107,7 @@ export function AIStudioView() {
 							onClick={() => setSelectedWorkflow(null)}
 							className="text-[10px] text-muted-foreground hover:text-foreground"
 						>
-							Workflows
+							Fluxos de trabalho
 						</button>
 						<span className="text-[10px] text-muted-foreground">
 							/
@@ -1191,7 +1205,7 @@ export function AIStudioView() {
 										);
 									if (currentStep) {
 										setInputValue(
-											`Help me with "${currentStep.label}" for my ${activeWorkflow.title}. ${currentStep.description}`,
+											`Me ajude com "${currentStep.label}" para o meu ${activeWorkflow.title}. ${currentStep.description}`,
 										);
 										requestAnimationFrame(() =>
 											inputRef.current?.focus(),
@@ -1203,7 +1217,7 @@ export function AIStudioView() {
 									icon={SparklesIcon}
 									className="size-3 mr-1"
 								/>
-								Ask AI about next step
+								Perguntar à IA sobre a próxima etapa
 							</Button>
 						)}
 					</div>

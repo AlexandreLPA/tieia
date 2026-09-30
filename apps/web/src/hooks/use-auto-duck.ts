@@ -25,7 +25,7 @@ export function useAutoDuck() {
 
 			const speechSegments = segments.filter((s) => s.text.trim().length > 0);
 			if (speechSegments.length === 0) {
-				toast.error("No speech segments found. Transcribe your video first.");
+				toast.error("Nenhum segmento de fala encontrado. Transcreva seu vídeo primeiro.");
 				return;
 			}
 
@@ -34,7 +34,7 @@ export function useAutoDuck() {
 			);
 
 			if (audioTracks.length === 0) {
-				toast.error("No audio/video tracks found for ducking.");
+				toast.error("Nenhuma faixa de áudio/vídeo encontrada para a redução automática de volume.");
 				return;
 			}
 
@@ -122,13 +122,13 @@ export function useAutoDuck() {
 			}
 
 			if (keyframes.length === 0) {
-				toast.info("No overlapping speech/music found for ducking.");
+				toast.info("Nenhuma sobreposição de fala e música encontrada para a redução automática de volume.");
 				return;
 			}
 
 			editor.timeline.upsertKeyframes({ keyframes });
 			toast.success(
-				`Applied auto-duck: ${keyframes.length} volume keyframes (${opts.duckAmountDb}dB duck)`,
+				`Redução automática aplicada: ${keyframes.length} keyframes de volume (redução de ${opts.duckAmountDb}dB)`,
 			);
 		},
 		[editor, segments],

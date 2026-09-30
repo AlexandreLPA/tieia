@@ -5,11 +5,11 @@ import { Spinner } from "@/components/ui/spinner";
 import { useYouTubeReelsStore } from "@/stores/youtube-reels-store";
 
 const STEPS = [
-	{ key: "downloading", label: "Downloading captions & audio" },
-	{ key: "transcribing", label: "Transcribing (if no captions)" },
-	{ key: "analyzing", label: "Detecting clips" },
-	{ key: "scoring", label: "Scoring engagement" },
-	{ key: "generating", label: "Generating reels" },
+	{ key: "downloading", label: "Baixando legendas e áudio" },
+	{ key: "transcribing", label: "Transcrevendo (se não houver legendas)" },
+	{ key: "analyzing", label: "Detectando clipes" },
+	{ key: "scoring", label: "Pontuando engajamento" },
+	{ key: "generating", label: "Gerando reels" },
 ] as const;
 
 export function ProcessingProgress() {
@@ -58,7 +58,7 @@ export function ProcessingProgress() {
 			</div>
 
 			<Button variant="ghost" size="sm" onClick={() => { cancel().catch(() => {}); }}>
-				Cancel
+				Cancelar
 			</Button>
 		</div>
 	);

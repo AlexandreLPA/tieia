@@ -38,7 +38,7 @@ export function SplitPreview({
 			{/* Mode toggle */}
 			<div className="flex items-center justify-between">
 				<div className="text-xs text-muted-foreground">
-					Comparing:{" "}
+					Comparando:{" "}
 					<span className="font-medium text-foreground">{commitA.message}</span>
 					{" vs "}
 					<span className="font-medium text-foreground">{commitB.message}</span>
@@ -53,7 +53,7 @@ export function SplitPreview({
 						}`}
 						onClick={() => setViewMode("split")}
 					>
-						Split
+						Lado a lado
 					</button>
 					<button
 						type="button"
@@ -64,7 +64,7 @@ export function SplitPreview({
 						}`}
 						onClick={() => setViewMode("toggle")}
 					>
-						A/B Toggle
+						Alternância A/B
 					</button>
 				</div>
 			</div>
@@ -73,12 +73,12 @@ export function SplitPreview({
 			{viewMode === "split" ? (
 				<div className="flex gap-2">
 					<PreviewFrame
-						label="Version A"
+						label="Versão A"
 						commit={commitA}
 						className="flex-1"
 					/>
 					<PreviewFrame
-						label="Version B"
+						label="Versão B"
 						commit={commitB}
 						className="flex-1"
 					/>
@@ -86,7 +86,7 @@ export function SplitPreview({
 			) : (
 				<div className="relative">
 					<PreviewFrame
-						label={showingA ? "Version A" : "Version B"}
+						label={showingA ? "Versão A" : "Versão B"}
 						commit={showingA ? commitA : commitB}
 					/>
 					<button
@@ -94,7 +94,7 @@ export function SplitPreview({
 						className="absolute bottom-2 right-2 text-[10px] px-2 py-1 rounded bg-background/80 border border-border hover:bg-muted"
 						onClick={() => setShowingA(!showingA)}
 					>
-						Show {showingA ? "B" : "A"}
+						Mostrar {showingA ? "B" : "A"}
 					</button>
 				</div>
 			)}
@@ -103,7 +103,7 @@ export function SplitPreview({
 			{totalDuration > 0 && (
 				<div>
 					<div className="text-[10px] text-muted-foreground mb-1">
-						Timeline Changes
+						Alterações na linha do tempo
 					</div>
 					<div className="h-4 rounded overflow-hidden flex bg-muted">
 						{heatmap.map((segment, idx) => (
@@ -164,7 +164,7 @@ function PreviewFrame({
 					/>
 				) : (
 					<div className="text-xs text-muted-foreground/40">
-						No preview available
+						Pré-visualização indisponível
 					</div>
 				)}
 			</div>

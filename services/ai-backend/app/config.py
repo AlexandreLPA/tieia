@@ -29,7 +29,14 @@ class Settings(BaseSettings):
     # AI Memory Budget & Model Tiers
     AI_MEMORY_BUDGET: str = "auto"  # "auto", "4GB", "8GB", "16GB", "32GB"
     AI_MODEL_TIER: str = "auto"  # "lite", "standard", "pro", "auto"
-    AI_LLM_BACKEND: str = "auto"  # "ollama", "turboquant", "auto" (TQ with KV-cache optimization when available, else Ollama)
+    AI_LLM_BACKEND: str = "auto"  # "ollama", "turboquant", "openrouter", "auto" (TQ with KV-cache optimization when available, else Ollama)
+
+    # OpenRouter (cloud LLM, used only for this OpenCut-AI instance's own chat/scoring —
+    # unrelated codebases never call this). Only active when AI_LLM_BACKEND="openrouter"
+    # AND a key is set below; empty key = silently behaves exactly like before (Ollama).
+    OPENROUTER_API_KEY: str = ""
+    OPENROUTER_MODEL: str = "nvidia/nemotron-3-ultra-550b-a55b:free"
+    OPENROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
     KV_CACHE_BITS: int = 2  # 2, 3, or 4 — TurboQuant KV cache quantization bits (2 = most memory efficient, default)
     # Compute mode for the TurboQuant inference service.
     # "auto" = detect CUDA → MPS → CPU; "cuda" = force GPU; "cpu" = force CPU.

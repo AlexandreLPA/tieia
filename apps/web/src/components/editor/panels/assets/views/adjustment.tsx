@@ -34,11 +34,11 @@ const SLIDERS: {
 	step: number;
 	format: (v: number) => string;
 }[] = [
-	{ key: "brightness", label: "Brightness", min: -0.5, max: 0.5, step: 0.01, format: (v) => `${v >= 0 ? "+" : ""}${Math.round(v * 100)}%` },
-	{ key: "contrast", label: "Contrast", min: 0.2, max: 3, step: 0.01, format: (v) => `${Math.round(v * 100)}%` },
-	{ key: "saturation", label: "Saturation", min: 0, max: 3, step: 0.01, format: (v) => `${Math.round(v * 100)}%` },
-	{ key: "temperature", label: "Temperature", min: -1, max: 1, step: 0.01, format: (v) => v < 0 ? `Cool ${Math.round(Math.abs(v) * 100)}` : v > 0 ? `Warm ${Math.round(v * 100)}` : "Neutral" },
-	{ key: "vignette", label: "Vignette", min: 0, max: 1, step: 0.01, format: (v) => `${Math.round(v * 100)}%` },
+	{ key: "brightness", label: "Brilho", min: -0.5, max: 0.5, step: 0.01, format: (v) => `${v >= 0 ? "+" : ""}${Math.round(v * 100)}%` },
+	{ key: "contrast", label: "Contraste", min: 0.2, max: 3, step: 0.01, format: (v) => `${Math.round(v * 100)}%` },
+	{ key: "saturation", label: "Saturação", min: 0, max: 3, step: 0.01, format: (v) => `${Math.round(v * 100)}%` },
+	{ key: "temperature", label: "Temperatura", min: -1, max: 1, step: 0.01, format: (v) => v < 0 ? `Frio ${Math.round(Math.abs(v) * 100)}` : v > 0 ? `Quente ${Math.round(v * 100)}` : "Neutro" },
+	{ key: "vignette", label: "Vinheta", min: 0, max: 1, step: 0.01, format: (v) => `${Math.round(v * 100)}%` },
 ];
 
 export function AdjustmentView() {
@@ -85,14 +85,14 @@ export function AdjustmentView() {
 		});
 
 		element.params = { ...values };
-		element.name = "Adjustment";
+		element.name = "Ajuste";
 
 		editor.timeline.insertElement({
 			placement: { mode: "auto", trackType: "effect" },
 			element,
 		});
 
-		toast.success("Adjustment added to selected clip");
+		toast.success("Ajuste adicionado ao clipe selecionado");
 	}, [editor, values]);
 
 	const handleReset = useCallback(() => {
@@ -100,10 +100,10 @@ export function AdjustmentView() {
 	}, []);
 
 	return (
-		<PanelView title="Adjustment">
+		<PanelView title="Ajuste">
 			<div className="flex flex-col gap-4">
 				<p className="text-xs text-muted-foreground leading-relaxed">
-					Adjust values and click Apply to add as a track. Delete from the timeline to remove.
+					Ajuste os valores e clique em Aplicar para adicionar como uma faixa. Exclua da linha do tempo para remover.
 				</p>
 
 				{SLIDERS.map((slider) => (
@@ -133,14 +133,14 @@ export function AdjustmentView() {
 						className="flex-1"
 						onClick={handleReset}
 					>
-						Reset
+						Redefinir
 					</Button>
 					<Button
 						size="sm"
 						className="flex-1"
 						onClick={handleApply}
 					>
-						Apply
+						Aplicar
 					</Button>
 				</div>
 			</div>

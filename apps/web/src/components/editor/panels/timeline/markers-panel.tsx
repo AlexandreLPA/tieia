@@ -63,11 +63,11 @@ export function MarkersPanel({ className }: { className?: string }) {
 				<div className="flex items-center gap-2">
 					<HugeiconsIcon icon={Bookmark01Icon} className="size-4 text-primary" />
 					<span className="text-xs font-medium">
-						Markers ({markers.length})
+						Marcadores ({markers.length})
 					</span>
 				</div>
 				<Button size="sm" variant="ghost" className="h-6 text-[10px]" onClick={handleAdd}>
-					Add
+					Adicionar
 				</Button>
 			</div>
 
@@ -75,7 +75,7 @@ export function MarkersPanel({ className }: { className?: string }) {
 				<div className="px-3 py-2 space-y-1">
 					{sortedMarkers.length === 0 && (
 						<p className="text-[10px] text-muted-foreground text-center py-4">
-							Press M to add a marker at the playhead
+							Pressione M para adicionar um marcador na posição do cursor
 						</p>
 					)}
 					{sortedMarkers.map((marker) => (
@@ -163,14 +163,14 @@ function MarkerItem({
 					onKeyDown={(e) => {
 						if (e.key === "Enter") onStopEdit();
 					}}
-					placeholder="Add a note..."
+					placeholder="Adicionar uma nota..."
 				/>
 			) : (
 				<p
 					className="text-[10px] text-muted-foreground cursor-pointer truncate"
 					onClick={onStartEdit}
 				>
-					{marker.note || "Click to add note..."}
+					{marker.note || "Clique para adicionar uma nota..."}
 				</p>
 			)}
 		</div>

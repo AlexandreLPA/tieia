@@ -62,15 +62,15 @@ export function useSceneDetection() {
 			bgTasks.addTask({
 				id: taskId,
 				type: "smart-cut",
-				label: "Detecting Scenes",
-				progress: "Extracting frames...",
+				label: "Detectando cenas",
+				progress: "Extraindo quadros...",
 			});
 
 			try {
 				const mediaAssets = editor.media.getAssets();
 				const videoAsset = mediaAssets.find((a) => a.type === "video");
 				if (!videoAsset?.file) {
-					throw new Error("No video file found");
+					throw new Error("Nenhum arquivo de vídeo encontrado");
 				}
 
 				const url = URL.createObjectURL(videoAsset.file);
@@ -82,7 +82,7 @@ export function useSceneDetection() {
 
 				await new Promise<void>((resolve, reject) => {
 					video.onloadedmetadata = () => resolve();
-					video.onerror = () => reject(new Error("Failed to load video"));
+					video.onerror = () => reject(new Error("Falha ao carregar o vídeo"));
 				});
 
 				const duration = video.duration;
@@ -94,7 +94,7 @@ export function useSceneDetection() {
 
 				const canvas = document.createElement("canvas");
 				const ctx = canvas.getContext("2d");
-				if (!ctx) throw new Error("Canvas context unavailable");
+				if (!ctx) throw new Error("Contexto do canvas não disponível");
 
 				const thumbCanvas = document.createElement("canvas");
 				const thumbCtx = thumbCanvas.getContext("2d");
@@ -188,7 +188,7 @@ export function useSceneDetection() {
 
 					if (i % 20 === 0) {
 						bgTasks.updateTask(taskId, {
-							progress: `Analyzing frame ${i}/${numFrames}...`,
+							progress: `Analisando quadro ${i}/${numFrames}...`,
 						});
 					}
 				}
@@ -200,18 +200,18 @@ export function useSceneDetection() {
 
 				bgTasks.updateTask(taskId, {
 					status: "completed",
-					progress: `Detected ${merged.length} scene changes`,
+					progress: `${merged.length} mudanças de cena detectadas`,
 					completedAt: Date.now(),
 				});
 
-				toast.success(`Detected ${merged.length} scene changes`);
+				toast.success(`${merged.length} mudanças de cena detectadas`);
 			} catch (err) {
 				bgTasks.updateTask(taskId, {
 					status: "error",
-					error: err instanceof Error ? err.message : "Detection failed",
+					error: err instanceof Error ? err.message : "Falha na detecção",
 					completedAt: Date.now(),
 				});
-				toast.error("Scene detection failed");
+				toast.error("Falha na detecção de cenas");
 			} finally {
 				setIsDetecting(false);
 			}
@@ -222,7 +222,7 @@ export function useSceneDetection() {
 	const splitAtScenes = useCallback(() => {
 		if (scenes.length === 0) return;
 		toast.info(
-			`Would split at ${scenes.length} scene boundaries — split-at-time API needed`,
+			`Dividiria em ${scenes.length} pontos de mudança de cena — é necessária uma API de corte por tempo`,
 		);
 	}, [scenes]);
 

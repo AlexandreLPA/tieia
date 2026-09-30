@@ -96,8 +96,8 @@ export function useAudioRecording() {
 
 			setState((prev) => ({ ...prev, isRecording: true, isPaused: false, duration: 0 }));
 		} catch (err) {
-			toast.error("Could not access microphone", {
-				description: err instanceof Error ? err.message : "Permission denied",
+			toast.error("Não foi possível acessar o microfone", {
+				description: err instanceof Error ? err.message : "Permissão negada",
 			});
 		}
 	}, []);
@@ -204,7 +204,7 @@ export function useAudioRecording() {
 				placement: { mode: "explicit", trackId: targetTrack.id },
 			});
 
-			toast.success("Recording added to timeline");
+			toast.success("Gravação adicionada à linha do tempo");
 		},
 		[editor],
 	);

@@ -97,10 +97,10 @@ function meetsRequirements(
 // ----- Steps -----
 
 const STEPS: { key: WizardStep; label: string }[] = [
-	{ key: "welcome", label: "Welcome" },
-	{ key: "tier", label: "Select Tier" },
+	{ key: "welcome", label: "Boas-vindas" },
+	{ key: "tier", label: "Selecionar nível" },
 	{ key: "download", label: "Download" },
-	{ key: "done", label: "Done" },
+	{ key: "done", label: "Concluído" },
 ];
 
 // ----- Component -----
@@ -134,10 +134,10 @@ export function ModelWizard({
 							icon={SparklesIcon}
 							className="size-5 text-primary"
 						/>
-						AI Model Setup
+						Configuração de modelos de IA
 					</DialogTitle>
 					<DialogDescription>
-						Set up AI models for local inference.
+						Configure modelos de IA para inferência local.
 					</DialogDescription>
 				</DialogHeader>
 
@@ -196,9 +196,9 @@ export function ModelWizard({
 					{step === "welcome" && (
 						<div className="flex flex-col gap-4">
 							<p className="text-sm text-muted-foreground">
-								OpenCut AI runs models locally on your machine for maximum
-								privacy and speed. Let&apos;s detect your hardware to find
-								the best configuration.
+								O OpenCut AI executa os modelos localmente na sua máquina
+								para máxima privacidade e velocidade. Vamos detectar seu
+								hardware para encontrar a melhor configuração.
 							</p>
 
 							{hardware ? (
@@ -210,7 +210,7 @@ export function ModelWizard({
 												className="size-4 text-primary"
 											/>
 											<span className="text-sm font-medium">
-												Hardware Detected
+												Hardware detectado
 											</span>
 										</div>
 										<div className="grid grid-cols-2 gap-2 text-xs">
@@ -219,7 +219,7 @@ export function ModelWizard({
 													GPU
 												</span>
 												<span>
-													{hardware.gpuName ?? "Not available"}
+													{hardware.gpuName ?? "Não disponível"}
 												</span>
 											</div>
 											{hardware.gpuMemoryMb > 0 && (
@@ -240,7 +240,7 @@ export function ModelWizard({
 											</div>
 											<div className="flex justify-between">
 												<span className="text-muted-foreground">
-													Disk Free
+													Espaço livre em disco
 												</span>
 												<span>
 													{formatSize(hardware.diskFreeMb)}
@@ -248,13 +248,13 @@ export function ModelWizard({
 											</div>
 											<div className="flex justify-between">
 												<span className="text-muted-foreground">
-													CPU Cores
+													Núcleos de CPU
 												</span>
 												<span>{hardware.cpuCores}</span>
 											</div>
 											<div className="flex justify-between">
 												<span className="text-muted-foreground">
-													Platform
+													Plataforma
 												</span>
 												<span>{hardware.platform}</span>
 											</div>
@@ -271,7 +271,7 @@ export function ModelWizard({
 									{isDetecting ? (
 										<>
 											<Spinner className="size-3 mr-1" />
-											Detecting...
+											Detectando...
 										</>
 									) : (
 										<>
@@ -279,7 +279,7 @@ export function ModelWizard({
 												icon={CpuIcon}
 												className="size-3 mr-1"
 											/>
-											Detect Hardware
+											Detectar hardware
 										</>
 									)}
 								</Button>
@@ -291,7 +291,8 @@ export function ModelWizard({
 					{step === "tier" && (
 						<div className="flex flex-col gap-3">
 							<p className="text-sm text-muted-foreground">
-								Choose a model tier based on your hardware and needs.
+								Escolha um nível de modelo com base no seu hardware e
+								necessidades.
 							</p>
 							{tiers.map((tier) => {
 								const canRun = hardware
@@ -322,7 +323,7 @@ export function ModelWizard({
 																variant="default"
 																className="text-[10px] px-1.5 py-0"
 															>
-																Recommended
+																Recomendado
 															</Badge>
 														)}
 														{!canRun && (
@@ -330,7 +331,7 @@ export function ModelWizard({
 																variant="destructive"
 																className="text-[10px] px-1.5 py-0"
 															>
-																Insufficient hardware
+																Hardware insuficiente
 															</Badge>
 														)}
 													</div>
@@ -364,8 +365,8 @@ export function ModelWizard({
 					{step === "download" && (
 						<div className="flex flex-col gap-3">
 							<p className="text-sm text-muted-foreground">
-								Downloading models. This may take a while depending on
-								your connection.
+								Baixando modelos. Isso pode demorar um pouco dependendo
+								da sua conexão.
 							</p>
 							{downloadProgress?.map((model) => (
 								<div key={model.id} className="flex flex-col gap-1.5">
@@ -392,7 +393,7 @@ export function ModelWizard({
 											)}
 											{model.status === "error" && (
 												<span className="text-[10px] text-destructive">
-													Error
+													Erro
 												</span>
 											)}
 										</div>
@@ -428,11 +429,11 @@ export function ModelWizard({
 							</div>
 							<div className="text-center">
 								<p className="text-sm font-medium">
-									AI models are ready!
+									Os modelos de IA estão prontos!
 								</p>
 								<p className="text-xs text-muted-foreground mt-1">
-									All models have been downloaded and are ready to use.
-									You can manage them in Settings.
+									Todos os modelos foram baixados e estão prontos para uso.
+									Você pode gerenciá-los em Configurações.
 								</p>
 							</div>
 						</div>
@@ -446,13 +447,13 @@ export function ModelWizard({
 								variant="outline"
 								onClick={() => onOpenChange(false)}
 							>
-								Skip
+								Pular
 							</Button>
 							<Button
 								onClick={() => setStep("tier")}
 								disabled={!hardware}
 							>
-								Continue
+								Continuar
 							</Button>
 						</>
 					)}
@@ -462,7 +463,7 @@ export function ModelWizard({
 								variant="outline"
 								onClick={() => setStep("welcome")}
 							>
-								Back
+								Voltar
 							</Button>
 							<Button
 								onClick={() => {
@@ -475,7 +476,7 @@ export function ModelWizard({
 									icon={Download04Icon}
 									className="size-3 mr-1"
 								/>
-								Download Models
+								Baixar modelos
 							</Button>
 						</>
 					)}
@@ -486,18 +487,18 @@ export function ModelWizard({
 								onClick={() => setStep("tier")}
 								disabled={isDownloading}
 							>
-								Back
+								Voltar
 							</Button>
 							<Button
 								onClick={() => setStep("done")}
 								disabled={!allDownloadsComplete}
 							>
-								Continue
+								Continuar
 							</Button>
 						</>
 					)}
 					{step === "done" && (
-						<Button onClick={onFinish}>Get Started</Button>
+						<Button onClick={onFinish}>Começar</Button>
 					)}
 				</DialogFooter>
 			</DialogContent>

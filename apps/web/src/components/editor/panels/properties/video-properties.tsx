@@ -76,7 +76,7 @@ function SpeedSection({
 	return (
 		<Section collapsible sectionKey="video:speed">
 			<SectionHeader>
-				<SectionTitle>Speed</SectionTitle>
+				<SectionTitle>Velocidade</SectionTitle>
 				<span className="text-[10px] text-muted-foreground tabular-nums mr-2">
 					{currentRate === 1 ? "Normal" : `${currentRate}x`}
 				</span>

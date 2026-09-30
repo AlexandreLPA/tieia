@@ -43,22 +43,23 @@ export function MobileGate({ children }: MobileGateProps) {
 				onClick={handleGoBack}
 			>
 				<HugeiconsIcon icon={ArrowLeft01Icon} className="size-4" />
-				<span className=" text-sm">Go back</span>
+				<span className=" text-sm">Voltar</span>
 			</Button>
 
 			<div className="flex flex-1 flex-col justify-center gap-5 px-7">
 				<div className="flex flex-col gap-3">
 					<h1 className="text-foreground text-3xl font-bold tracking-tight">
-						Desktop only (for now)
+						Somente no computador (por enquanto)
 					</h1>
 					<p className="text-muted-foreground text-sm leading-relaxed">
-						OpenCut AI needs a desktop to run AI models locally and render the
-						full timeline editor. Come back on a computer for the real experience.
+						O OpenCut AI precisa de um computador para rodar modelos de IA
+						localmente e renderizar o editor de linha do tempo completo. Volte
+						em um computador para ter a experiência completa.
 					</p>
 				</div>
 				<div className="flex items-center gap-3">
 					<Button onClick={handleContinue}>
-						Take a look anyway
+						Dar uma olhada mesmo assim
 					</Button>
 					<Button variant="ghost" asChild>
 						<Link href="/roadmap" className="flex items-center gap-1">

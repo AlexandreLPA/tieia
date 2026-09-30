@@ -78,7 +78,7 @@ export function useAutoBRoll() {
 			const { indexMedia } = await import("@/services/search/embedding-service");
 			const asset = editor.media.getAssets().find((a) => a.id === mediaId);
 			if (!asset) {
-				toast.error("Asset not found.");
+				toast.error("Arquivo não encontrado.");
 				return null;
 			}
 			return indexMedia(asset, {
@@ -101,7 +101,7 @@ export function useAutoBRoll() {
 			(a) => a.type === "video" || a.type === "image",
 		);
 		if (assets.length === 0) {
-			toast.error("No video or image assets to index.");
+			toast.error("Nenhum vídeo ou imagem para indexar.");
 			return;
 		}
 		setIsRunning(true);
@@ -125,7 +125,7 @@ export function useAutoBRoll() {
 				progress: `${assets.length}/${assets.length} indexed`,
 				completedAt: Date.now(),
 			});
-			toast.success(`Indexed ${assets.length} assets for B-roll.`);
+			toast.success(`${assets.length} arquivos indexados para B-roll.`);
 		} catch (err) {
 			useBackgroundTasksStore.getState().updateTask(taskId, {
 				status: "error",
@@ -198,12 +198,12 @@ export function useAutoBRoll() {
 			embeddingsRef.current = await getAllEmbeddings();
 			if (embeddingsRef.current.length === 0) {
 				toast.error(
-					"No indexed footage yet. Index your assets first (button below).",
+					"Ainda não há imagens indexadas. Indexe seus arquivos primeiro (botão abaixo).",
 				);
 				return null;
 			}
 			if (segments.length === 0) {
-				toast.error("No transcript. Transcribe first.");
+				toast.error("Nenhuma transcrição encontrada. Transcreva primeiro.");
 				return null;
 			}
 
@@ -290,18 +290,18 @@ export function useAutoBRoll() {
 				});
 				toast.success(
 					autoApply
-						? `Applied B-roll to ${matched} segments.`
-						: `Found B-roll for ${matched} of ${suggestions.length} segments.`,
+						? `B-roll aplicado a ${matched} segmentos.`
+						: `B-roll encontrado para ${matched} de ${suggestions.length} segmentos.`,
 				);
 				return out;
 			} catch (err) {
-				const msg = err instanceof Error ? err.message : "Auto B-roll failed";
+				const msg = err instanceof Error ? err.message : "Falha no B-roll automático";
 				useBackgroundTasksStore.getState().updateTask(taskId, {
 					status: "error",
 					error: msg,
 					completedAt: Date.now(),
 				});
-				toast.error("Auto B-roll failed", { description: msg });
+				toast.error("Falha no B-roll automático", { description: msg });
 				return null;
 			} finally {
 				setIsRunning(false);

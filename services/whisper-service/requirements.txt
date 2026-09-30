@@ -4,3 +4,8 @@ python-multipart==0.0.9
 requests>=2.31.0
 faster-whisper==1.0.3
 aiofiles==24.1.0
+# GPU runtime libs for ctranslate2 (faster-whisper's backend) — python:3.11-slim
+# has no system CUDA, so ctranslate2 loads cuDNN/cuBLAS from these pip wheels
+# instead (found via LD_LIBRARY_PATH set in the Dockerfile).
+nvidia-cublas-cu12
+nvidia-cudnn-cu12

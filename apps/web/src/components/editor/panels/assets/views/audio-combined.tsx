@@ -9,8 +9,8 @@ export function AudioCombinedView() {
 	return (
 		<SubTabView
 			tabs={[
-				{ key: "sounds", label: "Sounds", content: <SoundsView /> },
-				{ key: "voiceover", label: "Voiceover", content: <VoiceoverView /> },
+				{ key: "sounds", label: "Sons", content: <SoundsView /> },
+				{ key: "voiceover", label: "Narração", content: <VoiceoverView /> },
 				{ key: "podcast", label: "Podcast", content: <PodcastClipsView /> },
 			]}
 		/>

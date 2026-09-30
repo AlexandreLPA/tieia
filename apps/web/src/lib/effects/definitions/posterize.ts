@@ -3,12 +3,12 @@ import posterizeShader from "./posterize.frag.glsl";
 
 export const posterizeEffectDefinition: EffectDefinition = {
 	type: "posterize",
-	name: "Posterize",
+	name: "Posterização",
 	keywords: ["posterize", "poster", "levels", "reduce", "flat", "pop art"],
 	params: [
 		{
 			key: "levels",
-			label: "Levels",
+			label: "Níveis",
 			type: "number",
 			default: 6,
 			min: 2,

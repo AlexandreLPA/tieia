@@ -3,12 +3,12 @@ import chromaticAberrationShader from "./chromatic-aberration-effect.frag.glsl";
 
 export const chromaticAberrationEffectDefinition: EffectDefinition = {
 	type: "chromatic-aberration",
-	name: "Chromatic Aberration",
+	name: "Aberração Cromática",
 	keywords: ["chromatic", "aberration", "rgb", "split", "fringe", "prismatic"],
 	params: [
 		{
 			key: "amount",
-			label: "Amount",
+			label: "Quantidade",
 			type: "number",
 			default: 30,
 			min: 0,

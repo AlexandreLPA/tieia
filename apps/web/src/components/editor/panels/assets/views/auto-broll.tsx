@@ -32,11 +32,11 @@ export function AutoBRollPanel() {
 
 	const handleRun = useCallback(() => {
 		if (indexedCount === 0) {
-			toast.error("Index your footage first.");
+			toast.error("Indexe suas imagens primeiro.");
 			return;
 		}
 		if (segments.length === 0) {
-			toast.error("Transcribe your media first.");
+			toast.error("Transcreva sua mídia primeiro.");
 			return;
 		}
 		run({ threshold, autoApply });
@@ -52,17 +52,18 @@ export function AutoBRollPanel() {
 			</div>
 
 			<p className="text-[10px] text-muted-foreground leading-relaxed">
-				Matches each transcript segment to your own footage by visual similarity,
-				then inserts the best clip as an overlay. All matching runs on-device
-				against the local CLIP index — your media never leaves your machine.
+				Compara cada segmento da transcrição com suas próprias imagens por
+				similaridade visual e insere o melhor clipe como sobreposição. Toda a
+				comparação roda no dispositivo, usando o índice CLIP local — sua mídia
+				nunca sai da sua máquina.
 			</p>
 
 			{/* Index status */}
 			<div className="flex items-center justify-between rounded-md border border-border px-2 py-1.5">
 				<div className="flex flex-col">
-					<span className="text-[10px] font-medium">Footage index</span>
+					<span className="text-[10px] font-medium">Índice de imagens</span>
 					<span className="text-[9px] text-muted-foreground">
-						{indexedCount}/{indexableAssets} assets indexed
+						{indexedCount}/{indexableAssets} itens indexados
 					</span>
 				</div>
 				<button
@@ -76,22 +77,23 @@ export function AutoBRollPanel() {
 							: "bg-secondary hover:bg-secondary/80",
 					)}
 				>
-					{isRunning ? "Indexing…" : "Index footage"}
+					{isRunning ? "Indexando…" : "Indexar imagens"}
 				</button>
 			</div>
 
 			{indexedCount === 0 && indexableAssets > 0 && (
 				<div className="flex items-start gap-1 rounded-md border border-blue-500/30 bg-blue-500/5 px-2 py-1.5">
 					<span className="text-[9px] text-blue-700 dark:text-blue-400 leading-relaxed">
-						Indexing samples one frame every ~2s per asset and embeds it. It runs
-						once, then B-roll matching is instant. CLIP model is ~340MB on first run.
+						A indexação captura um quadro a cada ~2s por item e gera seu
+						embedding. Isso roda uma vez; depois, a busca de B-roll é
+						instantânea. O modelo CLIP tem ~340MB no primeiro uso.
 					</span>
 				</div>
 			)}
 
 			<div className="flex flex-col gap-1.5">
 				<Label className="text-[10px]">
-					Match threshold: {threshold.toFixed(2)}
+					Limite de correspondência: {threshold.toFixed(2)}
 				</Label>
 				<input
 					type="range"
@@ -104,7 +106,8 @@ export function AutoBRollPanel() {
 					className="w-full accent-primary h-1"
 				/>
 				<span className="text-[8px] text-muted-foreground">
-					Lower = more matches (looser). Higher = fewer, more confident.
+					Menor = mais correspondências (mais permissivo). Maior = menos
+					correspondências, porém mais confiáveis.
 				</span>
 			</div>
 
@@ -117,7 +120,7 @@ export function AutoBRollPanel() {
 					className="size-3 accent-primary"
 				/>
 				<span className="text-[10px] text-muted-foreground">
-					Auto-apply best match to each segment
+					Aplicar automaticamente a melhor correspondência a cada segmento
 				</span>
 			</label>
 
@@ -145,7 +148,7 @@ export function AutoBRollPanel() {
 						: "bg-primary text-primary-foreground hover:bg-primary/90",
 				)}
 			>
-				{isRunning ? "Matching…" : "Generate B-roll Suggestions"}
+				{isRunning ? "Comparando…" : "Gerar sugestões de B-roll"}
 			</button>
 
 			{/* Results: per-segment matches, reviewable */}
@@ -153,7 +156,7 @@ export function AutoBRollPanel() {
 				<div className="flex flex-col gap-2 mt-1">
 					<div className="flex items-center justify-between">
 						<span className="text-[10px] font-medium">
-							{result.matched}/{result.suggestions.length} segments matched
+							{result.matched}/{result.suggestions.length} segmentos correspondidos
 						</span>
 					</div>
 					<div className="flex flex-col gap-2 max-h-64 overflow-y-auto">
@@ -163,7 +166,7 @@ export function AutoBRollPanel() {
 								suggestion={s}
 								onApply={(match) => {
 									applyMatch(match, s.start, s.end);
-									toast.success("B-roll added");
+									toast.success("B-roll adicionado");
 								}}
 							/>
 						))}

@@ -247,16 +247,16 @@ export function TransformSection({
 			sectionKey={`${element.type}:transform`}
 			showTopBorder={showTopBorder}
 		>
-			<SectionHeader><SectionTitle>Transform</SectionTitle></SectionHeader>
+			<SectionHeader><SectionTitle>Transformação</SectionTitle></SectionHeader>
 			<SectionContent>
 				<SectionFields>
 					<SectionField
-						label="Scale"
+						label="Escala"
 						beforeLabel={
 							<KeyframeToggle
 								isActive={scale.isKeyframedAtTime}
 								isDisabled={!isPlayheadWithinElementRange}
-								title="Toggle scale keyframe"
+								title="Alternar keyframe de escala"
 								onToggle={scale.toggleKeyframe}
 							/>
 						}
@@ -286,12 +286,12 @@ export function TransformSection({
 						</div>
 					</SectionField>
 					<SectionField
-						label="Position"
+						label="Posição"
 						beforeLabel={
 							<KeyframeToggle
 								isActive={hasPositionKeyframe}
 								isDisabled={!isPlayheadWithinElementRange}
-								title="Toggle position keyframe"
+								title="Alternar keyframe de posição"
 								onToggle={togglePositionKeyframe}
 							/>
 						}
@@ -341,12 +341,12 @@ export function TransformSection({
 					</SectionField>
 
 					<SectionField
-						label="Rotation"
+						label="Rotação"
 						beforeLabel={
 							<KeyframeToggle
 								isActive={rotation.isKeyframedAtTime}
 								isDisabled={!isPlayheadWithinElementRange}
-								title="Toggle rotation keyframe"
+								title="Alternar keyframe de rotação"
 								onToggle={rotation.toggleKeyframe}
 							/>
 						}

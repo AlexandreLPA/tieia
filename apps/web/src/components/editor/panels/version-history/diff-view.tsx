@@ -14,12 +14,12 @@ import type {
 } from "@/types/version";
 
 const CATEGORY_LABELS: Record<ChangeCategory, string> = {
-	structure: "Structure",
-	content: "Content",
-	timing: "Timing",
+	structure: "Estrutura",
+	content: "Conteúdo",
+	timing: "Tempo",
 	visual: "Visual",
-	audio: "Audio",
-	text: "Text",
+	audio: "Áudio",
+	text: "Texto",
 };
 
 const CATEGORY_ICONS: Record<ChangeCategory, string> = {
@@ -87,8 +87,8 @@ export function DiffView() {
 			<div className="flex border-b border-border">
 				{(
 					[
-						["working", "Working vs HEAD"],
-						["commits", "Compare Commits"],
+						["working", "Atual vs. última versão"],
+						["commits", "Comparar versões"],
 					] as const
 				).map(([key, label]) => (
 					<button
@@ -110,13 +110,13 @@ export function DiffView() {
 			{mode === "commits" && (
 				<div className="px-3 py-2 space-y-2 border-b border-border">
 					<div>
-						<label className="text-[10px] text-muted-foreground">Version A (older)</label>
+						<label className="text-[10px] text-muted-foreground">Versão A (mais antiga)</label>
 						<select
 							value={commitA}
 							onChange={(e) => setCommitA(e.target.value)}
 							className="w-full mt-0.5 rounded-md border border-border bg-background px-2 py-1 text-xs"
 						>
-							<option value="">Select commit...</option>
+							<option value="">Selecionar versão...</option>
 							{commits.map((c) => (
 								<option key={c.id} value={c.id}>
 									{c.message} ({new Date(c.timestamp).toLocaleDateString()})
@@ -125,13 +125,13 @@ export function DiffView() {
 						</select>
 					</div>
 					<div>
-						<label className="text-[10px] text-muted-foreground">Version B (newer)</label>
+						<label className="text-[10px] text-muted-foreground">Versão B (mais recente)</label>
 						<select
 							value={commitB}
 							onChange={(e) => setCommitB(e.target.value)}
 							className="w-full mt-0.5 rounded-md border border-border bg-background px-2 py-1 text-xs"
 						>
-							<option value="">Select commit...</option>
+							<option value="">Selecionar versão...</option>
 							{commits.map((c) => (
 								<option key={c.id} value={c.id}>
 									{c.message} ({new Date(c.timestamp).toLocaleDateString()})
@@ -145,7 +145,7 @@ export function DiffView() {
 						onClick={handleCompareTwoCommits}
 						disabled={!commitA || !commitB || loading}
 					>
-						Compare
+						Comparar
 					</Button>
 				</div>
 			)}
@@ -154,38 +154,38 @@ export function DiffView() {
 			<div className="flex-1 overflow-y-auto">
 				{loading ? (
 					<div className="text-center text-sm text-muted-foreground/60 py-8">
-						Computing diff...
+						Calculando diferenças...
 					</div>
 				) : !diff ? (
 					<div className="text-center text-sm text-muted-foreground/60 py-8">
 						{mode === "working"
-							? "No uncommitted changes"
-							: "Select two commits to compare"}
+							? "Nenhuma alteração pendente"
+							: "Selecione duas versões para comparar"}
 					</div>
 				) : diff.totalChanges === 0 ? (
 					<div className="text-center text-sm text-muted-foreground/60 py-8">
-						No differences found
+						Nenhuma diferença encontrada
 					</div>
 				) : (
 					<div className="py-2">
 						{/* Summary badge bar */}
 						<div className="flex items-center gap-2 px-3 pb-2 flex-wrap">
 							<span className="text-xs text-muted-foreground">
-								{diff.totalChanges} change{diff.totalChanges !== 1 ? "s" : ""}
+								{diff.totalChanges} {diff.totalChanges !== 1 ? "alterações" : "alteração"}
 							</span>
 							{diff.changeSummary.elementsAdded > 0 && (
 								<span className="text-[10px] px-1.5 py-0.5 rounded bg-green-500/10 text-green-400">
-									+{diff.changeSummary.elementsAdded} added
+									+{diff.changeSummary.elementsAdded} {diff.changeSummary.elementsAdded !== 1 ? "adicionados" : "adicionado"}
 								</span>
 							)}
 							{diff.changeSummary.elementsRemoved > 0 && (
 								<span className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/10 text-red-400">
-									-{diff.changeSummary.elementsRemoved} removed
+									-{diff.changeSummary.elementsRemoved} {diff.changeSummary.elementsRemoved !== 1 ? "removidos" : "removido"}
 								</span>
 							)}
 							{diff.changeSummary.elementsModified > 0 && (
 								<span className="text-[10px] px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400">
-									~{diff.changeSummary.elementsModified} modified
+									~{diff.changeSummary.elementsModified} {diff.changeSummary.elementsModified !== 1 ? "modificados" : "modificado"}
 								</span>
 							)}
 						</div>
@@ -198,13 +198,13 @@ export function DiffView() {
 								{diff.scenes.added.map((s) => (
 									<div key={s.sceneId} className="text-xs flex items-center gap-1.5">
 										<span className="text-green-400 font-mono">+</span>
-										<span>Scene &quot;{s.sceneName}&quot; added ({s.trackCount} tracks)</span>
+										<span>Cena &quot;{s.sceneName}&quot; adicionada ({s.trackCount} faixas)</span>
 									</div>
 								))}
 								{diff.scenes.removed.map((s) => (
 									<div key={s.sceneId} className="text-xs flex items-center gap-1.5">
 										<span className="text-red-400 font-mono">-</span>
-										<span>Scene &quot;{s.sceneName}&quot; removed</span>
+										<span>Cena &quot;{s.sceneName}&quot; removida</span>
 									</div>
 								))}
 							</div>
@@ -280,7 +280,7 @@ export function DiffView() {
 									>
 										<span className="text-green-400 font-mono">+</span>
 										<span>
-											Added {t.trackType} track &quot;{t.trackName}&quot; ({t.elementCount} elements)
+											Faixa de {t.trackType} &quot;{t.trackName}&quot; adicionada ({t.elementCount} elementos)
 										</span>
 									</div>
 								))}
@@ -290,7 +290,7 @@ export function DiffView() {
 										className="px-3 py-0.5 text-xs flex items-center gap-1.5"
 									>
 										<span className="text-red-400 font-mono">-</span>
-										<span>Removed {t.trackType} track &quot;{t.trackName}&quot;</span>
+										<span>Faixa de {t.trackType} &quot;{t.trackName}&quot; removida</span>
 									</div>
 								))}
 								{scene.elementChanges.added.map((e) => (
@@ -300,7 +300,7 @@ export function DiffView() {
 									>
 										<span className="text-green-400 font-mono">+</span>
 										<span>
-											Added &quot;{e.elementName}&quot; ({e.elementType}) to {e.trackName}
+											Adicionado &quot;{e.elementName}&quot; ({e.elementType}) em {e.trackName}
 										</span>
 									</div>
 								))}
@@ -311,7 +311,7 @@ export function DiffView() {
 									>
 										<span className="text-red-400 font-mono">-</span>
 										<span>
-											Removed &quot;{e.elementName}&quot; ({e.elementType}) from {e.trackName}
+											Removido &quot;{e.elementName}&quot; ({e.elementType}) de {e.trackName}
 										</span>
 									</div>
 								))}
@@ -322,7 +322,7 @@ export function DiffView() {
 									>
 										<span className="text-blue-400 font-mono">&gt;</span>
 										<span>
-											Moved &quot;{e.elementName}&quot; to different track
+											Movido &quot;{e.elementName}&quot; para outra faixa
 										</span>
 									</div>
 								))}

@@ -40,30 +40,30 @@ type BlendingElement = {
 const BLEND_MODE_GROUPS = [
 	[{ value: "normal", label: "Normal" }],
 	[
-		{ value: "darken", label: "Darken" },
-		{ value: "multiply", label: "Multiply" },
-		{ value: "color-burn", label: "Color Burn" },
+		{ value: "darken", label: "Escurecer" },
+		{ value: "multiply", label: "Multiplicar" },
+		{ value: "color-burn", label: "Subexposição de cor" },
 	],
 	[
-		{ value: "lighten", label: "Lighten" },
-		{ value: "screen", label: "Screen" },
-		{ value: "plus-lighter", label: "Plus Lighter" },
-		{ value: "color-dodge", label: "Color Dodge" },
+		{ value: "lighten", label: "Clarear" },
+		{ value: "screen", label: "Tela" },
+		{ value: "plus-lighter", label: "Mais claro" },
+		{ value: "color-dodge", label: "Superexposição de cor" },
 	],
 	[
-		{ value: "overlay", label: "Overlay" },
-		{ value: "soft-light", label: "Soft Light" },
-		{ value: "hard-light", label: "Hard Light" },
+		{ value: "overlay", label: "Sobrepor" },
+		{ value: "soft-light", label: "Luz suave" },
+		{ value: "hard-light", label: "Luz forte" },
 	],
 	[
-		{ value: "difference", label: "Difference" },
-		{ value: "exclusion", label: "Exclusion" },
+		{ value: "difference", label: "Diferença" },
+		{ value: "exclusion", label: "Exclusão" },
 	],
 	[
-		{ value: "hue", label: "Hue" },
-		{ value: "saturation", label: "Saturation" },
-		{ value: "color", label: "Color" },
-		{ value: "luminosity", label: "Luminosity" },
+		{ value: "hue", label: "Matiz" },
+		{ value: "saturation", label: "Saturação" },
+		{ value: "color", label: "Cor" },
+		{ value: "luminosity", label: "Luminosidade" },
 	],
 ];
 
@@ -142,17 +142,17 @@ export function BlendingSection({
 
 	return (
 		<Section collapsible sectionKey={`${element.type}:blending`}>
-			<SectionHeader><SectionTitle>Blending</SectionTitle></SectionHeader>
+			<SectionHeader><SectionTitle>Mesclagem</SectionTitle></SectionHeader>
 		<SectionContent>
 			<div className="flex items-start gap-2">
 				<SectionField
-					label="Opacity"
+					label="Opacidade"
 					className="w-1/2"
 					beforeLabel={
 						<KeyframeToggle
 							isActive={opacity.isKeyframedAtTime}
 							isDisabled={!isPlayheadWithinElementRange}
-							title="Toggle opacity keyframe"
+							title="Alternar keyframe de opacidade"
 							onToggle={opacity.toggleKeyframe}
 						/>
 					}
@@ -181,7 +181,7 @@ export function BlendingSection({
 						dragSensitivity="slow"
 					/>
 				</SectionField>
-				<SectionField label="Blend mode" className="w-1/2">
+				<SectionField label="Modo de mesclagem" className="w-1/2">
 					<Select
 						value={committedBlendModeRef.current}
 						onOpenChange={handleBlendModeOpenChange}
@@ -191,7 +191,7 @@ export function BlendingSection({
 							icon={<HugeiconsIcon icon={RainDropIcon} />}
 							className="w-full"
 						>
-							<SelectValue placeholder="Select blend mode" />
+							<SelectValue placeholder="Selecione o modo de mesclagem" />
 						</SelectTrigger>
 						<SelectContent className="w-36">
 							{BLEND_MODE_GROUPS.map((group, groupIndex) => (

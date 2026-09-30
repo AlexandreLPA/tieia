@@ -159,13 +159,13 @@ export const StepFlow: FC<StepFlowProps> = ({
 
 export const templateConfig = {
   id: "step-flow",
-  name: "Step Flow",
+  name: "Fluxo de Etapas",
   category: "process",
   defaultProps: {
     steps: [
-      { title: "Research", description: "Gather data and insights" },
-      { title: "Design", description: "Create wireframes and mockups" },
-      { title: "Develop", description: "Build and implement features" },
+      { title: "Pesquisa", description: "Reunir dados e insights" },
+      { title: "Design", description: "Criar wireframes e mockups" },
+      { title: "Desenvolvimento", description: "Construir e implementar funcionalidades" },
     ],
     primaryColor: "#7c3aed",
     accentColor: "#a78bfa",

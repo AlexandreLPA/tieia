@@ -36,7 +36,7 @@ export function useProjectSharing() {
 			setSharedLinks((prev) => [...prev, link]);
 
 			await navigator.clipboard.writeText(link.url);
-			toast.success("Share link copied to clipboard");
+			toast.success("Link de compartilhamento copiado para a área de transferência");
 
 			return link;
 		},
@@ -45,7 +45,7 @@ export function useProjectSharing() {
 
 	const revokeLink = useCallback((linkId: string) => {
 		setSharedLinks((prev) => prev.filter((l) => l.id !== linkId));
-		toast.success("Share link revoked");
+		toast.success("Link de compartilhamento revogado");
 	}, []);
 
 	return { sharedLinks, createShareLink, revokeLink };

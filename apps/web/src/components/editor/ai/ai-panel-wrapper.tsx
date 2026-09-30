@@ -43,7 +43,7 @@ export function AIPanelWrapper() {
 					id: generateUUID(),
 					role: "assistant",
 					content:
-						"Cannot process commands — the AI backend is not connected. Open the setup guide from the AI status indicator in the header to get started.",
+						"Não é possível processar comandos — o back-end de IA não está conectado. Abra o guia de configuração no indicador de status de IA no cabeçalho para começar.",
 					timestamp: new Date(),
 				};
 				setMessages((prev) => [...prev, errorMessage]);
@@ -77,7 +77,7 @@ export function AIPanelWrapper() {
 				setMessages((prev) => [...prev, assistantMessage]);
 			} catch (error) {
 				const errorDetail =
-					error instanceof Error ? error.message : "Unknown error";
+					error instanceof Error ? error.message : "Erro desconhecido";
 
 				const isConnectionIssue =
 					errorDetail.includes("Cannot connect") ||
@@ -88,8 +88,8 @@ export function AIPanelWrapper() {
 					id: generateUUID(),
 					role: "assistant",
 					content: isConnectionIssue
-						? `Cannot reach the AI backend: ${errorDetail}\n\nMake sure the AI backend is running at the configured URL. Open the setup guide for instructions.`
-						: `Error: ${errorDetail}\n\nThis might be a temporary issue. Try again, or check the AI backend logs for details.`,
+						? `Não foi possível acessar o back-end de IA: ${errorDetail}\n\nVerifique se o back-end de IA está em execução na URL configurada. Abra o guia de configuração para ver as instruções.`
+						: `Erro: ${errorDetail}\n\nIsso pode ser um problema temporário. Tente novamente ou verifique os logs do back-end de IA para mais detalhes.`,
 					timestamp: new Date(),
 				};
 				setMessages((prev) => [...prev, errorMessage]);
@@ -202,14 +202,14 @@ export function AIPanelWrapper() {
 						</div>
 						<div className="flex-1 min-w-0">
 							<p className="text-xs font-medium">
-								AI features are not available
+								Os recursos de IA não estão disponíveis
 							</p>
 							<p className="text-[11px] text-muted-foreground mt-0.5">
 								{errorType === "connection_refused"
-									? "The AI backend is not running. Start it to enable transcription, AI commands, and more."
+									? "O back-end de IA não está em execução. Inicie-o para habilitar transcrição, comandos de IA e muito mais."
 									: errorType === "timeout"
-										? "The AI backend is not responding. It may be starting up."
-										: connectionError ?? "Cannot connect to AI backend."}
+										? "O back-end de IA não está respondendo. Ele pode estar iniciando."
+										: connectionError ?? "Não foi possível conectar ao back-end de IA."}
 							</p>
 						</div>
 						<div className="flex items-center gap-1.5 shrink-0">
@@ -219,7 +219,7 @@ export function AIPanelWrapper() {
 								className="h-7 text-[11px] px-2.5"
 								onClick={toggleSetupGuide}
 							>
-								Setup guide
+								Configuração de IA
 							</Button>
 							<Button
 								size="icon"

@@ -52,18 +52,18 @@ export function useSmartReframe(): UseSmartReframeReturn {
 			try {
 				const tracks = editor.timeline.getTracks();
 				const track = tracks.find((t) => t.id === trackId);
-				if (!track) throw new Error("Track not found");
+				if (!track) throw new Error("Trilha não encontrada");
 
 				const element = track.elements.find((e) => e.id === elementId);
 				if (!element || element.type !== "video") {
-					throw new Error("Element must be a video");
+					throw new Error("O elemento precisa ser um vídeo");
 				}
 
 				const videoEl = element as VideoElement;
-				if (!videoEl.mediaId) throw new Error("Video has no media source");
+				if (!videoEl.mediaId) throw new Error("O vídeo não tem uma fonte de mídia");
 
 				const media = editor.media.getAssetById(videoEl.mediaId);
-				if (!media?.file) throw new Error("Media file not available");
+				if (!media?.file) throw new Error("Arquivo de mídia não disponível");
 
 				setProgress(10);
 
@@ -98,7 +98,7 @@ export function useSmartReframe(): UseSmartReframeReturn {
 				setStatus("done");
 			} catch (err) {
 				setStatus("error");
-				setError(err instanceof Error ? err.message : "Smart Reframe failed");
+				setError(err instanceof Error ? err.message : "Falha no reenquadramento inteligente");
 			}
 		},
 		[editor],
@@ -147,7 +147,7 @@ export function useSmartReframe(): UseSmartReframeReturn {
 			setStatus("done");
 		} catch (err) {
 			setStatus("error");
-			setError(err instanceof Error ? err.message : "Failed to apply keyframes");
+			setError(err instanceof Error ? err.message : "Falha ao aplicar os keyframes");
 		}
 	}, [result, editor]);
 

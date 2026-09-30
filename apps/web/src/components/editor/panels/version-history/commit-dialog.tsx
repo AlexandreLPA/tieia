@@ -86,25 +86,25 @@ export function CommitDialog() {
 		<Dialog open={commitDialogOpen} onOpenChange={(open) => !open && closeCommitDialog()}>
 			<DialogContent className="max-w-md">
 				<DialogHeader>
-					<DialogTitle>Commit Changes</DialogTitle>
+					<DialogTitle>Salvar alterações</DialogTitle>
 				</DialogHeader>
 
 				<DialogBody className="gap-3">
 					{/* Change summary */}
 					<div>
 						<Label className="text-xs text-muted-foreground mb-1">
-							Summary of changes
+							Resumo das alterações
 						</Label>
 						<div className="rounded-md border border-border bg-muted/30 p-3 max-h-48 overflow-y-auto">
 							{loadingDiff ? (
 								<div className="text-muted-foreground/60 text-sm text-center py-2">
-									Analyzing changes...
+									Analisando alterações...
 								</div>
 							) : diff ? (
 								<ChangeSummary diff={diff} />
 							) : (
 								<div className="text-muted-foreground/60 text-sm text-center py-2">
-									No changes detected
+									Nenhuma alteração detectada
 								</div>
 							)}
 						</div>
@@ -116,10 +116,10 @@ export function CommitDialog() {
 					{(loadingAI || aiSuggestion) && (
 						<div className="flex items-center gap-2">
 							{loadingAI ? (
-								<span className="text-xs text-muted-foreground/60">Generating AI suggestion...</span>
+								<span className="text-xs text-muted-foreground/60">Gerando sugestão da IA...</span>
 							) : aiSuggestion ? (
 								<>
-									<span className="text-xs text-muted-foreground/60">AI:</span>
+									<span className="text-xs text-muted-foreground/60">IA:</span>
 									<button
 										type="button"
 										className="text-xs text-primary hover:underline truncate max-w-[280px] text-left"
@@ -135,12 +135,12 @@ export function CommitDialog() {
 
 					{/* Commit message */}
 					<div>
-						<Label htmlFor="commit-message">Commit message</Label>
+						<Label htmlFor="commit-message">Mensagem da versão</Label>
 						<textarea
 							id="commit-message"
 							className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring resize-none"
 							rows={3}
-							placeholder="Describe your changes..."
+							placeholder="Descreva suas alterações..."
 							value={message}
 							onChange={(e) => setMessage(e.target.value)}
 							onKeyDown={(e) => {
@@ -156,13 +156,13 @@ export function CommitDialog() {
 					{/* Optional tag */}
 					<div>
 						<Label htmlFor="tag-name" className="text-xs text-muted-foreground">
-							Add tag (optional)
+							Adicionar tag (opcional)
 						</Label>
 						<Input
 							id="tag-name"
 							value={tagName}
 							onChange={(e) => setTagName(e.target.value)}
-							placeholder="e.g. rough-cut, v1-final"
+							placeholder="ex.: corte-bruto, v1-final"
 							className="mt-1"
 						/>
 					</div>
@@ -170,10 +170,10 @@ export function CommitDialog() {
 
 				<DialogFooter>
 					<Button variant="outline" onClick={() => closeCommitDialog()}>
-						Cancel
+						Cancelar
 					</Button>
 					<Button onClick={handleCommit} disabled={!canCommit}>
-						{isCommitting ? "Committing..." : "Commit"}
+						{isCommitting ? "Salvando..." : "Salvar"}
 					</Button>
 				</DialogFooter>
 			</DialogContent>

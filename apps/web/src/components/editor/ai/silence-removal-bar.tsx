@@ -96,8 +96,8 @@ export function SilenceRemovalBar({
 							{filteredSilences.length}
 						</Badge>
 						<span className="text-sm text-muted-foreground">
-							silence region{filteredSilences.length !== 1 ? "s" : ""}{" "}
-							detected
+							regi{filteredSilences.length !== 1 ? "ões" : "ão"} de silêncio
+							detectada{filteredSilences.length !== 1 ? "s" : ""}
 							{filteredSilences.length > 0 && (
 								<span className="text-xs ml-1">
 									(total {formatDuration(totalDuration)})
@@ -114,10 +114,10 @@ export function SilenceRemovalBar({
 						{isRemoving ? (
 							<>
 								<Spinner className="size-3 mr-1" />
-								Removing...
+								Removendo...
 							</>
 						) : (
-							"Remove Long Silences"
+							"Remover silêncios longos"
 						)}
 					</Button>
 				</div>
@@ -125,7 +125,7 @@ export function SilenceRemovalBar({
 				{/* Threshold slider */}
 				<div className="flex items-center gap-3">
 					<Label className="text-xs text-muted-foreground shrink-0 w-20">
-						Threshold
+						Limite
 					</Label>
 					<Slider
 						value={[threshold]}
@@ -160,7 +160,7 @@ export function SilenceRemovalBar({
 											: "bg-muted-foreground/20",
 									)}
 									style={{ height: `${height}px` }}
-									title={`${silence.duration.toFixed(1)}s silence`}
+									title={`${silence.duration.toFixed(1)}s de silêncio`}
 								/>
 							);
 						})}
@@ -173,20 +173,20 @@ export function SilenceRemovalBar({
 				<AlertDialogContent>
 					<AlertDialogHeader>
 						<AlertDialogTitle>
-							Remove {filteredSilences.length} silence region
-							{filteredSilences.length !== 1 ? "s" : ""}?
+							Remover {filteredSilences.length} regi
+							{filteredSilences.length !== 1 ? "ões" : "ão"} de silêncio?
 						</AlertDialogTitle>
 						<AlertDialogDescription>
-							This will remove all silences longer than{" "}
-							{threshold.toFixed(1)}s, saving approximately{" "}
-							{formatDuration(totalDuration)} of total duration. This
-							action can be undone with Ctrl+Z.
+							Isso vai remover todos os silêncios maiores que{" "}
+							{threshold.toFixed(1)}s, economizando aproximadamente{" "}
+							{formatDuration(totalDuration)} de duração total. Essa
+							ação pode ser desfeita com Ctrl+Z.
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
-						<AlertDialogCancel>Cancel</AlertDialogCancel>
+						<AlertDialogCancel>Cancelar</AlertDialogCancel>
 						<AlertDialogAction onClick={handleRemove}>
-							Remove Silences
+							Remover silêncios
 						</AlertDialogAction>
 					</AlertDialogFooter>
 				</AlertDialogContent>

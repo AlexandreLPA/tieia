@@ -82,9 +82,9 @@ export function MulticamPanel({ className }: { className?: string }) {
 		<div className={cn("flex flex-col h-full", className)}>
 			<div className="px-3 py-2 border-b flex items-center gap-2">
 				<HugeiconsIcon icon={Camera01Icon} className="size-4 text-primary" />
-				<span className="text-xs font-medium">Multicam</span>
+				<span className="text-xs font-medium">Multicâmera</span>
 				<Badge variant="secondary" className="text-[8px] px-1 py-0">
-					{angles.length} angles
+					{angles.length} ângulos
 				</Badge>
 			</div>
 
@@ -95,7 +95,7 @@ export function MulticamPanel({ className }: { className?: string }) {
 						className="size-8 text-muted-foreground/40 mx-auto mb-2"
 					/>
 					<p className="text-sm text-muted-foreground">
-						Add 2+ video tracks to use multicam
+						Adicione 2 ou mais faixas de vídeo para usar o multicâmera
 					</p>
 				</div>
 			) : (
@@ -103,18 +103,18 @@ export function MulticamPanel({ className }: { className?: string }) {
 					{/* ── Auto audio sync (cross-correlation) ── */}
 					<div className="rounded-md border border-border p-2 flex flex-col gap-2">
 						<div className="flex items-center justify-between">
-							<span className="text-[10px] font-medium">Auto audio sync</span>
+							<span className="text-[10px] font-medium">Sincronização automática de áudio</span>
 							<Badge variant="outline" className="text-[8px] px-1 py-0">
-								On-device
+								No dispositivo
 							</Badge>
 						</div>
 						<p className="text-[9px] text-muted-foreground leading-relaxed">
-							Aligns angles by matching their audio waveforms — no timecode
-							needed. Each angle must have an audio track.
+							Alinha os ângulos combinando as formas de onda de áudio — sem
+							necessidade de timecode. Cada ângulo precisa ter uma faixa de áudio.
 						</p>
 
 						<div className="flex flex-col gap-1">
-							<span className="text-[9px] text-muted-foreground">Reference angle</span>
+							<span className="text-[9px] text-muted-foreground">Ângulo de referência</span>
 							<Select
 								value={effectiveRefId}
 								onValueChange={setReferenceTrackId}
@@ -133,7 +133,7 @@ export function MulticamPanel({ className }: { className?: string }) {
 						</div>
 
 						<label className="flex items-center gap-1 text-[9px] text-muted-foreground">
-							<span>Search ±</span>
+							<span>Busca ±</span>
 							<input
 								type="range"
 								min={10}
@@ -152,7 +152,7 @@ export function MulticamPanel({ className }: { className?: string }) {
 							onClick={handleAutoSync}
 							disabled={isSyncing}
 						>
-							{isSyncing ? "Analyzing…" : "Compute offsets"}
+							{isSyncing ? "Analisando…" : "Calcular deslocamentos"}
 						</Button>
 
 						{progressMsg && (
@@ -172,7 +172,7 @@ export function MulticamPanel({ className }: { className?: string }) {
 										>
 											<span className="truncate flex-1">{angle?.label ?? off.trackId}</span>
 											{off.skipped ? (
-												<span className="text-amber-600">skipped</span>
+												<span className="text-amber-600">ignorado</span>
 											) : (
 												<>
 													<span className="font-mono">
@@ -200,7 +200,7 @@ export function MulticamPanel({ className }: { className?: string }) {
 									className="w-full h-7 text-[10px] mt-1"
 									onClick={apply}
 								>
-									Apply sync
+									Aplicar sincronização
 								</Button>
 							</div>
 						)}
@@ -214,12 +214,12 @@ export function MulticamPanel({ className }: { className?: string }) {
 							className="w-full"
 							onClick={handleSync}
 						>
-							Open Angle Switcher
+							Abrir Seletor de Ângulos
 						</Button>
 					) : (
 						<>
 							<p className="text-[10px] text-muted-foreground">
-								Press 1-{angles.length} to switch angles during playback
+								Pressione 1-{angles.length} para trocar de ângulo durante a reprodução
 							</p>
 							<div className="space-y-1">
 								{angles.map((angle, idx) => (
@@ -239,7 +239,7 @@ export function MulticamPanel({ className }: { className?: string }) {
 										</span>
 										{angle.label}
 										{multicamClip?.activeAngleIndex === idx && (
-											<Badge className="ml-auto text-[8px] px-1 py-0">Active</Badge>
+											<Badge className="ml-auto text-[8px] px-1 py-0">Ativo</Badge>
 										)}
 									</Button>
 								))}

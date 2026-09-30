@@ -49,7 +49,7 @@ export function ConflictResolutionView({
 	if (conflicts.length === 0) {
 		return (
 			<div className="text-center text-sm text-muted-foreground py-4">
-				No conflicts to resolve
+				Nenhum conflito para resolver
 			</div>
 		);
 	}
@@ -59,12 +59,12 @@ export function ConflictResolutionView({
 			{/* Progress */}
 			<div className="flex items-center justify-between">
 				<div className="text-xs text-muted-foreground">
-					Conflict {currentIdx + 1} of {conflicts.length}
+					Conflito {currentIdx + 1} de {conflicts.length}
 				</div>
 				<div className="text-xs">
-					<span className="text-green-400">{resolver.getResolvedCount()} resolved</span>
+					<span className="text-green-400">{resolver.getResolvedCount()} resolvidos</span>
 					{" / "}
-					<span className="text-muted-foreground">{conflicts.length} total</span>
+					<span className="text-muted-foreground">{conflicts.length} no total</span>
 				</div>
 			</div>
 
@@ -81,10 +81,10 @@ export function ConflictResolutionView({
 			{/* Batch actions */}
 			<div className="flex gap-2">
 				<Button size="sm" variant="outline" className="flex-1 text-xs" onClick={handleAcceptAllSource}>
-					Accept all source
+					Aceitar tudo da origem
 				</Button>
 				<Button size="sm" variant="outline" className="flex-1 text-xs" onClick={handleAcceptAllTarget}>
-					Accept all target
+					Aceitar tudo do destino
 				</Button>
 			</div>
 
@@ -108,7 +108,7 @@ export function ConflictResolutionView({
 					onClick={() => setCurrentIdx(Math.max(0, currentIdx - 1))}
 					disabled={currentIdx === 0}
 				>
-					Previous
+					Anterior
 				</Button>
 				<div className="flex gap-1">
 					{conflicts.map((c, idx) => (
@@ -134,7 +134,7 @@ export function ConflictResolutionView({
 					onClick={() => setCurrentIdx(Math.min(conflicts.length - 1, currentIdx + 1))}
 					disabled={currentIdx === conflicts.length - 1}
 				>
-					Next
+					Próximo
 				</Button>
 			</div>
 		</div>
@@ -171,14 +171,14 @@ function ConflictCard({
 					<div className="text-xs text-muted-foreground">
 						{isStructural
 							? conflict.property === "__track_deleted__"
-								? "Track deleted in one branch, modified in other"
-								: "Element deleted in one branch, modified in other"
-							: `Property: ${conflict.property}`}
+								? "Faixa excluída em uma ramificação, modificada na outra"
+								: "Elemento excluído em uma ramificação, modificado na outra"
+							: `Propriedade: ${conflict.property}`}
 					</div>
 				</div>
 				{isResolved && (
 					<span className="text-[10px] px-1.5 py-0.5 rounded bg-green-500/10 text-green-400">
-						Resolved ({resolvedWith})
+						Resolvido ({resolvedWith})
 					</span>
 				)}
 			</div>
@@ -198,13 +198,13 @@ function ConflictCard({
 						}`}
 						onClick={() => onResolve(conflict.id, "source")}
 					>
-						<div className="text-[10px] text-muted-foreground/60 mb-0.5">Source</div>
+						<div className="text-[10px] text-muted-foreground/60 mb-0.5">Origem</div>
 						<div className="font-mono truncate">{formatValue(conflict.sourceValue)}</div>
 						<button
 							type="button"
 							className="text-[10px] text-primary mt-1"
 						>
-							Use This
+							Usar este
 						</button>
 					</div>
 					<div
@@ -215,13 +215,13 @@ function ConflictCard({
 						}`}
 						onClick={() => onResolve(conflict.id, "target")}
 					>
-						<div className="text-[10px] text-muted-foreground/60 mb-0.5">Target</div>
+						<div className="text-[10px] text-muted-foreground/60 mb-0.5">Destino</div>
 						<div className="font-mono truncate">{formatValue(conflict.targetValue)}</div>
 						<button
 							type="button"
 							className="text-[10px] text-primary mt-1"
 						>
-							Use This
+							Usar este
 						</button>
 					</div>
 				</div>
@@ -236,7 +236,7 @@ function ConflictCard({
 						className="flex-1"
 						onClick={() => onResolve(conflict.id, "source")}
 					>
-						{conflict.property === "__track_deleted__" ? "Delete track" : "Delete element"}
+						{conflict.property === "__track_deleted__" ? "Excluir faixa" : "Excluir elemento"}
 					</Button>
 					<Button
 						size="sm"
@@ -244,7 +244,7 @@ function ConflictCard({
 						className="flex-1"
 						onClick={() => onResolve(conflict.id, "target")}
 					>
-						Keep modified version
+						Manter versão modificada
 					</Button>
 				</div>
 			)}
@@ -257,7 +257,7 @@ function ConflictCard({
 							<Input
 								value={customValue}
 								onChange={(e) => setCustomValue(e.target.value)}
-								placeholder="Enter custom value"
+								placeholder="Digite um valor personalizado"
 								className="text-xs flex-1"
 							/>
 							<Button
@@ -269,7 +269,7 @@ function ConflictCard({
 									setCustomMode(false);
 								}}
 							>
-								Apply
+								Aplicar
 							</Button>
 						</div>
 					) : (
@@ -278,7 +278,7 @@ function ConflictCard({
 							className="text-[10px] text-muted-foreground hover:text-foreground"
 							onClick={() => setCustomMode(true)}
 						>
-							Or enter custom value...
+							Ou digite um valor personalizado...
 						</button>
 					)}
 				</div>
@@ -288,7 +288,7 @@ function ConflictCard({
 }
 
 function formatValue(value: unknown): string {
-	if (value === null || value === undefined) return "null";
+	if (value === null || value === undefined) return "vazio";
 	if (typeof value === "number") return String(Math.round(value * 1000) / 1000);
 	if (typeof value === "string") return value.length > 30 ? `${value.slice(0, 30)}...` : value;
 	if (typeof value === "boolean") return String(value);

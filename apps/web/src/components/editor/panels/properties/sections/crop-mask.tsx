@@ -15,9 +15,9 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { CropIcon, Cancel01Icon } from "@hugeicons/core-free-icons";
 
 const MASK_SHAPES: { type: MaskShape["type"]; label: string }[] = [
-	{ type: "rectangle", label: "Rectangle" },
-	{ type: "ellipse", label: "Ellipse" },
-	{ type: "polygon", label: "Polygon" },
+	{ type: "rectangle", label: "Retângulo" },
+	{ type: "ellipse", label: "Elipse" },
+	{ type: "polygon", label: "Polígono" },
 ];
 
 export function CropMaskSection({
@@ -87,14 +87,14 @@ export function CropMaskSection({
 		<>
 			<Section collapsible sectionKey={`${element.type}:crop`} showTopBorder>
 				<SectionHeader>
-					<SectionTitle>Crop</SectionTitle>
+					<SectionTitle>Corte</SectionTitle>
 					<Button
 						type="button"
 						variant="ghost"
 						size="icon"
 						className="size-6"
 						onClick={resetCrop}
-						title="Reset crop"
+						title="Redefinir corte"
 					>
 						<HugeiconsIcon icon={Cancel01Icon} className="size-3.5" />
 					</Button>
@@ -102,7 +102,7 @@ export function CropMaskSection({
 				<SectionContent>
 					<SectionFields>
 						<div className="grid grid-cols-2 gap-2">
-							<SectionField label="Top">
+							<SectionField label="Superior">
 								<NumberField
 									value={crop.top.toString()}
 									onChange={(e) => {
@@ -114,7 +114,7 @@ export function CropMaskSection({
 									step={1}
 								/>
 							</SectionField>
-							<SectionField label="Bottom">
+							<SectionField label="Inferior">
 								<NumberField
 									value={crop.bottom.toString()}
 									onChange={(e) => {
@@ -126,7 +126,7 @@ export function CropMaskSection({
 									step={1}
 								/>
 							</SectionField>
-							<SectionField label="Left">
+							<SectionField label="Esquerda">
 								<NumberField
 									value={crop.left.toString()}
 									onChange={(e) => {
@@ -138,7 +138,7 @@ export function CropMaskSection({
 									step={1}
 								/>
 							</SectionField>
-							<SectionField label="Right">
+							<SectionField label="Direita">
 								<NumberField
 									value={crop.right.toString()}
 									onChange={(e) => {
@@ -157,7 +157,7 @@ export function CropMaskSection({
 
 			<Section collapsible sectionKey={`${element.type}:mask`} showTopBorder>
 				<SectionHeader>
-					<SectionTitle>Mask</SectionTitle>
+					<SectionTitle>Máscara</SectionTitle>
 					{mask && (
 						<Button
 							type="button"
@@ -165,7 +165,7 @@ export function CropMaskSection({
 							size="icon"
 							className="size-6"
 							onClick={removeMask}
-							title="Remove mask"
+							title="Remover máscara"
 						>
 							<HugeiconsIcon icon={Cancel01Icon} className="size-3.5" />
 						</Button>
@@ -173,7 +173,7 @@ export function CropMaskSection({
 				</SectionHeader>
 				<SectionContent>
 					<SectionFields>
-						<SectionField label="Shape">
+						<SectionField label="Forma">
 							<div className="flex gap-1">
 								{MASK_SHAPES.map((shape) => (
 									<Button
@@ -191,7 +191,7 @@ export function CropMaskSection({
 						</SectionField>
 						{mask && (
 							<>
-								<SectionField label="Feather">
+								<SectionField label="Suavização">
 									<NumberField
 										value={(mask.feather * 100).toFixed(0)}
 										onChange={(e) => {
@@ -204,7 +204,7 @@ export function CropMaskSection({
 										step={1}
 									/>
 								</SectionField>
-								<SectionField label="Invert">
+								<SectionField label="Inverter">
 									<Button
 										type="button"
 										variant={mask.inverted ? "secondary" : "ghost"}
@@ -212,7 +212,7 @@ export function CropMaskSection({
 										className="h-7 text-[10px]"
 										onClick={() => updateMask({ inverted: !mask.inverted })}
 									>
-										{mask.inverted ? "Inverted" : "Normal"}
+										{mask.inverted ? "Invertido" : "Normal"}
 									</Button>
 								</SectionField>
 							</>

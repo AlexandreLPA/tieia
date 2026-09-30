@@ -125,11 +125,11 @@ export const LowerThird: FC<LowerThirdProps> = ({
 
 export const templateConfig = {
   id: "lower-third",
-  name: "Lower Third",
+  name: "Terço Inferior",
   category: "titles",
   defaultProps: {
     name: "John Doe",
-    title: "CEO & Founder",
+    title: "CEO e Fundador",
     primaryColor: "#1a1a2e",
     secondaryColor: "#e94560",
     fontFamily: "Inter, Helvetica, Arial, sans-serif",

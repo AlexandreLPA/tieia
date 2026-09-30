@@ -63,9 +63,9 @@ const ASPECT_RATIOS: {
 	label: string;
 	dimensions: string;
 }[] = [
-	{ value: "16:9", label: "Landscape", dimensions: "1920x1080" },
-	{ value: "9:16", label: "Portrait", dimensions: "1080x1920" },
-	{ value: "1:1", label: "Square", dimensions: "1024x1024" },
+	{ value: "16:9", label: "Paisagem", dimensions: "1920x1080" },
+	{ value: "9:16", label: "Retrato", dimensions: "1080x1920" },
+	{ value: "1:1", label: "Quadrado", dimensions: "1024x1024" },
 ];
 
 // ----- Component -----
@@ -98,7 +98,7 @@ export function ImageGenDialog({
 			setEnhancedPrompt(enhanced);
 		} catch (err) {
 			setError(
-				err instanceof Error ? err.message : "Failed to enhance prompt",
+				err instanceof Error ? err.message : "Falha ao aprimorar o prompt",
 			);
 		} finally {
 			setIsEnhancing(false);
@@ -121,7 +121,7 @@ export function ImageGenDialog({
 			setResult(generated);
 		} catch (err) {
 			setError(
-				err instanceof Error ? err.message : "Failed to generate image",
+				err instanceof Error ? err.message : "Falha ao gerar imagem",
 			);
 		} finally {
 			setIsGenerating(false);
@@ -151,11 +151,11 @@ export function ImageGenDialog({
 							icon={Image01Icon}
 							className="size-5 text-primary"
 						/>
-						Generate Image
+						Gerar imagem
 					</DialogTitle>
 					<DialogDescription>
-						Describe the image you want to create. AI will generate it
-						for your timeline.
+						Descreva a imagem que você quer criar. A IA vai gerá-la
+						para sua linha do tempo.
 					</DialogDescription>
 				</DialogHeader>
 
@@ -166,7 +166,7 @@ export function ImageGenDialog({
 						<Textarea
 							value={prompt}
 							onChange={(e) => setPrompt(e.target.value)}
-							placeholder="A cinematic sunset over a mountain range, golden hour lighting..."
+							placeholder="Um pôr do sol cinematográfico sobre uma cadeia de montanhas, com luz dourada..."
 							rows={3}
 							disabled={isGenerating}
 						/>
@@ -180,7 +180,7 @@ export function ImageGenDialog({
 							{isEnhancing ? (
 								<>
 									<Spinner className="size-3 mr-1" />
-									Enhancing...
+									Aprimorando...
 								</>
 							) : (
 								<>
@@ -188,7 +188,7 @@ export function ImageGenDialog({
 										icon={SparklesIcon}
 										className="size-3 mr-1"
 									/>
-									Enhance with AI
+									Aprimorar com IA
 								</>
 							)}
 						</Button>
@@ -198,12 +198,12 @@ export function ImageGenDialog({
 					{enhancedPrompt && (
 						<div className="flex flex-col gap-2">
 							<div className="flex items-center gap-2">
-								<Label className="text-xs">Enhanced Prompt</Label>
+								<Label className="text-xs">Prompt aprimorado</Label>
 								<Badge
 									variant="secondary"
 									className="text-[10px] px-1.5 py-0"
 								>
-									AI Enhanced
+									Aprimorado por IA
 								</Badge>
 							</div>
 							<Textarea
@@ -219,7 +219,7 @@ export function ImageGenDialog({
 					{/* Model selector */}
 					{models.length > 1 && (
 						<div className="flex items-center gap-3">
-							<Label className="text-xs w-16 shrink-0">Model</Label>
+							<Label className="text-xs w-16 shrink-0">Modelo</Label>
 							<Select
 								value={selectedModel}
 								onValueChange={setSelectedModel}
@@ -241,7 +241,7 @@ export function ImageGenDialog({
 
 					{/* Aspect ratio */}
 					<div className="flex items-center gap-3">
-						<Label className="text-xs w-16 shrink-0">Size</Label>
+						<Label className="text-xs w-16 shrink-0">Tamanho</Label>
 						<div className="flex gap-1.5 flex-1">
 							{ASPECT_RATIOS.map((ar) => (
 								<Button
@@ -277,7 +277,7 @@ export function ImageGenDialog({
 						<div className="flex items-center justify-center py-8 gap-3">
 							<Spinner className="size-5" />
 							<span className="text-sm text-muted-foreground">
-								Generating image...
+								Gerando imagem...
 							</span>
 						</div>
 					)}
@@ -285,11 +285,11 @@ export function ImageGenDialog({
 					{/* Result preview */}
 					{result && !isGenerating && (
 						<div className="flex flex-col gap-2">
-							<Label className="text-xs">Result</Label>
+							<Label className="text-xs">Resultado</Label>
 							<div className="relative rounded-lg overflow-hidden border bg-accent">
 								<img
 									src={result.url}
-									alt="Generated image"
+									alt="Imagem gerada"
 									className="w-full h-auto object-contain max-h-64"
 								/>
 							</div>
@@ -301,10 +301,10 @@ export function ImageGenDialog({
 					{result ? (
 						<>
 							<Button variant="outline" onClick={handleReset}>
-								Generate Another
+								Gerar outra
 							</Button>
 							<Button onClick={handleAddToTimeline}>
-								Add to Timeline
+								Adicionar à linha do tempo
 							</Button>
 						</>
 					) : (
@@ -313,7 +313,7 @@ export function ImageGenDialog({
 								variant="outline"
 								onClick={() => onOpenChange(false)}
 							>
-								Cancel
+								Cancelar
 							</Button>
 							<Button
 								onClick={handleGenerate}
@@ -324,10 +324,10 @@ export function ImageGenDialog({
 								{isGenerating ? (
 									<>
 										<Spinner className="size-3 mr-1" />
-										Generating...
+										Gerando...
 									</>
 								) : (
-									"Generate"
+									"Gerar"
 								)}
 							</Button>
 						</>

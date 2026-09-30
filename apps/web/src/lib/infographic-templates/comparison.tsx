@@ -214,15 +214,15 @@ export const Comparison: FC<ComparisonProps> = ({
 
 export const templateConfig = {
   id: "comparison",
-  name: "Comparison",
+  name: "Comparação",
   category: "data",
   defaultProps: {
-    leftTitle: "Plan A",
-    rightTitle: "Plan B",
+    leftTitle: "Plano A",
+    rightTitle: "Plano B",
     items: [
-      { label: "Price", values: ["$29/mo", "$59/mo"] },
-      { label: "Storage", values: ["50 GB", "200 GB"] },
-      { label: "Support", values: ["Email", "24/7 Live"] },
+      { label: "Preço", values: ["$29/mo", "$59/mo"] },
+      { label: "Armazenamento", values: ["50 GB", "200 GB"] },
+      { label: "Suporte", values: ["E-mail", "24/7 Ao Vivo"] },
     ],
     primaryColor: "#4f46e5",
     secondaryColor: "#dc2626",

@@ -3,12 +3,12 @@ import sharpenShader from "./sharpen.frag.glsl";
 
 export const sharpenEffectDefinition: EffectDefinition = {
 	type: "sharpen",
-	name: "Sharpen",
+	name: "Nitidez",
 	keywords: ["sharpen", "detail", "crisp", "enhance"],
 	params: [
 		{
 			key: "amount",
-			label: "Amount",
+			label: "Quantidade",
 			type: "number",
 			default: 25,
 			min: 0,

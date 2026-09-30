@@ -32,15 +32,15 @@ export function ClipAdjuster({ clip, onSave, onCancel }: ClipAdjusterProps) {
 		if (!isNaN(val) && val > start) setEnd(val);
 	};
 
-	const durationWarning = duration < 15 ? "Too short (min 15s)" : duration > 90 ? "Too long (max 90s)" : null;
+	const durationWarning = duration < 15 ? "Muito curto (mín. 15s)" : duration > 90 ? "Muito longo (máx. 90s)" : null;
 
 	return (
 		<div className="space-y-3 p-3 rounded-lg border bg-card">
-			<h4 className="text-xs font-semibold">Adjust Clip Boundaries</h4>
+			<h4 className="text-xs font-semibold">Ajustar Limites do Clipe</h4>
 
 			<div className="grid grid-cols-2 gap-3">
 				<div className="space-y-1">
-					<label className="text-[10px] text-muted-foreground">Start</label>
+					<label className="text-[10px] text-muted-foreground">Início</label>
 					<input
 						type="number"
 						step="0.5"
@@ -51,7 +51,7 @@ export function ClipAdjuster({ clip, onSave, onCancel }: ClipAdjusterProps) {
 					<span className="text-[10px] text-muted-foreground">{formatTime(start)}</span>
 				</div>
 				<div className="space-y-1">
-					<label className="text-[10px] text-muted-foreground">End</label>
+					<label className="text-[10px] text-muted-foreground">Fim</label>
 					<input
 						type="number"
 						step="0.5"
@@ -64,7 +64,7 @@ export function ClipAdjuster({ clip, onSave, onCancel }: ClipAdjusterProps) {
 			</div>
 
 			<div className="flex items-center justify-between text-xs">
-				<span>Duration: {Math.round(duration)}s</span>
+				<span>Duração: {Math.round(duration)}s</span>
 				{durationWarning && (
 					<span className="text-yellow-400 text-[10px]">{durationWarning}</span>
 				)}
@@ -72,10 +72,10 @@ export function ClipAdjuster({ clip, onSave, onCancel }: ClipAdjusterProps) {
 
 			<div className="flex gap-2 justify-end">
 				<Button variant="ghost" size="sm" className="text-xs" onClick={onCancel}>
-					Cancel
+					Cancelar
 				</Button>
 				<Button size="sm" className="text-xs" onClick={() => onSave(start, end)} disabled={!!durationWarning}>
-					Save
+					Salvar
 				</Button>
 			</div>
 		</div>

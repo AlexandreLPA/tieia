@@ -32,40 +32,40 @@ export function Onboarding() {
 		<Dialog open={isOpen} onOpenChange={handleClose}>
 			<DialogContent className="sm:max-w-md">
 				<DialogTitle>
-					<span className="sr-only">Welcome to OpenCut AI</span>
+					<span className="sr-only">Bem-vindo ao OpenCut AI</span>
 				</DialogTitle>
 				<DialogBody>
 					{step === 0 && (
 						<div className="flex flex-col gap-5">
 							<div className="flex flex-col gap-2">
-								<h2 className="text-lg font-bold">Welcome to OpenCut AI</h2>
+								<h2 className="text-lg font-bold">Bem-vindo ao OpenCut AI</h2>
 								<p className="text-sm text-muted-foreground leading-relaxed">
-									This is a fork of OpenCut with AI added on top. Edit video
-									by text, generate visuals, clone voices, and command the
-									timeline — install locally and everything runs on your machine.
+									Este é um fork do OpenCut com IA adicionada. Edite vídeo
+									por texto, gere imagens, clone vozes e comande a linha do
+									tempo — instale localmente e tudo roda na sua máquina.
 								</p>
 							</div>
 
 							<div className="flex flex-col gap-3">
 								<StepItem
 									number={1}
-									title="Import your video"
-									description="Drag a video file into the editor or use the media panel"
+									title="Importe seu vídeo"
+									description="Arraste um arquivo de vídeo para o editor ou use o painel de mídia"
 								/>
 								<StepItem
 									number={2}
-									title="Transcribe it"
-									description="Click the microphone button to convert speech to text"
+									title="Transcreva"
+									description="Clique no botão do microfone para converter fala em texto"
 								/>
 								<StepItem
 									number={3}
-									title="Edit the text"
-									description="Delete words, remove filler, reorder sections — the video follows"
+									title="Edite o texto"
+									description="Exclua palavras, remova preenchimentos, reordene seções — o vídeo acompanha"
 								/>
 							</div>
 
 							<Button onClick={handleNext} className="w-full">
-								Next
+								Próximo
 							</Button>
 						</div>
 					)}
@@ -73,11 +73,11 @@ export function Onboarding() {
 					{step === 1 && (
 						<div className="flex flex-col gap-5">
 							<div className="flex flex-col gap-2">
-								<h2 className="text-lg font-bold">Local AI backend powers everything</h2>
+								<h2 className="text-lg font-bold">Um backend de IA local potencializa tudo</h2>
 								<p className="text-sm text-muted-foreground leading-relaxed">
-									Transcription, voice cloning, image generation, and natural
-									language commands all run on a local AI backend. Your footage
-									never leaves your machine.
+									Transcrição, clonagem de voz, geração de imagens e comandos
+									em linguagem natural — tudo roda em um backend de IA local.
+									Suas gravações nunca saem da sua máquina.
 								</p>
 							</div>
 
@@ -97,9 +97,9 @@ export function Onboarding() {
 									)}
 								/>
 								{isConnected ? (
-									<span>AI backend is connected — you're all set</span>
+									<span>Backend de IA conectado — está tudo pronto</span>
 								) : (
-									<span>AI backend is not running — set it up to unlock AI features</span>
+									<span>Backend de IA não está rodando — configure para desbloquear os recursos de IA</span>
 								)}
 							</div>
 
@@ -110,11 +110,11 @@ export function Onboarding() {
 										onClick={handleOpenSetup}
 										className="flex-1"
 									>
-										Set up AI
+										Configurar IA
 									</Button>
 								)}
 								<Button onClick={handleNext} className="flex-1">
-									{isConnected ? "Get started" : "Skip for now"}
+									{isConnected ? "Começar" : "Pular por enquanto"}
 								</Button>
 							</div>
 						</div>
@@ -123,9 +123,9 @@ export function Onboarding() {
 					{step === 2 && (
 						<div className="flex flex-col gap-5">
 							<div className="flex flex-col gap-2">
-								<h2 className="text-lg font-bold">You're ready to go</h2>
+								<h2 className="text-lg font-bold">Tudo pronto</h2>
 								<p className="text-sm text-muted-foreground leading-relaxed">
-									This is an early beta. Open an issue on{" "}
+									Esta é uma beta inicial. Abra uma issue no{" "}
 									<a
 										href={SOCIAL_LINKS.github}
 										target="_blank"
@@ -134,12 +134,12 @@ export function Onboarding() {
 									>
 										GitHub
 									</a>{" "}
-									to share feedback and help shape the editor.
+									para compartilhar feedback e ajudar a moldar o editor.
 								</p>
 							</div>
 
 							<Button onClick={handleClose} className="w-full">
-								Start editing
+								Começar a editar
 							</Button>
 						</div>
 					)}

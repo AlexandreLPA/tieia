@@ -39,19 +39,19 @@ export function ThumbnailGenPanel({ className }: { className?: string }) {
 			<div className="px-4 py-3 border-b space-y-2">
 				<div className="flex items-center gap-2">
 					<HugeiconsIcon icon={Image02Icon} className="size-4 text-primary" />
-					<span className="text-xs font-medium">AI Thumbnail Generator</span>
+					<span className="text-xs font-medium">Gerador de miniaturas com IA</span>
 				</div>
 				<p className="text-[10px] text-muted-foreground">
-					Generate eye-catching thumbnails for your videos.
+					Gere miniaturas chamativas para seus vídeos.
 				</p>
 			</div>
 
 			<div className="px-4 py-3 space-y-4 flex-1 overflow-y-auto">
 				<div className="space-y-1.5">
-					<span className="text-[10px] text-muted-foreground">Description</span>
+					<span className="text-[10px] text-muted-foreground">Descrição</span>
 					<textarea
 						className="w-full rounded border bg-transparent px-2 py-1 text-[10px] resize-none h-14 placeholder:text-muted-foreground"
-						placeholder="Describe the thumbnail you want (or leave blank to auto-generate from transcript)..."
+						placeholder="Descreva a miniatura desejada (ou deixe em branco para gerar automaticamente a partir da transcrição)..."
 						value={params.prompt}
 						onChange={(e) => setParams((p) => ({ ...p, prompt: e.target.value }))}
 					/>
@@ -59,10 +59,10 @@ export function ThumbnailGenPanel({ className }: { className?: string }) {
 
 				{params.includeText && (
 					<div className="space-y-1.5">
-						<span className="text-[10px] text-muted-foreground">Headline Text</span>
+						<span className="text-[10px] text-muted-foreground">Texto de destaque</span>
 						<input
 							className="w-full rounded border bg-transparent px-2 py-1 text-[10px] placeholder:text-muted-foreground"
-							placeholder="e.g., TOP 10 TIPS"
+							placeholder="ex.: TOP 10 DICAS"
 							value={params.headline}
 							onChange={(e) => setParams((p) => ({ ...p, headline: e.target.value }))}
 						/>
@@ -70,7 +70,7 @@ export function ThumbnailGenPanel({ className }: { className?: string }) {
 				)}
 
 				<div className="space-y-1.5">
-					<span className="text-[10px] text-muted-foreground">Style</span>
+					<span className="text-[10px] text-muted-foreground">Estilo</span>
 					<div className="grid grid-cols-2 gap-1">
 						{THUMBNAIL_STYLES.map((style) => (
 							<button
@@ -94,7 +94,7 @@ export function ThumbnailGenPanel({ className }: { className?: string }) {
 				</div>
 
 				<div className="space-y-1.5">
-					<span className="text-[10px] text-muted-foreground">Size</span>
+					<span className="text-[10px] text-muted-foreground">Tamanho</span>
 					<div className="grid grid-cols-2 gap-1">
 						{THUMBNAIL_SIZES.map((size) => (
 							<Button
@@ -118,7 +118,7 @@ export function ThumbnailGenPanel({ className }: { className?: string }) {
 				</div>
 
 				<div className="space-y-1.5">
-					<span className="text-[10px] text-muted-foreground">Colors</span>
+					<span className="text-[10px] text-muted-foreground">Cores</span>
 					<div className="flex flex-wrap gap-1">
 						{COLOR_SCHEMES.map((scheme) => (
 							<Button
@@ -146,13 +146,13 @@ export function ThumbnailGenPanel({ className }: { className?: string }) {
 						className="h-6 text-[9px]"
 						onClick={() => setParams((p) => ({ ...p, includeText: !p.includeText }))}
 					>
-						Text Overlay {params.includeText ? "On" : "Off"}
+						Sobreposição de texto {params.includeText ? "Ativada" : "Desativada"}
 					</Button>
 				</div>
 
 				<div className="space-y-1.5">
 					<div className="flex justify-between text-[10px] text-muted-foreground">
-						<span>Variations</span>
+						<span>Variações</span>
 						<span className="font-mono">{count}</span>
 					</div>
 					<Slider
@@ -166,15 +166,15 @@ export function ThumbnailGenPanel({ className }: { className?: string }) {
 
 				<Button className="w-full" onClick={handleGenerate} disabled={isGenerating}>
 					{isGenerating
-						? "Generating..."
-						: `Generate ${count} Thumbnail${count > 1 ? "s" : ""}`}
+						? "Gerando..."
+						: `Gerar ${count} miniatura${count > 1 ? "s" : ""}`}
 				</Button>
 
 				{generatedThumbnails.length > 0 && (
 					<div className="space-y-2">
 						<div className="flex items-center justify-between">
 							<span className="text-[10px] font-medium text-muted-foreground">
-								Generated ({generatedThumbnails.length})
+								Geradas ({generatedThumbnails.length})
 							</span>
 							<Button
 								variant="ghost"
@@ -183,7 +183,7 @@ export function ThumbnailGenPanel({ className }: { className?: string }) {
 								onClick={clearThumbnails}
 							>
 								<HugeiconsIcon icon={Delete02Icon} className="size-3 mr-1" />
-								Clear
+								Limpar
 							</Button>
 						</div>
 						<div className="grid grid-cols-2 gap-1.5">
@@ -191,7 +191,7 @@ export function ThumbnailGenPanel({ className }: { className?: string }) {
 								<div key={`${thumb.seed}-${i}`} className="rounded border overflow-hidden group">
 									<img
 										src={thumb.imageUrl}
-										alt={`Thumbnail ${i + 1}`}
+										alt={`Miniatura ${i + 1}`}
 										className="w-full aspect-video object-cover"
 									/>
 									<div className="p-1">
@@ -200,11 +200,11 @@ export function ThumbnailGenPanel({ className }: { className?: string }) {
 											variant="outline"
 											className="w-full h-5 text-[8px]"
 											onClick={() =>
-												addToTimeline(thumb, `Thumbnail ${i + 1}`)
+												addToTimeline(thumb, `Miniatura ${i + 1}`)
 											}
 										>
 											<HugeiconsIcon icon={Add01Icon} className="size-3 mr-1" />
-											Add to Timeline
+											Adicionar à linha do tempo
 										</Button>
 									</div>
 								</div>
