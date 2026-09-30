@@ -2,14 +2,16 @@
 
 import json
 import logging
+from typing import Literal
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, model_validator
 
 from app.config import settings
-from app.services.model_backend import llm_backend
+from app.services.model_backend import VisionUnsupportedError, llm_backend
 from app.services.ollama_service import ollama_service
+from app.services.tiktok_compliance import validate_image_data_uri
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +25,19 @@ DEFAULT_SYSTEM_PROMPT = (
     "Responda sempre em português do Brasil."
 )
 
+STUDIO_CONTEXT_PROMPT = (
+    "O usuário está editando um vídeo no OpenCut. Antes da conversa você recebe o contexto do "
+    "projeto aberto: resumo da timeline, transcrição com tempos e, quando o vídeo for anexado, "
+    "quadros tirados da timeline montada, cada um com o seu tempo. Use esse contexto para "
+    "responder sobre o vídeo e cite o tempo (mm:ss) ao falar de um momento. Os quadros são "
+    "amostras: não descreva o que acontece entre eles como se tivesse visto. A transcrição é "
+    "automática e pode ter erros. Se o contexto disser que os quadros NÃO foram enviados, deixe "
+    "claro que você está se baseando só na transcrição e na timeline. Imagens anexadas pelo "
+    "usuário vêm na própria mensagem dele."
+)
+
+MAX_CHAT_IMAGES = 40
+
 
 class PullModelRequest(BaseModel):
     model: str
@@ -32,10 +47,48 @@ class SetModelRequest(BaseModel):
     model: str
 
 
+class ChatPart(BaseModel):
+    type: Literal["text", "image_url"]
+    text: str | None = Field(default=None, max_length=60_000)
+    image_url: dict[str, str] | None = None
+
+    @model_validator(mode="after")
+    def _check_part(self) -> "ChatPart":
+        if self.type == "text":
+            if self.text is None:
+                raise ValueError("Parte de texto sem 'text'.")
+        else:
+            url = (self.image_url or {}).get("url")
+            if not url:
+                raise ValueError("Parte de imagem sem 'image_url.url'.")
+            validate_image_data_uri(url)
+        return self
+
+
+class ChatTurn(BaseModel):
+    role: Literal["user", "assistant"]
+    content: str | list[ChatPart]
+
+
 class ChatRequest(BaseModel):
-    message: str
+    message: str = ""
     system: str | None = None
     model: str | None = None
+    # Studio chat: full conversation, user turns may carry image parts
+    messages: list[ChatTurn] | None = Field(default=None, max_length=80)
+
+    @model_validator(mode="after")
+    def _check_images(self) -> "ChatRequest":
+        images = sum(
+            1
+            for turn in self.messages or []
+            if isinstance(turn.content, list)
+            for part in turn.content
+            if part.type == "image_url"
+        )
+        if images > MAX_CHAT_IMAGES:
+            raise ValueError(f"Imagens demais na conversa ({images}); o máximo é {MAX_CHAT_IMAGES}.")
+        return self
 
 
 class LLMStatusResponse(BaseModel):
@@ -111,6 +164,9 @@ async def chat_stream(request: ChatRequest) -> StreamingResponse:
             detail="No LLM backend available. Start Ollama or TurboQuant service.",
         )
 
+    if request.messages:
+        return _studio_chat_stream(request)
+
     system_prompt = request.system or DEFAULT_SYSTEM_PROMPT
 
     async def _stream():
@@ -134,6 +190,46 @@ async def chat_stream(request: ChatRequest) -> StreamingResponse:
             "X-Accel-Buffering": "no",
         },
     )
+
+
+def _studio_chat_stream(request: ChatRequest) -> StreamingResponse:
+    """Stream a multi-turn, possibly multimodal studio chat. Refusals and failures arrive as {"error"}."""
+    system = request.system or f"{DEFAULT_SYSTEM_PROMPT}\n\n{STUDIO_CONTEXT_PROMPT}"
+    messages = [{"role": "system", "content": system}] + [
+        turn.model_dump(exclude_none=True) for turn in request.messages or []
+    ]
+
+    async def _stream():
+        produced = False
+        try:
+            async for token in llm_backend.chat_stream(messages):
+                produced = True
+                yield json.dumps({"token": token}) + "\n"
+            if produced:
+                yield json.dumps({"done": True}) + "\n"
+            else:
+                yield json.dumps({"error": "O modelo devolveu uma resposta vazia. Tente de novo."}) + "\n"
+        except VisionUnsupportedError as exc:
+            logger.warning("Studio chat refused: %s", exc)
+            yield json.dumps({"error": str(exc)}) + "\n"
+        except Exception as exc:
+            logger.exception("Studio chat failed")
+            yield json.dumps({"error": f"Falha ao gerar a resposta: {exc}"}) + "\n"
+
+    return StreamingResponse(
+        _stream(),
+        media_type="application/x-ndjson",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+        },
+    )
+
+
+@router.get("/vision-support")
+async def vision_support() -> dict:
+    """Whether the active LLM accepts images, so the studio chat knows if it can attach frames."""
+    return await llm_backend.vision_support()
 
 
 @router.post("/set-model")

@@ -3,9 +3,6 @@ import { getLastFrameTime } from "@/lib/time";
 import { CanvasRenderer } from "@/services/renderer/canvas-renderer";
 import { buildScene } from "@/services/renderer/scene-builder";
 
-const SECONDS_PER_FRAME = 3;
-const MIN_FRAMES = 8;
-const MAX_FRAMES = 12;
 const SHORT_SIDE_PX = 512;
 const JPEG_QUALITY = 0.72;
 
@@ -14,17 +11,35 @@ export interface CapturedFrame {
 	dataUrl: string;
 }
 
+/** How many frames to take: one every `secondsPerFrame`, clamped to [minFrames, maxFrames]. */
+export interface FrameDensity {
+	secondsPerFrame: number;
+	minFrames: number;
+	maxFrames: number;
+}
+
+export const COMPLIANCE_FRAME_DENSITY: FrameDensity = {
+	secondsPerFrame: 3,
+	minFrames: 8,
+	maxFrames: 12,
+};
+
 /** Midpoints of N equal slices, clamped so the last one is never past the final frame. */
 export function getComplianceFrameTimes({
 	duration,
 	fps,
+	density = COMPLIANCE_FRAME_DENSITY,
 }: {
 	duration: number;
 	fps: number;
+	density?: FrameDensity;
 }): number[] {
 	const count = Math.min(
-		MAX_FRAMES,
-		Math.max(MIN_FRAMES, Math.round(duration / SECONDS_PER_FRAME)),
+		density.maxFrames,
+		Math.max(
+			density.minFrames,
+			Math.round(duration / density.secondsPerFrame),
+		),
 	);
 	const lastFrameTime = getLastFrameTime({ duration, fps });
 	return Array.from({ length: count }, (_, index) =>
@@ -34,12 +49,13 @@ export function getComplianceFrameTimes({
 
 /**
  * Render frames of the composed timeline (text overlays and effects included)
- * as small JPEG data URLs for the compliance check.
+ * as small JPEG data URLs for the compliance check and the studio chat.
  * The OpenCut export watermark stays off so it can't be mistaken for a foreign one.
  */
 export async function captureComplianceFrames(
 	editor: EditorCore,
 	onProgress?: (current: number, total: number) => void,
+	density: FrameDensity = COMPLIANCE_FRAME_DENSITY,
 ): Promise<CapturedFrame[]> {
 	const project = editor.project.getActiveOrNull();
 	if (!project) throw new Error("Nenhum projeto aberto");
@@ -72,7 +88,7 @@ export async function captureComplianceFrames(
 	const context = target.getContext("2d");
 	if (context) context.imageSmoothingQuality = "high";
 
-	const times = getComplianceFrameTimes({ duration, fps });
+	const times = getComplianceFrameTimes({ duration, fps, density });
 	const frames: CapturedFrame[] = [];
 	for (const [index, time] of times.entries()) {
 		onProgress?.(index + 1, times.length);

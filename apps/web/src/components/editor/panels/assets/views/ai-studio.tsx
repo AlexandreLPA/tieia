@@ -1,6 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+	useSyncExternalStore,
+} from "react";
 import ReactMarkdown from "react-markdown";
 import { cn } from "@/utils/ui";
 import { Button } from "@/components/ui/button";
@@ -16,10 +23,27 @@ import {
 	ArrowRight01Icon,
 	Bookmark01Icon,
 	Delete02Icon,
+	Video01Icon,
+	Cancel01Icon,
 } from "@hugeicons/core-free-icons";
 import { aiClient } from "@/lib/ai-client";
+import type { ChatContentPart, ChatTurn, VisionSupport } from "@/lib/ai-client";
+import {
+	buildContextParts,
+	buildTimelineSummary,
+	buildTranscriptBlock,
+	getTimelineSignature,
+	imageFileToDataUrl,
+} from "@/lib/ai-studio-context";
+import {
+	captureComplianceFrames,
+	getComplianceFrameTimes,
+	type CapturedFrame,
+	type FrameDensity,
+} from "@/services/compliance/capture-frames";
+import { EditorCore } from "@/core";
 import { useAIStatus } from "@/hooks/use-ai-status";
-import { useAIStore } from "@/stores/ai-store";
+import { useAIStore, type StudioMessage } from "@/stores/ai-store";
 import { useTranscriptStore } from "@/stores/transcript-store";
 import { toast } from "sonner";
 import { generateUUID } from "@/utils/id";
@@ -34,6 +58,24 @@ import { AutoChaptersPanel } from "@/components/editor/panels/assets/views/auto-
 import { SmartReframePanel } from "@/components/editor/panels/assets/views/smart-reframe";
 import { MotionTrackingPanel } from "@/components/editor/panels/assets/views/motion-tracking";
 import { ABTestingPanel } from "@/components/editor/panels/assets/views/ab-testing";
+
+// ----- Studio chat context -----
+
+// Cloud models have large context windows, so they get denser frames
+const CLOUD_FRAME_DENSITY: FrameDensity = {
+	secondsPerFrame: 2,
+	minFrames: 8,
+	maxFrames: 24,
+};
+const LOCAL_FRAME_DENSITY: FrameDensity = {
+	secondsPerFrame: 4,
+	minFrames: 6,
+	maxFrames: 8,
+};
+const MAX_HISTORY_MESSAGES = 20;
+const MAX_ATTACHMENTS = 4;
+// Only the latest user turns with pictures resend them, to keep requests small
+const IMAGE_HISTORY_TURNS = 3;
 
 // ----- Thinking Messages -----
 
@@ -339,6 +381,128 @@ export function AIStudioView() {
 	);
 	const inputRef = useRef<HTMLTextAreaElement>(null);
 	const scrollRef = useRef<HTMLDivElement>(null);
+	const fileInputRef = useRef<HTMLInputElement>(null);
+
+	// ── Project context for the chat (frames, transcript, timeline) ──
+	// Subscribed to the timeline only: useEditor would re-render on every playback tick
+	const editor = useMemo(() => EditorCore.getInstance(), []);
+	const hasVisual = useSyncExternalStore(
+		(onChange) => editor.timeline.subscribe(onChange),
+		() =>
+			editor.timeline
+				.getTracks()
+				.some((track) =>
+					track.elements.some((el) => el.type === "video" || el.type === "image"),
+				),
+		() => false,
+	);
+	const llmInfo = useAIStore((s) => s.backendStatus?.llm);
+	const [attachVideo, setAttachVideo] = useState(true);
+	const [attachments, setAttachments] = useState<string[]>([]);
+	const [vision, setVision] = useState<VisionSupport | null>(null);
+	const [progressLabel, setProgressLabel] = useState<string | null>(null);
+	const frameCacheRef = useRef<{ key: string; frames: CapturedFrame[] } | null>(
+		null,
+	);
+
+	const refreshVision = useCallback(async () => {
+		try {
+			const support = await aiClient.getVisionSupport();
+			setVision(support);
+			return support;
+		} catch {
+			setVision(null);
+			return null;
+		}
+	}, []);
+
+	// Re-check whenever the active backend/model changes (reported by /health)
+	// biome-ignore lint/correctness/useExhaustiveDependencies: llmInfo fields are the re-check trigger
+	useEffect(() => {
+		if (isConnected) refreshVision();
+	}, [isConnected, llmInfo?.backend, llmInfo?.model, refreshVision]);
+
+	const addImageFiles = useCallback(
+		async (files: File[]) => {
+			const images = files.filter((file) => file.type.startsWith("image/"));
+			if (images.length === 0) return;
+			if (vision && !vision.ok) {
+				toast.error("O modelo atual não aceita imagens", {
+					description: vision.reason,
+				});
+				return;
+			}
+			const room = MAX_ATTACHMENTS - attachments.length;
+			if (room <= 0) {
+				toast.error(`Máximo de ${MAX_ATTACHMENTS} imagens por mensagem`);
+				return;
+			}
+			try {
+				const urls = await Promise.all(
+					images.slice(0, room).map(imageFileToDataUrl),
+				);
+				setAttachments((prev) =>
+					[...new Set([...prev, ...urls])].slice(0, MAX_ATTACHMENTS),
+				);
+				if (images.length > room) {
+					toast.info(`Só as primeiras ${room} imagens foram anexadas`);
+				}
+			} catch {
+				toast.error("Não foi possível ler a imagem");
+			}
+		},
+		[vision, attachments.length],
+	);
+
+	/** Frames that will go with the next message (0 when none), known before capturing. */
+	const planFrameCount = useCallback(
+		(support: VisionSupport | null) => {
+			if (!hasVisual || !attachVideo || support?.ok === false) return 0;
+			return getComplianceFrameTimes({
+				duration: editor.timeline.getTotalDuration(),
+				fps: editor.project.getActiveOrNull()?.settings.fps ?? 30,
+				density: support?.cloud ? CLOUD_FRAME_DENSITY : LOCAL_FRAME_DENSITY,
+			}).length;
+		},
+		[editor, hasVisual, attachVideo],
+	);
+
+	/** Timeline + transcript (+ frames when the model can see) as the first turn. */
+	const buildStudioContext = useCallback(
+		async (support: VisionSupport | null): Promise<ChatContentPart[]> => {
+			const density = support?.cloud ? CLOUD_FRAME_DENSITY : LOCAL_FRAME_DENSITY;
+
+			let frames: CapturedFrame[] = [];
+			if (planFrameCount(support) > 0) {
+				const key = `${density.maxFrames}|${getTimelineSignature(editor)}`;
+				if (frameCacheRef.current?.key === key) {
+					frames = frameCacheRef.current.frames;
+				} else {
+					frames = await captureComplianceFrames(
+						editor,
+						(current, total) =>
+							setProgressLabel(`Capturando quadro ${current}/${total}`),
+						density,
+					);
+					frameCacheRef.current = { key, frames };
+					setProgressLabel(null);
+				}
+			}
+
+			const framesNote = !hasVisual
+				? "QUADROS DO VÍDEO: não há vídeo nem imagem na timeline."
+				: !attachVideo
+					? "QUADROS DO VÍDEO: NÃO foram enviados (o usuário desligou o envio do vídeo)."
+					: "QUADROS DO VÍDEO: NÃO foram enviados (o modelo atual não aceita imagens).";
+			return buildContextParts({
+				timeline: buildTimelineSummary(editor),
+				transcript: buildTranscriptBlock(transcriptSegments),
+				frames,
+				framesNote,
+			});
+		},
+		[editor, hasVisual, attachVideo, transcriptSegments, planFrameCount],
+	);
 
 	// ── Model name display ──
 	const [activeModel, setActiveModel] = useState("");
@@ -360,7 +524,12 @@ export function AIStudioView() {
 
 	const handleSend = useCallback(async (overrideText?: string) => {
 		const trimmed = (overrideText ?? inputValue).trim();
-		if (!trimmed || isThinking) return;
+		const images = overrideText ? [] : attachments;
+		// Transcript mode keeps its single-shot rewrite flow; everything else is the studio chat
+		const isStudioChat = mode !== "transcript";
+		if (isThinking || (!trimmed && (!isStudioChat || images.length === 0))) {
+			return;
+		}
 
 		if (!isConnected) {
 			toast.error("O back-end de IA não está conectado", {
@@ -369,51 +538,106 @@ export function AIStudioView() {
 			return;
 		}
 
-		addMessage({
+		const support = isStudioChat ? (vision ?? (await refreshVision())) : null;
+		if (images.length > 0 && support && !support.ok) {
+			toast.error("O modelo atual não aceita imagens", {
+				description: `${support.reason} Remova as imagens ou troque de modelo.`,
+			});
+			return;
+		}
+
+		const history = messages.slice(-MAX_HISTORY_MESSAGES);
+		const frameCount = isStudioChat ? planFrameCount(support) : 0;
+		const userMessage: StudioMessage = {
 			id: generateUUID(),
 			role: "user",
 			content: trimmed,
-		});
-		if (!overrideText) setInputValue("");
+			images: images.length > 0 ? images : undefined,
+			note: !isStudioChat
+				? undefined
+				: frameCount > 0
+					? `Vídeo anexado: ${frameCount} quadros + transcrição + timeline`
+					: hasVisual && attachVideo && support?.ok === false
+						? "O modelo atual não vê imagens: foram só a transcrição e a timeline"
+						: "Contexto enviado: transcrição + timeline",
+		};
+		addMessage(userMessage);
+		if (!overrideText) {
+			setInputValue("");
+			setAttachments([]);
+		}
 		setIsThinking(true);
 
 		const assistantId = generateUUID();
 		let messageAdded = false;
+		const handleToken = (_token: string, accumulated: string) => {
+			if (!messageAdded) {
+				// Add the assistant message only when the first token arrives
+				addMessage({
+					id: assistantId,
+					role: "assistant",
+					content: accumulated,
+				});
+				messageAdded = true;
+			} else {
+				updateMessage(assistantId, accumulated);
+			}
+		};
 
 		try {
-			let prompt = trimmed;
-			let systemPrompt: string | undefined;
-
-			// A prompt handed in from elsewhere (e.g. the Virality Score modal)
-			// is already fully self-contained — skip the transcript-mode injection.
-			if (!overrideText && mode === "transcript" && hasTranscript) {
-				const fullText = transcriptSegments.map((s) => s.text).join(" ");
-				systemPrompt =
-					"You are a video script editor. The user has a video transcript and wants you to help edit, rewrite, or improve it. " +
-					"When rewriting, preserve the key information but improve the text as requested. " +
-					"Return only the improved text, not explanations.";
-				if (!prompt.includes(fullText.slice(0, 50))) {
-					prompt = `${prompt}\n\nTranscript:\n${fullText}`;
-				}
-			}
-
-			const result = await aiClient.chatStream(
-				prompt,
-				(_token, accumulated) => {
-					if (!messageAdded) {
-						// Add the assistant message only when the first token arrives
-						addMessage({
-							id: assistantId,
-							role: "assistant",
-							content: accumulated,
-						});
-						messageAdded = true;
-					} else {
-						updateMessage(assistantId, accumulated);
+			let result: { response: string };
+			if (isStudioChat) {
+				const canSee = support?.ok !== false;
+				const imageTurns = new Set(
+					[...history, userMessage]
+						.filter((m) => m.role === "user" && m.images?.length)
+						.slice(-IMAGE_HISTORY_TURNS)
+						.map((m) => m.id),
+				);
+				const toTurn = (m: StudioMessage): ChatTurn => {
+					if (m.role === "user" && m.images?.length && canSee && imageTurns.has(m.id)) {
+						return {
+							role: "user",
+							content: [
+								{ type: "text", text: m.content || "(imagem anexada)" },
+								...m.images.map(
+									(url): ChatContentPart => ({ type: "image_url", image_url: { url } }),
+								),
+							],
+						};
 					}
-				},
-				systemPrompt,
-			);
+					const dropped = m.images?.length
+						? `\n[${m.images.length} imagem(ns) anexada(s) nesta mensagem, não reenviada(s)]`
+						: "";
+					return { role: m.role, content: `${m.content}${dropped}` };
+				};
+
+				const turns: ChatTurn[] = [
+					{ role: "user", content: await buildStudioContext(support) },
+					...[...history, userMessage]
+						.filter((m) => m.content || m.images?.length)
+						.map(toTurn),
+				];
+				result = await aiClient.chatStreamMessages(turns, handleToken);
+			} else {
+				let prompt = trimmed;
+				let systemPrompt: string | undefined;
+
+				// A prompt handed in from elsewhere (e.g. the Virality Score modal)
+				// is already fully self-contained — skip the transcript-mode injection.
+				if (!overrideText && hasTranscript) {
+					const fullText = transcriptSegments.map((s) => s.text).join(" ");
+					systemPrompt =
+						"You are a video script editor. The user has a video transcript and wants you to help edit, rewrite, or improve it. " +
+						"When rewriting, preserve the key information but improve the text as requested. " +
+						"Return only the improved text, not explanations.";
+					if (!prompt.includes(fullText.slice(0, 50))) {
+						prompt = `${prompt}\n\nTranscript:\n${fullText}`;
+					}
+				}
+
+				result = await aiClient.chatStream(prompt, handleToken, systemPrompt);
+			}
 
 			// Final update with complete response
 			if (!result.response) {
@@ -429,10 +653,14 @@ export function AIStudioView() {
 			}
 		} catch (error) {
 			const detail = error instanceof Error ? error.message : "";
-			const isOllamaDown = detail.includes("503") || detail.includes("Ollama");
+			// Studio chat errors come already explained by the backend (e.g. the model can't see images)
+			const isOllamaDown =
+				detail.includes("503") || (!isStudioChat && detail.includes("Ollama"));
 			const errorContent = isOllamaDown
 				? "O Ollama não está em execução ou nenhum modelo de LLM foi carregado. Abra o Guia de configuração de IA (clique no indicador de IA no cabeçalho) para baixar um modelo como `llama3.2:1b`."
-				: `Algo deu errado: ${detail || "Erro desconhecido"}. Verifique se o back-end de IA e o Ollama estão em execução com um modelo carregado.`;
+				: isStudioChat
+					? `Não foi possível responder: ${detail || "erro desconhecido"}`
+					: `Algo deu errado: ${detail || "Erro desconhecido"}. Verifique se o back-end de IA e o Ollama estão em execução com um modelo carregado.`;
 
 			if (!messageAdded) {
 				addMessage({ id: assistantId, role: "assistant", content: errorContent });
@@ -440,9 +668,27 @@ export function AIStudioView() {
 				updateMessage(assistantId, errorContent);
 			}
 		} finally {
+			setProgressLabel(null);
 			setIsThinking(false);
 		}
-	}, [inputValue, isThinking, isConnected, mode, hasTranscript, transcriptSegments, addMessage, updateMessage]);
+	}, [
+		inputValue,
+		attachments,
+		isThinking,
+		isConnected,
+		mode,
+		vision,
+		refreshVision,
+		messages,
+		planFrameCount,
+		buildStudioContext,
+		hasVisual,
+		attachVideo,
+		hasTranscript,
+		transcriptSegments,
+		addMessage,
+		updateMessage,
+	]);
 
 	// Auto-send a prompt handed in from elsewhere in the app (e.g. "Ask AI"
 	// on the Virality Score modal), then clear it so it only fires once.
@@ -762,8 +1008,28 @@ export function AIStudioView() {
 						{messages.map((msg) => (
 							<div key={msg.id} className="mb-3">
 								{msg.role === "user" ? (
-									<div className="rounded-lg bg-primary text-primary-foreground ml-6 px-3 py-2 text-xs">
-										{msg.content}
+									<div className="ml-6 space-y-1">
+										<div className="rounded-lg bg-primary text-primary-foreground px-3 py-2 text-xs">
+											{msg.images && msg.images.length > 0 && (
+												<div className="mb-1.5 flex flex-wrap gap-1">
+													{msg.images.map((src) => (
+														// biome-ignore lint/performance/noImgElement: data URLs, which next/image does not optimize
+														<img
+															key={src}
+															src={src}
+															alt="Imagem anexada"
+															className="size-14 rounded object-cover"
+														/>
+													))}
+												</div>
+											)}
+											{msg.content}
+										</div>
+										{msg.note && (
+											<p className="text-right text-[10px] text-muted-foreground">
+												{msg.note}
+											</p>
+										)}
 									</div>
 								) : (
 									<div className="rounded-lg bg-muted mr-2 px-3 py-2.5">
@@ -833,7 +1099,7 @@ export function AIStudioView() {
 									<div className="flex items-center gap-2">
 										<Spinner className="size-3 text-primary/60" />
 										<span className="text-[11px] text-primary/70 font-medium animate-pulse">
-											{thinkingMessage}
+											{progressLabel ?? thinkingMessage}
 										</span>
 									</div>
 								</div>
@@ -843,13 +1109,113 @@ export function AIStudioView() {
 
 					{/* Input — ALWAYS at bottom, outside scroll */}
 					<div className="border-t px-2 py-2 shrink-0 bg-background">
+						{mode === "chat" && (hasVisual || attachments.length > 0) && (
+							<div className="mb-1.5 flex flex-wrap items-center gap-1.5">
+								{hasVisual && (
+									<button
+										type="button"
+										aria-pressed={attachVideo && vision?.ok !== false}
+										disabled={vision?.ok === false || isThinking}
+										title={
+											vision?.ok === false
+												? vision.reason
+												: "Envia quadros da timeline junto com a transcrição"
+										}
+										onClick={() => setAttachVideo((value) => !value)}
+										className={cn(
+											"inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] transition-colors",
+											vision?.ok === false
+												? "border-yellow-500/30 text-yellow-500 cursor-not-allowed"
+												: attachVideo
+													? "border-primary/40 bg-primary/10 text-primary"
+													: "border-border text-muted-foreground hover:text-foreground",
+										)}
+									>
+										<HugeiconsIcon icon={Video01Icon} className="size-3" />
+										{vision?.ok === false
+											? "Modelo sem visão: vai só a transcrição"
+											: attachVideo
+												? "Vídeo da timeline anexado"
+												: "Vídeo não anexado"}
+									</button>
+								)}
+								{attachments.map((src) => (
+									<div key={src} className="relative">
+										{/* biome-ignore lint/performance/noImgElement: data URLs, which next/image does not optimize */}
+										<img
+											src={src}
+											alt="Imagem a enviar"
+											className="size-9 rounded border object-cover"
+										/>
+										<button
+											type="button"
+											aria-label="Remover imagem"
+											onClick={() =>
+												setAttachments((prev) => prev.filter((item) => item !== src))
+											}
+											className="absolute -top-1.5 -right-1.5 flex size-4 items-center justify-center rounded-full bg-background border text-muted-foreground hover:text-foreground"
+										>
+											<HugeiconsIcon icon={Cancel01Icon} className="size-2.5" />
+										</button>
+									</div>
+								))}
+							</div>
+						)}
+						{mode === "chat" &&
+							vision?.ok &&
+							vision.cloud &&
+							((hasVisual && attachVideo) || attachments.length > 0) && (
+								<p className="mb-1 text-[9px] text-muted-foreground">
+									Quadros, imagens e transcrição vão para o modelo em nuvem ({vision.model}).
+								</p>
+							)}
 						<div className="flex items-end gap-1.5">
+							{mode === "chat" && (
+								<>
+									<input
+										ref={fileInputRef}
+										type="file"
+										accept="image/*"
+										multiple
+										className="hidden"
+										onChange={(event) => {
+											addImageFiles(Array.from(event.target.files ?? []));
+											event.target.value = "";
+										}}
+									/>
+									<Button
+										size="icon"
+										variant="ghost"
+										className="size-[36px] shrink-0"
+										title="Anexar imagem (ou cole com Ctrl+V)"
+										aria-label="Anexar imagem"
+										onClick={() => fileInputRef.current?.click()}
+										disabled={
+											!isConnected ||
+											isThinking ||
+											attachments.length >= MAX_ATTACHMENTS
+										}
+									>
+										<HugeiconsIcon icon={Image01Icon} className="size-3.5" />
+									</Button>
+								</>
+							)}
 							<textarea
 								ref={inputRef}
 								value={inputValue}
 								onChange={(event) =>
 									setInputValue(event.target.value)
 								}
+								onPaste={(event) => {
+									if (mode !== "chat") return;
+									const pasted = Array.from(event.clipboardData.files).filter(
+										(file) => file.type.startsWith("image/"),
+									);
+									if (pasted.length > 0) {
+										event.preventDefault();
+										addImageFiles(pasted);
+									}
+								}}
 								onKeyDown={handleKeyDown}
 								placeholder={
 									!isConnected
@@ -876,12 +1242,14 @@ export function AIStudioView() {
 							<Button
 								size="icon"
 								variant={
-									inputValue.trim() ? "default" : "secondary"
+									inputValue.trim() || attachments.length > 0
+										? "default"
+										: "secondary"
 								}
 								className="size-[36px] shrink-0"
 								onClick={() => handleSend()}
 								disabled={
-									!inputValue.trim() ||
+									(!inputValue.trim() && attachments.length === 0) ||
 									isThinking ||
 									!isConnected
 								}

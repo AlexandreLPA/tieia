@@ -753,25 +753,7 @@ class AIClient {
 		onToken: (token: string, accumulated: string) => void,
 		system?: string,
 	): Promise<{ response: string }> {
-		const url = `${this.baseUrl}/api/llm/chat/stream`;
-		const controller = new AbortController();
-		const timeoutId = setTimeout(() => controller.abort(), 10_000);
-
-		let response: Response;
-		try {
-			response = await fetch(url, {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ message, system }),
-				signal: controller.signal,
-			});
-			clearTimeout(timeoutId);
-		} catch (error) {
-			clearTimeout(timeoutId);
-			if (error instanceof AIClientError) throw error;
-			const classified = classifyError(error);
-			throw new AIClientError(classified.message, classified.errorType);
-		}
+		const response = await this.openChatStream({ message, system });
 
 		// If stream endpoint doesn't exist yet (backend not updated), fall back
 		if (response.status === 404) {
@@ -780,6 +762,53 @@ class AIClient {
 			return fallback;
 		}
 
+		return this.readChatStream(response, onToken);
+	}
+
+	/**
+	 * Studio chat: sends the whole conversation, user turns may carry image
+	 * parts. The backend refuses (error line) instead of answering text-only
+	 * when the active model can't see images.
+	 */
+	async chatStreamMessages(
+		messages: ChatTurn[],
+		onToken: (token: string, accumulated: string) => void,
+		system?: string,
+	): Promise<{ response: string }> {
+		const response = await this.openChatStream({ messages, system });
+		return this.readChatStream(response, onToken);
+	}
+
+	/** Whether the active LLM accepts images (checked on the backend that would serve the chat). */
+	async getVisionSupport(): Promise<VisionSupport> {
+		return this.request<VisionSupport>("/api/llm/vision-support");
+	}
+
+	private async openChatStream(body: Record<string, unknown>): Promise<Response> {
+		const url = `${this.baseUrl}/api/llm/chat/stream`;
+		const controller = new AbortController();
+		const timeoutId = setTimeout(() => controller.abort(), 10_000);
+
+		try {
+			return await fetch(url, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(body),
+				signal: controller.signal,
+			});
+		} catch (error) {
+			if (error instanceof AIClientError) throw error;
+			const classified = classifyError(error);
+			throw new AIClientError(classified.message, classified.errorType);
+		} finally {
+			clearTimeout(timeoutId);
+		}
+	}
+
+	private async readChatStream(
+		response: Response,
+		onToken: (token: string, accumulated: string) => void,
+	): Promise<{ response: string }> {
 		if (!response.ok) {
 			const errorBody = await response.text().catch(() => "Unknown error");
 			throw new AIClientError(
@@ -797,34 +826,40 @@ class AIClient {
 		const decoder = new TextDecoder();
 		let accumulated = "";
 
+		// A line can be split across two chunks, so keep the partial tail buffered
+		let buffer = "";
+		const readLine = (line: string) => {
+			if (!line.trim()) return;
+			try {
+				const data = JSON.parse(line) as {
+					token?: string;
+					done?: boolean;
+					error?: string;
+				};
+				if (data.error) {
+					throw new AIClientError(data.error, "backend_error");
+				}
+				if (data.token) {
+					accumulated += data.token;
+					onToken(data.token, accumulated);
+				}
+			} catch (e) {
+				if (e instanceof AIClientError) throw e;
+				// skip non-JSON lines
+			}
+		};
+
 		try {
 			while (true) {
 				const { done, value } = await reader.read();
 				if (done) break;
 
-				const chunk = decoder.decode(value, { stream: true });
-				const lines = chunk.split("\n").filter(Boolean);
-
-				for (const line of lines) {
-					try {
-						const data = JSON.parse(line) as {
-							token?: string;
-							done?: boolean;
-							error?: string;
-						};
-						if (data.error) {
-							throw new AIClientError(data.error, "backend_error");
-						}
-						if (data.token) {
-							accumulated += data.token;
-							onToken(data.token, accumulated);
-						}
-					} catch (e) {
-						if (e instanceof AIClientError) throw e;
-						// skip non-JSON lines
-					}
-				}
+				buffer += decoder.decode(value, { stream: true });
+				const lines = buffer.split("\n");
+				buffer = lines.pop() ?? "";
+				for (const line of lines) readLine(line);
 			}
+			readLine(buffer + decoder.decode());
 		} finally {
 			reader.releaseLock();
 		}
@@ -2051,6 +2086,20 @@ export interface EngagementScoreResult {
 	composite: number;
 	grade: string;
 	grade_label: string;
+}
+
+export type ChatContentPart =
+	| { type: "text"; text: string }
+	| { type: "image_url"; image_url: { url: string } };
+
+export interface ChatTurn {
+	role: "user" | "assistant";
+	content: string | ChatContentPart[];
+}
+
+export interface VisionSupport extends AIActiveLLM {
+	ok: boolean;
+	reason: string;
 }
 
 export type ComplianceCategoryId =

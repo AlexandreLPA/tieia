@@ -643,6 +643,117 @@ class LLMBackend:
             return str(error)
         return resp.text[:300] or f"HTTP {resp.status_code}"
 
+    # ── Multi-turn chat stream (studio chat) ──────────────────────────
+
+    async def _openai_stream(
+        self, url: str, headers: dict[str, str], payload: dict[str, Any], model: str
+    ) -> AsyncIterator[str]:
+        """Yield content deltas from an OpenAI-compatible SSE endpoint, surfacing provider errors."""
+        async with httpx.AsyncClient(timeout=httpx.Timeout(300, connect=10.0)) as client:
+            async with client.stream("POST", url, headers=headers, json={**payload, "stream": True}) as resp:
+                if resp.status_code >= 400:
+                    await resp.aread()
+                    try:
+                        data = resp.json()
+                    except ValueError:
+                        data = {}
+                    message = self._provider_error(data if isinstance(data, dict) else {}, resp)
+                    if resp.status_code < 500 and _IMAGE_ERROR_RE.search(message):
+                        raise VisionUnsupportedError(f"O modelo '{model}' recusou a imagem: {message}")
+                    raise RuntimeError(f"O provedor recusou a requisição (HTTP {resp.status_code}): {message}")
+                async for line in resp.aiter_lines():
+                    if not line.startswith("data: "):
+                        continue
+                    data_str = line[6:].strip()
+                    if data_str == "[DONE]":
+                        break
+                    try:
+                        chunk = json.loads(data_str)
+                    except json.JSONDecodeError:
+                        continue
+                    if chunk.get("error"):
+                        error = chunk["error"]
+                        raise RuntimeError(str(error.get("message") if isinstance(error, dict) else error))
+                    choices = chunk.get("choices") or [{}]
+                    token = (choices[0].get("delta") or {}).get("content") or ""
+                    if token:
+                        yield token
+
+    async def chat_stream(
+        self, messages: list[dict[str, Any]], temperature: float = 0.4
+    ) -> AsyncIterator[str]:
+        """Stream a multi-turn chat whose messages may carry image parts.
+
+        With images, the backend that really serves the request must accept them
+        (VisionUnsupportedError otherwise) and failures propagate. Text-only chats
+        keep the usual OpenRouter -> TurboQuant -> Ollama fallback.
+        """
+        has_images = any(
+            isinstance(m.get("content"), list) and any(p.get("type") == "image_url" for p in m["content"])
+            for m in messages
+        )
+        if has_images:
+            support = await self.vision_support()
+            if not support["ok"]:
+                raise VisionUnsupportedError(support["reason"])
+            candidates = [support["backend"]]
+        else:
+            # Plain strings keep text-only backends (TurboQuant) happy
+            messages = [
+                {
+                    **m,
+                    "content": m["content"]
+                    if isinstance(m["content"], str)
+                    else "\n".join(p.get("text", "") for p in m["content"] if p.get("type") == "text"),
+                }
+                for m in messages
+            ]
+            candidates = []
+            if self._use_openrouter():
+                candidates.append("openrouter")
+            if await self._should_use_turboquant():
+                candidates.append("turboquant")
+            candidates.append("ollama")
+
+        for index, backend in enumerate(candidates):
+            payload: dict[str, Any] = {"messages": messages, "temperature": temperature}
+            if backend == "openrouter":
+                model = self.openrouter_model
+                # Short reasoning keeps the studio chat responsive; ignored by models without it
+                payload.update(model=model, reasoning={"effort": "low"})
+                url, headers = f"{settings.OPENROUTER_BASE_URL}/chat/completions", self._or_headers()
+            elif backend == "turboquant":
+                model = self._tq_model or ""
+                payload.update(model=self._tq_model, max_tokens=2048)
+                url, headers = f"{self.turboquant_url}/v1/chat/completions", {}
+            else:
+                model = self.default_model
+                payload.update(model=model)
+                url, headers = f"{self.ollama_url}/v1/chat/completions", {}
+
+            if has_images:
+                images = sum(
+                    1
+                    for m in messages
+                    if isinstance(m.get("content"), list)
+                    for p in m["content"]
+                    if p.get("type") == "image_url"
+                )
+                logger.info("Studio chat with images: backend=%s model=%s images=%d", backend, model, images)
+
+            yielded = False
+            try:
+                async for token in self._openai_stream(url, headers, payload, model):
+                    yielded = True
+                    yield token
+                return
+            except Exception:
+                if has_images or yielded or index == len(candidates) - 1:
+                    raise
+                logger.warning("Studio chat via %s failed, falling back", backend, exc_info=True)
+                if backend == "turboquant":
+                    self._tq_available = False
+
     async def check_available(self) -> bool:
         """Check if any LLM backend is available."""
         if self._use_openrouter():

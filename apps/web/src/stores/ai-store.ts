@@ -12,6 +12,10 @@ export interface StudioMessage {
 	id: string;
 	role: "user" | "assistant";
 	content: string;
+	/** Images the user attached (data URLs), sent to the model with this turn */
+	images?: string[];
+	/** Short line shown under the message, e.g. what project context was sent */
+	note?: string;
 }
 
 interface AIState {
