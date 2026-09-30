@@ -9,6 +9,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
 from app.routes import analyze, audio, background, broll, command, dub, engagement, export, factcheck, generate, llm, podcast, sarvam, search, setup, smallest, template, transcribe, transcribe_ws, translate, tts, turboquant, video, youtube
+from app.services.model_backend import llm_backend
 
 # Configure logging
 logging.basicConfig(
@@ -186,6 +187,7 @@ async def health() -> dict:
             "gpu": gpu_info,
         },
         "version": "0.1.0",
+        "llm": llm_backend.describe_active(),
     }
 
 

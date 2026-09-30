@@ -73,6 +73,7 @@ export function EditorHeader() {
 			memoryUsageMb: backendStatus?.memoryUsage?.ram?.usedMb ?? 0,
 			memoryTotalMb: backendStatus?.memoryUsage?.ram?.totalMb ?? 0,
 			gpuAvailable: backendStatus?.gpuAvailable ?? false,
+			llm: backendStatus?.llm,
 			error: error ?? undefined,
 			errorType: errorType ?? undefined,
 			backendUrl: aiClient.getBaseUrl(),

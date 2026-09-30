@@ -157,6 +157,12 @@ export interface AISuggestion {
 }
 
 // AI Backend status
+export interface AIActiveLLM {
+	backend: string;
+	model: string;
+	cloud: boolean;
+}
+
 export interface AIBackendStatus {
 	available: boolean;
 	models: string[];
@@ -165,6 +171,7 @@ export interface AIBackendStatus {
 		ram?: { usedMb: number; totalMb: number; percent: number };
 		gpu?: { usedMb: number; totalMb: number };
 	};
+	llm?: AIActiveLLM;
 	error?: string;
 	errorType?: AIErrorType;
 }

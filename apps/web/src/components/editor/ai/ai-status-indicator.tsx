@@ -13,7 +13,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { Progress } from "@/components/ui/progress";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { SparklesIcon, ArrowRight01Icon } from "@hugeicons/core-free-icons";
-import type { AIErrorType } from "@/types/ai";
+import type { AIActiveLLM, AIErrorType } from "@/types/ai";
 import { useServiceHealth } from "@/hooks/use-service-health";
 
 export interface AIStatusInfo {
@@ -23,6 +23,7 @@ export interface AIStatusInfo {
 	memoryTotalMb: number;
 	gpuAvailable: boolean;
 	backendVersion?: string;
+	llm?: AIActiveLLM;
 	error?: string;
 	errorType?: AIErrorType;
 	backendUrl?: string;
@@ -231,15 +232,21 @@ export function AIStatusIndicator({
 										{ key: "image" as const, label: "Imagem" },
 									] as const).map(({ key, label }) => {
 										const svc = services[key];
-										const isRunning = svc.status === "running";
+										// With a cloud model active the LLM row doesn't depend on Ollama
+										const cloudLlm = key === "ollama" && status.llm?.cloud ? status.llm : null;
+										const isRunning = cloudLlm !== null || svc.status === "running";
 										const modelLoaded = svc.model_loaded === true;
 										const modelInstalled = svc.model_installed !== false;
 
 										// Determine actual readiness
-										const ollamaModelName = key === "ollama" && isRunning && Array.isArray(svc.models) && svc.models.length > 0
-											? (svc.models[0] as { name: string }).name
+										const ollamaModelName = key === "ollama" && isRunning && cloudLlm === null
+											? status.llm
+												? status.llm.model || null
+												: Array.isArray(svc.models) && svc.models.length > 0
+													? (svc.models[0] as { name: string }).name
+													: null
 											: null;
-										const isOllamaReady = key === "ollama" && isRunning && ollamaModelName !== null;
+										const isOllamaReady = key === "ollama" && (cloudLlm !== null || (isRunning && ollamaModelName !== null));
 										const isModelService = key !== "ollama";
 										const isReady = isModelService
 											? isRunning && modelLoaded
@@ -248,7 +255,9 @@ export function AIStatusIndicator({
 										const statusText = !isRunning
 											? "Offline"
 											: key === "ollama"
-												? ollamaModelName ? `Online (${ollamaModelName})` : "Nenhum modelo"
+												? cloudLlm
+													? `Nuvem · ${cloudLlm.model}`
+													: ollamaModelName ? `Online (${ollamaModelName})` : "Nenhum modelo"
 												: !modelInstalled
 													? "Não instalado"
 													: modelLoaded

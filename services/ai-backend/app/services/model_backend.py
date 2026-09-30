@@ -39,6 +39,7 @@ class LLMBackend:
 
     def __init__(self) -> None:
         self._tq_available: bool | None = None  # cached check, reset periodically
+        self._tq_model: str | None = None  # active TurboQuant model, cached with the check
         self._tq_check_count = 0
         # Runtime overrides — set via /api/llm/set-cloud-model and
         # /api/llm/set-local-backend, so switching backend doesn't need a
@@ -91,6 +92,7 @@ class LLMBackend:
                 if resp.status_code == 200:
                     data = resp.json()
                     self._tq_available = data.get("active_model_loaded", False)
+                    self._tq_model = data.get("active_model")
                     return self._tq_available
         except (httpx.ConnectError, httpx.TimeoutException):
             pass
@@ -111,6 +113,14 @@ class LLMBackend:
     def reset_cache(self) -> None:
         """Force re-check of TurboQuant availability on next request."""
         self._tq_available = None
+
+    def describe_active(self) -> dict[str, Any]:
+        """Backend/model that serves the next request, from cached state only (no I/O)."""
+        if self._use_openrouter():
+            return {"backend": "openrouter", "model": self.openrouter_model, "cloud": True}
+        if self.backend_mode != "ollama" and self._tq_available:
+            return {"backend": "turboquant", "model": self._tq_model or "", "cloud": False}
+        return {"backend": "ollama", "model": self.default_model, "cloud": False}
 
     # ── Ollama methods ────────────────────────────────────────────────
 
