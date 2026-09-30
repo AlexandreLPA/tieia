@@ -232,25 +232,37 @@ export function ComplianceCheckTab({
 						modelo de IA ativo se ele viola as regras do TikTok Shop.
 					</p>
 					<TranscribeNotice description="Sem transcrição, a checagem das falas perde força; a das imagens continua." />
-					<div className="space-y-1.5">
-						<label
-							htmlFor="compliance-ad-info"
-							className="text-xs font-medium text-muted-foreground"
-						>
-							Dados do anúncio (opcional): título, preço padrão, kit, cores
-						</label>
+					<div className="rounded-lg border bg-muted/20 p-3 space-y-2">
+						<div className="flex items-start justify-between gap-2">
+							<div className="space-y-0.5">
+								<label
+									htmlFor="compliance-ad-info"
+									className="text-sm font-medium text-foreground"
+								>
+									Dados do anúncio
+								</label>
+								<p className="text-[11px] text-muted-foreground">
+									Recomendado: com eles a IA confere se preço, kit e cores do
+									vídeo batem com o anúncio.
+								</p>
+							</div>
+							<span className="shrink-0 rounded-full border px-1.5 py-0.5 text-[10px] text-muted-foreground">
+								opcional
+							</span>
+						</div>
 						<Textarea
 							id="compliance-ad-info"
 							value={adInfo}
 							onChange={(e) => setAdInfo(e.target.value)}
 							maxLength={AD_INFO_MAX_LENGTH}
 							rows={3}
-							placeholder="Ex.: Cinta modeladora — R$ 39,90 (1 unidade) — kit com 3 por R$ 99 — cores: preto e bege"
-							className="text-xs md:text-xs"
+							placeholder="Título, preço padrão, kit e cores. Ex.: Cinta modeladora — R$ 39,90 (1 unidade) — kit com 3 por R$ 99 — preto e bege"
+							className="border-border bg-background text-xs md:text-xs placeholder:text-muted-foreground/45"
 						/>
 						<p className="text-[11px] text-muted-foreground">
-							Sem esses dados, preço, quantidade e cores só viram pontos de
-							atenção a conferir.
+							{adInfo.trim()
+								? `${adInfo.length}/${AD_INFO_MAX_LENGTH} caracteres`
+								: "Sem esses dados, preço, quantidade e cores só viram pontos de atenção a conferir."}
 						</p>
 					</div>
 					{llm?.cloud && (

@@ -37,14 +37,28 @@ import {
 } from "@/lib/ai-studio-context";
 import {
 	captureComplianceFrames,
+	captureFramesAt,
 	getComplianceFrameTimes,
 	type CapturedFrame,
 	type FrameDensity,
 } from "@/services/compliance/capture-frames";
+import {
+	STUDIO_ACTIONS_PROMPT,
+	applyStudioAction,
+	describeAction,
+	parseReply,
+	shiftActionAfterRemoval,
+	stripActionBlock,
+} from "@/lib/ai-editor-actions";
+import { formatClock } from "@/lib/ai-studio-context";
 import { TranscribeNotice } from "@/components/editor/transcribe-notice";
 import { EditorCore } from "@/core";
 import { useAIStatus } from "@/hooks/use-ai-status";
-import { useAIStore, type StudioMessage } from "@/stores/ai-store";
+import {
+	useAIStore,
+	type StudioActionState,
+	type StudioMessage,
+} from "@/stores/ai-store";
 import { useTranscriptStore } from "@/stores/transcript-store";
 import { toast } from "sonner";
 import { generateUUID } from "@/utils/id";
@@ -352,6 +366,78 @@ const TRANSCRIPT_PROMPTS = [
 	},
 ];
 
+// ----- Editor action cards -----
+
+const ACTION_STATUS_STYLES: Record<StudioActionState["status"], string> = {
+	pendente: "border-border",
+	aplicada: "border-green-500/30 bg-green-500/5",
+	falhou: "border-red-500/30 bg-red-500/5",
+};
+
+function ActionCards({
+	states,
+	onApply,
+	onApplyAll,
+}: {
+	states: StudioActionState[];
+	onApply: (index: number) => void;
+	onApplyAll: () => void;
+}) {
+	const pending = states.filter((s) => s.status === "pendente").length;
+	return (
+		<div className="mt-2 space-y-1.5">
+			<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+				Mudanças sugeridas
+			</p>
+			{states.map((state, index) => (
+				<div
+					key={`${JSON.stringify(state.action)}-${state.status}`}
+					className={cn(
+						"flex items-start gap-2 rounded-md border bg-background/60 px-2 py-1.5",
+						ACTION_STATUS_STYLES[state.status],
+					)}
+				>
+					<div className="min-w-0 flex-1 text-[11px] leading-snug">
+						<p>{describeAction(state.action)}</p>
+						{state.detail && (
+							<p
+								className={cn(
+									"mt-0.5 text-[10px]",
+									state.status === "falhou" ? "text-red-400" : "text-muted-foreground",
+								)}
+							>
+								{state.detail}
+							</p>
+						)}
+					</div>
+					{state.status === "pendente" ? (
+						<Button size="sm" className="h-6 shrink-0 px-2 text-[10px]" onClick={() => onApply(index)}>
+							Aplicar
+						</Button>
+					) : (
+						<span
+							className={cn(
+								"shrink-0 text-[10px] font-medium",
+								state.status === "aplicada" ? "text-green-500" : "text-red-400",
+							)}
+						>
+							{state.status === "aplicada" ? "✓ Aplicada" : "Falhou"}
+						</span>
+					)}
+				</div>
+			))}
+			{pending > 1 && (
+				<Button variant="outline" size="sm" className="h-6 w-full text-[10px]" onClick={onApplyAll}>
+					Aplicar todas ({pending})
+				</Button>
+			)}
+			<p className="text-[10px] text-muted-foreground">
+				Nada muda até você clicar em Aplicar. Ctrl+Z desfaz cada ação.
+			</p>
+		</div>
+	);
+}
+
 // ----- Component -----
 
 export function AIStudioView() {
@@ -364,6 +450,7 @@ export function AIStudioView() {
 	const messages = useAIStore((s) => s.studioMessages);
 	const addMessage = useAIStore((s) => s.addStudioMessage);
 	const updateMessage = useAIStore((s) => s.updateStudioMessage);
+	const patchMessage = useAIStore((s) => s.patchStudioMessage);
 	const clearMessages = useAIStore((s) => s.clearStudioMessages);
 	const pendingAutoPrompt = useAIStore((s) => s.pendingAutoPrompt);
 	const setPendingAutoPrompt = useAIStore((s) => s.setPendingAutoPrompt);
@@ -495,12 +582,15 @@ export function AIStudioView() {
 				: !attachVideo
 					? "QUADROS DO VÍDEO: NÃO foram enviados (o usuário desligou o envio do vídeo)."
 					: "QUADROS DO VÍDEO: NÃO foram enviados (o modelo atual não aceita imagens).";
-			return buildContextParts({
-				timeline: buildTimelineSummary(editor),
-				transcript: buildTranscriptBlock(transcriptSegments),
-				frames,
-				framesNote,
-			});
+			return [
+				{ type: "text", text: STUDIO_ACTIONS_PROMPT },
+				...buildContextParts({
+					timeline: buildTimelineSummary(editor),
+					transcript: buildTranscriptBlock(transcriptSegments),
+					frames,
+					framesNote,
+				}),
+			];
 		},
 		[editor, hasVisual, attachVideo, transcriptSegments, planFrameCount],
 	);
@@ -575,7 +665,7 @@ export function AIStudioView() {
 		}
 		setIsThinking(true);
 
-		const assistantId = generateUUID();
+		let assistantId = generateUUID();
 		let messageAdded = false;
 		const handleToken = (_token: string, accumulated: string) => {
 			if (!messageAdded) {
@@ -595,14 +685,18 @@ export function AIStudioView() {
 			let result: { response: string };
 			if (isStudioChat) {
 				const canSee = support?.ok !== false;
-				const imageTurns = new Set(
-					[...history, userMessage]
-						.filter((m) => m.role === "user" && m.images?.length)
-						.slice(-IMAGE_HISTORY_TURNS)
-						.map((m) => m.id),
-				);
+				const conversation: StudioMessage[] = [...history, userMessage];
+				let imageTurns = new Set<string>();
 				const toTurn = (m: StudioMessage): ChatTurn => {
-					if (m.role === "user" && m.images?.length && canSee && imageTurns.has(m.id)) {
+					if (m.role === "assistant") {
+						// Tell the model what happened to the actions it proposed before
+						const states = m.actions ?? [];
+						const summary = states.length
+							? `\n[Ações propostas: ${states.map((a) => `${describeAction(a.action)} → ${a.status}`).join("; ")}]`
+							: "";
+						return { role: "assistant", content: `${m.content}${summary}` };
+					}
+					if (m.images?.length && canSee && imageTurns.has(m.id)) {
 						return {
 							role: "user",
 							content: [
@@ -619,13 +713,60 @@ export function AIStudioView() {
 					return { role: m.role, content: `${m.content}${dropped}` };
 				};
 
-				const turns: ChatTurn[] = [
-					{ role: "user", content: await buildStudioContext(support) },
-					...[...history, userMessage]
-						.filter((m) => m.content || m.images?.length)
-						.map(toTurn),
-				];
-				result = await aiClient.chatStreamMessages(turns, handleToken);
+				const context = await buildStudioContext(support);
+				result = { response: "" };
+				// Round 2 only happens when the model asks to look at specific frames
+				for (let round = 0; round < 2; round++) {
+					imageTurns = new Set(
+						conversation
+							.filter((m) => m.role === "user" && m.images?.length)
+							.slice(-IMAGE_HISTORY_TURNS)
+							.map((m) => m.id),
+					);
+					const turns: ChatTurn[] = [
+						{ role: "user", content: context },
+						...conversation
+							.filter((m) => m.content || m.images?.length)
+							.map(toTurn),
+					];
+					result = await aiClient.chatStreamMessages(turns, handleToken);
+
+					const parsed = parseReply(result.response);
+					const actions: StudioActionState[] = parsed.actions.map((action) => ({
+						action,
+						status: "pendente",
+					}));
+					if (actions.length > 0) patchMessage(assistantId, { actions });
+					conversation.push({
+						id: assistantId,
+						role: "assistant",
+						content: result.response,
+						actions,
+					});
+
+					if (round > 0 || parsed.frameRequests.length === 0 || !canSee || !hasVisual) {
+						break;
+					}
+					const frames = await captureFramesAt(
+						editor,
+						parsed.frameRequests,
+						(current, total) =>
+							setProgressLabel(`Separando quadro ${current}/${total} pedido pela IA`),
+						768,
+					);
+					setProgressLabel(null);
+					const followUp: StudioMessage = {
+						id: generateUUID(),
+						role: "user",
+						content: `Quadros pedidos, em resolução maior: ${frames.map((f) => formatClock(f.time)).join(", ")}. Continue a análise.`,
+						images: frames.map((f) => f.dataUrl),
+						note: "Enviado automaticamente a pedido da IA",
+					};
+					addMessage(followUp);
+					conversation.push(followUp);
+					assistantId = generateUUID();
+					messageAdded = false;
+				}
 			} else {
 				let prompt = trimmed;
 				let systemPrompt: string | undefined;
@@ -695,7 +836,57 @@ export function AIStudioView() {
 		transcriptSegments,
 		addMessage,
 		updateMessage,
+		patchMessage,
+		editor,
 	]);
+
+	const applyAction = useCallback(
+		async (messageId: string, index: number) => {
+			const findActions = () =>
+				useAIStore.getState().studioMessages.find((m) => m.id === messageId)
+					?.actions;
+			const state = findActions()?.[index];
+			if (state?.status !== "pendente") return;
+
+			let next: StudioActionState;
+			try {
+				const detail = await applyStudioAction(editor, state.action);
+				next = { ...state, status: "aplicada", detail };
+				toast.success(detail, { description: "Ctrl+Z desfaz." });
+			} catch (error) {
+				const detail = error instanceof Error ? error.message : "Erro ao aplicar";
+				next = { ...state, status: "falhou", detail };
+				toast.error("Não foi possível aplicar", { description: detail });
+			}
+
+			const removed = next.status === "aplicada" && state.action.type === "remover_trecho"
+				? state.action
+				: null;
+			const updated = (findActions() ?? []).map((item, i): StudioActionState => {
+				if (i === index) return next;
+				if (!removed || item.status !== "pendente") return item;
+				// Later pending actions keep pointing at the same moment after the cut
+				const shifted = shiftActionAfterRemoval(item.action, removed.start, removed.end);
+				return shifted
+					? { ...item, action: shifted }
+					: { ...item, status: "falhou", detail: "Esse momento foi removido pelo corte anterior." };
+			});
+			patchMessage(messageId, { actions: updated });
+		},
+		[editor, patchMessage],
+	);
+
+	const applyAllActions = useCallback(
+		async (messageId: string) => {
+			const count =
+				useAIStore.getState().studioMessages.find((m) => m.id === messageId)
+					?.actions?.length ?? 0;
+			for (let index = 0; index < count; index++) {
+				await applyAction(messageId, index);
+			}
+		},
+		[applyAction],
+	);
 
 	// Auto-send a prompt handed in from elsewhere in the app (e.g. "Ask AI"
 	// on the Virality Score modal), then clear it so it only fires once.
@@ -1072,9 +1263,17 @@ export function AIStudioView() {
 													),
 												}}
 											>
-												{msg.content}
+												{stripActionBlock(msg.content) ||
+													"_Pedi para ver alguns quadros de perto…_"}
 											</ReactMarkdown>
 										</div>
+										{msg.actions && msg.actions.length > 0 && (
+											<ActionCards
+												states={msg.actions}
+												onApply={(index) => applyAction(msg.id, index)}
+												onApplyAll={() => applyAllActions(msg.id)}
+											/>
+										)}
 										<div className="flex items-center gap-1 mt-2 pt-1.5 border-t border-border/50">
 											<Button
 												variant="ghost"

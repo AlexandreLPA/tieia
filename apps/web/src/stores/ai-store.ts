@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { AIBackendStatus, AIErrorType, AISuggestion } from "@/types/ai";
 import { generateUUID } from "@/utils/id";
+import type { StudioAction } from "@/lib/ai-editor-actions";
 
 export interface SavedIdea {
 	id: string;
@@ -16,6 +17,14 @@ export interface StudioMessage {
 	images?: string[];
 	/** Short line shown under the message, e.g. what project context was sent */
 	note?: string;
+	/** Editor actions proposed in an assistant reply, applied only on click */
+	actions?: StudioActionState[];
+}
+
+export interface StudioActionState {
+	action: StudioAction;
+	status: "pendente" | "aplicada" | "falhou";
+	detail?: string;
 }
 
 interface AIState {
@@ -49,6 +58,7 @@ interface AIState {
 	clearIdeas: () => void;
 	addStudioMessage: (message: StudioMessage) => void;
 	updateStudioMessage: (id: string, content: string) => void;
+	patchStudioMessage: (id: string, patch: Partial<StudioMessage>) => void;
 	clearStudioMessages: () => void;
 	setPendingAutoPrompt: (prompt: string | null) => void;
 }
@@ -153,6 +163,13 @@ export const useAIStore = create<AIState>()((set) => ({
 		set((state) => ({
 			studioMessages: state.studioMessages.map((msg) =>
 				msg.id === id ? { ...msg, content } : msg,
+			),
+		})),
+
+	patchStudioMessage: (id, patch) =>
+		set((state) => ({
+			studioMessages: state.studioMessages.map((msg) =>
+				msg.id === id ? { ...msg, ...patch } : msg,
 			),
 		})),
 

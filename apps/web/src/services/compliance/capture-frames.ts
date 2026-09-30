@@ -36,10 +36,7 @@ export function getComplianceFrameTimes({
 }): number[] {
 	const count = Math.min(
 		density.maxFrames,
-		Math.max(
-			density.minFrames,
-			Math.round(duration / density.secondsPerFrame),
-		),
+		Math.max(density.minFrames, Math.round(duration / density.secondsPerFrame)),
 	);
 	const lastFrameTime = getLastFrameTime({ duration, fps });
 	return Array.from({ length: count }, (_, index) =>
@@ -59,11 +56,35 @@ export async function captureComplianceFrames(
 ): Promise<CapturedFrame[]> {
 	const project = editor.project.getActiveOrNull();
 	if (!project) throw new Error("Nenhum projeto aberto");
+	const duration = editor.timeline.getTotalDuration();
+	if (duration <= 0) throw new Error("A timeline está vazia");
+
+	const times = getComplianceFrameTimes({
+		duration,
+		fps: project.settings.fps,
+		density,
+	});
+	return captureFramesAt(editor, times, onProgress);
+}
+
+/** Render the composed timeline at the given times (clamped to the last frame). */
+export async function captureFramesAt(
+	editor: EditorCore,
+	requestedTimes: number[],
+	onProgress?: (current: number, total: number) => void,
+	shortSidePx: number = SHORT_SIDE_PX,
+): Promise<CapturedFrame[]> {
+	const project = editor.project.getActiveOrNull();
+	if (!project) throw new Error("Nenhum projeto aberto");
 
 	const duration = editor.timeline.getTotalDuration();
 	if (duration <= 0) throw new Error("A timeline está vazia");
 
 	const { canvasSize, background, fps } = project.settings;
+	const lastFrameTime = getLastFrameTime({ duration, fps });
+	const times = requestedTimes.map((time) =>
+		Math.min(Math.max(0, time), lastFrameTime),
+	);
 	const scene = buildScene({
 		tracks: editor.timeline.getTracks(),
 		mediaAssets: editor.media.getAssets(),
@@ -80,7 +101,7 @@ export async function captureComplianceFrames(
 	// renderToCanvas resizes to the target canvas, so size it to the final frame
 	const scale = Math.min(
 		1,
-		SHORT_SIDE_PX / Math.min(canvasSize.width, canvasSize.height),
+		shortSidePx / Math.min(canvasSize.width, canvasSize.height),
 	);
 	const target = document.createElement("canvas");
 	target.width = Math.max(1, Math.round(canvasSize.width * scale));
@@ -88,7 +109,6 @@ export async function captureComplianceFrames(
 	const context = target.getContext("2d");
 	if (context) context.imageSmoothingQuality = "high";
 
-	const times = getComplianceFrameTimes({ duration, fps, density });
 	const frames: CapturedFrame[] = [];
 	for (const [index, time] of times.entries()) {
 		onProgress?.(index + 1, times.length);
