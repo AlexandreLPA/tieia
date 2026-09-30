@@ -21,6 +21,7 @@ from typing import Any
 import httpx
 
 from app.config import settings
+from app.services.ollama_service import ollama_service
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +73,8 @@ class LLMBackend:
 
     @property
     def default_model(self) -> str:
-        return settings.OLLAMA_DEFAULT_MODEL
+        # set-model updates ollama_service, so read the live value from there
+        return ollama_service.default_model
 
     # ── Backend selection ─────────────────────────────────────────────
 

@@ -17,6 +17,7 @@ from pydantic import BaseModel, Field
 
 from app.config import settings
 from app.services.model_registry import model_registry
+from app.services.ollama_service import ollama_service
 from app.services.turboquant_service import turboquant_service
 
 logger = logging.getLogger(__name__)
@@ -84,7 +85,7 @@ async def model_tiers() -> dict:
         "tiers": tiers,
         "recommended_tier": recommended_tier,
         "recommended_model": recommended_model.ollama_tag,
-        "current_model": settings.OLLAMA_DEFAULT_MODEL,
+        "current_model": ollama_service.default_model,
         "hardware": hw,
     }
 
