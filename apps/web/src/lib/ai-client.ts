@@ -1,4 +1,5 @@
 import type {
+	AIActiveLLM,
 	AIBackendStatus,
 	AIErrorType,
 	AISuggestion,
@@ -357,33 +358,47 @@ class AIClient {
 		const reader = response.body.getReader();
 		const decoder = new TextDecoder();
 
+		// A line can be split across two chunks, so keep the partial tail buffered
+		let buffer = "";
+		const readLine = (line: string): { result: T } | null => {
+			if (!line.trim()) return null;
+			try {
+				const data = JSON.parse(line) as {
+					ping?: boolean;
+					result?: T;
+					error?: string;
+				};
+				if (data.ping) return null;
+				if (data.error) {
+					throw new AIClientError(data.error, "backend_error");
+				}
+				if (data.result !== undefined) {
+					return { result: data.result };
+				}
+			} catch (e) {
+				if (e instanceof AIClientError) throw e;
+			}
+			return null;
+		};
+
 		try {
 			while (true) {
 				const { done, value } = await reader.read();
 				if (done) break;
 
-				const chunk = decoder.decode(value, { stream: true });
-				const lines = chunk.split("\n").filter(Boolean);
+				buffer += decoder.decode(value, { stream: true });
+				const lines = buffer.split("\n");
+				buffer = lines.pop() ?? "";
 
 				for (const line of lines) {
-					try {
-						const data = JSON.parse(line) as {
-							ping?: boolean;
-							result?: T;
-							error?: string;
-						};
-						if (data.ping) continue;
-						if (data.error) {
-							throw new AIClientError(data.error, "backend_error");
-						}
-						if (data.result !== undefined) {
-							return data.result;
-						}
-					} catch (e) {
-						if (e instanceof AIClientError) throw e;
-					}
+					const hit = readLine(line);
+					if (hit) return hit.result;
 				}
 			}
+
+			buffer += decoder.decode();
+			const last = readLine(buffer);
+			if (last) return last.result;
 		} finally {
 			reader.releaseLock();
 		}
@@ -1922,6 +1937,16 @@ class AIClient {
 		});
 	}
 
+	/** Check frames + transcript against the TikTok Shop rules with the active vision model. */
+	async checkTikTokCompliance(
+		req: TikTokComplianceRequest,
+	): Promise<TikTokComplianceResult> {
+		return this.requestWithKeepalive("/api/compliance/tiktok", {
+			method: "POST",
+			body: JSON.stringify(req),
+		});
+	}
+
 	async recordScore(score: EngagementScoreResult & { project_id?: string; type?: string }): Promise<{ recorded: boolean; id: string }> {
 		return this.requestWithKeepalive("/api/engagement/record-score", {
 			method: "POST",
@@ -2027,6 +2052,54 @@ export interface EngagementScoreResult {
 	grade: string;
 	grade_label: string;
 }
+
+export type ComplianceCategoryId =
+	| "claims"
+	| "minors"
+	| "watermark"
+	| "product_ad";
+export type ComplianceLevel = "atencao" | "risco";
+export type ComplianceStatus = "ok" | ComplianceLevel;
+
+export interface TikTokComplianceRequest {
+	frames: { time: number; image: string }[];
+	transcript: { start: number; end: number; text: string }[];
+	ad_info?: string;
+}
+
+export interface ComplianceItem {
+	level: ComplianceLevel;
+	text: string;
+	evidence: string;
+	time: number | null;
+	suggestion: string;
+	source: "modelo" | "varredura";
+}
+
+export interface ComplianceCategoryResult {
+	status: ComplianceStatus;
+	items: ComplianceItem[];
+}
+
+export interface TikTokComplianceRefused {
+	refused: true;
+	reason: string;
+	llm: AIActiveLLM;
+}
+
+export interface TikTokComplianceReport {
+	refused: false;
+	llm: AIActiveLLM;
+	summary: string;
+	categories: Record<ComplianceCategoryId, ComplianceCategoryResult>;
+	frames_analyzed: number;
+	transcript_used: boolean;
+	ad_info_used: boolean;
+}
+
+export type TikTokComplianceResult =
+	| TikTokComplianceRefused
+	| TikTokComplianceReport;
 
 export interface ScoredClipData {
 	index: number;

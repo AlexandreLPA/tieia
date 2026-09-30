@@ -15,6 +15,7 @@ Usage in routes:
 import json
 import logging
 import re
+import time
 from collections.abc import AsyncIterator
 from typing import Any
 
@@ -24,6 +25,15 @@ from app.config import settings
 from app.services.ollama_service import ollama_service
 
 logger = logging.getLogger(__name__)
+
+OPENROUTER_CATALOG_TTL = 3600  # seconds
+
+_MODALITY_LABELS = {"text": "texto", "image": "imagem", "video": "vídeo", "audio": "áudio", "file": "arquivo"}
+_IMAGE_ERROR_RE = re.compile(r"image|modalit|vision|multimodal", re.IGNORECASE)
+
+
+class VisionUnsupportedError(RuntimeError):
+    """The active model can't take image input, or that couldn't be confirmed."""
 
 
 class LLMBackend:
@@ -46,6 +56,9 @@ class LLMBackend:
         # container restart. None means "use the .env-configured default".
         self._backend_mode_override: str | None = None
         self._openrouter_model_override: str | None = None
+        # OpenRouter model id -> input modalities, fetched lazily by vision_support()
+        self._or_catalog: dict[str, list[str]] | None = None
+        self._or_catalog_at = 0.0
 
     # ── Public properties ─────────────────────────────────────────────
 
@@ -463,6 +476,172 @@ class LLMBackend:
                 self._tq_available = False
 
         return await self._ollama_chat(messages, model, temperature)
+
+    # ── Vision (multimodal) ───────────────────────────────────────────
+    # Kept apart from generate()/chat(): those fall back to Ollama on errors,
+    # and an image request must never silently degrade to text-only.
+
+    async def _openrouter_catalog(self) -> dict[str, list[str]] | None:
+        """OpenRouter model id -> input modalities, cached ~1 h. None if never fetched."""
+        now = time.monotonic()
+        if self._or_catalog is not None and now - self._or_catalog_at < OPENROUTER_CATALOG_TTL:
+            return self._or_catalog
+        try:
+            async with httpx.AsyncClient(timeout=httpx.Timeout(20, connect=10.0)) as client:
+                resp = await client.get(f"{settings.OPENROUTER_BASE_URL}/models")
+                resp.raise_for_status()
+                entries = resp.json().get("data") or []
+        except Exception:
+            logger.warning("OpenRouter model catalog unavailable", exc_info=True)
+            return self._or_catalog  # a stale copy still beats guessing
+
+        catalog: dict[str, list[str]] = {}
+        for entry in entries:
+            if isinstance(entry, dict) and isinstance(entry.get("id"), str):
+                architecture = entry.get("architecture") or {}
+                catalog[entry["id"]] = list(architecture.get("input_modalities") or [])
+        if not catalog:
+            return self._or_catalog
+        self._or_catalog = catalog
+        self._or_catalog_at = now
+        return catalog
+
+    async def _openrouter_vision(self, model: str) -> tuple[bool, str]:
+        catalog = await self._openrouter_catalog()
+        if catalog is None:
+            return False, (
+                "Não consegui consultar o catálogo da OpenRouter, então não dá para "
+                f"confirmar que '{model}' aceita imagens."
+            )
+        modalities = catalog.get(model)
+        if modalities is None:
+            modalities = catalog.get(model.split(":", 1)[0])
+        if modalities is None:
+            return False, (
+                f"O modelo '{model}' não aparece no catálogo da OpenRouter, então não "
+                "dá para confirmar que ele aceita imagens."
+            )
+        if "image" not in modalities:
+            accepted = ", ".join(_MODALITY_LABELS.get(m, m) for m in modalities) or "texto"
+            return False, f"O modelo '{model}' não aceita imagens (entrada: {accepted})."
+        return True, ""
+
+    async def _ollama_vision(self, model: str) -> tuple[bool, str]:
+        try:
+            async with self._ollama_client() as client:
+                resp = await client.post("/api/show", json={"model": model, "name": model})
+            info = resp.json() if resp.status_code == 200 else {}
+        except (httpx.HTTPError, ValueError):
+            return False, "Não consegui consultar o Ollama para confirmar que o modelo local aceita imagens."
+        if resp.status_code == 404:
+            return False, f"O modelo '{model}' não está instalado no Ollama."
+        if resp.status_code != 200:
+            return False, f"O Ollama respondeu HTTP {resp.status_code} ao consultar '{model}'."
+
+        capabilities = info.get("capabilities")
+        if isinstance(capabilities, list):
+            supported = "vision" in capabilities
+        else:
+            families = (info.get("details") or {}).get("families") or []
+            supported = bool(info.get("projector_info")) or "clip" in families
+        if not supported:
+            return False, f"O modelo local '{model}' não aceita imagens."
+        return True, ""
+
+    async def vision_support(self) -> dict[str, Any]:
+        """Whether the backend that would really serve the next request accepts images.
+
+        Returns {backend, model, cloud, ok, reason}; reason is empty when ok.
+        """
+        if self._use_openrouter():
+            backend, model = "openrouter", self.openrouter_model
+            ok, reason = await self._openrouter_vision(model)
+        elif await self._should_use_turboquant():
+            backend, model = "turboquant", self._tq_model or ""
+            ok, reason = False, (
+                "O serviço TurboQuant só trata texto (não aceita imagens). "
+                "Use um modelo local com visão no Ollama ou um modelo multimodal da OpenRouter."
+            )
+        else:
+            backend, model = "ollama", self.default_model
+            ok, reason = await self._ollama_vision(model)
+        return {"backend": backend, "model": model, "cloud": backend == "openrouter", "ok": ok, "reason": reason}
+
+    async def chat_vision(
+        self,
+        messages: list[dict[str, Any]],
+        max_tokens: int = 4096,
+        temperature: float = 0.2,
+    ) -> str:
+        """Multimodal chat on the active backend. No text-only fallback: failures propagate."""
+        support = await self.vision_support()
+        if not support["ok"]:
+            raise VisionUnsupportedError(support["reason"])
+
+        backend, model = support["backend"], support["model"]
+        if backend == "openrouter":
+            url = f"{settings.OPENROUTER_BASE_URL}/chat/completions"
+            headers, read_timeout = self._or_headers(), 300.0
+        else:
+            url = f"{self.ollama_url}/v1/chat/completions"
+            headers, read_timeout = {}, float(settings.OLLAMA_TIMEOUT)
+
+        images = sum(
+            1
+            for message in messages
+            if isinstance(message.get("content"), list)
+            for part in message["content"]
+            if part.get("type") == "image_url"
+        )
+        logger.info("Vision request: backend=%s model=%s images=%d", backend, model, images)
+
+        payload = {"model": model, "messages": messages, "max_tokens": max_tokens, "temperature": temperature}
+        try:
+            async with httpx.AsyncClient(timeout=httpx.Timeout(read_timeout, connect=10.0)) as client:
+                resp = await client.post(url, headers=headers, json=payload)
+        except httpx.HTTPError as exc:
+            raise RuntimeError(
+                f"Falha de rede ao chamar o modelo '{model}' ({type(exc).__name__}): {exc}"
+            ) from exc
+
+        try:
+            data = resp.json()
+        except ValueError:
+            data = {}
+        if not isinstance(data, dict):
+            data = {}
+
+        # OpenRouter can answer HTTP 200 with an error object when the upstream fails
+        error = data.get("error")
+        if resp.status_code >= 400 or (error and not data.get("choices")):
+            message = self._provider_error(data, resp)
+            code = resp.status_code
+            if code < 400 and isinstance(error, dict) and isinstance(error.get("code"), int):
+                code = error["code"]
+            if 400 <= code < 500 and _IMAGE_ERROR_RE.search(message):
+                raise VisionUnsupportedError(f"O modelo '{model}' recusou a imagem: {message}")
+            raise RuntimeError(f"O provedor recusou a requisição (HTTP {code}): {message}")
+
+        choices = data.get("choices") or []
+        content = ((choices[0].get("message") or {}).get("content")) if choices else None
+        if isinstance(content, list):
+            content = "".join(p.get("text", "") for p in content if isinstance(p, dict))
+        text = (content or "").strip()
+        if not text:
+            hint = ""
+            if choices and choices[0].get("finish_reason") == "length":
+                hint = " O limite de tokens acabou antes da resposta (comum em modelos com raciocínio)."
+            raise RuntimeError(f"O modelo '{model}' devolveu uma resposta vazia.{hint}")
+        return text
+
+    @staticmethod
+    def _provider_error(data: dict[str, Any], resp: httpx.Response) -> str:
+        error = data.get("error")
+        if isinstance(error, dict) and error.get("message"):
+            return str(error["message"])
+        if error:
+            return str(error)
+        return resp.text[:300] or f"HTTP {resp.status_code}"
 
     async def check_available(self) -> bool:
         """Check if any LLM backend is available."""
