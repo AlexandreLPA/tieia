@@ -34,6 +34,7 @@ import type {
 	ElementDragState,
 } from "@/types/timeline";
 import type { MediaAsset } from "@/types/assets";
+import { VideoFilmstrip } from "@/components/editor/panels/timeline/video-filmstrip";
 import { mediaSupportsAudio } from "@/lib/media/media-utils";
 import { getActionDefinition, type TAction, invokeAction } from "@/lib/actions";
 import { useElementSelection } from "@/hooks/timeline/element/use-element-selection";
@@ -860,6 +861,15 @@ const ELEMENT_CONTENT_RENDERERS: Record<
 		const mediaAsset = mediaAssets.find(
 			(asset) => asset.id === videoElement.mediaId,
 		);
+		if (mediaAsset?.file) {
+			return (
+				<VideoFilmstrip
+					element={videoElement}
+					mediaAsset={mediaAsset}
+					trackHeight={getTrackHeight({ type: track.type })}
+				/>
+			);
+		}
 		return renderTiledMedia({
 			element: videoElement,
 			imageUrl: mediaAsset?.thumbnailUrl,
