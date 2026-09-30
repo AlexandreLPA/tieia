@@ -595,7 +595,15 @@ class LLMBackend:
         )
         logger.info("Vision request: backend=%s model=%s images=%d", backend, model, images)
 
-        payload = {"model": model, "messages": messages, "max_tokens": max_tokens, "temperature": temperature}
+        payload: dict[str, Any] = {
+            "model": model,
+            "messages": messages,
+            "max_tokens": max_tokens,
+            "temperature": temperature,
+        }
+        if backend == "openrouter":
+            # Default reasoning ran for minutes and could still leave the answer empty
+            payload["reasoning"] = {"effort": "low"}
         try:
             async with httpx.AsyncClient(timeout=httpx.Timeout(read_timeout, connect=10.0)) as client:
                 resp = await client.post(url, headers=headers, json=payload)
@@ -630,7 +638,10 @@ class LLMBackend:
         if not text:
             hint = ""
             if choices and choices[0].get("finish_reason") == "length":
-                hint = " O limite de tokens acabou antes da resposta (comum em modelos com raciocínio)."
+                hint = (
+                    " Ele gastou o limite de tokens desta resposta raciocinando antes de responder"
+                    " (não é limite diário). Tente de novo."
+                )
             raise RuntimeError(f"O modelo '{model}' devolveu uma resposta vazia.{hint}")
         return text
 

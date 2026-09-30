@@ -22,6 +22,8 @@ MAX_IMAGE_BYTES = 2 * 1024 * 1024
 MAX_TRANSCRIPT_CHARS = 12_000
 MAX_AD_INFO_CHARS = 2000
 MAX_ITEMS_PER_CATEGORY = 15
+# Room for the model's reasoning plus the JSON answer (4096 could run out)
+COMPLIANCE_MAX_TOKENS = 16_000
 
 CATEGORY_IDS = ("claims", "minors", "watermark", "product_ad")
 
@@ -293,7 +295,7 @@ async def check_tiktok_compliance(
     segments = [s for s in transcript if str(s.get("text", "")).strip()]
     messages = build_messages(frames, segments, ad_info)
     try:
-        raw = await llm_backend.chat_vision(messages)
+        raw = await llm_backend.chat_vision(messages, max_tokens=COMPLIANCE_MAX_TOKENS)
     except VisionUnsupportedError as exc:
         return {"refused": True, "reason": str(exc), "llm": llm}
 
