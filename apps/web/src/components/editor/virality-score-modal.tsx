@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { useAIStore } from "@/stores/ai-store";
 import { useAssetsPanelStore } from "@/stores/assets-panel-store";
 import { ComplianceCheckTab } from "@/components/editor/compliance-check-tab";
+import { TranscribeNotice } from "@/components/editor/transcribe-notice";
 
 const GRADE_COLORS: Record<string, string> = {
 	A: "text-green-400",
@@ -182,11 +183,7 @@ export function ViralityScoreModal({ open, onOpenChange }: ViralityScoreModalPro
 										<p className="text-sm text-muted-foreground">
 											Avalie o potencial viral do seu vídeo antes de publicar e receba sugestões práticas para melhorar o engajamento.
 										</p>
-										{segments.length === 0 && (
-											<p className="rounded-lg border border-yellow-500/30 bg-yellow-500/5 p-2 text-xs text-yellow-400">
-												Sem transcrição a nota fica imprecisa: esta checagem avalia principalmente o texto falado. Transcreva o vídeo antes (botão do microfone).
-											</p>
-										)}
+										<TranscribeNotice description="Sem transcrição a nota fica imprecisa: esta checagem avalia principalmente o texto falado." />
 										<Button className="w-full" onClick={handleCheck}>
 											Calcular Pontuação Viral
 										</Button>

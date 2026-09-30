@@ -6,7 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
 	Upload04Icon,
-	AiMicIcon,
+	ClosedCaptionIcon,
 	TextIcon,
 	SparklesIcon,
 	Cancel01Icon,
@@ -27,10 +27,10 @@ const GUIDE_STEPS: GuideStep[] = [
 		description: "Arraste um arquivo aqui ou use o painel de mídia à esquerda",
 	},
 	{
-		icon: AiMicIcon,
+		icon: ClosedCaptionIcon,
 		title: "Transcreva",
-		description: "Clique no botão do microfone para converter a fala em texto editável",
-		shortcut: "Toolbar",
+		description: "Abra Legendas (ícone CC) na barra lateral e clique em Gerar transcrição",
+		shortcut: "Legendas",
 	},
 	{
 		icon: TextIcon,

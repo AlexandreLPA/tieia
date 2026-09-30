@@ -55,7 +55,7 @@ export function Onboarding() {
 								<StepItem
 									number={2}
 									title="Transcreva"
-									description="Clique no botão do microfone para converter fala em texto"
+									description="Abra Legendas (ícone CC) na barra lateral e clique em Gerar transcrição"
 								/>
 								<StepItem
 									number={3}

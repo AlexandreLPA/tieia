@@ -62,6 +62,15 @@ interface TranscriptState {
 		speakerSegments: { speaker: string; start: number; end: number }[],
 	) => void;
 	reset: () => void;
+
+	/** Set by requestTranscription(); the Captions panel picks it up and runs its own flow */
+	transcriptionRequested: boolean;
+	/** Captions panel transcription state, for UIs outside the panel (modal, chat) */
+	captionsTranscription: { running: boolean; error: string | null };
+	requestTranscription: () => void;
+	/** Returns whether a request was pending, clearing it */
+	takeTranscriptionRequest: () => boolean;
+	setCaptionsTranscription: (state: { running: boolean; error: string | null }) => void;
 }
 
 const initialState = {
@@ -78,10 +87,27 @@ const initialState = {
 	speakerNames: {} as Record<string, string>,
 	speakerPositions: {} as Record<string, "left" | "right" | "center">,
 	emotions: [] as EmotionSegment[],
+	transcriptionRequested: false,
+	captionsTranscription: { running: false, error: null as string | null },
 };
 
 export const useTranscriptStore = create<TranscriptState>()((set, get) => ({
 	...initialState,
+
+	requestTranscription: () =>
+		set({
+			transcriptionRequested: true,
+			captionsTranscription: { running: false, error: null },
+		}),
+
+	takeTranscriptionRequest: () => {
+		if (!get().transcriptionRequested) return false;
+		set({ transcriptionRequested: false });
+		return true;
+	},
+
+	setCaptionsTranscription: (captionsTranscription) =>
+		set({ captionsTranscription }),
 
 	setSegments: (segments) => set({ segments }),
 

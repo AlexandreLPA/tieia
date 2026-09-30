@@ -14,6 +14,7 @@ import type {
 	TikTokComplianceResult,
 } from "@/lib/ai-client";
 import { useEditor } from "@/hooks/use-editor";
+import { TranscribeNotice } from "@/components/editor/transcribe-notice";
 import { captureComplianceFrames } from "@/services/compliance/capture-frames";
 import { useAIStore } from "@/stores/ai-store";
 import { useTranscriptStore } from "@/stores/transcript-store";
@@ -230,12 +231,7 @@ export function ComplianceCheckTab({
 						Captura quadros do vídeo e, junto com a transcrição, pergunta ao
 						modelo de IA ativo se ele viola as regras do TikTok Shop.
 					</p>
-					{segments.length === 0 && (
-						<p className="rounded-lg border border-yellow-500/30 bg-yellow-500/5 p-2 text-xs text-yellow-400">
-							Sem transcrição, a checagem das falas perde força; a das imagens
-							continua. Transcreva o vídeo antes (botão do microfone).
-						</p>
-					)}
+					<TranscribeNotice description="Sem transcrição, a checagem das falas perde força; a das imagens continua." />
 					<div className="space-y-1.5">
 						<label
 							htmlFor="compliance-ad-info"

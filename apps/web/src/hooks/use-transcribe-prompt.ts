@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { useEditor } from "@/hooks/use-editor";
 import { useTranscriptStore } from "@/stores/transcript-store";
 import { useAIStatus } from "@/hooks/use-ai-status";
+import { useStartTranscription } from "@/hooks/use-start-transcription";
 import { toast } from "sonner";
 
 const DISMISSED_KEY_PREFIX = "opencut-transcribe-prompt-dismissed:";
@@ -37,6 +38,7 @@ export function useTranscribePrompt() {
 	const hasPrompted = useRef(false);
 	const segments = useTranscriptStore((s) => s.segments);
 	const isTranscribing = useTranscriptStore((s) => s.isTranscribing);
+	const startTranscription = useStartTranscription();
 
 	useEffect(() => {
 		if (hasPrompted.current) return;
@@ -63,14 +65,9 @@ export function useTranscribePrompt() {
 				closeButton: true,
 				action: {
 					label: "Transcrever",
-					onClick: () => {
-						// Trigger via the AI toolbar — user clicks the mic button
-						toast.info(
-							"Clique no botão de microfone na barra de ferramentas para iniciar a transcrição.",
-						);
-					},
+					onClick: startTranscription,
 				},
 			});
 		}
-	}, [editor, isConnected, segments.length, isTranscribing]);
+	}, [editor, isConnected, segments.length, isTranscribing, startTranscription]);
 }

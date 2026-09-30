@@ -41,6 +41,7 @@ import {
 	type CapturedFrame,
 	type FrameDensity,
 } from "@/services/compliance/capture-frames";
+import { TranscribeNotice } from "@/components/editor/transcribe-notice";
 import { EditorCore } from "@/core";
 import { useAIStatus } from "@/hooks/use-ai-status";
 import { useAIStore, type StudioMessage } from "@/stores/ai-store";
@@ -548,6 +549,12 @@ export function AIStudioView() {
 
 		const history = messages.slice(-MAX_HISTORY_MESSAGES);
 		const frameCount = isStudioChat ? planFrameCount(support) : 0;
+		const sent = [
+			hasTranscript ? "transcrição" : null,
+			"timeline",
+		]
+			.filter(Boolean)
+			.join(" + ");
 		const userMessage: StudioMessage = {
 			id: generateUUID(),
 			role: "user",
@@ -556,10 +563,10 @@ export function AIStudioView() {
 			note: !isStudioChat
 				? undefined
 				: frameCount > 0
-					? `Vídeo anexado: ${frameCount} quadros + transcrição + timeline`
+					? `Vídeo anexado: ${frameCount} quadros + ${sent}`
 					: hasVisual && attachVideo && support?.ok === false
-						? "O modelo atual não vê imagens: foram só a transcrição e a timeline"
-						: "Contexto enviado: transcrição + timeline",
+						? `Modelo sem visão · enviado: ${sent}`
+						: `Enviado: ${sent}`,
 		};
 		addMessage(userMessage);
 		if (!overrideText) {
@@ -1138,6 +1145,12 @@ export function AIStudioView() {
 												? "Vídeo da timeline anexado"
 												: "Vídeo não anexado"}
 									</button>
+								)}
+								{hasVisual && (
+									<TranscribeNotice
+										compact
+										description="Sem transcrição a IA não sabe o que é falado no vídeo."
+									/>
 								)}
 								{attachments.map((src) => (
 									<div key={src} className="relative">

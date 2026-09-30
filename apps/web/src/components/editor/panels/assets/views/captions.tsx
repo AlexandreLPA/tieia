@@ -9,7 +9,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useEditor } from "@/hooks/use-editor";
 import { DEFAULT_TEXT_ELEMENT } from "@/constants/text-constants";
 import { WHISPER_LANGUAGES } from "@/constants/transcription-constants";
@@ -170,6 +170,9 @@ export function Captions() {
 	const [translatingStep, setTranslatingStep] = useState("");
 	const containerRef = useRef<HTMLDivElement>(null);
 	const segments = useTranscriptStore((s) => s.segments);
+	const transcriptionRequested = useTranscriptStore(
+		(s) => s.transcriptionRequested,
+	);
 	const editor = useEditor();
 
 	// Determine which languages to show based on engine
@@ -204,6 +207,14 @@ export function Captions() {
 	};
 
 	const handleGenerateTranscript = async () => {
+		let failure: string | null = null;
+		const fail = (message: string) => {
+			failure = message;
+			setError(message);
+		};
+		useTranscriptStore
+			.getState()
+			.setCaptionsTranscription({ running: true, error: null });
 		const taskId = `transcription-${Date.now()}`;
 		const bgTasks = useBackgroundTasksStore.getState();
 
@@ -251,7 +262,7 @@ export function Captions() {
 			}
 
 			if (!foundMediaId) {
-				setError("Nenhum vídeo ou áudio encontrado na linha do tempo. Importe um arquivo primeiro.");
+				fail("Nenhum vídeo ou áudio encontrado na linha do tempo. Importe um arquivo primeiro.");
 				return;
 			}
 
@@ -260,7 +271,7 @@ export function Captions() {
 				.find((asset) => asset.id === foundMediaId);
 
 			if (!mediaAsset?.file) {
-				setError("Não foi possível acessar o arquivo de mídia para transcrição.");
+				fail("Não foi possível acessar o arquivo de mídia para transcrição.");
 				return;
 			}
 
@@ -333,7 +344,7 @@ export function Captions() {
 			}));
 
 			if (validSegments.length === 0) {
-				setError("Nenhuma fala detectada no vídeo. Tente outro idioma ou verifique se o vídeo tem áudio.");
+				fail("Nenhuma fala detectada no vídeo. Tente outro idioma ou verifique se o vídeo tem áudio.");
 				return;
 			}
 
@@ -502,13 +513,13 @@ export function Captions() {
 			console.error("Transcription failed:", err);
 			const message = err instanceof Error ? err.message : "Ocorreu um erro inesperado";
 			if (message.includes("Cannot connect") || message.includes("connection_refused")) {
-				setError("Não é possível conectar ao back-end de IA. Verifique se ele está em execução (docker compose up -d).");
+				fail("Não é possível conectar ao back-end de IA. Verifique se ele está em execução (docker compose up -d).");
 			} else if (message.includes("Sarvam API key")) {
-				setError("A chave de API do Sarvam não está configurada. Adicione OPENCUTAI_SARVAM_API_KEY ao seu ambiente.");
+				fail("A chave de API do Sarvam não está configurada. Adicione OPENCUTAI_SARVAM_API_KEY ao seu ambiente.");
 			} else if (message.includes("Smallest AI API key")) {
-				setError("A chave de API do Smallest AI não está configurada. Adicione-a em Configurações > Chaves de API, ou defina OPENCUTAI_SMALLEST_API_KEY no seu ambiente.");
+				fail("A chave de API do Smallest AI não está configurada. Adicione-a em Configurações > Chaves de API, ou defina OPENCUTAI_SMALLEST_API_KEY no seu ambiente.");
 			} else {
-				setError(message);
+				fail(message);
 			}
 			bgTasks.updateTask(taskId, {
 				status: "error",
@@ -517,9 +528,21 @@ export function Captions() {
 			});
 		} finally {
 			setIsProcessing(false);
+			useTranscriptStore
+				.getState()
+				.setCaptionsTranscription({ running: false, error: failure });
 			setProcessingStep("");
 		}
 	};
+
+	// "Transcrever agora" elsewhere in the app opens this panel and asks for a run
+	// biome-ignore lint/correctness/useExhaustiveDependencies: handleGenerateTranscript is recreated every render; the request flag is the trigger
+	useEffect(() => {
+		if (!transcriptionRequested || isProcessing) return;
+		if (useTranscriptStore.getState().takeTranscriptionRequest()) {
+			handleGenerateTranscript();
+		}
+	}, [transcriptionRequested, isProcessing]);
 
 	const addSubtitleTrack = ({
 		subtitleSegments,
