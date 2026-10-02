@@ -648,6 +648,17 @@ def _validate_model_id(model_id: str) -> None:
         )
 
 
+def _gpu_info() -> dict:
+    """Name and VRAM of the GPU this service can use, for the settings screen."""
+    if not torch.cuda.is_available():
+        return {"gpu_name": None, "gpu_vram_mb": 0}
+    props = torch.cuda.get_device_properties(torch.cuda.current_device())
+    return {
+        "gpu_name": props.name,
+        "gpu_vram_mb": round(props.total_memory / 1024 / 1024),
+    }
+
+
 def _detect_device() -> str:
     """Detect the best available device.
 
@@ -848,6 +859,7 @@ async def health() -> dict:
         ),
         "compression_ratio_last": manager.compression_ratio_last,
         "gpu_available": torch.cuda.is_available(),
+        **_gpu_info(),
         "device": compute_mode,
         "compute_mode": compute_mode,
         "memory_usage": _memory_info(),

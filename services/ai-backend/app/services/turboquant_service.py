@@ -63,6 +63,8 @@ class TurboQuantService:
                         "kv_cache_bits": data.get("kv_cache_bits"),
                         "max_context_length": data.get("max_context_length"),
                         "gpu_available": data.get("gpu_available", False),
+                        "gpu_name": data.get("gpu_name"),
+                        "gpu_vram_mb": data.get("gpu_vram_mb", 0),
                         "compute_mode": data.get("compute_mode"),
                         "turboquant_engine_available": data.get(
                             "turboquant_engine_available", False
@@ -126,6 +128,12 @@ class TurboQuantService:
         requested_bits = self.kv_cache_bits
 
         hw = model_registry.detect_hardware()
+        # This container has no GPU passthrough (and no torch), so it never
+        # sees one; the inference service is the one that runs on the GPU
+        if service_status and service_status.get("gpu_available"):
+            hw["gpu_available"] = True
+            hw["gpu_name"] = service_status.get("gpu_name") or hw.get("gpu_name")
+            hw["gpu_vram_mb"] = service_status.get("gpu_vram_mb") or hw.get("gpu_vram_mb", 0)
 
         # Resolve what the active backend will actually give us.
         backend_kind = (
