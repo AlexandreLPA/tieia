@@ -26,6 +26,11 @@ from app.services.ollama_service import ollama_service
 
 logger = logging.getLogger(__name__)
 
+# Room for the answer after a short reasoning pass
+OR_CHAT_MAX_TOKENS = 8000
+# Scores and classifications should not swing between identical runs
+JSON_TEMPERATURE = 0.2
+
 OPENROUTER_CATALOG_TTL = 3600  # seconds
 
 _MODALITY_LABELS = {"text": "texto", "image": "imagem", "video": "vídeo", "audio": "áudio", "file": "arquivo"}
@@ -327,12 +332,27 @@ class LLMBackend:
         messages.append({"role": "user", "content": prompt})
         return messages
 
-    async def _or_chat(self, messages: list[dict[str, str]]) -> str:
+    async def _or_chat(
+        self,
+        messages: list[dict[str, str]],
+        temperature: float | None = None,
+    ) -> str:
+        payload: dict[str, Any] = {
+            "model": self.openrouter_model,
+            "messages": messages,
+            # With default reasoning the model could spend the whole answer
+            # budget thinking and return empty content; ignored by models
+            # without reasoning
+            "reasoning": {"effort": "low"},
+            "max_tokens": OR_CHAT_MAX_TOKENS,
+        }
+        if temperature is not None:
+            payload["temperature"] = temperature
         async with httpx.AsyncClient(timeout=httpx.Timeout(300, connect=10.0)) as client:
             resp = await client.post(
                 f"{settings.OPENROUTER_BASE_URL}/chat/completions",
                 headers=self._or_headers(),
-                json={"model": self.openrouter_model, "messages": messages},
+                json=payload,
             )
             resp.raise_for_status()
             choices = resp.json().get("choices", [])
@@ -432,11 +452,22 @@ class LLMBackend:
         produce malformed JSON on the first attempt.
         """
         if self._use_openrouter():
-            try:
-                raw = await self._or_chat(self._messages(prompt, system))
-                return _parse_json_response(raw)
-            except Exception:
-                logger.warning("OpenRouter generate_json failed, falling back to local backend", exc_info=True)
+            # One retry on an empty/garbled answer: the local fallback is far
+            # slower and, without a GPU, can stall the whole request
+            for attempt in range(2):
+                try:
+                    raw = await self._or_chat(
+                        self._messages(prompt, system), temperature=JSON_TEMPERATURE
+                    )
+                    return _parse_json_response(raw)
+                except Exception:
+                    if attempt == 0:
+                        logger.warning("OpenRouter generate_json failed, retrying once")
+                        continue
+                    logger.warning(
+                        "OpenRouter generate_json failed, falling back to local backend",
+                        exc_info=True,
+                    )
 
         if await self._should_use_turboquant():
             try:
