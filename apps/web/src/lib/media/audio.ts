@@ -8,6 +8,9 @@ import type { MediaAsset } from "@/types/assets";
 import { canElementHaveAudio } from "@/lib/timeline/element-utils";
 import { canTracktHaveAudio } from "@/lib/timeline";
 import { mediaSupportsAudio } from "@/lib/media/media-utils";
+import { connectAudioEffectsChain } from "@/lib/audio/audio-effects";
+import { resolvePlaybackRateAtTime } from "@/lib/animation";
+import { getNumberChannelForPath } from "@/lib/animation/number-channel";
 import { Input, ALL_FORMATS, BlobSource, AudioBufferSink } from "mediabunny";
 
 const MAX_AUDIO_CHANNELS = 2;
@@ -16,7 +19,12 @@ const EXPORT_SAMPLE_RATE = 44100;
 export type CollectedAudioElement = Omit<
 	AudioElement,
 	"type" | "mediaId" | "volume" | "id" | "name" | "sourceType" | "sourceUrl"
-> & { buffer: AudioBuffer; volume: number };
+> & {
+	buffer: AudioBuffer;
+	volume: number;
+	playbackRate: number;
+	trackId: string;
+};
 
 export function createAudioContext({ sampleRate }: { sampleRate?: number } = {}): AudioContext {
 	const AudioContextConstructor =
@@ -83,7 +91,6 @@ export async function collectAudioElements({
 
 	for (const track of tracks) {
 		if (canTracktHaveAudio(track) && track.muted) continue;
-		const trackVolume = ("volume" in track ? track.volume : undefined) ?? 1;
 
 		for (const element of track.elements) {
 			if (!canElementHaveAudio(element)) continue;
@@ -93,7 +100,7 @@ export async function collectAudioElements({
 
 			if (element.type === "audio") {
 				// Same gain rule as preview playback: clip volume only turns it down
-				const volume = Math.min(element.volume ?? 1, 1) * trackVolume;
+				const volume = Math.min(element.volume ?? 1, 1);
 				const buffer =
 					element.sourceType === "upload"
 						? (() => {
@@ -114,6 +121,9 @@ export async function collectAudioElements({
 							trimEnd: element.trimEnd,
 							muted: element.muted || isTrackMuted,
 							volume,
+							playbackRate: element.playbackRate ?? 1,
+							animations: element.animations,
+							trackId: track.id,
 						};
 					}),
 				);
@@ -135,7 +145,10 @@ export async function collectAudioElements({
 							trimStart: element.trimStart,
 							trimEnd: element.trimEnd,
 							muted: elementMuted || isTrackMuted,
-							volume: trackVolume,
+							volume: 1,
+							playbackRate: element.playbackRate ?? 1,
+							animations: element.animations,
+							trackId: track.id,
 						};
 					}),
 				);
@@ -284,6 +297,7 @@ export interface AudioClipSource {
 	trimEnd: number;
 	muted: boolean;
 	volume: number;
+	playbackRate: number;
 }
 
 async function fetchLibraryAudioSource({
@@ -343,6 +357,7 @@ async function fetchLibraryAudioClip({
 			trimEnd: element.trimEnd,
 			muted,
 			volume: element.volume ?? 1,
+			playbackRate: element.playbackRate ?? 1,
 		};
 	} catch (error) {
 		console.warn("Failed to fetch library audio:", error);
@@ -386,6 +401,8 @@ function collectMediaAudioClip({
 		trimEnd: element.trimEnd,
 		muted,
 		volume: vol,
+		playbackRate:
+			"playbackRate" in element ? (element.playbackRate ?? 1) : 1,
 	};
 }
 
@@ -532,68 +549,105 @@ export async function createTimelineAudioBuffer({
 
 	if (audioElements.length === 0) return null;
 
-	const outputChannels = 2;
 	const outputLength = Math.ceil(duration * sampleRate);
-	const outputBuffer = context.createBuffer(
-		outputChannels,
-		outputLength,
-		sampleRate,
-	);
+	const offline = new OfflineAudioContext(2, outputLength, sampleRate);
+
+	// Same per-track graph as preview playback: gain -> effects -> pan
+	const trackInputs = new Map<string, AudioNode>();
+	const getTrackInput = (trackId: string): AudioNode => {
+		const existing = trackInputs.get(trackId);
+		if (existing) return existing;
+
+		const track = tracks.find((candidate) => candidate.id === trackId);
+		const gain = offline.createGain();
+		gain.gain.value = (track && "volume" in track ? track.volume : undefined) ?? 1;
+		const panner = offline.createStereoPanner();
+		panner.pan.value = (track && "pan" in track ? track.pan : undefined) ?? 0;
+		connectAudioEffectsChain({
+			ctx: offline,
+			input: gain,
+			output: panner,
+			effects:
+				(track && "audioEffects" in track ? track.audioEffects : undefined) ??
+				[],
+		});
+		panner.connect(offline.destination);
+		trackInputs.set(trackId, gain);
+		return gain;
+	};
 
 	for (const element of audioElements) {
 		if (element.muted) continue;
+		const clip = renderClipAtSpeed({ element, context: offline, sampleRate });
+		if (!clip) continue;
 
-		mixAudioChannels({
-			element,
-			outputBuffer,
-			outputLength,
-			sampleRate,
-		});
+		const source = offline.createBufferSource();
+		source.buffer = clip;
+		source.connect(getTrackInput(element.trackId));
+		source.start(Math.max(0, element.startTime));
 	}
 
-	return outputBuffer;
+	return await offline.startRendering();
 }
 
-function mixAudioChannels({
+// Fixed-rate steps between speed-curve lookups (about 3 ms at 44.1 kHz)
+const SPEED_BLOCK_SAMPLES = 128;
+
+/**
+ * The clip's audio as it plays on the timeline: speed (constant or curve)
+ * maps timeline time to source time exactly like the video renderer does,
+ * so picture and sound stay in sync. Pitch follows speed, as in preview.
+ */
+function renderClipAtSpeed({
 	element,
-	outputBuffer,
-	outputLength,
+	context,
 	sampleRate,
 }: {
 	element: CollectedAudioElement;
-	outputBuffer: AudioBuffer;
-	outputLength: number;
+	context: BaseAudioContext;
 	sampleRate: number;
-}): void {
-	const {
-		buffer,
-		startTime,
-		trimStart,
-		duration: elementDuration,
-		volume,
-	} = element;
+}): AudioBuffer | null {
+	const { buffer, trimStart, duration, playbackRate, animations, volume } =
+		element;
+	const length = Math.round(duration * sampleRate);
+	if (length <= 0) return null;
 
-	const sourceStartSample = Math.floor(trimStart * buffer.sampleRate);
-	const sourceLengthSamples = Math.floor(elementDuration * buffer.sampleRate);
-	const outputStartSample = Math.floor(startTime * sampleRate);
+	const hasSpeedCurve =
+		(getNumberChannelForPath({ animations, propertyPath: "playbackRate" })
+			?.keyframes.length ?? 0) > 0;
+	const sourceRatio = buffer.sampleRate / sampleRate;
+	const sources = [0, 1].map((channel) =>
+		buffer.getChannelData(Math.min(channel, buffer.numberOfChannels - 1)),
+	);
+	const sourceLength = sources[0].length;
+	const output = context.createBuffer(2, length, sampleRate);
+	const outputs = [output.getChannelData(0), output.getChannelData(1)];
 
-	const resampleRatio = sampleRate / buffer.sampleRate;
-	const resampledLength = Math.floor(sourceLengthSamples * resampleRatio);
+	let position = trimStart * buffer.sampleRate;
+	render: for (let block = 0; block < length; block += SPEED_BLOCK_SAMPLES) {
+		const rate = hasSpeedCurve
+			? resolvePlaybackRateAtTime({
+					basePlaybackRate: playbackRate,
+					animations,
+					localTime: block / sampleRate,
+				})
+			: playbackRate;
+		const step = Math.max(0, rate) * sourceRatio;
+		const blockEnd = Math.min(length, block + SPEED_BLOCK_SAMPLES);
 
-	const outputChannels = 2;
-	for (let channel = 0; channel < outputChannels; channel++) {
-		const outputData = outputBuffer.getChannelData(channel);
-		const sourceChannel = Math.min(channel, buffer.numberOfChannels - 1);
-		const sourceData = buffer.getChannelData(sourceChannel);
-
-		for (let i = 0; i < resampledLength; i++) {
-			const outputIndex = outputStartSample + i;
-			if (outputIndex >= outputLength) break;
-
-			const sourceIndex = sourceStartSample + Math.floor(i / resampleRatio);
-			if (sourceIndex >= sourceData.length) break;
-
-			outputData[outputIndex] += sourceData[sourceIndex] * volume;
+		for (let i = block; i < blockEnd; i++) {
+			const index = Math.floor(position);
+			if (index + 1 >= sourceLength) break render;
+			const fraction = position - index;
+			for (let channel = 0; channel < 2; channel++) {
+				const source = sources[channel];
+				outputs[channel][i] =
+					(source[index] + (source[index + 1] - source[index]) * fraction) *
+					volume;
+			}
+			position += step;
 		}
 	}
+
+	return output;
 }

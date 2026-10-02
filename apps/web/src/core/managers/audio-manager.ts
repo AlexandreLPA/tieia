@@ -1,10 +1,7 @@
 import type { EditorCore } from "@/core";
 import type { AudioClipSource } from "@/lib/media/audio";
 import { createAudioContext, collectAudioClips } from "@/lib/media/audio";
-import {
-	getAudioEffectDefinition,
-	type TrackAudioEffect,
-} from "@/lib/audio/audio-effects";
+import { connectAudioEffectsChain } from "@/lib/audio/audio-effects";
 import {
 	ALL_FORMATS,
 	AudioBufferSink,
@@ -172,7 +169,7 @@ export class AudioManager {
 		analyser.fftSize = 256;
 		analyser.smoothingTimeConstant = 0.8;
 
-		this.connectAudioEffectsChain({
+		connectAudioEffectsChain({
 			ctx,
 			input: gain,
 			output: panner,
@@ -184,39 +181,6 @@ export class AudioManager {
 		const nodes = { gain, panner, analyser };
 		this.trackNodes.set(trackId, nodes);
 		return nodes;
-	}
-
-	// wires enabled track audio effects (EQ, compressor, reverb, etc.) in
-	// series between the track gain and panner nodes
-	private connectAudioEffectsChain({
-		ctx,
-		input,
-		output,
-		effects,
-	}: {
-		ctx: AudioContext;
-		input: AudioNode;
-		output: AudioNode;
-		effects: TrackAudioEffect[];
-	}): void {
-		const enabledEffects = effects.filter((effect) => effect.enabled);
-		if (enabledEffects.length === 0) {
-			input.connect(output);
-			return;
-		}
-
-		let previousOutput: AudioNode = input;
-		for (const effect of enabledEffects) {
-			const definition = getAudioEffectDefinition(effect.type);
-			if (!definition) continue;
-
-			const nodes = definition.createNodes(ctx, effect.params);
-			if (nodes.length === 0) continue;
-
-			previousOutput.connect(nodes[0]);
-			previousOutput = nodes[nodes.length - 1];
-		}
-		previousOutput.connect(output);
 	}
 
 	private rebuildTrackNodes(): void {
@@ -415,8 +379,10 @@ export class AudioManager {
 		if (iteratorStartTime >= clipEnd) {
 			return;
 		}
+		// Speed maps timeline time to source time, same as the video renderer
+		const rate = clip.playbackRate > 0 ? clip.playbackRate : 1;
 		const sourceStartTime =
-			clip.trimStart + (iteratorStartTime - clip.startTime);
+			clip.trimStart + (iteratorStartTime - clip.startTime) * rate;
 
 		let iterator: AsyncGenerator<WrappedAudioBuffer, void, unknown>;
 		try {
@@ -432,17 +398,14 @@ export class AudioManager {
 				if (!this.editor.playback.getIsPlaying()) return;
 				if (sessionId !== this.playbackSessionId) return;
 
-				const timelineTime = clip.startTime + (timestamp - clip.trimStart);
+				const timelineTime =
+					clip.startTime + (timestamp - clip.trimStart) / rate;
 				if (timelineTime >= clipEnd) break;
 
 				const node = audioContext.createBufferSource();
 				node.buffer = buffer;
 
-				// Apply per-clip playback rate (speed control)
-				const clipRate = (clip as unknown as { playbackRate?: number }).playbackRate;
-				if (typeof clipRate === "number" && clipRate !== 1.0) {
-					node.playbackRate.value = clipRate;
-				}
+				if (rate !== 1) node.playbackRate.value = rate;
 
 				const destinationNode = this.getTrackDestination(clip.id);
 
@@ -466,8 +429,9 @@ export class AudioManager {
 					consecutiveDroppedBufferCount = 0;
 				} else {
 					const offset = audioContext.currentTime - startTimestamp;
-					if (offset < buffer.duration) {
-						node.start(audioContext.currentTime, offset);
+					if (offset < buffer.duration / rate) {
+						// start() offsets are in buffer time, which runs `rate` times faster
+						node.start(audioContext.currentTime, offset * rate);
 						consecutiveDroppedBufferCount = 0;
 					} else {
 						consecutiveDroppedBufferCount += 1;

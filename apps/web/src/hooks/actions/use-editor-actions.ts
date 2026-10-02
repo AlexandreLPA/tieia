@@ -370,6 +370,8 @@ export function useEditorActions() {
 						trimEnd: element.trimEnd,
 						sourceDuration: element.sourceDuration,
 						volume: 1,
+						// Keeps the separated audio in sync with a sped-up clip
+						playbackRate: element.playbackRate,
 					},
 					placement: { mode: "auto" },
 				});

@@ -22,7 +22,10 @@ export interface AudioEffectDefinition {
 	name: string;
 	keywords: string[];
 	params: AudioEffectParam[];
-	createNodes: (ctx: AudioContext, params: Record<string, number>) => AudioNode[];
+	createNodes: (
+		ctx: BaseAudioContext,
+		params: Record<string, number>,
+	) => AudioNode[];
 }
 
 /** A configured audio effect instance stored on a track. */
@@ -212,4 +215,34 @@ export function getAudioEffectDefinition(type: AudioEffectType): AudioEffectDefi
 
 export function getAllAudioEffectDefinitions(): AudioEffectDefinition[] {
 	return Object.values(AUDIO_EFFECT_DEFINITIONS);
+}
+
+/**
+ * Wires the enabled track effects in series between `input` and `output`.
+ * Shared by preview playback and the export mixdown so both sound the same.
+ */
+export function connectAudioEffectsChain({
+	ctx,
+	input,
+	output,
+	effects,
+}: {
+	ctx: BaseAudioContext;
+	input: AudioNode;
+	output: AudioNode;
+	effects: TrackAudioEffect[];
+}): void {
+	let previousOutput: AudioNode = input;
+	for (const effect of effects) {
+		if (!effect.enabled) continue;
+		const definition = getAudioEffectDefinition(effect.type);
+		if (!definition) continue;
+
+		const nodes = definition.createNodes(ctx, effect.params);
+		if (nodes.length === 0) continue;
+
+		previousOutput.connect(nodes[0]);
+		previousOutput = nodes[nodes.length - 1];
+	}
+	previousOutput.connect(output);
 }
