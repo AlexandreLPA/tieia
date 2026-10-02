@@ -9,6 +9,7 @@ import { TIMELINE_CONSTANTS } from "@/constants/timeline-constants";
 import { useEdgeAutoScroll } from "@/hooks/timeline/use-edge-auto-scroll";
 import type { ElementDragState } from "@/types/timeline";
 import { useEditor } from "@/hooks/use-editor";
+import { TransitionJunctions } from "./transition-junctions";
 
 interface TimelineTrackContentProps {
 	track: TimelineTrack;
@@ -66,7 +67,7 @@ export function TimelineTrackContent({
 
 	return (
 		<div
-			className="size-full"
+			className="group/track size-full"
 			role="button"
 			tabIndex={0}
 			onClick={(event) => {
@@ -115,6 +116,11 @@ export function TimelineTrackContent({
 						);
 					})
 				)}
+				<TransitionJunctions
+					track={track}
+					zoomLevel={zoomLevel}
+					isDragging={dragState.isDragging}
+				/>
 			</div>
 		</div>
 	);

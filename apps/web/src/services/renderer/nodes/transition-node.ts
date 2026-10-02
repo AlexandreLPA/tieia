@@ -9,6 +9,10 @@ import type { BlendMode } from "@/types/rendering";
 import type { ElementAnimations } from "@/types/animation";
 import { renderTransition } from "../transition-renderer";
 import { getTransition } from "@/lib/transitions";
+import { getElementKeyframes } from "@/lib/animation";
+
+// Keeps a held frame inside the clip instead of one step past its end
+const EDGE_FRAME_S = 1 / 60;
 
 export interface TransitionSourceParams {
 	duration: number;
@@ -54,13 +58,11 @@ export class TransitionNode extends BaseNode<TransitionNodeParams> {
 
 		const canvasA = await this.renderSourceFrame({
 			renderer,
-			sourceParams: this.params.sourceA,
-			time,
+			...this.extendPastCut({ side: "a", time }),
 		});
 		const canvasB = await this.renderSourceFrame({
 			renderer,
-			sourceParams: this.params.sourceB,
-			time,
+			...this.extendPastCut({ side: "b", time }),
 		});
 
 		if (!canvasA || !canvasB) return;
@@ -81,6 +83,45 @@ export class TransitionNode extends BaseNode<TransitionNodeParams> {
 		renderer.context.globalAlpha = 1;
 		renderer.context.drawImage(result as CanvasImageSource, 0, 0);
 		renderer.context.restore();
+	}
+
+	// Each clip ends at the cut, so on its own one side would be blank for half
+	// the blend. A keeps playing past the cut and B starts early, using footage
+	// the trim hid when there is any, otherwise holding the edge frame.
+	private extendPastCut({ side, time }: { side: "a" | "b"; time: number }): {
+		sourceParams: TransitionSourceParams;
+		time: number;
+	} {
+		const half = this.params.transitionDuration / 2;
+
+		if (side === "a") {
+			const source = this.params.sourceA;
+			const rate = source.playbackRate ?? 1;
+			const handle = Math.min(half, Math.max(0, source.trimEnd) / rate);
+			const duration = source.duration + handle;
+			return {
+				sourceParams: { ...source, duration },
+				time: Math.min(time, source.timeOffset + duration - EDGE_FRAME_S),
+			};
+		}
+
+		const source = this.params.sourceB;
+		const rate = source.playbackRate ?? 1;
+		// Shifting the start would also shift keyframes, so animated clips hold
+		const handle =
+			getElementKeyframes({ animations: source.animations }).length > 0
+				? 0
+				: Math.min(half, Math.max(0, source.trimStart) / rate);
+		const timeOffset = source.timeOffset - handle;
+		return {
+			sourceParams: {
+				...source,
+				timeOffset,
+				trimStart: source.trimStart - handle * rate,
+				duration: source.duration + handle,
+			},
+			time: Math.max(time, timeOffset),
+		};
 	}
 
 	private buildContentNode({

@@ -6,3 +6,5 @@ export {
 } from "./registry";
 export type { TransitionDefinition } from "./registry";
 export { registerDefaultTransitions } from "./definitions";
+export { getTransitionJunctions, getMaxTransitionDuration } from "./junctions";
+export type { TransitionJunction } from "./junctions";

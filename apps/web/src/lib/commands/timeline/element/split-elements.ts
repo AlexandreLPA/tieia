@@ -129,6 +129,8 @@ export class SplitElementsCommand extends Command {
 						trimEnd: element.trimEnd + rightVisibleDuration,
 						name: `${element.name} (left)`,
 						animations: leftAnimations,
+						// The new cut starts plain; the right piece keeps the old transition
+						...("transitionOut" in element && { transitionOut: undefined }),
 					},
 					{
 						...element,

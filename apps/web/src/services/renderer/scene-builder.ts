@@ -2,7 +2,6 @@ import type {
 	ImageElement,
 	TimelineTrack,
 	VideoElement,
-	VisualElement,
 } from "@/types/timeline";
 import type { MediaAsset } from "@/types/assets";
 import { RootNode } from "./nodes/root-node";
@@ -18,6 +17,7 @@ import type { BaseNode } from "./nodes/base-node";
 import type { TBackground, TCanvasSize } from "@/types/project";
 import { DEFAULT_BLUR_INTENSITY } from "@/constants/project-constants";
 import { isMainTrack } from "@/lib/timeline";
+import { getTransitionJunctions, hasTransition } from "@/lib/transitions";
 
 const PREVIEW_MAX_IMAGE_SIZE = 2048;
 const BLUR_BACKGROUND_ZOOM_SCALE = 1.4;
@@ -152,6 +152,11 @@ function buildTrackNodes({
 				);
 			}
 		}
+
+		// Right above its own clips, so overlays on higher tracks stay on top
+		nodes.push(
+			...buildTrackTransitionNodes({ track, mediaMap, isPreview, useProxy }),
+		);
 	}
 
 	return nodes;
@@ -198,11 +203,6 @@ export function buildScene({
 		useProxy,
 	});
 
-	const transitionNodes = buildTransitionNodes({
-		tracks: orderedTracksBottomToTop,
-		mediaMap,
-	});
-
 	for (const backgroundNode of buildBackgroundNodes({
 		background,
 		allNodes,
@@ -211,10 +211,6 @@ export function buildScene({
 	}
 
 	for (const node of allNodes) {
-		rootNode.add(node);
-	}
-
-	for (const node of transitionNodes) {
 		rootNode.add(node);
 	}
 
@@ -253,82 +249,68 @@ function buildBackgroundNodes({
 	return nodes;
 }
 
-function buildTransitionNodes({
-	tracks,
+function buildTrackTransitionNodes({
+	track,
 	mediaMap,
+	isPreview,
+	useProxy,
 }: {
-	tracks: TimelineTrack[];
+	track: TimelineTrack;
 	mediaMap: Map<string, MediaAsset>;
+	isPreview?: boolean;
+	useProxy?: boolean;
 }): TransitionNode[] {
 	const transitionNodes: TransitionNode[] = [];
 
-	for (const track of tracks) {
-		if (track.type === "effect") continue;
-
-		const elements = track.elements
-			.filter((el) => !("hidden" in el && el.hidden))
-			.slice()
-			.sort((a, b) => a.startTime - b.startTime);
-
-		for (let i = 0; i < elements.length - 1; i++) {
-			const current = elements[i] as VisualElement;
-			const next = elements[i + 1] as VisualElement;
-
-			if (!current.transitionOut) continue;
-
-			if (current.type === "video" || current.type === "image") {
-				const asset = mediaMap.get(current.mediaId);
-				if (!asset) continue;
-
-				const nextIsMedia = next.type === "video" || next.type === "image";
-
-				transitionNodes.push(
-					new TransitionNode({
-						transitionType: current.transitionOut.type,
-						transitionDuration: current.transitionOut.duration,
-						cutTime: current.startTime + current.duration,
-						sourceA: {
-							duration: current.duration,
-							timeOffset: current.startTime,
-							trimStart: current.trimStart,
-							trimEnd: current.trimEnd,
-							playbackRate:
-								current.type === "video" ? current.playbackRate : undefined,
-							transform: current.transform,
-							animations: current.animations,
-							opacity: current.opacity,
-							blendMode: current.blendMode,
-							effects: current.effects,
-							mediaId: current.mediaId,
-							mediaType: current.type,
-						},
-						sourceB: {
-							duration: next.duration,
-							timeOffset: next.startTime,
-							trimStart: next.trimStart,
-							trimEnd: next.trimEnd,
-							playbackRate:
-								next.type === "video" ? next.playbackRate : undefined,
-							transform: (next as VisualElement).transform,
-							animations: (next as VisualElement).animations,
-							opacity: (next as VisualElement).opacity,
-							blendMode: (next as VisualElement).blendMode,
-							effects: (next as VisualElement).effects,
-							mediaId: nextIsMedia
-								? (next as VideoElement | ImageElement).mediaId
-								: undefined,
-							mediaType: nextIsMedia
-								? (next.type as "video" | "image")
-								: undefined,
-						},
-						mediaMap: mediaMap as unknown as Map<
-							string,
-							{ url: string; file?: File }
-						>,
-					}),
-				);
-			}
+	for (const { from, to, cutTime } of getTransitionJunctions({ track })) {
+		if (
+			!from.transitionOut ||
+			!hasTransition({ transitionType: from.transitionOut.type })
+		) {
+			continue;
 		}
+
+		const sources = new Map<string, { url: string; file?: File }>();
+		for (const element of [from, to]) {
+			const asset = mediaMap.get(element.mediaId);
+			if (!asset?.file || !asset.url) continue;
+			// Same proxy rule as the clip nodes, so both read from one decoder
+			const proxyUrl = useProxy && isPreview ? asset.proxyUrl : undefined;
+			const proxyFile = proxyUrl ? asset.proxyFile : undefined;
+			sources.set(
+				asset.id,
+				proxyUrl && proxyFile
+					? { url: proxyUrl, file: proxyFile }
+					: { url: asset.url, file: asset.file },
+			);
+		}
+		if (sources.size === 0) continue;
+
+		const toSource = (element: VideoElement | ImageElement) => ({
+			duration: element.duration,
+			timeOffset: element.startTime,
+			trimStart: element.trimStart,
+			trimEnd: element.trimEnd,
+			playbackRate: element.type === "video" ? element.playbackRate : undefined,
+			transform: element.transform,
+			animations: element.animations,
+			opacity: element.opacity,
+			blendMode: element.blendMode,
+			effects: element.effects,
+			mediaId: element.mediaId,
+			mediaType: element.type,
+		});
+
+		transitionNodes.push(
+			new TransitionNode({
+				transitionType: from.transitionOut.type,
+				transitionDuration: from.transitionOut.duration,
+				cutTime,
+				sourceA: toSource(from),
+				sourceB: toSource(to),
+				mediaMap: sources,
+			}),
+		);
 	}
 
 	return transitionNodes;
