@@ -39,14 +39,76 @@ UPLOAD_DIR.mkdir(exist_ok=True)
 _detector = None
 
 
-def _get_detector():
-    global _detector
-    if _detector is None:
-        mp_face = mp.solutions.face_detection
-        _detector = mp_face.FaceDetection(
+class _MediaPipeDetector:
+    name = "mediapipe-face-detection"
+
+    def __init__(self) -> None:
+        self._detector = mp.solutions.face_detection.FaceDetection(
             model_selection=1,  # 1 = full range (better for far faces)
             min_detection_confidence=0.5,
         )
+
+    def detect(self, frame) -> list[dict]:
+        rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        result = self._detector.process(rgb)
+        faces = []
+        for det in result.detections or []:
+            bbox = det.location_data.relative_bounding_box
+            faces.append({
+                "x": round(float(bbox.xmin), 4),
+                "y": round(float(bbox.ymin), 4),
+                "width": round(float(bbox.width), 4),
+                "height": round(float(bbox.height), 4),
+                "confidence": round(float(det.score[0]), 3),
+            })
+        return faces
+
+
+class _HaarDetector:
+    """OpenCV's bundled frontal-face cascade: no model download needed."""
+
+    name = "opencv-haar-frontalface"
+
+    def __init__(self) -> None:
+        path = cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
+        self._cascade = cv2.CascadeClassifier(path)
+        if self._cascade.empty():
+            raise RuntimeError(f"Cannot load face cascade: {path}")
+
+    def detect(self, frame) -> list[dict]:
+        height, width = frame.shape[:2]
+        gray = cv2.equalizeHist(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY))
+        min_side = max(24, int(min(width, height) * 0.06))
+        boxes, _, weights = self._cascade.detectMultiScale3(
+            gray,
+            scaleFactor=1.1,
+            minNeighbors=6,
+            minSize=(min_side, min_side),
+            outputRejectLevels=True,
+        )
+        faces = []
+        for (x, y, w, h), weight in zip(boxes, weights):
+            faces.append({
+                "x": round(x / width, 4),
+                "y": round(y / height, 4),
+                "width": round(w / width, 4),
+                "height": round(h / height, 4),
+                # Cascade weights aren't probabilities; squash to 0-1
+                "confidence": round(float(min(1.0, max(0.0, weight / 10))), 3),
+            })
+        return faces
+
+
+def _get_detector():
+    """MediaPipe when it still ships the legacy `solutions` API (removed in
+    0.10.30+, which broke every detection); OpenCV's cascade otherwise."""
+    global _detector
+    if _detector is None:
+        if hasattr(mp, "solutions"):
+            _detector = _MediaPipeDetector()
+        else:
+            logger.warning("mediapipe %s has no solutions API; using OpenCV face cascade", mp.__version__)
+            _detector = _HaarDetector()
     return _detector
 
 
@@ -107,20 +169,7 @@ def _detect_faces_in_video(
             break
 
         timestamp = frame_idx / fps
-        rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        detection_result = detector.process(rgb)
-
-        faces = []
-        if detection_result.detections:
-            for det in detection_result.detections:
-                bbox = det.location_data.relative_bounding_box
-                faces.append({
-                    "x": round(float(bbox.xmin), 4),
-                    "y": round(float(bbox.ymin), 4),
-                    "width": round(float(bbox.width), 4),
-                    "height": round(float(bbox.height), 4),
-                    "confidence": round(float(det.score[0]), 3),
-                })
+        faces = detector.detect(frame)
 
         results.append({
             "timestamp": round(timestamp, 2),
@@ -137,9 +186,10 @@ def _detect_faces_in_video(
 @app.get("/health")
 async def health():
     try:
-        _get_detector()
+        detector_name = _get_detector().name
         model_loaded = True
     except Exception:
+        detector_name = "mediapipe-face-detection"
         model_loaded = False
 
     return {
@@ -147,7 +197,7 @@ async def health():
         "status": "running",
         "model": {
             "loaded": model_loaded,
-            "name": "mediapipe-face-detection",
+            "name": detector_name,
             "installed": model_loaded,
         },
         "version": "0.1.0",
