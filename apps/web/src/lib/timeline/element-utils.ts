@@ -186,6 +186,8 @@ export function buildTextElement({
 		hidden: t.hidden,
 		opacity: t.opacity ?? DEFAULT_TEXT_ELEMENT.opacity,
 		blendMode: t.blendMode ?? DEFAULT_BLEND_MODE,
+		...(t.stroke && { stroke: t.stroke }),
+		...(t.shadow && { shadow: t.shadow }),
 	};
 }
 

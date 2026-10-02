@@ -81,20 +81,63 @@ const TEXT_PRESETS: TextPreset[] = [
 	},
 	{
 		id: "outlined",
-		name: "Contornado",
-		preview: "Contornado",
+		name: "Branco com contorno",
+		preview: "Contorno",
 		config: {
-			content: "Contornado",
+			content: "Contorno",
 			fontSize: 20,
 			fontWeight: "bold",
 			fontFamily: "Inter",
 			color: "#FFFFFF",
-			background: {
+			stroke: { enabled: true, color: "#000000", width: 12 },
+		},
+	},
+	{
+		id: "outlined-yellow",
+		name: "Amarelo com contorno",
+		preview: "DESTAQUE",
+		config: {
+			content: "DESTAQUE",
+			fontSize: 20,
+			fontWeight: "bold",
+			fontFamily: "Inter",
+			color: "#FACC15",
+			stroke: { enabled: true, color: "#000000", width: 12 },
+		},
+	},
+	{
+		id: "shadow",
+		name: "Com sombra",
+		preview: "Sombra",
+		config: {
+			content: "Sombra",
+			fontSize: 20,
+			fontWeight: "bold",
+			fontFamily: "Inter",
+			color: "#FFFFFF",
+			shadow: {
 				enabled: true,
-				color: "transparent",
-				cornerRadius: 0,
-				paddingX: 0,
-				paddingY: 0,
+				color: "#000000",
+				blur: 15,
+				offsetX: 0,
+				offsetY: 6,
+			},
+		},
+	},
+	{
+		id: "neon",
+		name: "Neon",
+		preview: "Neon",
+		config: {
+			content: "Neon",
+			fontSize: 20,
+			fontWeight: "bold",
+			fontFamily: "Inter",
+			color: "#E0F7FF",
+			shadow: {
+				enabled: true,
+				color: "#22D3EE",
+				blur: 35,
 				offsetX: 0,
 				offsetY: 0,
 			},
@@ -248,6 +291,19 @@ export function TextView() {
 												fontWeight: preset.config.fontWeight ?? "normal",
 												color: preset.config.color ?? "#ffffff",
 												fontFamily: preset.config.fontFamily ?? "Inter",
+												...(preset.config.stroke?.enabled && {
+													WebkitTextStroke: `2px ${preset.config.stroke.color}`,
+													paintOrder: "stroke fill",
+												}),
+												...(preset.config.shadow?.enabled && {
+													textShadow: `0 ${preset.config.shadow.offsetY > 0 ? 2 : 0}px ${preset.config.shadow.offsetY > 0 ? 4 : 8}px ${preset.config.shadow.color}`,
+												}),
+												...(preset.config.background?.enabled &&
+													preset.config.background.color !== "transparent" && {
+														backgroundColor: preset.config.background.color,
+														borderRadius: 4,
+														padding: "1px 6px",
+													}),
 											}}
 										>
 											{preset.preview}
@@ -259,6 +315,7 @@ export function TextView() {
 									type: "text",
 									name: preset.name,
 									content: preset.config.content ?? "Text",
+									preset: preset.config,
 								}}
 								aspectRatio={2}
 								onAddToTimeline={({ currentTime }) =>

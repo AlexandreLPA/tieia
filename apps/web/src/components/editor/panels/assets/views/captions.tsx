@@ -33,10 +33,20 @@ import { useTranscriptStore } from "@/stores/transcript-store";
 import { getElementsAtTime, hasMediaId } from "@/lib/timeline";
 import { toast } from "sonner";
 import { aiClient } from "@/lib/ai-client";
-import type { TimelineElement } from "@/types/timeline";
+import type { TimelineElement, TimelineTrack } from "@/types/timeline";
 import { useBackgroundTasksStore } from "@/stores/background-tasks-store";
 import { downloadBlob } from "@/utils/browser";
 import { NLLB_LANGUAGES } from "@/lib/nllb-languages";
+import {
+	CAPTION_STYLES,
+	DEFAULT_CAPTION_STYLE_ID,
+	chunkCaptionSegments,
+	getCaptionStyle,
+	type CaptionStyle,
+} from "@/lib/captions/caption-styles";
+import { Switch } from "@/components/ui/switch";
+import { mapSegmentsToTimeline } from "@/lib/captions/timeline-mapping";
+import { cn } from "@/utils/ui";
 
 interface SubtitleTrackInfo {
 	trackId: string;
@@ -166,6 +176,9 @@ export function Captions() {
 	const [error, setError] = useState<string | null>(null);
 	const [subtitleTracks, setSubtitleTracks] = useState<SubtitleTrackInfo[]>([]);
 	const [translateLanguage, setTranslateLanguage] = useState("es");
+	const [captionStyleId, setCaptionStyleId] = useState(DEFAULT_CAPTION_STYLE_ID);
+	const [wordsPerCaption, setWordsPerCaption] = useState(3);
+	const [uppercaseCaptions, setUppercaseCaptions] = useState(false);
 	const [isTranslating, setIsTranslating] = useState(false);
 	const [translatingStep, setTranslatingStep] = useState("");
 	const containerRef = useRef<HTMLDivElement>(null);
@@ -245,21 +258,7 @@ export function Captions() {
 			// Find the media file from the timeline
 			setProcessingStep("Procurando mídia...");
 			bgTasks.updateTask(taskId, { progress: "Procurando mídia..." });
-			const tracks = editor.timeline.getTracks();
-			let foundMediaId: string | null = null;
-
-			for (const track of tracks) {
-				for (const element of track.elements) {
-					if (
-						(track.type === "video" || track.type === "audio") &&
-						hasMediaId(element as TimelineElement)
-					) {
-						foundMediaId = (element as TimelineElement & { mediaId: string }).mediaId;
-						break;
-					}
-				}
-				if (foundMediaId) break;
-			}
+			const foundMediaId = findTranscribedMediaId(editor.timeline.getTracks());
 
 			if (!foundMediaId) {
 				fail("Nenhum vídeo ou áudio encontrado na linha do tempo. Importe um arquivo primeiro.");
@@ -565,9 +564,35 @@ export function Captions() {
 		});
 		const canvasSize = editor.project.getActive().settings.canvasSize;
 		const subtitleY = canvasSize.height * yOffset;
+		const style = getCaptionStyle(captionStyleId).config;
+		// The transcript is timed against the source file, not the edit
+		const tracks = editor.timeline.getTracks();
+		const mediaId = findTranscribedMediaId(tracks);
+		const clips = tracks.flatMap((track) =>
+			track.elements.filter(
+				(element) =>
+					hasMediaId(element) &&
+					element.mediaId === mediaId &&
+					!("hidden" in element && element.hidden),
+			),
+		);
+		const captions = chunkCaptionSegments({
+			segments: mapSegmentsToTimeline({
+				segments: subtitleSegments,
+				clips: clips.map((clip) => ({
+					startTime: clip.startTime,
+					duration: clip.duration,
+					trimStart: clip.trimStart,
+					playbackRate:
+						"playbackRate" in clip ? clip.playbackRate : undefined,
+				})),
+			}),
+			maxWords: wordsPerCaption,
+			uppercase: uppercaseCaptions,
+		});
 
-		for (let i = 0; i < subtitleSegments.length; i++) {
-			const seg = subtitleSegments[i];
+		for (let i = 0; i < captions.length; i++) {
+			const seg = captions[i];
 
 			// Build word timings relative to the element's local time (0-based)
 			const wordTimings = seg.words?.map((w) => ({
@@ -584,22 +609,10 @@ export function Captions() {
 					content: seg.text,
 					duration: seg.end - seg.start,
 					startTime: seg.start,
-					fontSize: 4,
-					fontWeight: "bold",
-					color: "#ffffff",
-					highlightColor: "#FACC15",
+					fontSize: wordsPerCaption > 0 && wordsPerCaption <= 3 ? 5 : 4,
+					...style,
 					...(wordTimings && wordTimings.length > 0 ? { wordTimings } : {}),
 					textAlign: "center",
-					background: {
-						enabled: true,
-						color: "#000000",
-						cornerRadius: 4,
-						paddingX: 12,
-						paddingY: 6,
-						offsetX: 0,
-						offsetY: 0,
-					},
-					opacity: 0.95,
 					transform: {
 						scale: 1,
 						position: { x: 0, y: subtitleY },
@@ -610,6 +623,25 @@ export function Captions() {
 		}
 
 		return trackId;
+	};
+
+	const handleApplyStyleToTracks = (style: CaptionStyle) => {
+		const trackIds = new Set(activeSubtitleTracks.map((t) => t.trackId));
+		const updates = editor.timeline
+			.getTracks()
+			.filter((track) => trackIds.has(track.id))
+			.flatMap((track) =>
+				track.elements
+					.filter((element) => element.type === "text")
+					.map((element) => ({
+						trackId: track.id,
+						elementId: element.id,
+						updates: style.config,
+					})),
+			);
+		if (updates.length === 0) return;
+		editor.timeline.updateElements({ updates });
+		toast.success(`Estilo "${style.name}" aplicado a ${updates.length} legendas`);
 	};
 
 	const handleAddSubtitles = () => {
@@ -912,6 +944,71 @@ export function Captions() {
 
 				{segments.length > 0 && (
 					<>
+						{/* ── Caption Style ── */}
+						<div className="border-t pt-4 flex flex-col gap-3">
+							<Label className="text-xs">Estilo das legendas</Label>
+							<div className="grid grid-cols-2 gap-1.5">
+								{CAPTION_STYLES.map((style) => (
+									<CaptionStyleTile
+										key={style.id}
+										style={style}
+										selected={style.id === captionStyleId}
+										uppercase={uppercaseCaptions}
+										onSelect={() => setCaptionStyleId(style.id)}
+									/>
+								))}
+							</div>
+							<div className="flex flex-col gap-1.5">
+								<Label className="text-xs">Palavras por vez</Label>
+								<div className="flex flex-wrap gap-1">
+									{WORDS_PER_CAPTION_OPTIONS.map((option) => (
+										<Button
+											key={option.value}
+											size="sm"
+											variant={
+												wordsPerCaption === option.value ? "secondary" : "outline"
+											}
+											className={cn(
+												"h-6 min-w-0 px-2 text-[10px]",
+												wordsPerCaption === option.value && "ring-1 ring-primary",
+											)}
+											onClick={() => setWordsPerCaption(option.value)}
+										>
+											{option.label}
+										</Button>
+									))}
+								</div>
+							</div>
+							<div className="flex items-center justify-between gap-2">
+								<Label htmlFor="caption-uppercase" className="text-xs">
+									Tudo em maiúsculas
+								</Label>
+								<Switch
+									id="caption-uppercase"
+									checked={uppercaseCaptions}
+									onCheckedChange={setUppercaseCaptions}
+								/>
+							</div>
+							{activeSubtitleTracks.length > 0 && (
+								<>
+									<Button
+										variant="secondary"
+										size="sm"
+										className="w-full"
+										onClick={() =>
+											handleApplyStyleToTracks(getCaptionStyle(captionStyleId))
+										}
+									>
+										Aplicar estilo nas legendas atuais
+									</Button>
+									<p className="text-[10px] leading-snug text-muted-foreground">
+										Palavras por vez e maiúsculas valem ao adicionar. Para
+										mudar, remova as legendas e adicione de novo.
+									</p>
+								</>
+							)}
+						</div>
+
 						{/* ── Subtitle Tracks ── */}
 						<div className="border-t pt-4 flex flex-col gap-3">
 							<div className="flex items-center justify-between">
@@ -1099,4 +1196,95 @@ export function Captions() {
 			</div>
 		</PanelView>
 	);
+}
+
+const WORDS_PER_CAPTION_OPTIONS = [
+	{ value: 1, label: "1" },
+	{ value: 2, label: "2" },
+	{ value: 3, label: "3" },
+	{ value: 5, label: "5" },
+	{ value: 0, label: "Frase" },
+];
+
+/** Mini preview of a caption style; the middle word plays the spoken one */
+function CaptionStyleTile({
+	style,
+	selected,
+	uppercase,
+	onSelect,
+}: {
+	style: CaptionStyle;
+	selected: boolean;
+	uppercase: boolean;
+	onSelect: () => void;
+}) {
+	const { config } = style;
+	const words = ["olha", "só", "isso"].map((word) =>
+		uppercase ? word.toUpperCase() : word,
+	);
+	const textStyle: React.CSSProperties = {
+		color: config.color,
+		fontWeight: config.fontWeight === "bold" ? 800 : 400,
+		...(config.stroke?.enabled && {
+			WebkitTextStroke: `${Math.max(1, config.stroke.width / 4)}px ${config.stroke.color}`,
+			paintOrder: "stroke fill",
+		}),
+		...(config.shadow?.enabled && {
+			textShadow: `0 2px 4px ${config.shadow.color}`,
+		}),
+	};
+	const activeStyle: React.CSSProperties =
+		config.highlightStyle === "box"
+			? {
+					backgroundColor: config.highlightColor,
+					borderRadius: 3,
+					padding: "0 3px",
+				}
+			: config.highlightStyle === "none"
+				? {}
+				: { color: config.highlightColor };
+
+	return (
+		<button
+			type="button"
+			onClick={onSelect}
+			aria-pressed={selected}
+			className={cn(
+				"flex flex-col gap-1 rounded-md border p-1.5 text-left",
+				"hover:bg-accent/60 focus-visible:ring-ring focus-visible:ring-1 focus-visible:outline-none",
+				selected && "border-primary bg-primary/10",
+			)}
+		>
+			<span className="flex h-9 items-center justify-center gap-1 rounded bg-gradient-to-br from-slate-500 to-slate-700 text-[13px]">
+				<span
+					style={{
+						...textStyle,
+						...(config.background.enabled && {
+							backgroundColor: config.background.color,
+							borderRadius: 3,
+							padding: "1px 4px",
+						}),
+					}}
+				>
+					{words[0]} <span style={activeStyle}>{words[1]}</span> {words[2]}
+				</span>
+			</span>
+			<span className="truncate px-0.5 text-[10px] leading-tight">
+				{style.name}
+			</span>
+		</button>
+	);
+}
+
+/** The media the transcript comes from: the first video/audio clip's file */
+function findTranscribedMediaId(tracks: TimelineTrack[]): string | null {
+	for (const track of tracks) {
+		if (track.type !== "video" && track.type !== "audio") continue;
+		for (const element of track.elements) {
+			if (hasMediaId(element as TimelineElement)) {
+				return (element as TimelineElement & { mediaId: string }).mediaId;
+			}
+		}
+	}
+	return null;
 }

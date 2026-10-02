@@ -16,7 +16,13 @@ import { AddTrackCommand, InsertElementCommand } from "@/lib/commands/timeline";
 import { BatchCommand } from "@/lib/commands";
 import { computeDropTarget } from "@/lib/timeline/drop-utils";
 import { getDragData, hasDragData } from "@/lib/drag-data";
-import type { TrackType, DropTarget, ElementType } from "@/types/timeline";
+import type {
+	TrackType,
+	DropTarget,
+	ElementType,
+	TextElement,
+} from "@/types/timeline";
+import { DEFAULT_TEXT_ELEMENT } from "@/constants/text-constants";
 import type {
 	MediaDragData,
 	StickerDragData,
@@ -206,10 +212,16 @@ export function useTimelineDragDrop({
 			dragData,
 		}: {
 			target: DropTarget;
-			dragData: { name?: string; content?: string };
+			dragData: {
+				name?: string;
+				content?: string;
+				preset?: Partial<Omit<TextElement, "type" | "id">>;
+			};
 		}) => {
 			const element = buildTextElement({
 				raw: {
+					...DEFAULT_TEXT_ELEMENT,
+					...dragData.preset,
 					name: dragData.name ?? "",
 					content: dragData.content ?? "",
 				},

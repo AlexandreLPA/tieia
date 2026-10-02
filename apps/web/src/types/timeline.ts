@@ -185,6 +185,31 @@ export interface TextWordTiming {
 	end: number;
 }
 
+/** Outline drawn around each letter. Width is a percentage of the font size. */
+export interface TextStroke {
+	enabled: boolean;
+	color: string;
+	width: number;
+}
+
+/** Drop shadow. Blur and distance are percentages of the font size. */
+export interface TextShadow {
+	enabled: boolean;
+	color: string;
+	blur: number;
+	offsetX: number;
+	offsetY: number;
+}
+
+/**
+ * How words with timings light up while spoken:
+ * - "progressive": every word already spoken takes the highlight color
+ * - "word": only the word being spoken takes the highlight color
+ * - "box": the word being spoken gets a highlight-colored box behind it
+ * - "none": no highlight
+ */
+export type TextHighlightStyle = "progressive" | "word" | "box" | "none";
+
 export interface TextElement extends BaseTimelineElement {
 	type: "text";
 	content: string;
@@ -197,6 +222,10 @@ export interface TextElement extends BaseTimelineElement {
 	wordTimings?: TextWordTiming[];
 	/** Scale multiplier for the currently-spoken word (pop effect). 1.0 = no pop, 1.3 = 30% larger. */
 	wordPopScale?: number;
+	/** Unset means "progressive", the original karaoke behavior */
+	highlightStyle?: TextHighlightStyle;
+	stroke?: TextStroke;
+	shadow?: TextShadow;
 	background: TextBackground;
 	textAlign: "left" | "center" | "right";
 	fontWeight: "normal" | "bold";

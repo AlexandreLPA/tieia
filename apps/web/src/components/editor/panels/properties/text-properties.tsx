@@ -43,6 +43,11 @@ import {
 } from "@hugeicons/core-free-icons";
 import { OcTextHeightIcon, OcTextWidthIcon } from "@opencut-ai/ui/icons";
 import { cn } from "@/utils/ui";
+import {
+	HighlightSection,
+	ShadowSection,
+	StrokeSection,
+} from "./text-style-sections";
 
 export function TextProperties({
 	element,
@@ -58,6 +63,9 @@ export function TextProperties({
 			<BlendingSection element={element} trackId={trackId} />
 			<TypographySection element={element} trackId={trackId} />
 			<SpacingSection element={element} trackId={trackId} />
+			<HighlightSection element={element} trackId={trackId} />
+			<StrokeSection element={element} trackId={trackId} />
+			<ShadowSection element={element} trackId={trackId} />
 			<BackgroundSection element={element} trackId={trackId} />
 		</div>
 	);

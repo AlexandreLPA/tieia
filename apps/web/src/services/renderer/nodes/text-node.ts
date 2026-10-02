@@ -1,7 +1,21 @@
 import type { CanvasRenderer } from "../canvas-renderer";
 import { createOffscreenCanvas } from "../canvas-utils";
 import { BaseNode } from "./base-node";
-import type { TextElement, TextWordTiming } from "@/types/timeline";
+import type {
+	TextElement,
+	TextHighlightStyle,
+	TextWordTiming,
+} from "@/types/timeline";
+
+type TextContext = CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
+/** Draws one run of text with the element's shadow, outline and fill */
+type PaintText = (args: {
+	ctx: TextContext;
+	text: string;
+	x: number;
+	y: number;
+	fill: string;
+}) => void;
 import { useTranscriptStore } from "@/stores/transcript-store";
 import {
 	DEFAULT_TEXT_BACKGROUND,
@@ -143,8 +157,11 @@ export class TextNode extends BaseNode<TextNodeParams> {
 		highlightColor,
 		textAlign,
 		wordPopScale,
+		highlightStyle,
+		fontSize,
+		paint,
 	}: {
-		ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
+		ctx: TextContext;
 		line: string;
 		lineY: number;
 		localTime: number;
@@ -153,10 +170,28 @@ export class TextNode extends BaseNode<TextNodeParams> {
 		highlightColor: string;
 		textAlign: CanvasTextAlign;
 		wordPopScale: number;
+		highlightStyle: TextHighlightStyle;
+		fontSize: number;
+		paint: PaintText;
 	}): void {
 		// Split the line into words preserving spacing
 		const words = line.split(/(\s+)/);
-		const fullWidth = ctx.measureText(line).width;
+		const hasPop = wordPopScale > 1.0;
+
+		// The popped word takes extra room so it doesn't run into its neighbors
+		let popExtra = 0;
+		if (hasPop) {
+			let index = 0;
+			for (const token of words) {
+				if (token.trim().length === 0) continue;
+				const timing = wordTimings[index++];
+				if (timing && localTime >= timing.start && localTime < timing.end) {
+					popExtra = ctx.measureText(token).width * (wordPopScale - 1);
+					break;
+				}
+			}
+		}
+		const fullWidth = ctx.measureText(line).width + popExtra;
 
 		// Compute starting x based on alignment
 		let cursorX: number;
@@ -173,8 +208,6 @@ export class TextNode extends BaseNode<TextNodeParams> {
 		const savedFont = ctx.font;
 		ctx.textAlign = "left";
 
-		const hasPop = wordPopScale > 1.0;
-
 		let wordIndex = 0;
 		for (const token of words) {
 			if (token.trim().length === 0) {
@@ -188,23 +221,35 @@ export class TextNode extends BaseNode<TextNodeParams> {
 			const isSpoken = timing && localTime >= timing.start;
 			const isActive = timing && localTime >= timing.start && localTime < timing.end;
 
-			ctx.fillStyle = isSpoken ? highlightColor : defaultColor;
+			const fill =
+				(highlightStyle === "progressive" && isSpoken) ||
+				(highlightStyle === "word" && isActive)
+					? highlightColor
+					: defaultColor;
+			const tokenWidth = ctx.measureText(token).width;
+			const scale = hasPop && isActive ? wordPopScale : 1;
 
-			if (hasPop && isActive) {
-				// Pop effect: scale up the currently-spoken word
-				const tokenWidth = ctx.measureText(token).width;
-				const cx = cursorX + tokenWidth / 2;
-				const cy = lineY;
-				ctx.save();
-				ctx.translate(cx, cy);
-				ctx.scale(wordPopScale, wordPopScale);
-				ctx.fillText(token, -tokenWidth / 2, 0);
-				ctx.restore();
-				cursorX += tokenWidth;
-			} else {
-				ctx.fillText(token, cursorX, lineY);
-				cursorX += ctx.measureText(token).width;
+			// Pop scales the word around the center of its widened slot
+			ctx.save();
+			ctx.translate(cursorX + (tokenWidth * scale) / 2, lineY);
+			ctx.scale(scale, scale);
+			if (highlightStyle === "box" && isActive) {
+				const padX = fontSize * 0.18;
+				const height = fontSize * 1.25;
+				ctx.fillStyle = highlightColor;
+				ctx.beginPath();
+				ctx.roundRect(
+					-tokenWidth / 2 - padX,
+					-height / 2,
+					tokenWidth + padX * 2,
+					height,
+					fontSize * 0.2,
+				);
+				ctx.fill();
 			}
+			paint({ ctx, text: token, x: -tokenWidth / 2, y: 0, fill });
+			ctx.restore();
+			cursorX += tokenWidth * scale;
 
 			wordIndex++;
 		}
@@ -334,6 +379,38 @@ export class TextNode extends BaseNode<TextNodeParams> {
 			}),
 		};
 
+		const stroke = this.params.stroke;
+		const shadow = this.params.shadow;
+		// Outline width is a share of the font size; half of the stroke sits
+		// under the fill, so draw it twice as wide as it should look
+		const strokeWidth =
+			stroke?.enabled && stroke.width > 0
+				? ((scaledFontSize * stroke.width) / 100) * 2
+				: 0;
+		// Canvas shadows ignore the transform, so scale them by hand
+		const shadowUnit = (scaledFontSize * transform.scale) / 100;
+		const paintText: PaintText = ({ ctx, text, x, y, fill }) => {
+			ctx.save();
+			if (shadow?.enabled) {
+				ctx.shadowColor = shadow.color;
+				ctx.shadowBlur = shadow.blur * shadowUnit;
+				ctx.shadowOffsetX = shadow.offsetX * shadowUnit;
+				ctx.shadowOffsetY = shadow.offsetY * shadowUnit;
+			}
+			if (strokeWidth > 0 && stroke) {
+				ctx.lineJoin = "round";
+				ctx.miterLimit = 2;
+				ctx.lineWidth = strokeWidth;
+				ctx.strokeStyle = stroke.color;
+				ctx.strokeText(text, x, y);
+				// The outline already cast the shadow
+				ctx.shadowColor = "transparent";
+			}
+			ctx.fillStyle = fill;
+			ctx.fillText(text, x, y);
+			ctx.restore();
+		};
+
 	const drawContent = (ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) => {
 			ctx.font = fontString;
 			ctx.textAlign = this.params.textAlign;
@@ -367,6 +444,7 @@ export class TextNode extends BaseNode<TextNodeParams> {
 			}
 
 			const highlightColor = this.params.highlightColor ?? "#FACC15";
+			const highlightStyle = this.params.highlightStyle ?? "progressive";
 
 			// Resolve word timings: prefer element data, fall back to transcript store
 			const resolvedWordTimings: TextWordTiming[] = (() => {
@@ -422,11 +500,14 @@ export class TextNode extends BaseNode<TextNodeParams> {
 						highlightColor,
 						textAlign: this.params.textAlign,
 						wordPopScale: this.params.wordPopScale ?? 1.0,
+						highlightStyle,
+						fontSize: scaledFontSize,
+						paint: paintText,
 					});
 
 					karaokeWordOffset += lineWordCount;
 				} else {
-					ctx.fillText(lines[i], 0, lineY);
+					paintText({ ctx, text: lines[i], x: 0, y: lineY, fill: textColor });
 				}
 
 				drawTextDecoration({

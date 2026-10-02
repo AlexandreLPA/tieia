@@ -1,4 +1,4 @@
-import type { VisualElement } from "./timeline";
+import type { TextElement, VisualElement } from "./timeline";
 
 interface BaseDragData {
 	id: string;
@@ -14,6 +14,8 @@ export interface MediaDragData extends BaseDragData {
 export interface TextDragData extends BaseDragData {
 	type: "text";
 	content: string;
+	/** Preset styling, so dragging a preset keeps its look */
+	preset?: Partial<Omit<TextElement, "type" | "id">>;
 }
 
 export interface StickerDragData extends BaseDragData {

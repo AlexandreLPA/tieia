@@ -30,6 +30,20 @@ export const DEFAULT_TEXT_BACKGROUND = {
 	offsetY: 0,
 };
 
+export const DEFAULT_TEXT_STROKE = {
+	enabled: false,
+	color: "#000000",
+	width: 12,
+};
+
+export const DEFAULT_TEXT_SHADOW = {
+	enabled: false,
+	color: "#000000",
+	blur: 15,
+	offsetX: 0,
+	offsetY: 6,
+};
+
 export const DEFAULT_TEXT_ELEMENT: Omit<TextElement, "id"> = {
 	type: "text",
 	name: "Text",
