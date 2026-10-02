@@ -350,7 +350,11 @@ class AIClient {
 			return response.json() as Promise<T>;
 		}
 
-		// NDJSON streaming response with keepalives
+		return this.readKeepaliveStream<T>(response);
+	}
+
+	/** Reads an NDJSON keepalive stream ({ping} lines, then {result} or {error}). */
+	private async readKeepaliveStream<T>(response: Response): Promise<T> {
 		if (!response.body) {
 			throw new AIClientError("Empty response body", "backend_error");
 		}
@@ -436,45 +440,7 @@ class AIClient {
 			return response.json() as Promise<T>;
 		}
 
-		if (!response.body) {
-			throw new AIClientError("Empty response body", "backend_error");
-		}
-
-		const reader = response.body.getReader();
-		const decoder = new TextDecoder();
-
-		try {
-			while (true) {
-				const { done, value } = await reader.read();
-				if (done) break;
-
-				const chunk = decoder.decode(value, { stream: true });
-				const lines = chunk.split("\n").filter(Boolean);
-
-				for (const line of lines) {
-					try {
-						const data = JSON.parse(line) as {
-							ping?: boolean;
-							result?: T;
-							error?: string;
-						};
-						if (data.ping) continue;
-						if (data.error) {
-							throw new AIClientError(data.error, "backend_error");
-						}
-						if (data.result !== undefined) {
-							return data.result;
-						}
-					} catch (e) {
-						if (e instanceof AIClientError) throw e;
-					}
-				}
-			}
-		} finally {
-			reader.releaseLock();
-		}
-
-		throw new AIClientError("Stream ended without result", "backend_error");
+		return this.readKeepaliveStream<T>(response);
 	}
 
 	async health(): Promise<AIBackendStatus> {
@@ -1936,12 +1902,18 @@ class AIClient {
 		});
 	}
 
-	/** Score a video file's engagement potential. */
-	async engagementScoreVideo(file: File, transcriptText?: string): Promise<EngagementScoreResult> {
+	/** Score a video file's engagement potential (audio and picture included). */
+	async engagementScoreVideo(
+		file: File,
+		text: { transcriptText?: string; hookText?: string; title?: string } = {},
+	): Promise<EngagementScoreResult> {
 		const formData = new FormData();
 		formData.append("file", file);
-		if (transcriptText) formData.append("transcript_text", transcriptText);
-		return this.requestFormData("/api/engagement/score-video", formData, LLM_TIMEOUT_MS);
+		if (text.transcriptText) formData.append("transcript_text", text.transcriptText);
+		if (text.hookText) formData.append("hook_text", text.hookText);
+		if (text.title) formData.append("title", text.title);
+		// The backend streams keepalive pings while it scores
+		return this.requestFormDataWithKeepalive("/api/engagement/score-video", formData);
 	}
 
 	/** Score multiple clips in batch. */

@@ -54,6 +54,8 @@ async def score_clip(request: ScoreClipRequest):
 async def score_video(
     file: UploadFile = File(...),
     transcript_text: str = Form(default=""),
+    hook_text: str = Form(default=""),
+    title: str = Form(default=""),
 ):
     """Score a video file's engagement potential.
 
@@ -63,7 +65,17 @@ async def score_video(
     ext = os.path.splitext(file.filename or "video.mp4")[1].lower()
     upload_id = uuid.uuid4().hex[:8]
     upload_path = os.path.join(settings.UPLOAD_DIR, f"engagement_{upload_id}{ext}")
+    audio_path = upload_path.rsplit(".", 1)[0] + "_audio.wav"
 
+    def _cleanup() -> None:
+        for path in (upload_path, audio_path):
+            if os.path.exists(path):
+                try:
+                    os.remove(path)
+                except OSError:
+                    pass
+
+    handed_off = False
     try:
         contents = await file.read()
         if len(contents) > settings.MAX_UPLOAD_SIZE:
@@ -72,7 +84,6 @@ async def score_video(
             f.write(contents)
 
         # Extract audio for analysis
-        audio_path = upload_path.rsplit(".", 1)[0] + "_audio.wav"
         import asyncio
         proc = await asyncio.create_subprocess_exec(
             "ffmpeg", "-i", upload_path,
@@ -102,14 +113,22 @@ async def score_video(
             audio_path=audio_path if os.path.exists(audio_path) else None,
             video_path=upload_path,
             transcript_text=transcript_text,
+            hook_text=hook_text,
+            title=title or None,
             start=0,
             end=duration,
         )
 
         async def _work():
-            score = await engagement_scorer.score_clip(req)
-            return score.to_response()
+            # The files must outlive the scoring, which can take minutes;
+            # a fixed 30 s timer used to delete them mid-analysis
+            try:
+                score = await engagement_scorer.score_clip(req)
+                return score.to_response()
+            finally:
+                _cleanup()
 
+        handed_off = True
         return streamed_llm_response(_work, error_detail="Video engagement scoring failed.")
 
     except HTTPException:
@@ -118,19 +137,9 @@ async def score_video(
         logger.exception("Video scoring failed")
         raise HTTPException(status_code=500, detail="Video engagement scoring failed.")
     finally:
-        # Cleanup happens after response is sent in a background task
-        import asyncio
-
-        async def _cleanup():
-            await asyncio.sleep(30)  # keep files briefly for streaming response
-            for p in [upload_path, upload_path.rsplit(".", 1)[0] + "_audio.wav"]:
-                if os.path.exists(p):
-                    try:
-                        os.remove(p)
-                    except OSError:
-                        pass
-
-        asyncio.create_task(_cleanup())
+        # Once streaming starts, _work cleans up after the score is done
+        if not handed_off:
+            _cleanup()
 
 
 # ── Batch scoring ────────────────────────────────────────────────────

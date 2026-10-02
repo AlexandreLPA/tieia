@@ -16,6 +16,7 @@ import type { EngagementScoreResult } from "@/lib/ai-client";
 import { useTranscriptStore } from "@/stores/transcript-store";
 import { useEditor } from "@/hooks/use-editor";
 import { cn } from "@/utils/ui";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { useAIStore } from "@/stores/ai-store";
 import { useAssetsPanelStore } from "@/stores/assets-panel-store";
@@ -28,6 +29,15 @@ import {
 
 // What counts as the hook: the first seconds of the edited video
 const HOOK_SECONDS = 3;
+
+// Light render for analysis only: 10 fps reads faces and motion fine
+const MEDIA_ANALYSIS_EXPORT = {
+	format: "mp4",
+	quality: "low",
+	fps: 10,
+	includeAudio: true,
+	includeWatermark: false,
+} as const;
 
 // Why a sub-score can be missing in this check
 const NOT_EVALUATED_HINT: Record<string, string> = {
@@ -120,6 +130,9 @@ export function ViralityScoreModal({ open, onOpenChange }: ViralityScoreModalPro
 	const segments = useTranscriptStore((s) => s.segments);
 	const [score, setScore] = useState<EngagementScoreResult | null>(null);
 	const [isAnalyzing, setIsAnalyzing] = useState(false);
+	const [analyzeMedia, setAnalyzeMedia] = useState(true);
+	const [progressLabel, setProgressLabel] = useState("Analisando seu vídeo...");
+	const [scoredWithMedia, setScoredWithMedia] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [tab, setTab] = useState("score");
 	const setPendingAutoPrompt = useAIStore((s) => s.setPendingAutoPrompt);
@@ -148,13 +161,46 @@ export function ViralityScoreModal({ open, onOpenChange }: ViralityScoreModalPro
 				.map((w) => w.word.trim())
 				.join(" ");
 
-			const result = await aiClient.engagementScore({
-				transcript_text: transcriptText,
-				hook_text: hookText,
-				start: 0,
-				end: editor.timeline.getTotalDuration() || 30,
-				title: "Projeto atual",
-			});
+			const scoreTextOnly = () => {
+				setProgressLabel("Analisando o texto falado...");
+				return aiClient.engagementScore({
+					transcript_text: transcriptText,
+					hook_text: hookText,
+					start: 0,
+					end: editor.timeline.getTotalDuration() || 30,
+					title: "Projeto atual",
+				});
+			};
+
+			let result: EngagementScoreResult;
+			setScoredWithMedia(false);
+			if (analyzeMedia) {
+				// Energy, rhythm, face and the visual hook need the real edit, so
+				// render it light: few frames are enough to read faces and motion
+				setProgressLabel("Preparando o vídeo da edição...");
+				const render = await editor.renderer.exportProject({
+					options: MEDIA_ANALYSIS_EXPORT,
+					onProgress: ({ progress }) =>
+						setProgressLabel(
+							`Preparando o vídeo da edição... ${Math.round(progress * 100)}%`,
+						),
+				});
+				if (render.success && render.buffer) {
+					setProgressLabel("Analisando áudio, imagem e texto...");
+					result = await aiClient.engagementScoreVideo(
+						new File([render.buffer], "pontuacao-viral.mp4", { type: "video/mp4" }),
+						{ transcriptText, hookText, title: "Projeto atual" },
+					);
+					setScoredWithMedia(true);
+				} else {
+					toast.warning("Não deu para preparar o vídeo; avaliando só o texto", {
+						description: render.error,
+					});
+					result = await scoreTextOnly();
+				}
+			} else {
+				result = await scoreTextOnly();
+			}
 			setScore(result);
 			toast.success(`Pontuação Viral: ${result.grade} (${Math.round(result.composite)}/100)`);
 		} catch (e) {
@@ -164,7 +210,7 @@ export function ViralityScoreModal({ open, onOpenChange }: ViralityScoreModalPro
 		} finally {
 			setIsAnalyzing(false);
 		}
-	}, [segments, editor]);
+	}, [segments, editor, analyzeMedia]);
 
 	const handleAskAI = useCallback(() => {
 		if (!score) return;
@@ -217,6 +263,23 @@ export function ViralityScoreModal({ open, onOpenChange }: ViralityScoreModalPro
 											Avalie o potencial viral do seu vídeo antes de publicar e receba sugestões práticas para melhorar o engajamento.
 										</p>
 										<TranscribeNotice description="Esta checagem avalia o que é falado no vídeo, então precisa da transcrição primeiro." />
+										<label
+											htmlFor="viral-analyze-media"
+											className="flex items-start justify-between gap-3 rounded-md border p-3 text-left"
+										>
+											<span className="flex flex-col gap-0.5">
+												<span className="text-xs font-medium">Analisar também áudio e imagem</span>
+												<span className="text-[11px] leading-snug text-muted-foreground">
+													Mede energia, ritmo, rosto e o impacto visual do começo. Leva mais
+													tempo porque prepara uma versão leve do vídeo.
+												</span>
+											</span>
+											<Switch
+												id="viral-analyze-media"
+												checked={analyzeMedia}
+												onCheckedChange={setAnalyzeMedia}
+											/>
+										</label>
 										<Button
 											className="w-full"
 											onClick={handleCheck}
@@ -231,7 +294,7 @@ export function ViralityScoreModal({ open, onOpenChange }: ViralityScoreModalPro
 								{isAnalyzing && (
 									<div className="flex flex-col items-center gap-3 py-6">
 										<Spinner className="h-6 w-6" />
-										<p className="text-sm text-muted-foreground">Analisando seu vídeo...</p>
+										<p className="text-sm text-muted-foreground">{progressLabel}</p>
 									</div>
 								)}
 
@@ -302,7 +365,10 @@ export function ViralityScoreModal({ open, onOpenChange }: ViralityScoreModalPro
 														<div key={key} className="flex items-center gap-2" title={NOT_EVALUATED_HINT[key]}>
 															<span className="text-xs text-muted-foreground/60 w-28 flex-shrink-0">{label}</span>
 															<span className="flex-1 text-[11px] text-muted-foreground/60">
-																não avaliado · {NOT_EVALUATED_HINT[key] ?? "sem dados"}
+																não avaliado ·{" "}
+																{scoredWithMedia && key !== "virality"
+																	? "o serviço de análise não conseguiu medir"
+																	: (NOT_EVALUATED_HINT[key] ?? "sem dados")}
 															</span>
 														</div>
 													);
