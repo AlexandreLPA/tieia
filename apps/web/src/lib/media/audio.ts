@@ -9,6 +9,7 @@ import { canElementHaveAudio } from "@/lib/timeline/element-utils";
 import { canTracktHaveAudio } from "@/lib/timeline";
 import { mediaSupportsAudio } from "@/lib/media/media-utils";
 import { connectAudioEffectsChain } from "@/lib/audio/audio-effects";
+import { timeStretch } from "@/lib/audio/time-stretch";
 import { resolvePlaybackRateAtTime } from "@/lib/animation";
 import { getNumberChannelForPath } from "@/lib/animation/number-channel";
 import { Input, ALL_FORMATS, BlobSource, AudioBufferSink } from "mediabunny";
@@ -23,6 +24,7 @@ export type CollectedAudioElement = Omit<
 	buffer: AudioBuffer;
 	volume: number;
 	playbackRate: number;
+	preservePitch: boolean;
 	trackId: string;
 };
 
@@ -122,6 +124,7 @@ export async function collectAudioElements({
 							muted: element.muted || isTrackMuted,
 							volume,
 							playbackRate: element.playbackRate ?? 1,
+							preservePitch: element.preservePitch !== false,
 							animations: element.animations,
 							trackId: track.id,
 						};
@@ -147,6 +150,7 @@ export async function collectAudioElements({
 							muted: elementMuted || isTrackMuted,
 							volume: 1,
 							playbackRate: element.playbackRate ?? 1,
+							preservePitch: element.preservePitch !== false,
 							animations: element.animations,
 							trackId: track.id,
 						};
@@ -298,6 +302,7 @@ export interface AudioClipSource {
 	muted: boolean;
 	volume: number;
 	playbackRate: number;
+	preservePitch: boolean;
 }
 
 async function fetchLibraryAudioSource({
@@ -358,6 +363,7 @@ async function fetchLibraryAudioClip({
 			muted,
 			volume: element.volume ?? 1,
 			playbackRate: element.playbackRate ?? 1,
+			preservePitch: element.preservePitch !== false,
 		};
 	} catch (error) {
 		console.warn("Failed to fetch library audio:", error);
@@ -403,6 +409,8 @@ function collectMediaAudioClip({
 		volume: vol,
 		playbackRate:
 			"playbackRate" in element ? (element.playbackRate ?? 1) : 1,
+		preservePitch:
+			"preservePitch" in element ? element.preservePitch !== false : true,
 	};
 }
 
@@ -596,7 +604,8 @@ const SPEED_BLOCK_SAMPLES = 128;
 /**
  * The clip's audio as it plays on the timeline: speed (constant or curve)
  * maps timeline time to source time exactly like the video renderer does,
- * so picture and sound stay in sync. Pitch follows speed, as in preview.
+ * so picture and sound stay in sync. With preservePitch the audio is
+ * time-stretched so speed doesn't change the pitch.
  */
 function renderClipAtSpeed({
 	element,
@@ -607,14 +616,55 @@ function renderClipAtSpeed({
 	context: BaseAudioContext;
 	sampleRate: number;
 }): AudioBuffer | null {
-	const { buffer, trimStart, duration, playbackRate, animations, volume } =
-		element;
+	const {
+		buffer,
+		trimStart,
+		duration,
+		playbackRate,
+		animations,
+		volume,
+		preservePitch,
+	} = element;
 	const length = Math.round(duration * sampleRate);
 	if (length <= 0) return null;
 
 	const hasSpeedCurve =
 		(getNumberChannelForPath({ animations, propertyPath: "playbackRate" })
 			?.keyframes.length ?? 0) > 0;
+	const rateAt = (outputSample: number) =>
+		hasSpeedCurve
+			? resolvePlaybackRateAtTime({
+					basePlaybackRate: playbackRate,
+					animations,
+					localTime: outputSample / sampleRate,
+				})
+			: playbackRate;
+
+	// Decoded buffers already share the export rate; a mismatch falls back
+	// to plain resampling, which is still in sync, just not pitch-corrected
+	if (
+		preservePitch &&
+		(hasSpeedCurve || playbackRate !== 1) &&
+		buffer.sampleRate === sampleRate
+	) {
+		const channels = [0, 1].map((channel) =>
+			buffer.getChannelData(Math.min(channel, buffer.numberOfChannels - 1)),
+		);
+		const stretched = timeStretch({
+			channels,
+			sourceStart: Math.round(trimStart * sampleRate),
+			outputLength: length,
+			sampleRate,
+			rateAt,
+		});
+		const output = context.createBuffer(2, length, sampleRate);
+		for (let channel = 0; channel < 2; channel++) {
+			const data = output.getChannelData(channel);
+			const source = stretched[channel];
+			for (let i = 0; i < length; i++) data[i] = source[i] * volume;
+		}
+		return output;
+	}
 	const sourceRatio = buffer.sampleRate / sampleRate;
 	const sources = [0, 1].map((channel) =>
 		buffer.getChannelData(Math.min(channel, buffer.numberOfChannels - 1)),
@@ -625,14 +675,7 @@ function renderClipAtSpeed({
 
 	let position = trimStart * buffer.sampleRate;
 	render: for (let block = 0; block < length; block += SPEED_BLOCK_SAMPLES) {
-		const rate = hasSpeedCurve
-			? resolvePlaybackRateAtTime({
-					basePlaybackRate: playbackRate,
-					animations,
-					localTime: block / sampleRate,
-				})
-			: playbackRate;
-		const step = Math.max(0, rate) * sourceRatio;
+		const step = Math.max(0, rateAt(block)) * sourceRatio;
 		const blockEnd = Math.min(length, block + SPEED_BLOCK_SAMPLES);
 
 		for (let i = block; i < blockEnd; i++) {

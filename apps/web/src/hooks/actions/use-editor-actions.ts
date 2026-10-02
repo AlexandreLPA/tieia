@@ -372,6 +372,7 @@ export function useEditorActions() {
 						volume: 1,
 						// Keeps the separated audio in sync with a sped-up clip
 						playbackRate: element.playbackRate,
+						preservePitch: element.preservePitch,
 					},
 					placement: { mode: "auto" },
 				});

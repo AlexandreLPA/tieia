@@ -109,6 +109,8 @@ interface BaseAudioElement extends BaseTimelineElement {
 	muted?: boolean;
 	/** Playback speed multiplier. 1.0 = normal, 0.5 = half speed, 2.0 = double speed. */
 	playbackRate?: number;
+	/** Keep the original pitch when the speed changes. Unset means true. */
+	preservePitch?: boolean;
 	buffer?: AudioBuffer;
 }
 
@@ -141,6 +143,8 @@ export interface VideoElement extends BaseTimelineElement {
 	muted?: boolean;
 	hidden?: boolean;
 	playbackRate?: number;
+	/** Keep the original pitch when the speed changes. Unset means true. */
+	preservePitch?: boolean;
 	transform: Transform;
 	opacity: number;
 	blendMode?: BlendMode;

@@ -1,4 +1,5 @@
 import type {
+	AudioElement,
 	ImageElement,
 	StickerElement,
 	VideoElement,
@@ -13,6 +14,7 @@ import {
 } from "./section";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 import { useEditor } from "@/hooks/use-editor";
 import { cn } from "@/utils/ui";
 import { SpeedCurveEditor } from "./speed-curve-editor";
@@ -51,30 +53,30 @@ const SPEED_PRESETS = [
 	{ label: "3x", value: 3.0 },
 ];
 
-function SpeedSection({
+export function SpeedSection({
 	element,
 	trackId,
 }: {
-	element: VideoElement;
+	element: VideoElement | AudioElement;
 	trackId: string;
 }) {
 	const editor = useEditor();
 	const currentRate = element.playbackRate ?? 1.0;
+	const preservePitch = element.preservePitch !== false;
 
-	const handleSpeedChange = (rate: number) => {
+	const updateElement = (updates: {
+		playbackRate?: number;
+		preservePitch?: boolean;
+	}) => {
 		editor.timeline.updateElements({
-			updates: [
-				{
-					trackId,
-					elementId: element.id,
-					updates: { playbackRate: rate },
-				},
-			],
+			updates: [{ trackId, elementId: element.id, updates }],
 		});
 	};
+	const handleSpeedChange = (rate: number) =>
+		updateElement({ playbackRate: rate });
 
 	return (
-		<Section collapsible sectionKey="video:speed">
+		<Section collapsible sectionKey={`${element.type}:speed`}>
 			<SectionHeader>
 				<SectionTitle>Velocidade</SectionTitle>
 				<span className="text-[10px] text-muted-foreground tabular-nums mr-2">
@@ -124,8 +126,31 @@ function SpeedSection({
 						))}
 					</div>
 
+					<div className="flex items-start justify-between gap-3">
+						<label
+							htmlFor={`preserve-pitch-${element.id}`}
+							className="flex flex-col gap-0.5"
+						>
+							<span className="text-xs">Manter tom original</span>
+							<span className="text-[10px] leading-snug text-muted-foreground">
+								{preservePitch
+									? "A voz não fica fina nem grossa ao mudar a velocidade."
+									: "A voz fica mais aguda ao acelerar e mais grave ao desacelerar."}
+							</span>
+						</label>
+						<Switch
+							id={`preserve-pitch-${element.id}`}
+							checked={preservePitch}
+							onCheckedChange={(checked) =>
+								updateElement({ preservePitch: checked })
+							}
+						/>
+					</div>
+
 					{/* Speed Curve Editor */}
-					<SpeedCurveEditor element={element} trackId={trackId} />
+					{element.type === "video" && (
+						<SpeedCurveEditor element={element} trackId={trackId} />
+					)}
 				</div>
 			</SectionContent>
 		</Section>

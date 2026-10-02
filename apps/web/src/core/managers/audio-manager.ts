@@ -2,6 +2,7 @@ import type { EditorCore } from "@/core";
 import type { AudioClipSource } from "@/lib/media/audio";
 import { createAudioContext, collectAudioClips } from "@/lib/media/audio";
 import { connectAudioEffectsChain } from "@/lib/audio/audio-effects";
+import { timeStretch } from "@/lib/audio/time-stretch";
 import {
 	ALL_FORMATS,
 	AudioBufferSink,
@@ -9,6 +10,9 @@ import {
 	Input,
 	type WrappedAudioBuffer,
 } from "mediabunny";
+
+// Each entry holds a whole clip of audio; the least recently played go first
+const MAX_STRETCHED_CLIPS = 24;
 
 export class AudioManager {
 	private audioContext: AudioContext | null = null;
@@ -29,6 +33,8 @@ export class AudioManager {
 	private scheduleIntervalMs = 500;
 	private clips: AudioClipSource[] = [];
 	private sinks = new Map<string, AudioBufferSink>();
+	// Pitch-preserved clips, stretched once and reused while their params hold
+	private stretchedClips = new Map<string, Promise<AudioBuffer | null>>();
 	private inputs = new Map<string, Input>();
 	private activeClipIds = new Set<string>();
 	private clipIterators = new Map<
@@ -381,6 +387,10 @@ export class AudioManager {
 		}
 		// Speed maps timeline time to source time, same as the video renderer
 		const rate = clip.playbackRate > 0 ? clip.playbackRate : 1;
+		if (rate !== 1 && clip.preservePitch) {
+			await this.playStretchedClip({ clip, rate, sink, startTime, sessionId });
+			return;
+		}
 		const sourceStartTime =
 			clip.trimStart + (iteratorStartTime - clip.startTime) * rate;
 
@@ -407,17 +417,7 @@ export class AudioManager {
 
 				if (rate !== 1) node.playbackRate.value = rate;
 
-				const destinationNode = this.getTrackDestination(clip.id);
-
-				const clipVolume = clip.volume ?? 1;
-				if (clipVolume < 1) {
-					const clipGain = audioContext.createGain();
-					clipGain.gain.value = clipVolume;
-					node.connect(clipGain);
-					clipGain.connect(destinationNode);
-				} else {
-					node.connect(destinationNode);
-				}
+				this.connectClip({ node, clip, audioContext });
 
 				const startTimestamp =
 					this.playbackStartContextTime +
@@ -503,6 +503,159 @@ export class AudioManager {
 				}
 			}, 100);
 		});
+	}
+
+	private connectClip({
+		node,
+		clip,
+		audioContext,
+	}: {
+		node: AudioBufferSourceNode;
+		clip: AudioClipSource;
+		audioContext: AudioContext;
+	}): void {
+		const destinationNode = this.getTrackDestination(clip.id);
+
+		const clipVolume = clip.volume ?? 1;
+		if (clipVolume < 1) {
+			const clipGain = audioContext.createGain();
+			clipGain.gain.value = clipVolume;
+			node.connect(clipGain);
+			clipGain.connect(destinationNode);
+		} else {
+			node.connect(destinationNode);
+		}
+	}
+
+	// Speed with the original pitch can't be done buffer by buffer, so the
+	// clip's source range is decoded, time-stretched once and played whole
+	private async playStretchedClip({
+		clip,
+		rate,
+		sink,
+		startTime,
+		sessionId,
+	}: {
+		clip: AudioClipSource;
+		rate: number;
+		sink: AudioBufferSink;
+		startTime: number;
+		sessionId: number;
+	}): Promise<void> {
+		const audioContext = this.audioContext;
+		if (!audioContext) return;
+
+		const buffer = await this.getStretchedClip({ clip, rate, sink });
+		if (!buffer || !this.editor.playback.getIsPlaying()) return;
+		if (sessionId !== this.playbackSessionId) return;
+
+		const clipEnd = clip.startTime + clip.duration;
+		const from = Math.max(startTime, clip.startTime, this.getPlaybackTime());
+		if (from >= clipEnd) return;
+
+		const node = audioContext.createBufferSource();
+		node.buffer = buffer;
+		this.connectClip({ node, clip, audioContext });
+
+		const when =
+			this.playbackStartContextTime +
+			this.playbackLatencyCompensationSeconds +
+			(from - this.playbackStartTime);
+		const late = Math.max(0, audioContext.currentTime - when);
+		node.start(
+			Math.max(audioContext.currentTime, when),
+			from - clip.startTime + late,
+		);
+
+		this.queuedSources.add(node);
+		node.addEventListener("ended", () => {
+			node.disconnect();
+			this.queuedSources.delete(node);
+		});
+	}
+
+	private getStretchedClip({
+		clip,
+		rate,
+		sink,
+	}: {
+		clip: AudioClipSource;
+		rate: number;
+		sink: AudioBufferSink;
+	}): Promise<AudioBuffer | null> {
+		const key = `${clip.sourceKey}|${clip.trimStart}|${clip.duration}|${rate}`;
+		const cached = this.stretchedClips.get(key);
+		if (cached) {
+			// Refresh its spot so the least recently played clip goes first
+			this.stretchedClips.delete(key);
+			this.stretchedClips.set(key, cached);
+			return cached;
+		}
+
+		const stretched = (async () => {
+			const sourceEnd = clip.trimStart + clip.duration * rate;
+			const chunks: AudioBuffer[] = [];
+			let firstTimestamp: number | null = null;
+			for await (const { buffer, timestamp } of sink.buffers(
+				clip.trimStart,
+				sourceEnd + 0.05,
+			)) {
+				firstTimestamp ??= timestamp;
+				chunks.push(buffer);
+			}
+			if (chunks.length === 0 || firstTimestamp === null) return null;
+
+			const sampleRate = chunks[0].sampleRate;
+			const channelCount = Math.min(2, chunks[0].numberOfChannels);
+			const total = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
+			const channels = Array.from(
+				{ length: channelCount },
+				() => new Float32Array(total),
+			);
+			let offset = 0;
+			for (const chunk of chunks) {
+				for (let c = 0; c < channelCount; c++) {
+					channels[c].set(
+						chunk.getChannelData(Math.min(c, chunk.numberOfChannels - 1)),
+						offset,
+					);
+				}
+				offset += chunk.length;
+			}
+
+			const outputLength = Math.round(clip.duration * sampleRate);
+			const output = timeStretch({
+				channels,
+				sourceStart: Math.round((clip.trimStart - firstTimestamp) * sampleRate),
+				outputLength,
+				sampleRate,
+				rateAt: () => rate,
+			});
+			const audioBuffer = new AudioBuffer({
+				numberOfChannels: channelCount,
+				length: outputLength,
+				sampleRate,
+			});
+			for (let c = 0; c < channelCount; c++) {
+				audioBuffer.copyToChannel(output[c], c);
+			}
+			return audioBuffer;
+		})().catch((error) => {
+			console.warn("Failed to time-stretch clip audio:", error);
+			return null;
+		});
+
+		this.stretchedClips.set(key, stretched);
+		// A failure (e.g. sink disposed mid-decode) should be retried next time
+		void stretched.then((buffer) => {
+			if (!buffer) this.stretchedClips.delete(key);
+		});
+		while (this.stretchedClips.size > MAX_STRETCHED_CLIPS) {
+			const oldest = this.stretchedClips.keys().next().value;
+			if (oldest === undefined) break;
+			this.stretchedClips.delete(oldest);
+		}
+		return stretched;
 	}
 
 	private disposeSinks(): void {
