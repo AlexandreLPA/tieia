@@ -1928,7 +1928,7 @@ class AIClient {
 
 	/** Score a single clip's engagement potential. */
 	async engagementScore(
-		clip: { audio_path?: string; transcript_text?: string; start: number; end: number; title?: string; video_path?: string },
+		clip: { audio_path?: string; transcript_text?: string; hook_text?: string; start: number; end: number; title?: string; video_path?: string },
 	): Promise<EngagementScoreResult> {
 		return this.requestWithKeepalive("/api/engagement/score", {
 			method: "POST",
@@ -2071,6 +2071,8 @@ export interface YouTubeJobStatus {
 
 export interface EngagementSubScore {
 	composite: number;
+	/** False when there was nothing to measure; it isn't part of the grade */
+	measured?: boolean;
 	[key: string]: unknown;
 }
 
@@ -2086,6 +2088,8 @@ export interface EngagementScoreResult {
 	composite: number;
 	grade: string;
 	grade_label: string;
+	/** Sub-scores that went into the grade */
+	evaluated?: string[];
 }
 
 export type ChatContentPart =

@@ -76,6 +76,7 @@ class FacePresenceAnalyzer:
             is_optimal=OPTIMAL_LOW <= face_ratio <= OPTIMAL_HIGH,
             early_face_present=early_face,
             composite=round(ratio_score, 1),
+            measured=True,
         )
 
     async def _detect_faces(

@@ -16,6 +16,9 @@ class HookScore(BaseModel):
     hook_type_confidence: float = 0.0
     speech_rate: float = 0.0
     composite: float = 50.0
+    # False when the signal had nothing to measure (no media, LLM failed);
+    # the composite then leaves it out instead of counting a fake 50
+    measured: bool = False
 
 
 class CuriosityScore(BaseModel):
@@ -26,6 +29,9 @@ class CuriosityScore(BaseModel):
     has_open_loop: bool = False
     gap_count: int = 0
     composite: float = 50.0
+    # False when the signal had nothing to measure (no media, LLM failed);
+    # the composite then leaves it out instead of counting a fake 50
+    measured: bool = False
 
 
 class EnergyScore(BaseModel):
@@ -36,6 +42,9 @@ class EnergyScore(BaseModel):
     energy_variance: float = 0.0
     has_dynamic_range: bool = False
     composite: float = 50.0
+    # False when the signal had nothing to measure (no media, LLM failed);
+    # the composite then leaves it out instead of counting a fake 50
+    measured: bool = False
 
 
 class AudioSyncScore(BaseModel):
@@ -45,6 +54,9 @@ class AudioSyncScore(BaseModel):
     beat_count: int = 0
     caption_beat_alignment: float = 0.0
     composite: float = 50.0
+    # False when the signal had nothing to measure (no media, LLM failed);
+    # the composite then leaves it out instead of counting a fake 50
+    measured: bool = False
 
 
 class FacePresenceScore(BaseModel):
@@ -54,6 +66,9 @@ class FacePresenceScore(BaseModel):
     is_optimal: bool = False
     early_face_present: bool = False
     composite: float = 50.0
+    # False when the signal had nothing to measure (no media, LLM failed);
+    # the composite then leaves it out instead of counting a fake 50
+    measured: bool = False
 
 
 class EmotionalArcScore(BaseModel):
@@ -65,6 +80,9 @@ class EmotionalArcScore(BaseModel):
     peak_timestamp: float = 0.0
     dominant_emotion: str = "calm"
     composite: float = 50.0
+    # False when the signal had nothing to measure (no media, LLM failed);
+    # the composite then leaves it out instead of counting a fake 50
+    measured: bool = False
 
 
 class ViralityScore(BaseModel):
@@ -77,6 +95,9 @@ class ViralityScore(BaseModel):
     reason: str = ""
     suggested_title: str = ""
     composite: float = 50.0
+    # False when the signal had nothing to measure (no media, LLM failed);
+    # the composite then leaves it out instead of counting a fake 50
+    measured: bool = False
 
 
 class EnhancementSuggestion(BaseModel):
@@ -117,19 +138,33 @@ class EngagementScore(BaseModel):
     virality: ViralityScore = Field(default_factory=ViralityScore)
     suggestions: list[EnhancementSuggestion] = Field(default_factory=list)
 
-    def compute_composite(self) -> float:
-        """Weighted composite using configured engagement weights."""
+    def _weighted_signals(self) -> list[tuple[str, float, float, bool]]:
         from app.config import settings
 
-        return (
-            self.hook.composite * settings.ENGAGEMENT_HOOK_WEIGHT
-            + self.curiosity.composite * settings.ENGAGEMENT_CURIOSITY_WEIGHT
-            + self.virality.composite * settings.ENGAGEMENT_VIRALITY_WEIGHT
-            + self.energy.composite * settings.ENGAGEMENT_ENERGY_WEIGHT
-            + self.emotional_arc.composite * settings.ENGAGEMENT_EMOTION_WEIGHT
-            + self.audio_sync.composite * settings.ENGAGEMENT_AUDIO_SYNC_WEIGHT
-            + self.face_presence.composite * settings.ENGAGEMENT_FACE_WEIGHT
-        )
+        return [
+            ("hook", self.hook.composite, settings.ENGAGEMENT_HOOK_WEIGHT, self.hook.measured),
+            ("curiosity", self.curiosity.composite, settings.ENGAGEMENT_CURIOSITY_WEIGHT, self.curiosity.measured),
+            ("virality", self.virality.composite, settings.ENGAGEMENT_VIRALITY_WEIGHT, self.virality.measured),
+            ("energy", self.energy.composite, settings.ENGAGEMENT_ENERGY_WEIGHT, self.energy.measured),
+            ("emotional_arc", self.emotional_arc.composite, settings.ENGAGEMENT_EMOTION_WEIGHT, self.emotional_arc.measured),
+            ("audio_sync", self.audio_sync.composite, settings.ENGAGEMENT_AUDIO_SYNC_WEIGHT, self.audio_sync.measured),
+            ("face_presence", self.face_presence.composite, settings.ENGAGEMENT_FACE_WEIGHT, self.face_presence.measured),
+        ]
+
+    def evaluated_signals(self) -> list[str]:
+        return [name for name, _, _, measured in self._weighted_signals() if measured]
+
+    def compute_composite(self) -> float:
+        """Weighted average over the signals that were actually measured.
+
+        Unmeasured signals used to count as a flat 50, which capped
+        transcript-only scores at a C no matter how good the clip was.
+        """
+        signals = [s for s in self._weighted_signals() if s[3]]
+        total_weight = sum(weight for _, _, weight, _ in signals)
+        if total_weight <= 0:
+            return 50.0
+        return sum(value * weight for _, value, weight, _ in signals) / total_weight
 
     def to_response(self) -> dict:
         """Serialize to the API shape expected by the web client."""
@@ -147,6 +182,7 @@ class EngagementScore(BaseModel):
             "composite": composite,
             "grade": grade,
             "grade_label": grade_label,
+            "evaluated": self.evaluated_signals(),
         }
 
     @property
@@ -167,6 +203,9 @@ class ScoreClipRequest(BaseModel):
     start: float = 0.0
     end: float = 0.0
     title: str | None = None
+    # What is said in the first ~3 s of the edit; falls back to the
+    # opening words of transcript_text when empty
+    hook_text: str = ""
 
 
 class ScoreBatchRequest(BaseModel):

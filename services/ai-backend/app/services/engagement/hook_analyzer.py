@@ -9,6 +9,7 @@ Computes a composite hook score (0-100) from multiple signals:
 """
 
 import asyncio
+import re
 import logging
 import math
 import struct
@@ -23,6 +24,25 @@ from app.models.engagement import HookScore
 logger = logging.getLogger(__name__)
 
 HOOK_WINDOW = 3.0  # seconds to analyze
+
+HOOK_BOLD_WORDS = [
+    "never", "always", "everyone", "nobody", "wrong", "myth", "lie", "truth",
+    "nunca", "ninguém", "todo mundo", "errado", "mito", "mentira", "segredo",
+    "pare de", "ninguém te conta",
+]
+HOOK_PROOF_WORDS = [
+    "million", "percent", "made", "earned", "revenue",
+    "milhão", "milhões", "mil reais", "por cento", "faturei", "ganhei", "vendi",
+    "resultado",
+]
+
+
+def _has_any_word(text: str, terms: list[str]) -> bool:
+    """True when any term appears as whole word(s), ignoring case."""
+    lowered = text.lower()
+    return any(
+        re.search(rf"(?<!\w){re.escape(term)}(?!\w)", lowered) for term in terms
+    )
 
 
 class HookAnalyzer:
@@ -47,7 +67,9 @@ class HookAnalyzer:
             tasks["face"] = self._early_face_presence(video_path)
         if transcript_start:
             tasks["hook_type"] = self._classify_hook_type(transcript_start)
-        if audio_path and transcript_start:
+        # The opening text covers the first HOOK_WINDOW seconds, so its word
+        # count is a real speech-rate measure even without the audio file
+        if transcript_start:
             tasks["speech_rate"] = self._speech_rate(transcript_start, min(HOOK_WINDOW, clip_duration))
 
         results = {}
@@ -89,13 +111,21 @@ class HookAnalyzer:
         # Speech rate score (3-5 wps is optimal for hooks)
         speech_score = min(100, max(0, speech_rate_val * 25)) if speech_rate_val > 0 else 50.0
 
-        # Composite
+        # Average only the signals that ran. Missing media used to count as
+        # 0 (visual/audio) or 40 (face), capping text-only hooks at ~40
+        weighted = [
+            (visual_score, 0.25, "visual" in tasks and results.get("visual") is not None),
+            (audio_score, 0.20, "audio" in tasks and results.get("audio") is not None),
+            (face_score, 0.15, "face" in tasks and results.get("face") is not None),
+            (hook_type_score, 0.30, "hook_type" in tasks and results.get("hook_type") is not None),
+            (speech_score, 0.10, "speech_rate" in tasks and bool(speech_rate_val)),
+        ]
+        measured = [(value, weight) for value, weight, ok in weighted if ok]
+        total_weight = sum(weight for _, weight in measured)
         composite = (
-            visual_score * 0.25
-            + audio_score * 0.20
-            + face_score * 0.15
-            + hook_type_score * 0.30
-            + speech_score * 0.10
+            sum(value * weight for value, weight in measured) / total_weight
+            if total_weight > 0
+            else 50.0
         )
 
         return HookScore(
@@ -106,6 +136,7 @@ class HookAnalyzer:
             hook_type_confidence=round(hook_confidence, 2),
             speech_rate=round(speech_rate_val, 2),
             composite=round(min(100, max(0, composite)), 1),
+            measured=total_weight > 0,
         )
 
     async def _visual_novelty(self, video_path: str) -> float:
@@ -217,22 +248,14 @@ class HookAnalyzer:
 
         Returns (hook_type, confidence). Falls back to rule-based when LLM unavailable.
         """
-        # Rule-based fallback first (fast, always available)
-        text = transcript_start.strip().lower()
-        if "?" in transcript_start[:100]:
-            return ("question", 0.8)
-        if any(w in text[:80] for w in ["never", "always", "everyone", "nobody", "wrong", "myth", "lie", "truth"]):
-            return ("bold_statement", 0.7)
-        if any(w in text[:80] for w in ["$", "million", "percent", "%", "made", "earned", "revenue"]):
-            return ("proof_first", 0.7)
-
-        # Try LLM classification
+        # The LLM reads Portuguese far better than keyword lists, so it goes
+        # first; the rules only cover when it's unavailable
         try:
             from app.services.model_backend import llm_backend
 
             available = await llm_backend.check_available()
             if not available:
-                return ("neutral", 0.5)
+                return self._classify_hook_by_rules(transcript_start)
 
             prompt = f"""Classify this video opening into exactly one hook type. Respond with JSON only.
 
@@ -258,17 +281,25 @@ Respond: {{"type": "hook_type", "confidence": 0.0-1.0}}"""
 
         except Exception:
             logger.debug("LLM hook classification failed, using rule-based", exc_info=True)
-            return ("neutral", 0.5)
+            return self._classify_hook_by_rules(transcript_start)
+
+    @staticmethod
+    def _classify_hook_by_rules(transcript_start: str) -> tuple[str, float]:
+        """Keyword fallback. Whole words only: "lie" must not match "cliente"."""
+        opening = transcript_start[:100]
+        if "?" in opening:
+            return ("question", 0.8)
+        if _has_any_word(opening, HOOK_BOLD_WORDS):
+            return ("bold_statement", 0.6)
+        if "%" in opening or "$" in opening or "R$" in opening or _has_any_word(opening, HOOK_PROOF_WORDS):
+            return ("proof_first", 0.6)
+        return ("neutral", 0.5)
 
     async def _speech_rate(self, transcript_start: str, duration: float) -> float:
-        """Calculate words per second in the opening."""
+        """Words per second in the opening (the text spoken in `duration`)."""
         if duration <= 0:
             return 0.0
-        words = len(transcript_start.split())
-        # Clamp to first ~3 seconds worth of words (assuming ~3 wps average)
-        max_words = int(duration * 5)
-        words = min(words, max_words)
-        return words / duration
+        return len(transcript_start.split()) / duration
 
 
 # Module-level singleton

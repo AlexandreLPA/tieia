@@ -21,6 +21,31 @@ import { useAIStore } from "@/stores/ai-store";
 import { useAssetsPanelStore } from "@/stores/assets-panel-store";
 import { ComplianceCheckTab } from "@/components/editor/compliance-check-tab";
 import { TranscribeNotice } from "@/components/editor/transcribe-notice";
+import {
+	getTranscriptSourceClips,
+	mapSegmentsToTimeline,
+} from "@/lib/captions/timeline-mapping";
+
+// What counts as the hook: the first seconds of the edited video
+const HOOK_SECONDS = 3;
+
+// Why a sub-score can be missing in this check
+const NOT_EVALUATED_HINT: Record<string, string> = {
+	energy: "precisa analisar o áudio",
+	audio_sync: "precisa analisar o áudio",
+	face_presence: "precisa analisar o vídeo",
+	emotional_arc: "precisa analisar o áudio",
+	virality: "o modelo não respondeu; tente de novo",
+	curiosity: "sem fala transcrita",
+	hook: "sem fala transcrita",
+};
+
+function isMeasured(score: EngagementScoreResult, key: string): boolean {
+	const sub = score[key as keyof EngagementScoreResult];
+	if (typeof sub !== "object" || sub === null || Array.isArray(sub)) return false;
+	// Older backends had no flag and always counted everything
+	return (sub as { measured?: boolean }).measured !== false;
+}
 
 const GRADE_COLORS: Record<string, string> = {
 	A: "text-green-400",
@@ -56,6 +81,7 @@ const IMPACT_LABELS: Record<string, string> = {
 
 function buildScorePrompt(score: EngagementScoreResult): string {
 	const breakdown = Object.entries(SCORE_LABELS)
+		.filter(([key]) => isMeasured(score, key))
 		.map(([key, label]) => {
 			const sub = score[key as keyof EngagementScoreResult];
 			const val =
@@ -109,17 +135,24 @@ export function ViralityScoreModal({ open, onOpenChange }: ViralityScoreModalPro
 		setError(null);
 
 		try {
-			const transcriptText = segments.length > 0
-				? segments.map((s) => s.text).join(" ")
-				: "";
-			const lastEnd = segments.length > 0
-				? Math.max(...segments.map((s) => s.end))
-				: 30;
+			// Score what the edit actually says: the transcript is timed on the
+			// source file, so cut parts are dropped and the rest is re-timed
+			const timeline = mapSegmentsToTimeline({
+				segments,
+				clips: getTranscriptSourceClips(editor.timeline.getTracks()),
+			});
+			const transcriptText = timeline.map((s) => s.text).join(" ");
+			const hookText = timeline
+				.flatMap((s) => s.words ?? [{ word: s.text, start: s.start, end: s.end }])
+				.filter((w) => w.start < HOOK_SECONDS)
+				.map((w) => w.word.trim())
+				.join(" ");
 
 			const result = await aiClient.engagementScore({
 				transcript_text: transcriptText,
+				hook_text: hookText,
 				start: 0,
-				end: lastEnd,
+				end: editor.timeline.getTotalDuration() || 30,
 				title: "Projeto atual",
 			});
 			setScore(result);
@@ -131,7 +164,7 @@ export function ViralityScoreModal({ open, onOpenChange }: ViralityScoreModalPro
 		} finally {
 			setIsAnalyzing(false);
 		}
-	}, [segments]);
+	}, [segments, editor]);
 
 	const handleAskAI = useCallback(() => {
 		if (!score) return;
@@ -183,8 +216,12 @@ export function ViralityScoreModal({ open, onOpenChange }: ViralityScoreModalPro
 										<p className="text-sm text-muted-foreground">
 											Avalie o potencial viral do seu vídeo antes de publicar e receba sugestões práticas para melhorar o engajamento.
 										</p>
-										<TranscribeNotice description="Sem transcrição a nota fica imprecisa: esta checagem avalia principalmente o texto falado." />
-										<Button className="w-full" onClick={handleCheck}>
+										<TranscribeNotice description="Esta checagem avalia o que é falado no vídeo, então precisa da transcrição primeiro." />
+										<Button
+											className="w-full"
+											onClick={handleCheck}
+											disabled={segments.length === 0}
+										>
 											Calcular Pontuação Viral
 										</Button>
 									</div>
@@ -235,6 +272,22 @@ export function ViralityScoreModal({ open, onOpenChange }: ViralityScoreModalPro
 											)}
 										</div>
 
+										{/* What the model thought, in its own words */}
+										{isMeasured(score, "virality") &&
+											typeof score.virality.reason === "string" &&
+											score.virality.reason && (
+												<div className="space-y-1 rounded-lg border p-3 text-xs">
+													<p className="text-muted-foreground">{score.virality.reason}</p>
+													{typeof score.virality.suggested_title === "string" &&
+														score.virality.suggested_title && (
+															<p>
+																<span className="text-muted-foreground">Título sugerido: </span>
+																{score.virality.suggested_title}
+															</p>
+														)}
+												</div>
+											)}
+
 										{/* Sub-scores */}
 										<div className="space-y-2">
 											<h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Detalhamento</h4>
@@ -243,6 +296,17 @@ export function ViralityScoreModal({ open, onOpenChange }: ViralityScoreModalPro
 												const val = typeof sub === "object" && sub !== null && "composite" in sub
 													? (sub as { composite: number }).composite
 													: 0;
+
+												if (!isMeasured(score, key)) {
+													return (
+														<div key={key} className="flex items-center gap-2" title={NOT_EVALUATED_HINT[key]}>
+															<span className="text-xs text-muted-foreground/60 w-28 flex-shrink-0">{label}</span>
+															<span className="flex-1 text-[11px] text-muted-foreground/60">
+																não avaliado · {NOT_EVALUATED_HINT[key] ?? "sem dados"}
+															</span>
+														</div>
+													);
+												}
 
 												return (
 													<div key={key} className="flex items-center gap-2">
@@ -261,6 +325,14 @@ export function ViralityScoreModal({ open, onOpenChange }: ViralityScoreModalPro
 												);
 											})}
 										</div>
+
+										{score.evaluated && score.evaluated.length < Object.keys(SCORE_LABELS).length && (
+											<p className="text-[11px] leading-snug text-muted-foreground">
+												A nota usa só o que foi medido ({score.evaluated.length} de{" "}
+												{Object.keys(SCORE_LABELS).length} sinais). Os itens não avaliados
+												ficam de fora em vez de contar como 50.
+											</p>
+										)}
 
 										{/* Suggestions */}
 										{score.suggestions.length > 0 && (

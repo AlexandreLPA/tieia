@@ -1,4 +1,6 @@
 import type { CaptionSegment, CaptionWord } from "./caption-styles";
+import type { TimelineElement, TimelineTrack } from "@/types/timeline";
+import { hasMediaId } from "@/lib/timeline";
 
 /** A timeline clip that plays part of the transcribed source file */
 export interface SourceClip {
@@ -92,4 +94,36 @@ export function mapSegmentsToTimeline({
 		});
 	}
 	return mapped.sort((a, b) => a.start - b.start);
+}
+
+/** The media the transcript comes from: the first video/audio clip's file */
+export function findTranscribedMediaId(tracks: TimelineTrack[]): string | null {
+	for (const track of tracks) {
+		if (track.type !== "video" && track.type !== "audio") continue;
+		for (const element of track.elements as TimelineElement[]) {
+			if (hasMediaId(element)) return element.mediaId;
+		}
+	}
+	return null;
+}
+
+/** Every visible clip on the timeline that plays the transcribed file */
+export function getTranscriptSourceClips(tracks: TimelineTrack[]): SourceClip[] {
+	const mediaId = findTranscribedMediaId(tracks);
+	if (!mediaId) return [];
+	return tracks.flatMap((track) =>
+		(track.elements as TimelineElement[])
+			.filter(
+				(element) =>
+					hasMediaId(element) &&
+					element.mediaId === mediaId &&
+					!("hidden" in element && element.hidden),
+			)
+			.map((clip) => ({
+				startTime: clip.startTime,
+				duration: clip.duration,
+				trimStart: clip.trimStart,
+				playbackRate: "playbackRate" in clip ? clip.playbackRate : undefined,
+			})),
+	);
 }

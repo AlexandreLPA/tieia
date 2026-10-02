@@ -30,10 +30,10 @@ import type { TranscriptionResult } from "@/types/ai";
 import { Spinner } from "@/components/ui/spinner";
 import { Label } from "@/components/ui/label";
 import { useTranscriptStore } from "@/stores/transcript-store";
-import { getElementsAtTime, hasMediaId } from "@/lib/timeline";
+import { getElementsAtTime } from "@/lib/timeline";
 import { toast } from "sonner";
 import { aiClient } from "@/lib/ai-client";
-import type { TimelineElement, TimelineTrack } from "@/types/timeline";
+import type { TimelineElement } from "@/types/timeline";
 import { useBackgroundTasksStore } from "@/stores/background-tasks-store";
 import { downloadBlob } from "@/utils/browser";
 import { NLLB_LANGUAGES } from "@/lib/nllb-languages";
@@ -45,7 +45,11 @@ import {
 	type CaptionStyle,
 } from "@/lib/captions/caption-styles";
 import { Switch } from "@/components/ui/switch";
-import { mapSegmentsToTimeline } from "@/lib/captions/timeline-mapping";
+import {
+	findTranscribedMediaId,
+	getTranscriptSourceClips,
+	mapSegmentsToTimeline,
+} from "@/lib/captions/timeline-mapping";
 import { cn } from "@/utils/ui";
 
 interface SubtitleTrackInfo {
@@ -566,26 +570,10 @@ export function Captions() {
 		const subtitleY = canvasSize.height * yOffset;
 		const style = getCaptionStyle(captionStyleId).config;
 		// The transcript is timed against the source file, not the edit
-		const tracks = editor.timeline.getTracks();
-		const mediaId = findTranscribedMediaId(tracks);
-		const clips = tracks.flatMap((track) =>
-			track.elements.filter(
-				(element) =>
-					hasMediaId(element) &&
-					element.mediaId === mediaId &&
-					!("hidden" in element && element.hidden),
-			),
-		);
 		const captions = chunkCaptionSegments({
 			segments: mapSegmentsToTimeline({
 				segments: subtitleSegments,
-				clips: clips.map((clip) => ({
-					startTime: clip.startTime,
-					duration: clip.duration,
-					trimStart: clip.trimStart,
-					playbackRate:
-						"playbackRate" in clip ? clip.playbackRate : undefined,
-				})),
+				clips: getTranscriptSourceClips(editor.timeline.getTracks()),
 			}),
 			maxWords: wordsPerCaption,
 			uppercase: uppercaseCaptions,
@@ -1276,15 +1264,3 @@ function CaptionStyleTile({
 	);
 }
 
-/** The media the transcript comes from: the first video/audio clip's file */
-function findTranscribedMediaId(tracks: TimelineTrack[]): string | null {
-	for (const track of tracks) {
-		if (track.type !== "video" && track.type !== "audio") continue;
-		for (const element of track.elements) {
-			if (hasMediaId(element as TimelineElement)) {
-				return (element as TimelineElement & { mediaId: string }).mediaId;
-			}
-		}
-	}
-	return null;
-}

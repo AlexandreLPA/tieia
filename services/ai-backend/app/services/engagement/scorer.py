@@ -10,6 +10,7 @@ Supports three input modes:
 """
 
 import asyncio
+import re
 import logging
 import math
 import struct
@@ -33,6 +34,15 @@ from app.services.engagement.audio_intelligence import audio_intelligence
 logger = logging.getLogger(__name__)
 
 SCORING_TIMEOUT = 120  # seconds max per clip
+# ~3 s of speech when the caller doesn't say what the opening is
+HOOK_OPENING_WORDS = 10
+
+
+def _has_any_phrase(text: str, phrases: list[str]) -> bool:
+    """True when any phrase appears as whole word(s) in already-lowered text."""
+    return any(
+        re.search(rf"(?<!\w){re.escape(phrase)}(?!\w)", text) for phrase in phrases
+    )
 
 
 class EngagementScorer:
@@ -120,20 +130,21 @@ class EngagementScorer:
                 beat_count=len(analysis.beats),
                 caption_beat_alignment=analysis.audio_sync_score,
                 composite=analysis.audio_sync_score,
+                measured=True,
             )
         except Exception:
             return AudioSyncScore(composite=50.0)
 
     async def _analyze_hook(self, req: ScoreClipRequest) -> HookScore:
         """Run hook analysis on the clip."""
-        transcript_start = ""
-        if req.transcript_text:
-            transcript_start = req.transcript_text[:300]
-        elif req.transcript_segments:
-            words = []
-            for seg in req.transcript_segments[:5]:
-                words.append(seg.get("text", ""))
-            transcript_start = " ".join(words)[:300]
+        # The hook is the first ~3 s. The editor sends exactly that; other
+        # callers get an estimate from the opening words (~3 words/s)
+        transcript_start = req.hook_text.strip()
+        if not transcript_start:
+            text = req.transcript_text or " ".join(
+                seg.get("text", "") for seg in (req.transcript_segments or [])[:5]
+            )
+            transcript_start = " ".join(text.split()[:HOOK_OPENING_WORDS])
 
         return await hook_analyzer.analyze(
             audio_path=req.audio_path,
@@ -201,6 +212,7 @@ class EngagementScorer:
             energy_variance=round(variance, 6),
             has_dynamic_range=has_dynamic,
             composite=round(composite, 1),
+            measured=True,
         )
 
     async def _analyze_curiosity(self, req: ScoreClipRequest) -> CuriosityScore:
@@ -215,21 +227,20 @@ class EngagementScorer:
         text_lower = text.lower()
 
         has_question = "?" in text
-        has_bold_claim = any(
-            w in text_lower
-            for w in ["never", "always", "everyone", "nobody", "secret", "mistake",
-                       "wrong", "truth", "myth", "actually", "the real",
-                       "nunca", "sempre", "todo mundo", "ninguém", "segredo", "erro",
-                       "errado", "verdade", "mito", "na real", "ninguém te conta"]
-        )
-        has_open_loop = any(
-            w in text_lower
-            for w in ["here's why", "here's what", "here's how", "let me tell you",
-                       "wait until", "you won't believe", "the thing is", "but first",
-                       "olha isso", "olha o que", "vou te contar", "deixa eu te contar",
-                       "espera até", "você não vai acreditar", "o negócio é", "mas antes",
-                       "é por isso que", "sabe por que"]
-        )
+        # Whole words only ("erro" must not match "ferro"), and no everyday
+        # words like "sempre"/"verdade" that fire on almost any speech
+        has_bold_claim = _has_any_phrase(text_lower, [
+            "never", "everyone", "nobody", "secret", "mistake", "wrong", "myth",
+            "the real", "nunca", "todo mundo", "ninguém", "segredo", "erro",
+            "errado", "mito", "mentira", "na real", "ninguém te conta",
+        ])
+        has_open_loop = _has_any_phrase(text_lower, [
+            "here's why", "here's what", "here's how", "let me tell you",
+            "wait until", "you won't believe", "the thing is", "but first",
+            "olha isso", "olha o que", "vou te contar", "deixa eu te contar",
+            "espera até", "você não vai acreditar", "o negócio é", "mas antes",
+            "é por isso que", "sabe por que", "até o final", "no final",
+        ])
 
         gap_count = sum([has_question, has_bold_claim, has_open_loop])
 
@@ -245,13 +256,18 @@ Text: "{text[:500]}"
 
 Respond with JSON: {{"score": int, "reason": "brief explanation"}}"""
                 data = await llm_backend.generate_json(prompt=prompt)
-                llm_score = max(0, min(100, int(data.get("score", 0))))
+                llm_score = max(0, min(100, round(float(data.get("score", 0)))))
         except Exception:
             pass
 
-        # Combine rule-based and LLM scores
+        # The LLM reads the actual text; rules only nudge it. max() let a
+        # keyword hit override a low LLM judgement
         rule_score = gap_count * 25 + (10 if has_question else 0)
-        composite = max(rule_score, llm_score) if llm_score > 0 else min(100, rule_score + 20)
+        composite = (
+            0.3 * rule_score + 0.7 * llm_score
+            if llm_score > 0
+            else min(100, rule_score + 20)
+        )
 
         return CuriosityScore(
             has_question=has_question,
@@ -259,6 +275,7 @@ Respond with JSON: {{"score": int, "reason": "brief explanation"}}"""
             has_open_loop=has_open_loop,
             gap_count=gap_count,
             composite=round(min(100, composite), 1),
+            measured=True,
         )
 
     async def _analyze_face(self, req: ScoreClipRequest) -> FacePresenceScore:
@@ -353,6 +370,7 @@ Respond with JSON: {{"score": int, "reason": "brief explanation"}}"""
             peak_timestamp=round(peak_timestamp, 2),
             dominant_emotion=dominant,
             composite=round(min(100, score), 1),
+            measured=True,
         )
 
     async def _analyze_virality(self, req: ScoreClipRequest) -> ViralityScore:
@@ -375,7 +393,7 @@ Respond with JSON: {{"score": int, "reason": "brief explanation"}}"""
             prompt = f"""You are a viral content analyst. Score this short-form video clip's viral potential.
 
 Title: {req.title or "Untitled"}
-Duration: {duration:.0f}s
+Duration: {duration:.0f}s (TikTok sweet spot: 15-60s)
 Transcript (first 200 words): {text[:800]}
 
 Score on 4 dimensions (each 0-25, total 0-100):
@@ -389,10 +407,15 @@ Keep the JSON keys in English, but write the "reason" and "suggested_title" valu
 
             data = await llm_backend.generate_json(prompt=prompt)
 
-            hook = max(0, min(25, int(data.get("hook", 12))))
-            share = max(0, min(25, int(data.get("shareability", 12))))
-            emotion = max(0, min(25, int(data.get("emotion", 12))))
-            standalone = max(0, min(25, int(data.get("standalone", 12))))
+            # Every dimension must come back as a number; a partial or
+            # malformed answer is "not evaluated", not a made-up 12/25
+            def dimension(key: str) -> int:
+                return max(0, min(25, round(float(data[key]))))
+
+            hook = dimension("hook")
+            share = dimension("shareability")
+            emotion = dimension("emotion")
+            standalone = dimension("standalone")
 
             return ViralityScore(
                 hook_strength=hook,
@@ -402,6 +425,7 @@ Keep the JSON keys in English, but write the "reason" and "suggested_title" valu
                 reason=str(data.get("reason", ""))[:200],
                 suggested_title=str(data.get("suggested_title", ""))[:100],
                 composite=float(hook + share + emotion + standalone),
+                measured=True,
             )
 
         except Exception:
@@ -414,7 +438,7 @@ Keep the JSON keys in English, but write the "reason" and "suggested_title" valu
         """Generate actionable improvement suggestions based on weak signals."""
         suggestions = []
 
-        if score.hook.composite < 60:
+        if score.hook.measured and score.hook.composite < 60:
             suggestions.append(EnhancementSuggestion(
                 signal="hook",
                 current_score=score.hook.composite,
@@ -423,7 +447,7 @@ Keep the JSON keys in English, but write the "reason" and "suggested_title" valu
                 expected_impact="high",
             ))
 
-        if not score.hook.early_face_present:
+        if score.face_presence.measured and not score.hook.early_face_present:
             suggestions.append(EnhancementSuggestion(
                 signal="hook",
                 current_score=score.hook.composite,
@@ -432,7 +456,11 @@ Keep the JSON keys in English, but write the "reason" and "suggested_title" valu
                 expected_impact="medium",
             ))
 
-        if score.curiosity.composite < 50 and not score.curiosity.has_question:
+        if (
+            score.curiosity.measured
+            and score.curiosity.composite < 50
+            and not score.curiosity.has_question
+        ):
             suggestions.append(EnhancementSuggestion(
                 signal="curiosity",
                 current_score=score.curiosity.composite,
@@ -441,7 +469,7 @@ Keep the JSON keys in English, but write the "reason" and "suggested_title" valu
                 expected_impact="high",
             ))
 
-        if score.energy.composite < 40:
+        if score.energy.measured and score.energy.composite < 40:
             suggestions.append(EnhancementSuggestion(
                 signal="energy",
                 current_score=score.energy.composite,
@@ -450,7 +478,7 @@ Keep the JSON keys in English, but write the "reason" and "suggested_title" valu
                 expected_impact="medium",
             ))
 
-        if score.face_presence.face_ratio > 0.5:
+        if score.face_presence.measured and score.face_presence.face_ratio > 0.5:
             suggestions.append(EnhancementSuggestion(
                 signal="face_presence",
                 current_score=score.face_presence.composite,
@@ -459,7 +487,11 @@ Keep the JSON keys in English, but write the "reason" and "suggested_title" valu
                 expected_impact="medium",
             ))
 
-        if not score.emotional_arc.has_buildup and not score.emotional_arc.has_peak:
+        if (
+            score.emotional_arc.measured
+            and not score.emotional_arc.has_buildup
+            and not score.emotional_arc.has_peak
+        ):
             suggestions.append(EnhancementSuggestion(
                 signal="emotional_arc",
                 current_score=score.emotional_arc.composite,
