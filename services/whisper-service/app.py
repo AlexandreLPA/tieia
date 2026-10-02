@@ -119,6 +119,10 @@ class WhisperService:
     _instance: "WhisperService | None" = None
     _model = None
     _model_size: str = ""
+    _device: str = ""
+    # Set after a CUDA failure was worked around on CPU; the route then
+    # restarts the process so the next request gets a fresh GPU context
+    restart_pending: bool = False
 
     def __new__(cls) -> "WhisperService":
         if cls._instance is None:
@@ -133,9 +137,16 @@ class WhisperService:
     def model_size(self) -> str:
         return self._model_size
 
-    def load_model(self, model_size: str | None = None) -> None:
+    def load_model(
+        self, model_size: str | None = None, device: str | None = None
+    ) -> None:
         target_size = model_size or WHISPER_MODEL_SIZE
-        if self._model is not None and self._model_size == target_size:
+        target_device = device or (WHISPER_DEVICE if WHISPER_DEVICE != "auto" else "cpu")
+        if (
+            self._model is not None
+            and self._model_size == target_size
+            and self._device == target_device
+        ):
             logger.info("Whisper model '%s' already loaded.", target_size)
             return
 
@@ -144,17 +155,17 @@ class WhisperService:
         try:
             from faster_whisper import WhisperModel
 
-            device = WHISPER_DEVICE if WHISPER_DEVICE != "auto" else "cpu"
             logger.info(
                 "Loading whisper model '%s' (device=%s, compute=%s)...",
-                target_size, device, WHISPER_COMPUTE_TYPE,
+                target_size, target_device, WHISPER_COMPUTE_TYPE,
             )
             self._model = WhisperModel(
                 target_size,
-                device=device,
+                device=target_device,
                 compute_type=WHISPER_COMPUTE_TYPE,
             )
             self._model_size = target_size
+            self._device = target_device
             logger.info("Whisper model '%s' loaded successfully.", target_size)
         except Exception:
             logger.exception("Failed to load whisper model '%s'", target_size)
@@ -166,6 +177,7 @@ class WhisperService:
             del self._model
             self._model = None
             self._model_size = ""
+            self._device = ""
 
     def transcribe(
         self,
@@ -179,6 +191,26 @@ class WhisperService:
         if self._model is None:
             self.load_model()
 
+        try:
+            return self._transcribe_once(audio_path, language)
+        except RuntimeError as exc:
+            # After Windows sleep or a driver reset the CUDA context is dead
+            # for the rest of the process ("CUDA failed with error unknown
+            # error"), so finish this file on CPU and restart afterwards
+            if self._device != "cuda" or "CUDA" not in str(exc):
+                raise
+            logger.warning(
+                "GPU transcription failed (%s); finishing on CPU, then restarting "
+                "the service to get the GPU back.",
+                exc,
+            )
+            self.restart_pending = True
+            self.load_model(self._model_size or None, device="cpu")
+            return self._transcribe_once(audio_path, language)
+
+    def _transcribe_once(
+        self, audio_path: str, language: str | None
+    ) -> TranscriptionResult:
         logger.info("Transcribing '%s' (language=%s)...", audio_path, language or "auto")
 
         segments_iter, info = self._model.transcribe(
@@ -378,6 +410,12 @@ async def transcribe(
             )
 
         result = whisper_service.transcribe(audio_path, language=language)
+        if whisper_service.restart_pending:
+            import threading
+
+            # Exit just after this response goes out; Docker restarts the
+            # container (restart: unless-stopped) with a working GPU
+            threading.Timer(2.0, os._exit, args=(1,)).start()
         return result
 
     except HTTPException:
