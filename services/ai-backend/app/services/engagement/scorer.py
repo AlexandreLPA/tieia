@@ -11,6 +11,8 @@ Supports three input modes:
 
 import asyncio
 import re
+
+import numpy as np
 import logging
 import math
 import struct
@@ -30,6 +32,7 @@ from app.models.engagement import (
 from app.services.engagement.hook_analyzer import hook_analyzer
 from app.services.engagement.face_presence import face_presence_analyzer
 from app.services.engagement.audio_intelligence import audio_intelligence
+from app.services.engagement.emotional_arc import analyze_arc
 
 logger = logging.getLogger(__name__)
 
@@ -286,90 +289,40 @@ Respond with JSON: {{"score": int, "reason": "brief explanation"}}"""
         return await face_presence_analyzer.analyze(req.video_path)
 
     async def _analyze_emotional_arc(self, req: ScoreClipRequest) -> EmotionalArcScore:
-        """Analyze emotional arc structure."""
+        """Opening, variation, climax position and dead air from loudness."""
         if not req.audio_path:
             return EmotionalArcScore(composite=50.0)
 
         duration = req.end - req.start if req.end > req.start else 30.0
+        sample_rate = 16000
+        proc = await asyncio.create_subprocess_exec(
+            "ffmpeg", "-i", req.audio_path,
+            "-ss", str(req.start), "-t", str(duration),
+            "-f", "s16le", "-acodec", "pcm_s16le",
+            "-ar", str(sample_rate), "-ac", "1",
+            "-y", "pipe:1",
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        stdout, _ = await proc.communicate()
+        if not stdout:
+            return EmotionalArcScore(composite=50.0)
 
-        # Use FFmpeg to get energy at different phases of the clip
-        phases = {
-            "hook": (0, duration * 0.1),
-            "tension": (duration * 0.1, duration * 0.33),
-            "payload": (duration * 0.33, duration * 0.73),
-            "resonance": (duration * 0.73, duration * 0.93),
-        }
-
-        phase_energy = {}
-        for phase_name, (start, end) in phases.items():
-            actual_start = req.start + start
-            actual_dur = end - start
-            if actual_dur < 0.5:
-                phase_energy[phase_name] = 0
-                continue
-
-            cmd = [
-                "ffmpeg", "-i", req.audio_path,
-                "-ss", str(actual_start), "-t", str(actual_dur),
-                "-f", "s16le", "-acodec", "pcm_s16le",
-                "-ar", "16000", "-ac", "1",
-                "-y", "pipe:1",
-            ]
-            proc = await asyncio.create_subprocess_exec(
-                *cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-            )
-            stdout, _ = await proc.communicate()
-
-            if stdout and len(stdout) > 100:
-                n = len(stdout) // 2
-                samples = struct.unpack(f"<{n}h", stdout[:n * 2])
-                rms = math.sqrt(sum(s * s for s in samples) / n) / 32768.0
-                phase_energy[phase_name] = rms
-            else:
-                phase_energy[phase_name] = 0
-
-        hook_e = phase_energy.get("hook", 0)
-        tension_e = phase_energy.get("tension", 0)
-        payload_e = phase_energy.get("payload", 0)
-        resonance_e = phase_energy.get("resonance", 0)
-
-        has_strong_open = hook_e > 0 and hook_e >= tension_e * 0.8
-        has_buildup = payload_e > tension_e * 0.9
-        has_peak = resonance_e > 0 or payload_e > hook_e
-
-        # Find peak
-        all_energies = [("hook", 0, hook_e), ("tension", duration * 0.2, tension_e),
-                        ("payload", duration * 0.5, payload_e), ("resonance", duration * 0.8, resonance_e)]
-        peak_phase = max(all_energies, key=lambda x: x[2])
-        peak_timestamp = req.start + peak_phase[1]
-
-        # Determine dominant emotion from energy levels
-        max_e = max(hook_e, tension_e, payload_e, resonance_e, 0.001)
-        if max_e > 0.15:
-            dominant = "excited"
-        elif max_e > 0.08:
-            dominant = "engaged"
-        else:
-            dominant = "calm"
-
-        # Score the arc
-        score = 30  # base
-        if has_strong_open:
-            score += 20
-        if has_buildup:
-            score += 25
-        if has_peak:
-            score += 25
+        samples = np.frombuffer(stdout[: len(stdout) // 2 * 2], dtype="<i2") / 32768.0
+        arc = analyze_arc(samples, sample_rate)
+        if arc is None:
+            return EmotionalArcScore(composite=50.0)
 
         return EmotionalArcScore(
-            has_strong_open=has_strong_open,
-            has_buildup=has_buildup,
-            has_peak=has_peak,
-            peak_timestamp=round(peak_timestamp, 2),
-            dominant_emotion=dominant,
-            composite=round(min(100, score), 1),
+            has_strong_open=arc.has_strong_open,
+            has_buildup=arc.has_buildup,
+            has_peak=arc.has_peak,
+            peak_timestamp=round(req.start + arc.peak_position * duration, 2),
+            dominant_emotion=arc.dominant_emotion,
+            dynamic_range_db=arc.dynamic_range_db,
+            dead_air_count=arc.dead_air_count,
+            dead_air_seconds=arc.dead_air_seconds,
+            composite=arc.composite,
             measured=True,
         )
 
@@ -487,15 +440,38 @@ Keep the JSON keys in English, but write the "reason" and "suggested_title" valu
                 expected_impact="medium",
             ))
 
-        if (
-            score.emotional_arc.measured
-            and not score.emotional_arc.has_buildup
-            and not score.emotional_arc.has_peak
-        ):
+        arc = score.emotional_arc
+        if arc.measured and arc.dead_air_count > 0:
+            pauses = "uma pausa longa" if arc.dead_air_count == 1 else f"{arc.dead_air_count} pausas longas"
             suggestions.append(EnhancementSuggestion(
                 signal="emotional_arc",
-                current_score=score.emotional_arc.composite,
-                suggestion="O ritmo está linear. Experimente uma abertura que crie expectativa.",
+                current_score=arc.composite,
+                suggestion=(
+                    f"Há {pauses} no meio do vídeo ({f'{arc.dead_air_seconds:.1f}'.replace('.', ',')} s no total). "
+                    "Corte os silêncios para não perder quem está assistindo."
+                ),
+                action_type="open_tool",
+                expected_impact="high",
+            ))
+        if arc.measured and not arc.has_peak:
+            suggestions.append(EnhancementSuggestion(
+                signal="emotional_arc",
+                current_score=arc.composite,
+                suggestion=(
+                    "A fala fica num tom só do começo ao fim. Varie a intensidade ou "
+                    "coloque uma música que cresça no momento mais importante."
+                ),
+                action_type="manual",
+                expected_impact="medium",
+            ))
+        elif arc.measured and not arc.has_buildup:
+            suggestions.append(EnhancementSuggestion(
+                signal="emotional_arc",
+                current_score=arc.composite,
+                suggestion=(
+                    "O momento mais forte vem cedo e o vídeo perde força depois. "
+                    "Guarde a revelação ou o resultado para a segunda metade."
+                ),
                 action_type="manual",
                 expected_impact="medium",
             ))

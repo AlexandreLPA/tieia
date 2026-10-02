@@ -79,6 +79,10 @@ class EmotionalArcScore(BaseModel):
     has_peak: bool = False
     peak_timestamp: float = 0.0
     dominant_emotion: str = "calm"
+    # Loudness spread between quieter and louder stretches (p90 - p10, ~2 s average)
+    dynamic_range_db: float = 0.0
+    dead_air_count: int = 0
+    dead_air_seconds: float = 0.0
     composite: float = 50.0
     # False when the signal had nothing to measure (no media, LLM failed);
     # the composite then leaves it out instead of counting a fake 50
