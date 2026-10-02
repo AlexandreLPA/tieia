@@ -16,7 +16,7 @@ const EXPORT_SAMPLE_RATE = 44100;
 export type CollectedAudioElement = Omit<
 	AudioElement,
 	"type" | "mediaId" | "volume" | "id" | "name" | "sourceType" | "sourceUrl"
-> & { buffer: AudioBuffer };
+> & { buffer: AudioBuffer; volume: number };
 
 export function createAudioContext({ sampleRate }: { sampleRate?: number } = {}): AudioContext {
 	const AudioContextConstructor =
@@ -70,9 +70,20 @@ export async function collectAudioElements({
 		mediaAssets.map((media) => [media.id, media]),
 	);
 	const pendingElements: Array<Promise<CollectedAudioElement | null>> = [];
+	// Silence removal leaves dozens of clips from one file; decode it once
+	const decodedMedia = new Map<string, Promise<AudioBuffer | null>>();
+	const decodeMedia = (mediaAsset: MediaAsset) => {
+		let decoded = decodedMedia.get(mediaAsset.id);
+		if (!decoded) {
+			decoded = decodeMediaAudio({ mediaAsset, audioContext });
+			decodedMedia.set(mediaAsset.id, decoded);
+		}
+		return decoded;
+	};
 
 	for (const track of tracks) {
 		if (canTracktHaveAudio(track) && track.muted) continue;
+		const trackVolume = ("volume" in track ? track.volume : undefined) ?? 1;
 
 		for (const element of track.elements) {
 			if (!canElementHaveAudio(element)) continue;
@@ -81,12 +92,19 @@ export async function collectAudioElements({
 			const isTrackMuted = canTracktHaveAudio(track) && track.muted;
 
 			if (element.type === "audio") {
+				// Same gain rule as preview playback: clip volume only turns it down
+				const volume = Math.min(element.volume ?? 1, 1) * trackVolume;
+				const buffer =
+					element.sourceType === "upload"
+						? (() => {
+								const mediaAsset = mediaMap.get(element.mediaId);
+								return mediaAsset
+									? decodeMedia(mediaAsset)
+									: Promise.resolve(null);
+							})()
+						: resolveAudioBufferForElement({ element, audioContext });
 				pendingElements.push(
-					resolveAudioBufferForElement({
-						element,
-						mediaMap,
-						audioContext,
-					}).then((audioBuffer) => {
+					buffer.then((audioBuffer) => {
 						if (!audioBuffer) return null;
 						return {
 							buffer: audioBuffer,
@@ -95,6 +113,7 @@ export async function collectAudioElements({
 							trimStart: element.trimStart,
 							trimEnd: element.trimEnd,
 							muted: element.muted || isTrackMuted,
+							volume,
 						};
 					}),
 				);
@@ -106,10 +125,7 @@ export async function collectAudioElements({
 				if (!mediaAsset || !mediaSupportsAudio({ media: mediaAsset })) continue;
 
 				pendingElements.push(
-					resolveAudioBufferForVideoElement({
-						mediaAsset,
-						audioContext,
-					}).then((audioBuffer) => {
+					decodeMedia(mediaAsset).then((audioBuffer) => {
 						if (!audioBuffer) return null;
 						const elementMuted = element.muted ?? false;
 						return {
@@ -119,6 +135,7 @@ export async function collectAudioElements({
 							trimStart: element.trimStart,
 							trimEnd: element.trimEnd,
 							muted: elementMuted || isTrackMuted,
+							volume: trackVolume,
 						};
 					}),
 				);
@@ -136,22 +153,12 @@ export async function collectAudioElements({
 
 async function resolveAudioBufferForElement({
 	element,
-	mediaMap,
 	audioContext,
 }: {
-	element: AudioElement;
-	mediaMap: Map<string, MediaAsset>;
+	element: LibraryAudioElement;
 	audioContext: AudioContext;
 }): Promise<AudioBuffer | null> {
 	try {
-		if (element.sourceType === "upload") {
-			const asset = mediaMap.get(element.mediaId);
-			if (!asset || asset.type !== "audio") return null;
-
-			const arrayBuffer = await asset.file.arrayBuffer();
-			return await audioContext.decodeAudioData(arrayBuffer.slice(0));
-		}
-
 		if (element.buffer) return element.buffer;
 
 		const response = await fetch(element.sourceUrl);
@@ -160,6 +167,30 @@ async function resolveAudioBufferForElement({
 		}
 
 		const arrayBuffer = await response.arrayBuffer();
+		return await audioContext.decodeAudioData(arrayBuffer.slice(0));
+	} catch (error) {
+		console.warn("Failed to decode audio:", error);
+		return null;
+	}
+}
+
+/**
+ * Decodes the audio of an uploaded file. "Separar áudio" makes audio clips
+ * that point at the video file, so video files must be handled here too.
+ */
+async function decodeMediaAudio({
+	mediaAsset,
+	audioContext,
+}: {
+	mediaAsset: MediaAsset;
+	audioContext: AudioContext;
+}): Promise<AudioBuffer | null> {
+	if (mediaAsset.type === "video") {
+		return resolveAudioBufferForVideoElement({ mediaAsset, audioContext });
+	}
+	if (mediaAsset.type !== "audio") return null;
+	try {
+		const arrayBuffer = await mediaAsset.file.arrayBuffer();
 		return await audioContext.decodeAudioData(arrayBuffer.slice(0));
 	} catch (error) {
 		console.warn("Failed to decode audio:", error);
@@ -534,7 +565,13 @@ function mixAudioChannels({
 	outputLength: number;
 	sampleRate: number;
 }): void {
-	const { buffer, startTime, trimStart, duration: elementDuration } = element;
+	const {
+		buffer,
+		startTime,
+		trimStart,
+		duration: elementDuration,
+		volume,
+	} = element;
 
 	const sourceStartSample = Math.floor(trimStart * buffer.sampleRate);
 	const sourceLengthSamples = Math.floor(elementDuration * buffer.sampleRate);
@@ -556,7 +593,7 @@ function mixAudioChannels({
 			const sourceIndex = sourceStartSample + Math.floor(i / resampleRatio);
 			if (sourceIndex >= sourceData.length) break;
 
-			outputData[outputIndex] += sourceData[sourceIndex];
+			outputData[outputIndex] += sourceData[sourceIndex] * volume;
 		}
 	}
 }
