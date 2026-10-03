@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
 import {
 	addCaptionTrack,
 	CAPTION_TRACK_PREFIX,
@@ -83,7 +83,8 @@ export function QuickActionsBar({ className }: { className?: string }) {
 	const [smartCutStatus, setSmartCutStatus] = useState<ActionStatus>("idle");
 
 	// Derive subtitle state from actual timeline tracks
-	const subtitleTrackId = useMemo(() => {
+	// Follows the timeline so the button flips as soon as captions are added
+	const findSubtitleTrackId = (): string | null => {
 		const tracks = editor.timeline.getTracks();
 		const textTrack = tracks.find(
 			(t) =>
@@ -98,7 +99,12 @@ export function QuickActionsBar({ className }: { className?: string }) {
 					)),
 		);
 		return textTrack?.id ?? null;
-	}, [editor, segments]); // re-derive when segments change (triggers re-render)
+	};
+	const subtitleTrackId = useSyncExternalStore(
+		(onChange) => editor.timeline.subscribe(onChange),
+		findSubtitleTrackId,
+		() => null,
+	);
 
 	// Derive filler count from transcript on mount / segment change
 	const currentFillerCount = useMemo(() => {
