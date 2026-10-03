@@ -16,7 +16,8 @@ export function PreviewContextMenu({
 	containerRef: React.RefObject<HTMLElement | null>;
 }) {
 	const editor = useEditor();
-	const { overlays, setOverlayVisibility } = usePreviewStore();
+	const { overlays, setOverlayVisibility, layoutGuide, toggleLayoutGuide } =
+		usePreviewStore();
 
 	return (
 		<ContextMenuContent className="w-56" container={containerRef.current}>
@@ -33,6 +34,12 @@ export function PreviewContextMenu({
 				}
 			>
 				Mostrar favoritos
+			</ContextMenuCheckboxItem>
+			<ContextMenuCheckboxItem
+				checked={layoutGuide.platform === "tiktok"}
+				onCheckedChange={() => toggleLayoutGuide("tiktok")}
+			>
+				Guia do TikTok (só no preview)
 			</ContextMenuCheckboxItem>
 			<ContextMenuItem inset>Mostrar grade</ContextMenuItem>
 		</ContextMenuContent>

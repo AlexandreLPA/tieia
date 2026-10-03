@@ -40,7 +40,7 @@ import {
 	type CaptionSegment,
 	type CaptionStyle,
 } from "@/lib/captions/caption-styles";
-import { addCaptionTrack } from "@/lib/captions/add-captions";
+import { addCaptionTrack, CAPTION_Y_OFFSET } from "@/lib/captions/add-captions";
 import { useCaptionStyleStore } from "@/stores/caption-style-store";
 import { Switch } from "@/components/ui/switch";
 import { findTranscribedMediaId } from "@/lib/captions/timeline-mapping";
@@ -550,7 +550,8 @@ export function Captions() {
 			});
 
 			// Place translated subtitles slightly above the original ones
-			const yOffset = activeSubtitleTracks.length > 0 ? 0.28 : 0.38;
+			const yOffset =
+				activeSubtitleTracks.length > 0 ? CAPTION_Y_OFFSET - 0.1 : CAPTION_Y_OFFSET;
 			const trackId = addSubtitleTrack({
 				subtitleSegments: translatedSegments,
 				languageLabel: `${targetLang.name}`,

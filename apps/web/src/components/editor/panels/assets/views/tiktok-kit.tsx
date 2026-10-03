@@ -13,11 +13,13 @@ import {
 	applyZoom,
 	getSfxBuffer,
 	type HighlightAnimation,
-	insertFeedOverlay,
+	type HighlightKind,
 	insertHighlight,
 	insertSfx,
 	type ZoomStyle,
 } from "@/lib/tiktok-kit/insert";
+import { Switch } from "@/components/ui/switch";
+import { usePreviewStore } from "@/stores/preview-store";
 import { SFX_LABELS, type SfxKind } from "@/lib/tiktok-kit/sfx";
 
 const ANIMATIONS: { value: HighlightAnimation; label: string }[] = [
@@ -28,8 +30,19 @@ const ANIMATIONS: { value: HighlightAnimation; label: string }[] = [
 
 const ZOOMS: { value: ZoomStyle; label: string; hint: string }[] = [
 	{ value: "punch", label: "Zoom seco", hint: "Pula para 135% no playhead" },
-	{ value: "smooth", label: "Zoom suave", hint: "Aproxima em 0,6 s" },
+	{ value: "smooth", label: "Zoom suave", hint: "Aproxima em 0,6 s, com saída cúbica" },
 	{ value: "in-out", label: "Zoom e volta", hint: "Aproxima e volta em 1,2 s" },
+	{
+		value: "zoom-out",
+		label: "Diminuir zoom",
+		hint: "Abre o clipe de 135% para o normal; boa entrada depois de uma transição",
+	},
+];
+
+const HIGHLIGHTS: { kind: HighlightKind; label: string; done: string }[] = [
+	{ kind: "arrow-circle", label: "Seta + círculo", done: "Seta com círculo adicionada" },
+	{ kind: "arrow", label: "Só seta", done: "Seta adicionada" },
+	{ kind: "circle", label: "Só círculo", done: "Círculo adicionado" },
 ];
 
 function Section({
@@ -61,6 +74,9 @@ export function TikTokKitView() {
 	const [busy, setBusy] = useState<string | null>(null);
 	const [direction, setDirection] = useState<ArrowDirection>("↓");
 	const [animation, setAnimation] = useState<HighlightAnimation>("bounce");
+	// Arrows get a "poink", zooms a whoosh or hit, like in the reference edits
+	const [withSound, setWithSound] = useState(true);
+	const { layoutGuide, toggleLayoutGuide } = usePreviewStore();
 
 	const run = async (key: string, action: () => Promise<void>, done: string) => {
 		setBusy(key);
@@ -91,6 +107,18 @@ export function TikTokKitView() {
 					Os elementos entram no ponto do playhead. Arraste no preview para
 					posicionar e use as alças para girar ou mudar o tamanho.
 				</p>
+				<label
+					htmlFor="kit-with-sound"
+					className="flex items-center justify-between gap-2 rounded-md border px-2 py-1.5 text-xs"
+				>
+					<span className="flex flex-col">
+						Som junto
+						<span className="text-[10px] text-muted-foreground">
+							Poink nas setas, whoosh ou impacto nos zooms
+						</span>
+					</span>
+					<Switch id="kit-with-sound" checked={withSound} onCheckedChange={setWithSound} />
+				</label>
 
 				<Section
 					title="Setas e círculos"
@@ -126,41 +154,32 @@ export function TikTokKitView() {
 							</Button>
 						))}
 					</div>
-					<div className="flex gap-2">
-						<Button
-							className="flex-1"
-							size="sm"
-							disabled={busy !== null}
-							onClick={() =>
-								run(
-									"arrow",
-									() => insertHighlight({ editor, kind: "arrow", direction, animation }),
-									"Seta adicionada",
-								)
-							}
-						>
-							Adicionar seta
-						</Button>
-						<Button
-							className="flex-1"
-							size="sm"
-							variant="secondary"
-							disabled={busy !== null}
-							onClick={() =>
-								run(
-									"circle",
-									() =>
-										insertHighlight({
-											editor,
-											kind: "circle",
-											animation: animation === "bounce" ? "pulse" : animation,
-										}),
-									"Círculo adicionado",
-								)
-							}
-						>
-							Adicionar círculo
-						</Button>
+					<div className="grid grid-cols-3 gap-1">
+						{HIGHLIGHTS.map((highlight, index) => (
+							<Button
+								key={highlight.kind}
+								size="sm"
+								variant={index === 0 ? "default" : "secondary"}
+								className="h-8 px-1 text-[11px]"
+								disabled={busy !== null}
+								onClick={() =>
+									run(
+										highlight.kind,
+										() =>
+											insertHighlight({
+												editor,
+												kind: highlight.kind,
+												direction,
+												animation,
+												withSound,
+											}),
+										highlight.done,
+									)
+								}
+							>
+								{highlight.label}
+							</Button>
+						))}
 					</div>
 				</Section>
 
@@ -207,7 +226,7 @@ export function TikTokKitView() {
 					title="Zoom no produto"
 					hint="Selecione o clipe, posicione o playhead no momento e escolha o zoom."
 				>
-					<div className="grid grid-cols-3 gap-1">
+					<div className="grid grid-cols-2 gap-1">
 						{ZOOMS.map((zoom) => (
 							<Button
 								key={zoom.value}
@@ -215,10 +234,16 @@ export function TikTokKitView() {
 								variant="outline"
 								className="h-auto flex-col gap-0 py-1.5 text-[11px]"
 								title={zoom.hint}
-								onClick={() => {
-									const result = applyZoom({ editor, style: zoom.value });
-									if (result.ok) toast.success(`${zoom.label} aplicado`);
-									else toast.info(result.reason);
+								disabled={busy !== null}
+								onClick={async () => {
+									setBusy(zoom.value);
+									try {
+										const result = await applyZoom({ editor, style: zoom.value, withSound });
+										if (result.ok) toast.success(`${zoom.label} aplicado`);
+										else toast.info(result.reason);
+									} finally {
+										setBusy(null);
+									}
 								}}
 							>
 								{zoom.label}
@@ -228,24 +253,20 @@ export function TikTokKitView() {
 				</Section>
 
 				<Section
-					title="Interface do feed"
-					hint="Faz o vídeo parecer um post no feed (hora, abas, curtidas, perfil e etiqueta de produto)."
+					title="Guia do TikTok"
+					hint="Mostra no preview onde ficam a descrição, os botões e as abas, para a legenda e as setas não ficarem por baixo. Não aparece no vídeo exportado."
 				>
-					<Button
-						size="sm"
-						variant="secondary"
-						disabled={busy !== null}
-						onClick={() =>
-							run("feed", () => insertFeedOverlay(editor), "Interface do feed adicionada")
-						}
+					<label
+						htmlFor="kit-tiktok-guide"
+						className="flex items-center justify-between gap-2 text-xs"
 					>
-						Adicionar interface do feed
-					</Button>
-					<p className="rounded-md border border-yellow-500/30 bg-yellow-500/5 p-2 text-[10px] leading-snug text-muted-foreground">
-						Atenção: imitar a interface da plataforma pode ser recusado em
-						anúncios pagos do TikTok. Para vídeo orgânico de afiliado, costuma
-						passar; confira na aba Conformidade TikTok antes de publicar.
-					</p>
+						Mostrar guia no preview
+						<Switch
+							id="kit-tiktok-guide"
+							checked={layoutGuide.platform === "tiktok"}
+							onCheckedChange={() => toggleLayoutGuide("tiktok")}
+						/>
+					</label>
 				</Section>
 			</div>
 		</PanelView>

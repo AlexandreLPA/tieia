@@ -2,12 +2,7 @@ import type { EditorCore } from "@/core";
 import type { ElementAnimations, NumberKeyframe } from "@/types/animation";
 import { processMediaAssets } from "@/lib/media/processing";
 import { generateUUID } from "@/utils/id";
-import {
-	canvasToPngFile,
-	drawArrow,
-	drawCircle,
-	drawFeedOverlay,
-} from "./graphics";
+import { canvasToPngFile, drawArrow, drawCircle } from "./graphics";
 import { audioBufferToWav, renderSfx, SFX_LABELS, type SfxKind } from "./sfx";
 
 /** Saves a generated file as project media and returns its id. */
@@ -102,35 +97,34 @@ function highlightAnimations({
 	return { channels };
 }
 
-export async function insertHighlight({
+export type HighlightKind = "arrow" | "circle" | "arrow-circle";
+
+async function insertHighlightImage({
 	editor,
 	kind,
-	direction = "↓",
+	rotate,
+	position,
 	animation,
+	startTime,
 }: {
 	editor: EditorCore;
 	kind: "arrow" | "circle";
-	direction?: ArrowDirection;
+	rotate: number;
+	position: { x: number; y: number };
 	animation: HighlightAnimation;
-}): Promise<void> {
-	const canvas = kind === "arrow" ? drawArrow() : drawCircle();
+	startTime: number;
+}) {
 	const file = await canvasToPngFile(
-		canvas,
+		kind === "arrow" ? drawArrow() : drawCircle(),
 		kind === "arrow" ? "seta-vermelha.png" : "circulo-vermelho.png",
 	);
 	const mediaId = await addGeneratedMedia(editor, file);
-
 	const { canvasSize } = editor.project.getActive().settings;
-	const rotate = kind === "arrow" ? ARROW_DIRECTIONS[direction] : 0;
-	// A little above center, where products usually are; drag to place it
-	const position = { x: 0, y: -canvasSize.height * 0.08 };
-	const startTime = editor.playback.getCurrentTime();
-
 	editor.timeline.insertElement({
 		element: {
 			type: "image",
 			mediaId,
-			name: kind === "arrow" ? `Seta ${direction}` : "Círculo",
+			name: kind === "arrow" ? "Seta" : "Círculo",
 			startTime,
 			duration: HIGHLIGHT_DURATION,
 			trimStart: 0,
@@ -149,31 +143,57 @@ export async function insertHighlight({
 	});
 }
 
-/** Generic feed UI over the whole video, on its own top track. */
-export async function insertFeedOverlay(editor: EditorCore): Promise<void> {
+/**
+ * Arrow, circle, or an arrow pointing at a circle (the face/product callout
+ * from TikTok Shop edits). With `withSound`, a "poink" lands as it pops in.
+ */
+export async function insertHighlight({
+	editor,
+	kind,
+	direction = "↓",
+	animation,
+	withSound = true,
+}: {
+	editor: EditorCore;
+	kind: HighlightKind;
+	direction?: ArrowDirection;
+	animation: HighlightAnimation;
+	withSound?: boolean;
+}): Promise<void> {
 	const { canvasSize } = editor.project.getActive().settings;
-	const file = await canvasToPngFile(
-		drawFeedOverlay({ width: canvasSize.width, height: canvasSize.height }),
-		"interface-feed.png",
-	);
-	const mediaId = await addGeneratedMedia(editor, file);
-	const duration = Math.max(1, editor.timeline.getTotalDuration());
-	const trackId = editor.timeline.addTrack({ type: "video", index: 0 });
-	editor.timeline.renameTrack({ trackId, name: "Interface do feed" });
-	editor.timeline.insertElement({
-		element: {
-			type: "image",
-			mediaId,
-			name: "Interface do feed",
-			startTime: 0,
-			duration,
-			trimStart: 0,
-			trimEnd: 0,
-			transform: { scale: 1, position: { x: 0, y: 0 }, rotate: 0 },
-			opacity: 1,
-		},
-		placement: { mode: "explicit", trackId },
-	});
+	const rotate = ARROW_DIRECTIONS[direction];
+	// A little above center, where products and faces usually are
+	const target = { x: 0, y: -canvasSize.height * 0.08 };
+	const startTime = editor.playback.getCurrentTime();
+
+	if (kind === "circle" || kind === "arrow-circle") {
+		await insertHighlightImage({
+			editor,
+			kind: "circle",
+			rotate: 0,
+			position: target,
+			animation: animation === "bounce" ? "pulse" : animation,
+			startTime,
+		});
+	}
+	if (kind === "arrow" || kind === "arrow-circle") {
+		// Next to the circle, pointing at it, instead of on top of it
+		const radians = (rotate * Math.PI) / 180;
+		const gap = kind === "arrow-circle" ? canvasSize.height * 0.17 : 0;
+		const position = {
+			x: target.x + Math.sin(radians) * gap,
+			y: target.y - Math.cos(radians) * gap,
+		};
+		await insertHighlightImage({
+			editor,
+			kind: "arrow",
+			rotate,
+			position,
+			animation,
+			startTime,
+		});
+	}
+	if (withSound) await insertSfx({ editor, kind: "poink", at: startTime });
 }
 
 const sfxCache = new Map<SfxKind, Promise<AudioBuffer>>();
@@ -189,9 +209,12 @@ export function getSfxBuffer(kind: SfxKind): Promise<AudioBuffer> {
 export async function insertSfx({
 	editor,
 	kind,
+	at,
 }: {
 	editor: EditorCore;
 	kind: SfxKind;
+	/** Timeline time; the playhead when omitted */
+	at?: number;
 }): Promise<void> {
 	const buffer = await getSfxBuffer(kind);
 	const file = new File(
@@ -206,7 +229,7 @@ export async function insertSfx({
 			sourceType: "upload",
 			mediaId,
 			name: SFX_LABELS[kind].name,
-			startTime: editor.playback.getCurrentTime(),
+			startTime: at ?? editor.playback.getCurrentTime(),
 			duration: buffer.duration,
 			trimStart: 0,
 			trimEnd: 0,
@@ -217,22 +240,50 @@ export async function insertSfx({
 	});
 }
 
-export type ZoomStyle = "punch" | "smooth" | "in-out";
+export type ZoomStyle = "punch" | "smooth" | "in-out" | "zoom-out";
+
+const ZOOM_SOUND: Record<ZoomStyle, SfxKind> = {
+	punch: "impact",
+	smooth: "whoosh",
+	"in-out": "whoosh",
+	"zoom-out": "impact",
+};
+
+// Keyframes only interpolate linearly, so curves are sampled into short
+// linear steps. Cubic ease-out matches CapCut's "Saída cúbica".
+function easedRamp(
+	from: number,
+	to: number,
+	start: number,
+	duration: number,
+	steps = 8,
+): [number, number][] {
+	const points: [number, number][] = [];
+	for (let i = 0; i <= steps; i++) {
+		const t = i / steps;
+		const eased = 1 - (1 - t) ** 3;
+		points.push([start + duration * t, from + (to - from) * eased]);
+	}
+	return points;
+}
 
 /**
- * Zoom on the selected clip from the playhead: "punch" jumps in (a hard
- * cut-zoom like CapCut's 135%), "smooth" eases in over 0.6 s, "in-out" goes in
- * and back out over 1.2 s.
+ * Zoom on the selected clip. "punch" jumps to 135% at the playhead (CapCut's
+ * cut-and-scale), "smooth" eases in over 0.6 s, "in-out" goes in and back,
+ * "zoom-out" opens the clip from 135% down to normal (the "diminuir zoom"
+ * entrance). With `withSound`, a hit or whoosh is placed on the move.
  */
-export function applyZoom({
+export async function applyZoom({
 	editor,
 	style,
 	amount = 1.35,
+	withSound = true,
 }: {
 	editor: EditorCore;
 	style: ZoomStyle;
 	amount?: number;
-}): { ok: true } | { ok: false; reason: string } {
+	withSound?: boolean;
+}): Promise<{ ok: true } | { ok: false; reason: string }> {
 	const [selected] = editor.selection.getSelectedElements();
 	if (!selected) return { ok: false, reason: "Selecione um clipe de vídeo ou imagem" };
 	const [match] = editor.timeline.getElementsWithTracks({ elements: [selected] });
@@ -241,18 +292,23 @@ export function applyZoom({
 		return { ok: false, reason: "Selecione um clipe de vídeo ou imagem" };
 	}
 
-	const local = Math.min(
-		Math.max(0, editor.playback.getCurrentTime() - element.startTime),
-		Math.max(0, element.duration - 0.1),
-	);
+	const local =
+		style === "zoom-out"
+			? 0
+			: Math.min(
+					Math.max(0, editor.playback.getCurrentTime() - element.startTime),
+					Math.max(0, element.duration - 0.1),
+				);
 	const base = element.transform.scale;
 	const target = base * amount;
 	const points: [number, number][] =
 		style === "punch"
 			? [[Math.max(0, local - 0.001), base], [local, target]]
 			: style === "smooth"
-				? [[local, base], [local + 0.6, target]]
-				: [[local, base], [local + 0.4, target], [local + 0.8, target], [local + 1.2, base]];
+				? easedRamp(base, target, local, 0.6)
+				: style === "in-out"
+					? [...easedRamp(base, target, local, 0.4), ...easedRamp(target, base, local + 0.8, 0.4).slice(1)]
+					: easedRamp(target, base, 0, Math.min(0.5, element.duration));
 
 	const existing = element.animations?.channels ?? {};
 	const previous = existing["transform.scale"];
@@ -281,5 +337,12 @@ export function applyZoom({
 			},
 		],
 	});
+	if (withSound) {
+		await insertSfx({
+			editor,
+			kind: ZOOM_SOUND[style],
+			at: element.startTime + local,
+		});
+	}
 	return { ok: true };
 }

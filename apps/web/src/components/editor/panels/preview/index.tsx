@@ -15,6 +15,7 @@ import { BookmarkNoteOverlay } from "./bookmark-note-overlay";
 import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { usePreviewStore } from "@/stores/preview-store";
 import { PreviewContextMenu } from "./context-menu";
+import { LayoutGuideOverlay } from "./layout-guide-overlay";
 import { PreviewToolbar } from "./toolbar";
 import { FramePresetPicker } from "./frame-preset-picker";
 
@@ -199,6 +200,7 @@ function PreviewCanvas({
 										: activeProject?.settings.background.color,
 							}}
 						/>
+						<LayoutGuideOverlay />
 						<PreviewInteractionOverlay
 							canvasRef={canvasRef}
 							containerRef={canvasBoundsRef}

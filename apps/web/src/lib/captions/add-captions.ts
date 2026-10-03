@@ -10,6 +10,10 @@ import { useCaptionStyleStore } from "@/stores/caption-style-store";
 
 export const CAPTION_TRACK_PREFIX = "Legendas:";
 
+// Offset from the canvas center as a share of its height. 0.18 sits at 68%,
+// just above the area the TikTok description and buttons cover (bottom ~22%)
+export const CAPTION_Y_OFFSET = 0.18;
+
 /**
  * Adds a caption track from transcript segments with the user's chosen
  * style: short chunks, spoken-word highlight, timed to the edited timeline.
@@ -19,7 +23,7 @@ export function addCaptionTrack({
 	editor,
 	segments,
 	languageLabel,
-	yOffset = 0.38,
+	yOffset = CAPTION_Y_OFFSET,
 }: {
 	editor: EditorCore;
 	segments: CaptionSegment[];
