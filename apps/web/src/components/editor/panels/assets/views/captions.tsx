@@ -810,7 +810,12 @@ export function Captions() {
 										style={style}
 										selected={style.id === captionStyleId}
 										uppercase={uppercaseCaptions}
-										onSelect={() => setCaptionStyleId(style.id)}
+										onSelect={() => {
+											setCaptionStyleId(style.id);
+											if (style.recommendedWords !== undefined) {
+												setWordsPerCaption(style.recommendedWords);
+											}
+										}}
 									/>
 								))}
 							</div>

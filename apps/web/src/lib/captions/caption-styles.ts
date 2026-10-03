@@ -16,6 +16,8 @@ export type CaptionStyleConfig = Pick<
 export interface CaptionStyle {
 	id: string;
 	name: string;
+	/** Words per caption this look is meant for; picked along with the style */
+	recommendedWords?: number;
 	config: CaptionStyleConfig;
 }
 
@@ -50,6 +52,22 @@ export const CAPTION_STYLES: CaptionStyle[] = [
 			highlightStyle: "word",
 			wordPopScale: 1.12,
 			stroke: BLACK_OUTLINE,
+			shadow: NO_SHADOW,
+			background: NO_BACKGROUND,
+			opacity: 1,
+		},
+	},
+	{
+		id: "yellow-word",
+		name: "Amarela palavra a palavra",
+		recommendedWords: 1,
+		config: {
+			fontWeight: "bold",
+			color: "#FFD60A",
+			highlightColor: "#FFD60A",
+			highlightStyle: "none",
+			wordPopScale: 1,
+			stroke: { enabled: true, color: "#000000", width: 14 },
 			shadow: NO_SHADOW,
 			background: NO_BACKGROUND,
 			opacity: 1,
