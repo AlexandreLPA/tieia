@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/select";
 import { useEffect, useState, useRef } from "react";
 import { useEditor } from "@/hooks/use-editor";
-import { DEFAULT_TEXT_ELEMENT } from "@/constants/text-constants";
 import { WHISPER_LANGUAGES } from "@/constants/transcription-constants";
 import { LANGUAGES } from "@/constants/language-constants";
 import {
@@ -30,26 +29,21 @@ import type { TranscriptionResult } from "@/types/ai";
 import { Spinner } from "@/components/ui/spinner";
 import { Label } from "@/components/ui/label";
 import { useTranscriptStore } from "@/stores/transcript-store";
-import { getElementsAtTime } from "@/lib/timeline";
 import { toast } from "sonner";
 import { aiClient } from "@/lib/ai-client";
-import type { TimelineElement } from "@/types/timeline";
 import { useBackgroundTasksStore } from "@/stores/background-tasks-store";
 import { downloadBlob } from "@/utils/browser";
 import { NLLB_LANGUAGES } from "@/lib/nllb-languages";
 import {
 	CAPTION_STYLES,
-	DEFAULT_CAPTION_STYLE_ID,
-	chunkCaptionSegments,
 	getCaptionStyle,
+	type CaptionSegment,
 	type CaptionStyle,
 } from "@/lib/captions/caption-styles";
+import { addCaptionTrack } from "@/lib/captions/add-captions";
+import { useCaptionStyleStore } from "@/stores/caption-style-store";
 import { Switch } from "@/components/ui/switch";
-import {
-	findTranscribedMediaId,
-	getTranscriptSourceClips,
-	mapSegmentsToTimeline,
-} from "@/lib/captions/timeline-mapping";
+import { findTranscribedMediaId } from "@/lib/captions/timeline-mapping";
 import { cn } from "@/utils/ui";
 
 interface SubtitleTrackInfo {
@@ -180,9 +174,15 @@ export function Captions() {
 	const [error, setError] = useState<string | null>(null);
 	const [subtitleTracks, setSubtitleTracks] = useState<SubtitleTrackInfo[]>([]);
 	const [translateLanguage, setTranslateLanguage] = useState("es");
-	const [captionStyleId, setCaptionStyleId] = useState(DEFAULT_CAPTION_STYLE_ID);
-	const [wordsPerCaption, setWordsPerCaption] = useState(3);
-	const [uppercaseCaptions, setUppercaseCaptions] = useState(false);
+	// Remembered across sessions and shared with the quick "Adicionar legendas"
+	const {
+		styleId: captionStyleId,
+		wordsPerCaption,
+		uppercase: uppercaseCaptions,
+		setStyleId: setCaptionStyleId,
+		setWordsPerCaption,
+		setUppercase: setUppercaseCaptions,
+	} = useCaptionStyleStore();
 	const [isTranslating, setIsTranslating] = useState(false);
 	const [translatingStep, setTranslatingStep] = useState("");
 	const containerRef = useRef<HTMLDivElement>(null);
@@ -328,12 +328,16 @@ export function Captions() {
 			setProcessingStep("Processando segmentos...");
 			bgTasks.updateTask(taskId, { progress: "Processando segmentos..." });
 
-			const timelineDuration = editor.timeline.getTotalDuration();
+			// Segment times are in the source file, so bound them by its length;
+			// the edited timeline can be shorter (silence removal) and used to
+			// drop the last phrases
+			const sourceDuration =
+				result.duration > 0 ? result.duration : editor.timeline.getTotalDuration();
 
 			// Filter out hallucinated segments beyond the actual duration
 			// For Sarvam results, also allow Indic Unicode ranges through
 			const validSegments = result.segments.filter((seg) => {
-				if (seg.start >= timelineDuration) return false;
+				if (seg.start >= sourceDuration) return false;
 				// Keep Latin, Cyrillic, CJK, Kana, Devanagari, Bengali, Gurmukhi, Gujarati,
 			// Oriya, Tamil, Telugu, Kannada, Malayalam, Sinhala, Arabic/Nastaliq (Urdu),
 			// Meitei (Manipuri), Ol Chiki (Santali)
@@ -343,7 +347,7 @@ export function Captions() {
 				return true;
 			}).map((seg) => ({
 				...seg,
-				end: Math.min(seg.end, timelineDuration),
+				end: Math.min(seg.end, sourceDuration),
 			}));
 
 			if (validSegments.length === 0) {
@@ -381,7 +385,6 @@ export function Captions() {
 
 			// ── Auto Speaker Diarization + Emotion Detection ──
 			// Run both in parallel: speaker labels and emotion annotations.
-			const speakerChangeTimes: number[] = [];
 			setProcessingStep("Detectando falantes e emoções...");
 			bgTasks.updateTask(taskId, { progress: "Detectando falantes e emoções..." });
 
@@ -399,18 +402,6 @@ export function Captions() {
 			if (speakerResult && speakerResult.segments.length > 0) {
 				useTranscriptStore.getState().applySpeakerDiarization(speakerResult.segments);
 
-				// Collect speaker change boundaries for auto-cuts
-				for (let i = 1; i < speakerResult.segments.length; i++) {
-					const prev = speakerResult.segments[i - 1];
-					const curr = speakerResult.segments[i];
-					if (prev.speaker !== curr.speaker) {
-						const boundary = curr.start;
-						if (boundary > 0 && boundary < timelineDuration) {
-							speakerChangeTimes.push(boundary);
-						}
-					}
-				}
-
 				const numSpeakers = speakerResult.num_speakers;
 				if (numSpeakers > 1) {
 					toast.success(`${numSpeakers} falantes detectados`, {
@@ -423,83 +414,10 @@ export function Captions() {
 				useTranscriptStore.getState().setEmotions(emotionResult.emotions);
 			}
 
-			// Split video at segment boundaries AND speaker change points
-			if (validSegments.length > 1) {
-				try {
-					const allTimes = new Set<number>();
-					for (const seg of validSegments) {
-						if (seg.start > 0 && seg.start < timelineDuration) {
-							allTimes.add(seg.start);
-						}
-						if (seg.end > 0 && seg.end < timelineDuration) {
-							allTimes.add(seg.end);
-						}
-					}
-					// Add speaker change boundaries
-					for (const t of speakerChangeTimes) {
-						allTimes.add(t);
-					}
-
-					let splitCount = 0;
-					const reversed = [...allTimes].sort((a, b) => b - a);
-					for (const time of reversed) {
-						const elementsAtTime = getElementsAtTime({
-							tracks: editor.timeline.getTracks(),
-							time,
-						});
-						if (elementsAtTime.length > 0) {
-							editor.timeline.splitElements({
-								elements: elementsAtTime,
-								splitTime: time,
-							});
-							splitCount++;
-						}
-					}
-
-					if (splitCount > 0) {
-						toast.success(`Vídeo dividido em ${splitCount + 1} segmentos`, {
-							description: "Exclua ou reordene segmentos no painel de transcrição para editar o vídeo.",
-						});
-					}
-				} catch (splitError) {
-					console.error("Failed to split video:", splitError);
-				}
-			}
-
-			// Auto-separate audio from video so it appears as its own track
-			const tracksAfterSplit = editor.timeline.getTracks();
-			for (const track of tracksAfterSplit) {
-				if (track.type !== "video") continue;
-				for (const el of track.elements) {
-					const videoEl = el as TimelineElement & { mediaId?: string; muted?: boolean };
-					if (!videoEl.mediaId || videoEl.muted) continue;
-
-					// Mute the video element and create a matching audio element
-					editor.timeline.updateElements({
-						updates: [{
-							trackId: track.id,
-							elementId: el.id,
-							updates: { muted: true },
-						}],
-					});
-
-					editor.timeline.insertElement({
-						element: {
-							type: "audio",
-							sourceType: "upload",
-							mediaId: videoEl.mediaId,
-							name: `${el.name} (áudio)`,
-							startTime: el.startTime,
-							duration: el.duration,
-							trimStart: el.trimStart,
-							trimEnd: el.trimEnd,
-							sourceDuration: el.sourceDuration,
-							volume: 1,
-						},
-						placement: { mode: "auto" },
-					});
-				}
-			}
+			// Transcribing must not edit the timeline: it used to split every clip
+			// at phrase and speaker boundaries (in source time, so wrong after
+			// edits) and separate the audio. Deleting text still cuts the video
+			// precisely through the transcript panel.
 
 			setSubtitleTracks([]);
 
@@ -550,68 +468,18 @@ export function Captions() {
 	const addSubtitleTrack = ({
 		subtitleSegments,
 		languageLabel,
-		yOffset = 0.38,
+		yOffset,
 	}: {
-		subtitleSegments: {
-			text: string;
-			start: number;
-			end: number;
-			words?: { word: string; start: number; end: number }[];
-		}[];
+		subtitleSegments: CaptionSegment[];
 		languageLabel: string;
 		yOffset?: number;
-	}) => {
-		const trackId = editor.timeline.addTrack({ type: "text", index: 0 });
-		editor.timeline.renameTrack({
-			trackId,
-			name: `Legendas: ${languageLabel}`,
+	}) =>
+		addCaptionTrack({
+			editor,
+			segments: subtitleSegments,
+			languageLabel,
+			yOffset,
 		});
-		const canvasSize = editor.project.getActive().settings.canvasSize;
-		const subtitleY = canvasSize.height * yOffset;
-		const style = getCaptionStyle(captionStyleId).config;
-		// The transcript is timed against the source file, not the edit
-		const captions = chunkCaptionSegments({
-			segments: mapSegmentsToTimeline({
-				segments: subtitleSegments,
-				clips: getTranscriptSourceClips(editor.timeline.getTracks()),
-			}),
-			maxWords: wordsPerCaption,
-			uppercase: uppercaseCaptions,
-		});
-
-		for (let i = 0; i < captions.length; i++) {
-			const seg = captions[i];
-
-			// Build word timings relative to the element's local time (0-based)
-			const wordTimings = seg.words?.map((w) => ({
-				word: w.word,
-				start: w.start - seg.start,
-				end: w.end - seg.start,
-			}));
-
-			editor.timeline.insertElement({
-				placement: { mode: "explicit", trackId },
-				element: {
-					...DEFAULT_TEXT_ELEMENT,
-					name: `${languageLabel} ${i + 1}`,
-					content: seg.text,
-					duration: seg.end - seg.start,
-					startTime: seg.start,
-					fontSize: wordsPerCaption > 0 && wordsPerCaption <= 3 ? 5 : 4,
-					...style,
-					...(wordTimings && wordTimings.length > 0 ? { wordTimings } : {}),
-					textAlign: "center",
-					transform: {
-						scale: 1,
-						position: { x: 0, y: subtitleY },
-						rotate: 0,
-					},
-				},
-			});
-		}
-
-		return trackId;
-	};
 
 	const handleApplyStyleToTracks = (style: CaptionStyle) => {
 		const trackIds = new Set(activeSubtitleTracks.map((t) => t.trackId));

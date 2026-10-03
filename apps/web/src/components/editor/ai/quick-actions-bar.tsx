@@ -1,6 +1,10 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
+import {
+	addCaptionTrack,
+	CAPTION_TRACK_PREFIX,
+} from "@/lib/captions/add-captions";
 import { cn } from "@/utils/ui";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -25,7 +29,6 @@ import { useTranscriptStore } from "@/stores/transcript-store";
 import { useEditor } from "@/hooks/use-editor";
 import { useTextTimelineBridge } from "@/hooks/use-text-timeline-bridge";
 import { useSmartCut } from "@/hooks/use-smart-cut";
-import { DEFAULT_TEXT_ELEMENT } from "@/constants/text-constants";
 import { computeCutsFromDeletedSegments } from "@/lib/text-timeline-sync";
 import { aiClient } from "@/lib/ai-client";
 import { useAssetsPanelStore } from "@/stores/assets-panel-store";
@@ -86,12 +89,13 @@ export function QuickActionsBar({ className }: { className?: string }) {
 			(t) =>
 				t.type === "text" &&
 				t.elements.length > 0 &&
-				t.elements.some(
-					(el) =>
-						"name" in el &&
-						(el.name?.startsWith("Subtitle ") ||
-							el.name?.startsWith("Caption ")),
-				),
+				(t.name?.startsWith(CAPTION_TRACK_PREFIX) ||
+					t.elements.some(
+						(el) =>
+							"name" in el &&
+							(el.name?.startsWith("Subtitle ") ||
+								el.name?.startsWith("Caption ")),
+					)),
 		);
 		return textTrack?.id ?? null;
 	}, [editor, segments]); // re-derive when segments change (triggers re-render)
@@ -206,42 +210,9 @@ export function QuickActionsBar({ className }: { className?: string }) {
 		const currentSegments = useTranscriptStore.getState().segments;
 		if (currentSegments.length === 0) return;
 
-		const trackId = editor.timeline.addTrack({ type: "text", index: 0 });
-		const canvasSize = editor.project.getActive().settings.canvasSize;
-		const subtitleY = canvasSize.height * 0.38;
-
-		for (let i = 0; i < currentSegments.length; i++) {
-			const seg = currentSegments[i];
-			editor.timeline.insertElement({
-				placement: { mode: "explicit", trackId: trackId },
-				element: {
-					...DEFAULT_TEXT_ELEMENT,
-					name: `Subtitle ${i + 1}`,
-					content: seg.text,
-					duration: seg.end - seg.start,
-					startTime: seg.start,
-					fontSize: 4,
-					fontWeight: "bold",
-					color: "#ffffff",
-					textAlign: "center",
-					background: {
-						enabled: true,
-						color: "#000000",
-						cornerRadius: 4,
-						paddingX: 12,
-						paddingY: 6,
-						offsetX: 0,
-						offsetY: 0,
-					},
-					opacity: 0.95,
-					transform: {
-						scale: 1,
-						position: { x: 0, y: subtitleY },
-						rotate: 0,
-					},
-				},
-			});
-		}
+		// Same captions as the Legendas panel: chosen style, short chunks,
+		// spoken-word highlight, timed to the edit (was a black box per phrase)
+		addCaptionTrack({ editor, segments: currentSegments, languageLabel: "Legenda" });
 
 		toast.success("Legendas adicionadas à linha do tempo");
 	}, [editor, subtitleTrackId]);
