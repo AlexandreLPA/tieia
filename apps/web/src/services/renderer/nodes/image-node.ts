@@ -1,5 +1,10 @@
 import type { CanvasRenderer } from "../canvas-renderer";
 import { VisualNode, type VisualNodeParams } from "./visual-node";
+import {
+	type AnimatedImage,
+	frameAt,
+	loadAnimatedImage,
+} from "../animated-image";
 
 export interface ImageNodeParams extends VisualNodeParams {
 	url: string;
@@ -64,16 +69,34 @@ function loadImageSource(
 
 export class ImageNode extends VisualNode<ImageNodeParams> {
 	private cachedSource: Promise<CachedImageSource>;
+	// GIF/WebP animations play in sync with the timeline instead of freezing
+	private animated: Promise<AnimatedImage | null>;
 
 	constructor(params: ImageNodeParams) {
 		super(params);
 		this.cachedSource = loadImageSource(params.url, params.maxSourceSize);
+		this.animated = loadAnimatedImage(params.url);
 	}
 
 	async render({ renderer, time }: { renderer: CanvasRenderer; time: number }) {
 		await super.render({ renderer, time });
 
 		if (!this.isInRange({ time })) {
+			return;
+		}
+
+		const animation = await this.animated;
+		if (animation) {
+			this.renderVisual({
+				renderer,
+				source: frameAt(
+					animation,
+					time - this.params.timeOffset + this.params.trimStart,
+				),
+				sourceWidth: animation.width,
+				sourceHeight: animation.height,
+				timelineTime: time,
+			});
 			return;
 		}
 
