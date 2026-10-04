@@ -20,6 +20,150 @@ interface TextPreset {
 
 const TEXT_PRESETS: TextPreset[] = [
 	{
+		id: "cutout",
+		name: "Recorte de jornal",
+		preview: "OFERTA",
+		config: {
+			content: "OFERTA DO DIA",
+			fontSize: 6,
+			fontWeight: "bold",
+			fontFamily: "Inter",
+			color: "#111111",
+			letterStyle: "cutout",
+		},
+	},
+	{
+		id: "cutout-mono",
+		name: "Recorte P&B",
+		preview: "SÓ HOJE",
+		config: {
+			content: "SÓ HOJE",
+			fontSize: 6,
+			fontWeight: "bold",
+			fontFamily: "Inter",
+			color: "#111111",
+			letterStyle: "cutout-mono",
+		},
+	},
+	{
+		id: "highlighter",
+		name: "Marca-texto",
+		preview: "frete grátis",
+		config: {
+			content: "frete grátis",
+			fontSize: 7,
+			fontWeight: "bold",
+			fontFamily: "Inter",
+			color: "#111111",
+			background: {
+				enabled: true,
+				color: "#FFE600",
+				cornerRadius: 12,
+				paddingX: 14,
+				paddingY: 6,
+				offsetX: 0,
+				offsetY: 0,
+			},
+		},
+	},
+	{
+		id: "retro",
+		name: "Retrô",
+		preview: "RETRÔ",
+		config: {
+			content: "RETRÔ",
+			fontSize: 10,
+			fontWeight: "bold",
+			fontFamily: "Inter",
+			color: "#FFD60A",
+			stroke: { enabled: true, color: "#111111", width: 8 },
+			shadow: { enabled: true, color: "#111111", blur: 0, offsetX: 9, offsetY: 9 },
+		},
+	},
+	{
+		id: "neon-pink",
+		name: "Neon rosa",
+		preview: "Neon",
+		config: {
+			content: "Neon",
+			fontSize: 10,
+			fontWeight: "bold",
+			fontFamily: "Inter",
+			color: "#FFE3F1",
+			shadow: { enabled: true, color: "#FF2E93", blur: 35, offsetX: 0, offsetY: 0 },
+		},
+	},
+	{
+		id: "bubble",
+		name: "Balão",
+		preview: "olha isso",
+		config: {
+			content: "olha isso 👀",
+			fontSize: 6,
+			fontWeight: "bold",
+			fontFamily: "Inter",
+			color: "#111111",
+			background: {
+				enabled: true,
+				color: "#FFFFFF",
+				cornerRadius: 100,
+				paddingX: 24,
+				paddingY: 12,
+				offsetX: 0,
+				offsetY: 0,
+			},
+		},
+	},
+	{
+		id: "red-band",
+		name: "Tarja vermelha",
+		preview: "ÚLTIMAS",
+		config: {
+			content: "ÚLTIMAS UNIDADES",
+			fontSize: 6,
+			fontWeight: "bold",
+			fontFamily: "Inter",
+			color: "#FFFFFF",
+			background: {
+				enabled: true,
+				color: "#E11D48",
+				cornerRadius: 0,
+				paddingX: 20,
+				paddingY: 10,
+				offsetX: 0,
+				offsetY: 0,
+			},
+		},
+	},
+	{
+		id: "gradient-sunset",
+		name: "Gradiente pôr do sol",
+		preview: "50% OFF",
+		config: {
+			content: "50% OFF",
+			fontSize: 11,
+			fontWeight: "bold",
+			fontFamily: "Inter",
+			color: "#FFD60A",
+			fillGradient: { from: "#FFD60A", to: "#FF4D6D" },
+			stroke: { enabled: true, color: "#111111", width: 8 },
+		},
+	},
+	{
+		id: "gradient-gold",
+		name: "Dourado",
+		preview: "PREMIUM",
+		config: {
+			content: "PREMIUM",
+			fontSize: 10,
+			fontWeight: "bold",
+			fontFamily: "Inter",
+			color: "#FFE9A8",
+			fillGradient: { from: "#FFF3B0", to: "#B8860B" },
+			shadow: { enabled: true, color: "#000000", blur: 12, offsetX: 0, offsetY: 5 },
+		},
+	},
+	{
 		id: "heading",
 		name: "Título",
 		preview: "Título",
@@ -282,34 +426,7 @@ export function TextView() {
 							<DraggableItem
 								key={preset.id}
 								name={preset.name}
-								preview={
-									<div className="bg-accent flex size-full items-center justify-center rounded p-2">
-										<span
-											className="select-none truncate"
-											style={{
-												fontSize: Math.min(14, (preset.config.fontSize ?? 10) * 0.8),
-												fontWeight: preset.config.fontWeight ?? "normal",
-												color: preset.config.color ?? "#ffffff",
-												fontFamily: preset.config.fontFamily ?? "Inter",
-												...(preset.config.stroke?.enabled && {
-													WebkitTextStroke: `2px ${preset.config.stroke.color}`,
-													paintOrder: "stroke fill",
-												}),
-												...(preset.config.shadow?.enabled && {
-													textShadow: `0 ${preset.config.shadow.offsetY > 0 ? 2 : 0}px ${preset.config.shadow.offsetY > 0 ? 4 : 8}px ${preset.config.shadow.color}`,
-												}),
-												...(preset.config.background?.enabled &&
-													preset.config.background.color !== "transparent" && {
-														backgroundColor: preset.config.background.color,
-														borderRadius: 4,
-														padding: "1px 6px",
-													}),
-											}}
-										>
-											{preset.preview}
-										</span>
-									</div>
-								}
+								preview={<PresetPreview preset={preset} />}
 								dragData={{
 									id: `temp-text-${preset.id}`,
 									type: "text",
@@ -366,5 +483,84 @@ export function TextView() {
 				</div>
 			</div>
 		</PanelView>
+	);
+}
+
+// Same seeded scraps as the renderer would vary; the tile only hints at it
+const CUTOUT_PREVIEW_PAPERS = ["#ffffff", "#ffd400", "#111111", "#e63946", "#f3e9d2", "#4cc9f0"];
+const CUTOUT_PREVIEW_MONO = ["#ffffff", "#111111", "#ece6d6", "#cfcfcf"];
+const CUTOUT_PREVIEW_FONTS = ['"Arial Black", sans-serif', "Georgia, serif", "Impact, sans-serif", '"Courier New", monospace'];
+
+function PresetPreview({ preset }: { preset: TextPreset }) {
+	const { config } = preset;
+	// Small caption sizes still need a readable tile
+	const size = Math.min(14, Math.max(10, (config.fontSize ?? 10) * 0.8));
+
+	if (config.letterStyle === "cutout" || config.letterStyle === "cutout-mono") {
+		const papers = config.letterStyle === "cutout" ? CUTOUT_PREVIEW_PAPERS : CUTOUT_PREVIEW_MONO;
+		return (
+			<div className="bg-accent flex size-full items-center justify-center gap-[2px] rounded p-2">
+				{Array.from(preset.preview, (char, position) => ({ char, position })).map(({ char, position: index }) => {
+					if (char === " ") return <span key={`gap-${index}`} className="w-1" />;
+					const bg = papers[(index * 5 + 1) % papers.length];
+					return (
+						<span
+							key={`${char}-${index}`}
+							className="inline-block select-none px-[3px] leading-tight shadow-sm"
+							style={{
+								background: bg,
+								color: bg === "#111111" ? "#ffffff" : "#111111",
+								fontFamily: CUTOUT_PREVIEW_FONTS[(index * 3) % CUTOUT_PREVIEW_FONTS.length],
+								fontWeight: 800,
+								fontSize: 12 + ((index * 7) % 4),
+								transform: `rotate(${((index * 37) % 15) - 7}deg)`,
+							}}
+						>
+							{char}
+						</span>
+					);
+				})}
+			</div>
+		);
+	}
+
+	const shadow = config.shadow?.enabled ? config.shadow : null;
+	return (
+		<div className="bg-accent flex size-full items-center justify-center rounded p-2">
+			<span
+				className="select-none truncate"
+				style={{
+					fontSize: size,
+					fontWeight: config.fontWeight ?? "normal",
+					color: config.color ?? "#ffffff",
+					fontFamily: config.fontFamily ?? "Inter",
+					...(config.stroke?.enabled && {
+						WebkitTextStroke: `${size < 12 ? 1 : 2}px ${config.stroke.color}`,
+						paintOrder: "stroke fill",
+					}),
+					...(shadow && {
+						// Hard shadows (no blur) keep their offset; glows stay centered
+						textShadow:
+							shadow.blur === 0
+								? `${Math.sign(shadow.offsetX) * 2}px ${Math.sign(shadow.offsetY) * 2}px 0 ${shadow.color}`
+								: `0 ${shadow.offsetY > 0 ? 2 : 0}px ${shadow.offsetY > 0 ? 4 : 8}px ${shadow.color}`,
+					}),
+					...(config.fillGradient && {
+						backgroundImage: `linear-gradient(${config.fillGradient.from}, ${config.fillGradient.to})`,
+						WebkitBackgroundClip: "text",
+						backgroundClip: "text",
+						color: "transparent",
+					}),
+					...(config.background?.enabled &&
+						config.background.color !== "transparent" && {
+							backgroundColor: config.background.color,
+							borderRadius: (config.background.cornerRadius ?? 0) >= 50 ? 999 : 4,
+							padding: "1px 6px",
+						}),
+				}}
+			>
+				{preset.preview}
+			</span>
+		</div>
 	);
 }

@@ -210,6 +210,18 @@ export interface TextShadow {
  */
 export type TextHighlightStyle = "progressive" | "word" | "box" | "none";
 
+/**
+ * Per-letter look. "cutout" draws every letter on its own magazine scrap
+ * (ransom-note style) in colors; "cutout-mono" in black, white and newsprint.
+ */
+export type TextLetterStyle = "none" | "cutout" | "cutout-mono";
+
+/** Vertical gradient fill, top to bottom, replacing the solid text color. */
+export interface TextGradient {
+	from: string;
+	to: string;
+}
+
 export interface TextElement extends BaseTimelineElement {
 	type: "text";
 	content: string;
@@ -226,6 +238,10 @@ export interface TextElement extends BaseTimelineElement {
 	highlightStyle?: TextHighlightStyle;
 	stroke?: TextStroke;
 	shadow?: TextShadow;
+	letterStyle?: TextLetterStyle;
+	/** Fixes the per-letter randomness so preview and export always match */
+	letterSeed?: number;
+	fillGradient?: TextGradient;
 	background: TextBackground;
 	textAlign: "left" | "center" | "right";
 	fontWeight: "normal" | "bold";

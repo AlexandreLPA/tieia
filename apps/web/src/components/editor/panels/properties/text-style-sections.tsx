@@ -2,7 +2,9 @@
 
 import type {
 	TextElement,
+	TextGradient,
 	TextHighlightStyle,
+	TextLetterStyle,
 	TextShadow,
 	TextStroke,
 } from "@/types/timeline";
@@ -36,6 +38,9 @@ type TextUpdates = Partial<
 		| "highlightStyle"
 		| "highlightColor"
 		| "wordPopScale"
+		| "letterStyle"
+		| "letterSeed"
+		| "fillGradient"
 	>
 >;
 
@@ -334,6 +339,119 @@ export function HighlightSection({
 					<Button variant="outline" size="sm" onClick={applyToTrack}>
 						Aplicar a toda a faixa
 					</Button>
+				</SectionFields>
+			</SectionContent>
+		</Section>
+	);
+}
+
+const LETTER_STYLES: { value: TextLetterStyle; label: string }[] = [
+	{ value: "none", label: "Normal" },
+	{ value: "cutout", label: "Recorte colorido" },
+	{ value: "cutout-mono", label: "Recorte P&B" },
+];
+
+/** Ransom-note letters: each one cut from a different magazine. */
+export function LetterStyleSection({
+	element,
+	trackId,
+}: {
+	element: TextElement;
+	trackId: string;
+}) {
+	const { set } = useTextUpdater({ element, trackId });
+	const style = element.letterStyle ?? "none";
+	const isCutout = style !== "none";
+
+	return (
+		<Section collapsible defaultOpen={isCutout} sectionKey="text:letters">
+			<SectionHeader>
+				<SectionTitle>Estilo das letras</SectionTitle>
+			</SectionHeader>
+			<SectionContent>
+				<SectionFields>
+					<div className="grid grid-cols-3 gap-1">
+						{LETTER_STYLES.map((option) => (
+							<Button
+								key={option.value}
+								size="sm"
+								variant={style === option.value ? "secondary" : "outline"}
+								className={cn(
+									"h-auto min-h-7 whitespace-normal px-1 py-1 text-[11px] leading-tight",
+									style === option.value && "ring-1 ring-primary",
+								)}
+								onClick={() =>
+									set({
+										letterStyle: option.value,
+										...(option.value !== "none" &&
+											element.letterSeed === undefined && {
+												letterSeed: Math.floor(Math.random() * 1_000_000),
+											}),
+									})
+								}
+							>
+								{option.label}
+							</Button>
+						))}
+					</div>
+					{isCutout && (
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => set({ letterSeed: Math.floor(Math.random() * 1_000_000) })}
+						>
+							Sortear de novo
+						</Button>
+					)}
+				</SectionFields>
+			</SectionContent>
+		</Section>
+	);
+}
+
+const DEFAULT_GRADIENT: TextGradient = { from: "#FFD60A", to: "#FF4D6D" };
+
+export function GradientSection({
+	element,
+	trackId,
+}: {
+	element: TextElement;
+	trackId: string;
+}) {
+	const { set, preview, commit } = useTextUpdater({ element, trackId });
+	const gradient = element.fillGradient;
+	const enabled = Boolean(gradient);
+	const current = gradient ?? DEFAULT_GRADIENT;
+
+	return (
+		<Section collapsible defaultOpen={enabled} sectionKey="text:gradient">
+			<SectionHeader
+				trailing={
+					<VisibilityToggle
+						enabled={enabled}
+						label={enabled ? "Desligar gradiente" : "Ligar gradiente"}
+						onToggle={() => set({ fillGradient: enabled ? undefined : current })}
+					/>
+				}
+			>
+				<SectionTitle>Gradiente</SectionTitle>
+			</SectionHeader>
+			<SectionContent className={cn(!enabled && "pointer-events-none opacity-50")}>
+				<SectionFields>
+					<SectionField label="Cor de cima">
+						<ColorPicker
+							value={toPickerValue(current.from)}
+							onChange={(color) => preview({ fillGradient: { ...current, from: `#${color}` } })}
+							onChangeEnd={commit}
+						/>
+					</SectionField>
+					<SectionField label="Cor de baixo">
+						<ColorPicker
+							value={toPickerValue(current.to)}
+							onChange={(color) => preview({ fillGradient: { ...current, to: `#${color}` } })}
+							onChangeEnd={commit}
+						/>
+					</SectionField>
 				</SectionFields>
 			</SectionContent>
 		</Section>

@@ -44,7 +44,9 @@ import {
 import { OcTextHeightIcon, OcTextWidthIcon } from "@opencut-ai/ui/icons";
 import { cn } from "@/utils/ui";
 import {
+	GradientSection,
 	HighlightSection,
+	LetterStyleSection,
 	ShadowSection,
 	StrokeSection,
 } from "./text-style-sections";
@@ -64,6 +66,8 @@ export function TextProperties({
 			<TypographySection element={element} trackId={trackId} />
 			<SpacingSection element={element} trackId={trackId} />
 			<HighlightSection element={element} trackId={trackId} />
+			<LetterStyleSection element={element} trackId={trackId} />
+			<GradientSection element={element} trackId={trackId} />
 			<StrokeSection element={element} trackId={trackId} />
 			<ShadowSection element={element} trackId={trackId} />
 			<BackgroundSection element={element} trackId={trackId} />

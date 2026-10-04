@@ -188,6 +188,13 @@ export function buildTextElement({
 		blendMode: t.blendMode ?? DEFAULT_BLEND_MODE,
 		...(t.stroke && { stroke: t.stroke }),
 		...(t.shadow && { shadow: t.shadow }),
+		...(t.fillGradient && { fillGradient: t.fillGradient }),
+		...(t.letterStyle &&
+			t.letterStyle !== "none" && {
+				letterStyle: t.letterStyle,
+				// Each new cutout text gets its own mix of letters
+				letterSeed: t.letterSeed ?? Math.floor(Math.random() * 1_000_000),
+			}),
 	};
 }
 

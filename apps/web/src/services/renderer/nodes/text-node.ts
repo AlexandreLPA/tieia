@@ -42,6 +42,7 @@ import { resolveEffectParamsAtTime } from "@/lib/animation/effect-param-channel"
 import { getEffect } from "@/lib/effects";
 import { webglEffectRenderer } from "../webgl-effect-renderer";
 import { clamp } from "@/utils/math";
+import { CUTOUT_WIDTH_FACTOR, drawCutoutLine } from "@/lib/text/cutout";
 
 function scaleFontSize({
 	fontSize,
@@ -320,10 +321,13 @@ export class TextNode extends BaseNode<TextNodeParams> {
 
 		// Word-wrap lines that overflow the canvas width
 		const maxTextWidth = renderer.width * (1 - SUBTITLE_WRAP_PADDING_RATIO * 2);
+		const letterStyle = this.params.letterStyle ?? "none";
+		const isCutout = letterStyle === "cutout" || letterStyle === "cutout-mono";
 		const lines = wrapTextLines({
 			lines: rawLines,
 			ctx: renderer.context,
-			maxWidth: maxTextWidth,
+			// Paper scraps make each letter wider than the plain font
+			maxWidth: isCutout ? maxTextWidth / CUTOUT_WIDTH_FACTOR : maxTextWidth,
 		});
 
 		const lineMetrics = lines.map((line) => renderer.context.measureText(line));
@@ -389,8 +393,24 @@ export class TextNode extends BaseNode<TextNodeParams> {
 				: 0;
 		// Canvas shadows ignore the transform, so scale them by hand
 		const shadowUnit = (scaledFontSize * transform.scale) / 100;
+		const gradient = this.params.fillGradient;
 		const paintText: PaintText = ({ ctx, text, x, y, fill }) => {
 			ctx.save();
+			// Gradient replaces the base color only; highlights stay solid
+			const paint =
+				gradient && fill === textColor
+					? (() => {
+							const g = ctx.createLinearGradient(
+								0,
+								y - scaledFontSize * 0.55,
+								0,
+								y + scaledFontSize * 0.55,
+							);
+							g.addColorStop(0, gradient.from);
+							g.addColorStop(1, gradient.to);
+							return g;
+						})()
+					: fill;
 			if (shadow?.enabled) {
 				ctx.shadowColor = shadow.color;
 				ctx.shadowBlur = shadow.blur * shadowUnit;
@@ -406,7 +426,7 @@ export class TextNode extends BaseNode<TextNodeParams> {
 				// The outline already cast the shadow
 				ctx.shadowColor = "transparent";
 			}
-			ctx.fillStyle = fill;
+			ctx.fillStyle = paint;
 			ctx.fillText(text, x, y);
 			ctx.restore();
 		};
@@ -480,6 +500,21 @@ export class TextNode extends BaseNode<TextNodeParams> {
 
 			for (let i = 0; i < lineCount; i++) {
 				const lineY = i * lineHeightPx - block.visualCenterOffset;
+
+				if (isCutout) {
+					drawCutoutLine({
+						ctx,
+						line: lines[i],
+						y: lineY,
+						fontSize: scaledFontSize,
+						textAlign: this.params.textAlign,
+						seed: this.params.letterSeed ?? 1,
+						lineIndex: i,
+						mono: letterStyle === "cutout-mono",
+						maxWidth: maxTextWidth / transform.scale,
+					});
+					continue;
+				}
 
 				if (hasKaraoke) {
 					// Count words in this line to slice the correct timing range
