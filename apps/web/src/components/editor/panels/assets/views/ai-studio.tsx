@@ -135,6 +135,70 @@ function useThinkingMessage(isThinking: boolean) {
 	return THINKING_MESSAGES[index];
 }
 
+/**
+ * Tab rows wider than the panel scroll sideways: the mouse wheel moves them,
+ * the edges fade where tabs are hidden and the active tab stays in view.
+ */
+function useScrollableTabs(activeKey: string) {
+	const ref = useRef<HTMLDivElement>(null);
+	const [edges, setEdges] = useState({ left: false, right: false });
+
+	useEffect(() => {
+		const element = ref.current;
+		if (!element) return;
+		const update = () => {
+			const max = element.scrollWidth - element.clientWidth;
+			setEdges({
+				left: element.scrollLeft > 1,
+				right: element.scrollLeft < max - 1,
+			});
+		};
+		const onWheel = (event: WheelEvent) => {
+			// Trackpads already scroll sideways; only vertical wheels are turned
+			if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+			if (element.scrollWidth <= element.clientWidth) return;
+			event.preventDefault();
+			element.scrollLeft += event.deltaY;
+		};
+		update();
+		element.addEventListener("scroll", update, { passive: true });
+		element.addEventListener("wheel", onWheel, { passive: false });
+		const observer = new ResizeObserver(update);
+		observer.observe(element);
+		if (element.firstElementChild) observer.observe(element.firstElementChild);
+		return () => {
+			element.removeEventListener("scroll", update);
+			element.removeEventListener("wheel", onWheel);
+			observer.disconnect();
+		};
+	}, []);
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: activeKey is the trigger; the active tab is read from the DOM
+	useEffect(() => {
+		const element = ref.current;
+		const active = element?.querySelector<HTMLElement>('[data-active="true"]');
+		if (!element || !active) return;
+		const box = element.getBoundingClientRect();
+		const tab = active.getBoundingClientRect();
+		const margin = 24;
+		if (tab.left < box.left + margin) {
+			element.scrollBy({ left: tab.left - box.left - margin, behavior: "smooth" });
+		} else if (tab.right > box.right - margin) {
+			element.scrollBy({ left: tab.right - box.right + margin, behavior: "smooth" });
+		}
+	}, [activeKey]);
+
+	const overflowing = edges.left || edges.right;
+	const fade = 20;
+	const maskImage = overflowing
+		? `linear-gradient(to right, ${edges.left ? `transparent, #000 ${fade}px` : "#000"}, ${
+				edges.right ? `#000 calc(100% - ${fade}px), transparent` : "#000"
+			})`
+		: undefined;
+
+	return { ref, overflowing, style: { maskImage, WebkitMaskImage: maskImage } };
+}
+
 // ----- Types -----
 
 interface WorkflowStep {
@@ -458,6 +522,7 @@ export function AIStudioView() {
 	const hasTranscript = transcriptSegments.length > 0;
 
 	const [mode, setMode] = useState<StudioMode>("chat");
+	const tabs = useScrollableTabs(mode);
 	const [inputValue, setInputValue] = useState("");
 	const [isThinking, setIsThinking] = useState(false);
 	const thinkingMessage = useThinkingMessage(isThinking);
@@ -938,167 +1003,196 @@ export function AIStudioView() {
 	return (
 		<div className="relative flex h-full flex-col overflow-hidden">
 			{/* Header */}
-			<div className="bg-background h-11 shrink-0 px-4 pr-2 flex items-center justify-between border-b">
-				<div className="flex items-center gap-2">
+			<div className="bg-background h-11 shrink-0 px-4 pr-2 flex items-center justify-between gap-2 border-b">
+				{/* The model name gives way (ellipsis) before the tabs do */}
+				<div className="flex min-w-0 items-center gap-2">
 					{activeModel && (
-						<Badge variant="secondary" className="text-[10px] px-1.5 py-0 font-mono">
+						<Badge
+							variant="secondary"
+							title={activeModel}
+							className="block max-w-44 truncate text-[10px] px-1.5 py-0 font-mono"
+						>
 							{activeModel}
 						</Badge>
 					)}
 					{!isConnected && (
-						<Badge variant="outline" className="text-[8px] px-1.5 py-0 text-yellow-500 border-yellow-500/30">
+						<Badge variant="outline" className="shrink-0 text-[8px] px-1.5 py-0 text-yellow-500 border-yellow-500/30">
 							Offline
 						</Badge>
 					)}
 				</div>
-				<div className="flex items-center gap-1">
-					{(mode === "chat" || mode === "transcript") && messages.length > 0 && (
-						<Button
-							variant="ghost"
-							size="sm"
-							className="h-6 text-[10px] px-1.5 text-muted-foreground"
-							onClick={clearMessages}
-						>
-							<HugeiconsIcon icon={Delete02Icon} className="size-3" />
-						</Button>
+				<div
+					ref={tabs.ref}
+					style={tabs.style}
+					className={cn(
+						"scrollbar-thin min-w-[50%] flex-1 overflow-x-auto overflow-y-hidden [&::-webkit-scrollbar]:h-1",
+						tabs.overflowing && "pt-1",
 					)}
-					{hasTranscript && (
-						<Button
-							variant={mode === "transcript" ? "secondary" : "ghost"}
-							size="sm"
-							className="h-6 text-[10px] px-2"
-							onClick={() => setMode("transcript")}
-						>
-							Roteiro
-						</Button>
-					)}
-					<Button
-						variant={mode === "chat" ? "secondary" : "ghost"}
-						size="sm"
-						className="h-6 text-[10px] px-2"
-						onClick={() => setMode("chat")}
-					>
-						Chat
-					</Button>
-					<Button
-						variant={mode === "templates" ? "secondary" : "ghost"}
-						size="sm"
-						className="h-6 text-[10px] px-2"
-						onClick={() => setMode("templates")}
-					>
-						Modelos
-					</Button>
-					<Button
-						variant={mode === "ideas" ? "secondary" : "ghost"}
-						size="sm"
-						className="h-6 text-[10px] px-2 gap-1"
-						onClick={() => setMode("ideas")}
-					>
-						Ideias
-						{savedIdeas.length > 0 && (
-							<span className="bg-primary text-primary-foreground rounded-full text-[8px] size-4 flex items-center justify-center font-bold">
-								{savedIdeas.length}
-							</span>
+				>
+					<div className="ml-auto flex w-max items-center gap-1">
+						{(mode === "chat" || mode === "transcript") && messages.length > 0 && (
+							<Button
+								variant="ghost"
+								size="sm"
+								className="h-6 text-[10px] px-1.5 text-muted-foreground"
+								onClick={clearMessages}
+							>
+								<HugeiconsIcon icon={Delete02Icon} className="size-3" />
+							</Button>
 						)}
-					</Button>
-					{hasTranscript && (
+						{hasTranscript && (
+							<Button
+								variant={mode === "transcript" ? "secondary" : "ghost"}
+								data-active={mode === "transcript"}
+								size="sm"
+								className="h-6 text-[10px] px-2"
+								onClick={() => setMode("transcript")}
+							>
+								Roteiro
+							</Button>
+						)}
 						<Button
-							variant={mode === "broll" ? "secondary" : "ghost"}
+							variant={mode === "chat" ? "secondary" : "ghost"}
+							data-active={mode === "chat"}
 							size="sm"
 							className="h-6 text-[10px] px-2"
-							onClick={() => setMode("broll")}
+							onClick={() => setMode("chat")}
 						>
-							B-Roll
+							Chat
 						</Button>
-					)}
-					{hasTranscript && (
 						<Button
-							variant={mode === "auto-broll" ? "secondary" : "ghost"}
+							variant={mode === "templates" ? "secondary" : "ghost"}
+							data-active={mode === "templates"}
 							size="sm"
 							className="h-6 text-[10px] px-2"
-							onClick={() => setMode("auto-broll")}
+							onClick={() => setMode("templates")}
 						>
-							Auto B-Roll
+							Modelos
 						</Button>
-					)}
-					{hasTranscript && (
 						<Button
-							variant={mode === "edit-speaker" ? "secondary" : "ghost"}
+							variant={mode === "ideas" ? "secondary" : "ghost"}
+							data-active={mode === "ideas"}
+							size="sm"
+							className="h-6 text-[10px] px-2 gap-1"
+							onClick={() => setMode("ideas")}
+						>
+							Ideias
+							{savedIdeas.length > 0 && (
+								<span className="bg-primary text-primary-foreground rounded-full text-[8px] size-4 flex items-center justify-center font-bold">
+									{savedIdeas.length}
+								</span>
+							)}
+						</Button>
+						{hasTranscript && (
+							<Button
+								variant={mode === "broll" ? "secondary" : "ghost"}
+								data-active={mode === "broll"}
+								size="sm"
+								className="h-6 text-[10px] px-2"
+								onClick={() => setMode("broll")}
+							>
+								B-Roll
+							</Button>
+						)}
+						{hasTranscript && (
+							<Button
+								variant={mode === "auto-broll" ? "secondary" : "ghost"}
+								data-active={mode === "auto-broll"}
+								size="sm"
+								className="h-6 text-[10px] px-2"
+								onClick={() => setMode("auto-broll")}
+							>
+								Auto B-Roll
+							</Button>
+						)}
+						{hasTranscript && (
+							<Button
+								variant={mode === "edit-speaker" ? "secondary" : "ghost"}
+								data-active={mode === "edit-speaker"}
+								size="sm"
+								className="h-6 text-[10px] px-2"
+								onClick={() => setMode("edit-speaker")}
+							>
+								Falantes
+							</Button>
+						)}
+						{hasTranscript && (
+							<Button
+								variant={mode === "dubbing" ? "secondary" : "ghost"}
+								data-active={mode === "dubbing"}
+								size="sm"
+								className="h-6 text-[10px] px-2"
+								onClick={() => setMode("dubbing")}
+							>
+								Dublagem
+							</Button>
+						)}
+						<Button
+							variant={mode === "video-bg" ? "secondary" : "ghost"}
+							data-active={mode === "video-bg"}
 							size="sm"
 							className="h-6 text-[10px] px-2"
-							onClick={() => setMode("edit-speaker")}
+							onClick={() => setMode("video-bg")}
 						>
-							Falantes
+							Remover fundo
 						</Button>
-					)}
-					{hasTranscript && (
+						{hasTranscript && (
+							<Button
+								variant={mode === "chapters" ? "secondary" : "ghost"}
+								data-active={mode === "chapters"}
+								size="sm"
+								className="h-6 text-[10px] px-2"
+								onClick={() => setMode("chapters")}
+							>
+								Capítulos
+							</Button>
+						)}
 						<Button
-							variant={mode === "dubbing" ? "secondary" : "ghost"}
+							variant={mode === "workflow" ? "secondary" : "ghost"}
+							data-active={mode === "workflow"}
 							size="sm"
 							className="h-6 text-[10px] px-2"
-							onClick={() => setMode("dubbing")}
+							onClick={() => setMode("workflow")}
 						>
-							Dublagem
+							Fluxos de trabalho
 						</Button>
-					)}
-					<Button
-						variant={mode === "video-bg" ? "secondary" : "ghost"}
-						size="sm"
-						className="h-6 text-[10px] px-2"
-						onClick={() => setMode("video-bg")}
-					>
-						Remover fundo
-					</Button>
-					{hasTranscript && (
 						<Button
-							variant={mode === "chapters" ? "secondary" : "ghost"}
+							variant={mode === "youtube-reels" ? "secondary" : "ghost"}
+							data-active={mode === "youtube-reels"}
 							size="sm"
 							className="h-6 text-[10px] px-2"
-							onClick={() => setMode("chapters")}
+							onClick={() => setMode("youtube-reels")}
 						>
-							Capítulos
+							YT Reels
 						</Button>
-					)}
-					<Button
-						variant={mode === "workflow" ? "secondary" : "ghost"}
-						size="sm"
-						className="h-6 text-[10px] px-2"
-						onClick={() => setMode("workflow")}
-					>
-						Fluxos de trabalho
-					</Button>
-					<Button
-						variant={mode === "youtube-reels" ? "secondary" : "ghost"}
-						size="sm"
-						className="h-6 text-[10px] px-2"
-						onClick={() => setMode("youtube-reels")}
-					>
-						YT Reels
-					</Button>
-					<Button
-						variant={mode === "reframe" ? "secondary" : "ghost"}
-						size="sm"
-						className="h-6 text-[10px] px-2"
-						onClick={() => setMode("reframe")}
-					>
-						Reenquadrar
-					</Button>
-					<Button
-						variant={mode === "tracking" ? "secondary" : "ghost"}
-						size="sm"
-						className="h-6 text-[10px] px-2"
-						onClick={() => setMode("tracking")}
-					>
-						Rastreamento
-					</Button>
-					<Button
-						variant={mode === "ab-testing" ? "secondary" : "ghost"}
-						size="sm"
-						className="h-6 text-[10px] px-2"
-						onClick={() => setMode("ab-testing")}
-					>
-						Teste A/B
-					</Button>
+						<Button
+							variant={mode === "reframe" ? "secondary" : "ghost"}
+							data-active={mode === "reframe"}
+							size="sm"
+							className="h-6 text-[10px] px-2"
+							onClick={() => setMode("reframe")}
+						>
+							Reenquadrar
+						</Button>
+						<Button
+							variant={mode === "tracking" ? "secondary" : "ghost"}
+							data-active={mode === "tracking"}
+							size="sm"
+							className="h-6 text-[10px] px-2"
+							onClick={() => setMode("tracking")}
+						>
+							Rastreamento
+						</Button>
+						<Button
+							variant={mode === "ab-testing" ? "secondary" : "ghost"}
+							data-active={mode === "ab-testing"}
+							size="sm"
+							className="h-6 text-[10px] px-2"
+							onClick={() => setMode("ab-testing")}
+						>
+							Teste A/B
+						</Button>
+					</div>
 				</div>
 			</div>
 
