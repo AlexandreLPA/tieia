@@ -27,8 +27,18 @@ const KINDS: { value: KlipyKind; label: string }[] = [
 	{ value: "gifs", label: "GIFs" },
 ];
 
-// Ideas that fit TikTok Shop edits; tapping one runs the search
-const SUGGESTIONS = ["seta", "aqui", "clique aqui", "compre", "oferta", "uau", "wow", "fogo"];
+// Ideas that fit TikTok Shop edits. KLIPY's library is mostly tagged in
+// English, so each Portuguese chip searches the English term
+const SUGGESTIONS: { label: string; query: string }[] = [
+	{ label: "seta para baixo", query: "arrow down" },
+	{ label: "seta vermelha", query: "red arrow" },
+	{ label: "dedo apontando", query: "pointing down" },
+	{ label: "clique aqui", query: "click here" },
+	{ label: "compre agora", query: "buy now" },
+	{ label: "oferta", query: "sale" },
+	{ label: "uau", query: "wow" },
+	{ label: "fogo", query: "fire" },
+];
 
 const SEARCH_DEBOUNCE_MS = 450;
 // Stickers are scaled to fit the frame first; this keeps them a sensible size
@@ -176,17 +186,22 @@ export function KlipyView() {
 							className="h-8 text-xs"
 						/>
 						<div className="flex flex-wrap gap-1">
-							{SUGGESTIONS.map((term) => (
+							{SUGGESTIONS.map((suggestion) => (
 								<button
-									key={term}
+									key={suggestion.query}
 									type="button"
-									onClick={() => setQuery(term)}
+									title={`Busca "${suggestion.query}"`}
+									onClick={() => setQuery(suggestion.query)}
 									className="rounded-full border px-2 py-0.5 text-[10px] hover:bg-accent"
 								>
-									{term}
+									{suggestion.label}
 								</button>
 							))}
 						</div>
+						<p className="text-[10px] leading-snug text-muted-foreground">
+							Dica: buscas em inglês trazem bem mais resultados (ex.: "arrow
+							down", "click here"). A chave de teste permite 100 buscas por hora.
+						</p>
 
 						{error && (
 							<p className="rounded-md border border-red-500/30 bg-red-500/5 p-2 text-[11px] text-red-400">
