@@ -7,6 +7,12 @@ import {
 } from "mediabunny";
 import { aiClient } from "@/lib/ai-client";
 
+// Export asks for frames exactly where one source frame ends and the next
+// begins. Float rounding there flips between the two, so the export repeated a
+// frame and skipped the next one. Leaning 1 ms forward always lands on the
+// frame that starts at that instant.
+const FRAME_LOOKUP_LEAD_S = 1 / 1000;
+
 interface VideoSinkData {
 	sink: CanvasSink;
 	iterator: AsyncGenerator<WrappedCanvas, void, unknown> | null;
@@ -27,7 +33,7 @@ export class VideoCache {
 	async getFrameAt({
 		mediaId,
 		file,
-		time,
+		time: requestedTime,
 	}: {
 		mediaId: string;
 		file: File;
@@ -38,9 +44,14 @@ export class VideoCache {
 		const sinkData = this.sinks.get(mediaId);
 		if (!sinkData) return null;
 
+		const time = requestedTime + FRAME_LOOKUP_LEAD_S;
+
 		if (sinkData.nextFrame && sinkData.nextFrame.timestamp <= time) {
 			sinkData.currentFrame = sinkData.nextFrame;
 			sinkData.nextFrame = null;
+			// Keeps "just ahead of the iterator" true, so a late prefetch waits
+			// for the next frame instead of reseeking
+			sinkData.lastTime = sinkData.currentFrame.timestamp;
 			this.startPrefetch({ sinkData });
 		}
 
