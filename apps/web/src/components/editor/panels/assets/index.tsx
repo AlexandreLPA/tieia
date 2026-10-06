@@ -10,6 +10,7 @@ import { SettingsView } from "./views/settings";
 import { TextView } from "./views/text";
 import { AudioCombinedView } from "./views/audio-combined";
 import { ElementsCombinedView } from "./views/elements-combined";
+import { KlipyView } from "./views/klipy";
 import { VisualsCombinedView } from "./views/visuals-combined";
 import { BrandKitView } from "./views/brand-kit";
 import { VideoGenerationPanel } from "./views/video-generation";
@@ -23,6 +24,7 @@ export function AssetsPanel() {
 		ai: <AIStudioView />,
 		videogen: <VideoGenerationPanel />,
 		text: <TextView />,
+		gifs: <KlipyView />,
 		captions: <Captions />,
 		audio: <AudioCombinedView />,
 		elements: <ElementsCombinedView />,

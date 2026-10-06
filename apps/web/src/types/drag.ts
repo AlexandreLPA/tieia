@@ -21,6 +21,8 @@ export interface TextDragData extends BaseDragData {
 export interface StickerDragData extends BaseDragData {
 	type: "sticker";
 	stickerId: string;
+	/** Size relative to fitting the frame (KLIPY media would fill it) */
+	scale?: number;
 }
 
 export interface EffectDragData extends BaseDragData {

@@ -258,11 +258,14 @@ export function useTimelineDragDrop({
 			target: DropTarget;
 			dragData: StickerDragData;
 		}) => {
-			const element = buildStickerElement({
+			const built = buildStickerElement({
 				stickerId: dragData.stickerId,
 				name: dragData.name,
 				startTime: target.xPosition,
 			});
+			const element = dragData.scale
+				? { ...built, transform: { ...built.transform, scale: dragData.scale } }
+				: built;
 
 			if (target.isNewTrack) {
 				const addTrackCmd = new AddTrackCommand("sticker", target.trackIndex);

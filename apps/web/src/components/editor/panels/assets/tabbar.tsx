@@ -78,7 +78,7 @@ export function TabBar() {
 			{/* Tab icons */}
 			<div
 				ref={scrollRef}
-				className="scrollbar-hidden relative flex flex-1 min-h-0 p-2 flex-col items-center justify-start gap-1.5 overflow-y-auto"
+				className="scrollbar-hidden relative flex flex-1 min-h-0 p-1.5 flex-col items-center justify-start gap-1 overflow-y-auto"
 			>
 				{TAB_KEYS.map((tabKey) => {
 					const tab = tabs[tabKey];
@@ -89,13 +89,16 @@ export function TabBar() {
 									variant={activeTab === tabKey ? "secondary" : "text"}
 									aria-label={tab.label}
 									className={cn(
-										"flex-col !p-1.5 !rounded-sm !h-auto [&_svg]:size-4.5 shrink-0",
+										"w-[52px] flex-col gap-1 !px-0.5 !py-1 !rounded-sm !h-auto [&_svg]:size-4 shrink-0",
 										activeTab !== tabKey &&
 											"border border-transparent text-muted-foreground",
 									)}
 									onClick={() => setActiveTab(tabKey)}
 								>
 									<tab.icon />
+									<span className="text-[9px] leading-none font-normal">
+										{tab.shortLabel}
+									</span>
 								</Button>
 							</TooltipTrigger>
 							<TooltipContent

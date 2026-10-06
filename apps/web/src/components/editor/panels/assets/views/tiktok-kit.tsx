@@ -20,6 +20,7 @@ import {
 } from "@/lib/tiktok-kit/insert";
 import { Switch } from "@/components/ui/switch";
 import { usePreviewStore } from "@/stores/preview-store";
+import { useAssetsPanelStore } from "@/stores/assets-panel-store";
 import { SFX_LABELS, type SfxKind } from "@/lib/tiktok-kit/sfx";
 
 const ANIMATIONS: { value: HighlightAnimation; label: string }[] = [
@@ -77,6 +78,7 @@ export function TikTokKitView() {
 	// Arrows get a "poink", zooms a whoosh or hit, like in the reference edits
 	const [withSound, setWithSound] = useState(true);
 	const { layoutGuide, toggleLayoutGuide } = usePreviewStore();
+	const requestGifSearch = useAssetsPanelStore((s) => s.requestGifSearch);
 
 	const run = async (key: string, action: () => Promise<void>, done: string) => {
 		setBusy(key);
@@ -181,6 +183,14 @@ export function TikTokKitView() {
 							</Button>
 						))}
 					</div>
+					<Button
+						size="sm"
+						variant="outline"
+						className="h-7 text-[11px]"
+						onClick={() => requestGifSearch("arrow down")}
+					>
+						Mais setas animadas em GIFs e Stickers →
+					</Button>
 				</Section>
 
 				<Section
