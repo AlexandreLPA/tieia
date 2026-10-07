@@ -24,6 +24,7 @@ import type {
 	UploadAudioElement,
 } from "@/types/timeline";
 import type { MediaType } from "@/types/assets";
+import { TIME_EPSILON_SECONDS } from "@/constants/animation-constants";
 import { buildDefaultEffectInstance } from "@/lib/effects";
 import { capitalizeFirstLetter } from "@/utils/string";
 
@@ -31,6 +32,31 @@ export function canElementHaveAudio(
 	element: TimelineElement,
 ): element is AudioElement | VideoElement {
 	return element.type === "audio" || element.type === "video";
+}
+
+/**
+ * "Separar áudio" mutes the video and puts its sound in an audio clip of the
+ * same media at the same spot; finding that clip means it was already done.
+ */
+export function hasSeparatedAudio({
+	tracks,
+	element,
+}: {
+	tracks: TimelineTrack[];
+	element: VideoElement;
+}): boolean {
+	if (!element.muted) return false;
+	return tracks.some(
+		(track) =>
+			track.type === "audio" &&
+			track.elements.some(
+				(audio) =>
+					audio.sourceType === "upload" &&
+					audio.mediaId === element.mediaId &&
+					Math.abs(audio.startTime - element.startTime) < TIME_EPSILON_SECONDS &&
+					Math.abs(audio.trimStart - element.trimStart) < TIME_EPSILON_SECONDS,
+			),
+	);
 }
 
 export function isVisualElement(

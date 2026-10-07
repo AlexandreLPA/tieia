@@ -17,6 +17,7 @@ import {
 	canElementHaveAudio,
 	canElementBeHidden,
 	hasMediaId,
+	hasSeparatedAudio,
 	timelineTimeToPixels,
 	timelineTimeToSnappedPixels,
 } from "@/lib/timeline";
@@ -53,6 +54,7 @@ import {
 	Exchange01Icon,
 	KeyframeIcon,
 	MagicWand05Icon,
+	Unlink01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { uppercase } from "@/utils/string";
@@ -322,6 +324,14 @@ export function TimelineElement({
 						isMultipleSelected={selectedElements.length > 1}
 						isCurrentElementSelected={isCurrentElementSelected}
 						isMuted={isMuted}
+					/>
+				)}
+				{element.type === "video" && hasAudio && (
+					<SeparateAudioMenuItem
+						isSeparated={hasSeparatedAudio({
+							tracks: editor.timeline.getTracks(),
+							element,
+						})}
 					/>
 				)}
 				{canElementBeHidden(element) && (
@@ -942,6 +952,18 @@ function MuteMenuItem({
 	return (
 		<ActionMenuItem action="toggle-elements-muted-selected" icon={getIcon()}>
 			{isMuted ? "Ativar som" : "Silenciar"}
+		</ActionMenuItem>
+	);
+}
+
+function SeparateAudioMenuItem({ isSeparated }: { isSeparated: boolean }) {
+	return (
+		<ActionMenuItem
+			action="separate-audio"
+			icon={<HugeiconsIcon icon={Unlink01Icon} />}
+			disabled={isSeparated}
+		>
+			{isSeparated ? "Áudio já separado" : "Separar áudio"}
 		</ActionMenuItem>
 	);
 }

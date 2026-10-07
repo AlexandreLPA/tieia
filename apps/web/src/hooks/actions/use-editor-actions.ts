@@ -6,7 +6,7 @@ import { useEditor } from "../use-editor";
 import { useElementSelection } from "../timeline/element/use-element-selection";
 import { useKeyframeSelection } from "../timeline/element/use-keyframe-selection";
 import { getElementsAtTime } from "@/lib/timeline";
-import { hasMediaId } from "@/lib/timeline/element-utils";
+import { hasMediaId, hasSeparatedAudio } from "@/lib/timeline/element-utils";
 import { useAIStore } from "@/stores/ai-store";
 import { useSearchStore } from "@/stores/search-store";
 import { useAssetsPanelStore } from "@/stores/assets-panel-store";
@@ -337,7 +337,18 @@ export function useEditorActions() {
 				return;
 			}
 
-			for (const { track, element } of videoElements) {
+			const tracks = editor.timeline.getTracks();
+			const pending = videoElements.filter(
+				({ element }) =>
+					element.type === "video" &&
+					!hasSeparatedAudio({ tracks, element }),
+			);
+			if (pending.length === 0) {
+				toast.info("O áudio deste clipe já está separado");
+				return;
+			}
+
+			for (const { track, element } of pending) {
 				if (element.type !== "video") continue;
 
 				const mediaAsset = editor.media

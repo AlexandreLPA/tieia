@@ -98,19 +98,19 @@ function ToolbarLeftSection() {
 			<TooltipProvider delayDuration={500}>
 				<ToolbarButton
 					icon={<HugeiconsIcon icon={ScissorIcon} />}
-					tooltip="Split element"
+					tooltip="Dividir"
 					onClick={({ event }) => handleAction({ action: "split", event })}
 				/>
 
 				<ToolbarButton
 					icon={<HugeiconsIcon icon={AlignLeftIcon} />}
-					tooltip="Split left"
+					tooltip="Dividir e remover a parte esquerda"
 					onClick={({ event }) => handleAction({ action: "split-left", event })}
 				/>
 
 				<ToolbarButton
 					icon={<HugeiconsIcon icon={AlignRightIcon} />}
-					tooltip="Split right"
+					tooltip="Dividir e remover a parte direita"
 					onClick={({ event }) =>
 						handleAction({ action: "split-right", event })
 					}
@@ -118,7 +118,7 @@ function ToolbarLeftSection() {
 
 				<ToolbarButton
 					icon={<SplitSquareHorizontal />}
-					tooltip="Separate audio"
+					tooltip="Separar áudio"
 					onClick={({ event }) =>
 						handleAction({ action: "separate-audio", event })
 					}
@@ -126,7 +126,7 @@ function ToolbarLeftSection() {
 
 				<ToolbarButton
 					icon={<HugeiconsIcon icon={Copy01Icon} />}
-					tooltip="Duplicate element"
+					tooltip="Duplicar"
 					onClick={({ event }) =>
 						handleAction({ action: "duplicate-selected", event })
 					}
@@ -134,7 +134,7 @@ function ToolbarLeftSection() {
 
 				<ToolbarButton
 					icon={<HugeiconsIcon icon={SnowIcon} />}
-					tooltip="Freeze frame"
+					tooltip="Congelar quadro"
 					onClick={({ event }) =>
 						handleAction({ action: "freeze-frame", event })
 					}
@@ -142,7 +142,7 @@ function ToolbarLeftSection() {
 
 				<ToolbarButton
 					icon={<HugeiconsIcon icon={Delete02Icon} />}
-					tooltip="Delete element"
+					tooltip="Excluir"
 					onClick={({ event }) =>
 						handleAction({ action: "delete-selected", event })
 					}
@@ -154,7 +154,7 @@ function ToolbarLeftSection() {
 					<ToolbarButton
 						icon={<HugeiconsIcon icon={Bookmark02Icon} />}
 				isActive={isCurrentlyBookmarked}
-					tooltip={isCurrentlyBookmarked ? "Remove bookmark" : "Add bookmark"}
+					tooltip={isCurrentlyBookmarked ? "Remover marcador" : "Adicionar marcador"}
 						onClick={({ event }) =>
 							handleAction({ action: "toggle-bookmark", event })
 						}
@@ -165,13 +165,13 @@ function ToolbarLeftSection() {
 
 				<ToolbarButton
 					icon={<HugeiconsIcon icon={ArrowTurnBackwardIcon} />}
-					tooltip="Undo (Ctrl+Z)"
+					tooltip="Desfazer (Ctrl+Z)"
 					disabled={!editor.command.canUndo()}
 					onClick={({ event }) => handleAction({ action: "undo", event })}
 				/>
 				<ToolbarButton
 					icon={<HugeiconsIcon icon={ArrowTurnForwardIcon} />}
-					tooltip="Redo (Ctrl+Shift+Z)"
+					tooltip="Refazer (Ctrl+Shift+Z)"
 					disabled={!editor.command.canRedo()}
 					onClick={({ event }) => handleAction({ action: "redo", event })}
 				/>
@@ -221,14 +221,14 @@ function ToolbarRightSection({
 				<ToolbarButton
 					icon={<HugeiconsIcon icon={MagnetIcon} />}
 					isActive={snappingEnabled}
-					tooltip="Auto snapping"
+					tooltip="Encaixe automático"
 					onClick={() => toggleSnapping()}
 				/>
 
 				<ToolbarButton
 					icon={<HugeiconsIcon icon={Link04Icon} className="scale-110" />}
 					isActive={rippleEditingEnabled}
-					tooltip="Ripple editing"
+					tooltip="Edição em cascata"
 					onClick={() => toggleRippleEditing()}
 				/>
 			</TooltipProvider>
