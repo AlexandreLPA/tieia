@@ -2,7 +2,7 @@ import { Command } from "@/lib/commands/base-command";
 import type { TimelineTrack } from "@/types/timeline";
 import { EditorCore } from "@/core";
 import { clampAnimationsToDuration } from "@/lib/animation";
-import { rippleShiftElements } from "@/lib/timeline";
+import { isMainTrack, rippleShiftElements } from "@/lib/timeline";
 
 export class UpdateElementTrimCommand extends Command {
 	private savedState: TimelineTrack[] | null = null;
@@ -12,6 +12,7 @@ export class UpdateElementTrimCommand extends Command {
 	private readonly startTime: number | undefined;
 	private readonly duration: number | undefined;
 	private readonly rippleEnabled: boolean;
+	private readonly magneticMainTrack: boolean;
 
 	constructor({
 		elementId,
@@ -20,6 +21,7 @@ export class UpdateElementTrimCommand extends Command {
 		startTime,
 		duration,
 		rippleEnabled = false,
+		magneticMainTrack = false,
 	}: {
 		elementId: string;
 		trimStart: number;
@@ -27,6 +29,8 @@ export class UpdateElementTrimCommand extends Command {
 		startTime?: number;
 		duration?: number;
 		rippleEnabled?: boolean;
+	/** Like CapCut's magnetic main track: removing footage there closes the gap */
+	magneticMainTrack?: boolean;
 	}) {
 		super();
 		this.elementId = elementId;
@@ -35,6 +39,7 @@ export class UpdateElementTrimCommand extends Command {
 		this.startTime = startTime;
 		this.duration = duration;
 		this.rippleEnabled = rippleEnabled;
+		this.magneticMainTrack = magneticMainTrack;
 	}
 
 	execute(): void {
@@ -47,8 +52,13 @@ export class UpdateElementTrimCommand extends Command {
 			);
 			if (!targetElement) return track;
 
+			const isMagnetic = this.magneticMainTrack && isMainTrack(track);
 			const nextDuration = this.duration ?? targetElement.duration;
-			const nextStartTime = this.startTime ?? targetElement.startTime;
+			// On the magnetic main track the clip keeps its spot and the clips
+			// after it move instead, so trimming never leaves a black gap
+			const nextStartTime = isMagnetic
+				? targetElement.startTime
+				: (this.startTime ?? targetElement.startTime);
 
 			const oldEndTime = targetElement.startTime + targetElement.duration;
 			const newEndTime = nextStartTime + nextDuration;
@@ -66,7 +76,7 @@ export class UpdateElementTrimCommand extends Command {
 				}),
 			};
 
-			if (this.rippleEnabled && Math.abs(shiftAmount) > 0) {
+			if ((this.rippleEnabled || isMagnetic) && Math.abs(shiftAmount) > 0) {
 				const shiftedOthers = rippleShiftElements({
 					elements: track.elements.filter((element) => element.id !== this.elementId),
 					afterTime: oldEndTime,

@@ -2,7 +2,11 @@ import { Command } from "@/lib/commands/base-command";
 import type { TimelineTrack } from "@/types/timeline";
 import { generateUUID } from "@/utils/id";
 import { EditorCore } from "@/core";
-import { getFootageSeconds, rippleShiftElements } from "@/lib/timeline";
+import {
+	getFootageSeconds,
+	isMainTrack,
+	rippleShiftElements,
+} from "@/lib/timeline";
 import { splitAnimationsAtTime } from "@/lib/animation";
 
 export class SplitElementsCommand extends Command {
@@ -13,23 +17,28 @@ export class SplitElementsCommand extends Command {
 	private readonly splitTime: number;
 	private readonly retainSide: "both" | "left" | "right";
 	private readonly rippleEnabled: boolean;
+	private readonly magneticMainTrack: boolean;
 
 	constructor({
 		elements,
 		splitTime,
 		retainSide = "both",
 		rippleEnabled = false,
+		magneticMainTrack = false,
 	}: {
 		elements: { trackId: string; elementId: string }[];
 		splitTime: number;
 		retainSide?: "both" | "left" | "right";
 		rippleEnabled?: boolean;
+	/** Like CapCut's magnetic main track: removing footage there closes the gap */
+	magneticMainTrack?: boolean;
 	}) {
 		super();
 		this.elements = elements;
 		this.splitTime = splitTime;
 		this.retainSide = retainSide;
 		this.rippleEnabled = rippleEnabled;
+		this.magneticMainTrack = magneticMainTrack;
 	}
 
 	getRightSideElements(): { trackId: string; elementId: string }[] {
@@ -52,6 +61,13 @@ export class SplitElementsCommand extends Command {
 			}
 
 			let leftVisibleDurationForRipple: number | null = null;
+			// Assigned inside the callback below, so the type is spelled out
+			let removedTailForRipple = null as {
+				afterTime: number;
+				amount: number;
+			} | null;
+			const shouldRipple =
+				this.rippleEnabled || (this.magneticMainTrack && isMainTrack(track));
 
 			let elements = track.elements.flatMap((element) => {
 				const shouldSplit = elementsToSplit.some(
@@ -94,6 +110,12 @@ export class SplitElementsCommand extends Command {
 				});
 
 				if (this.retainSide === "left") {
+					if (shouldRipple && elementsToSplit.length === 1) {
+						removedTailForRipple = {
+							afterTime: element.startTime + element.duration,
+							amount: rightVisibleDuration,
+						};
+					}
 					return [
 						{
 							...element,
@@ -106,7 +128,7 @@ export class SplitElementsCommand extends Command {
 				}
 
 				if (this.retainSide === "right") {
-					if (this.rippleEnabled && elementsToSplit.length === 1) {
+					if (shouldRipple && elementsToSplit.length === 1) {
 						leftVisibleDurationForRipple = leftVisibleDuration;
 					}
 					const newId = generateUUID();
@@ -156,7 +178,15 @@ export class SplitElementsCommand extends Command {
 				];
 			});
 
-			if (this.rippleEnabled && leftVisibleDurationForRipple !== null) {
+			if (removedTailForRipple) {
+				elements = rippleShiftElements({
+					elements,
+					afterTime: removedTailForRipple.afterTime,
+					shiftAmount: removedTailForRipple.amount,
+				});
+			}
+
+			if (leftVisibleDurationForRipple !== null) {
 				elements = rippleShiftElements({
 					elements,
 					afterTime: this.splitTime,

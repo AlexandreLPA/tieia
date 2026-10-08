@@ -75,6 +75,7 @@ export class TimelineManager {
 		duration,
 		pushHistory = true,
 		rippleEnabled = false,
+		magneticMainTrack = false,
 	}: {
 		elementId: string;
 		trimStart: number;
@@ -83,6 +84,7 @@ export class TimelineManager {
 		duration?: number;
 		pushHistory?: boolean;
 		rippleEnabled?: boolean;
+		magneticMainTrack?: boolean;
 	}): void {
 		const command = new UpdateElementTrimCommand({
 			elementId,
@@ -91,6 +93,7 @@ export class TimelineManager {
 			startTime,
 			duration,
 			rippleEnabled,
+			magneticMainTrack,
 		});
 		if (pushHistory) {
 			this.editor.command.execute({ command });
@@ -177,17 +180,20 @@ export class TimelineManager {
 		splitTime,
 		retainSide = "both",
 		rippleEnabled = false,
+		magneticMainTrack = false,
 	}: {
 		elements: { trackId: string; elementId: string }[];
 		splitTime: number;
 		retainSide?: "both" | "left" | "right";
 		rippleEnabled?: boolean;
+		magneticMainTrack?: boolean;
 	}): { trackId: string; elementId: string }[] {
 		const command = new SplitElementsCommand({
 			elements,
 			splitTime,
 			retainSide,
 			rippleEnabled,
+			magneticMainTrack,
 		});
 		this.editor.command.execute({ command });
 		return command.getRightSideElements();
@@ -238,11 +244,17 @@ export class TimelineManager {
 	deleteElements({
 		elements,
 		rippleEnabled = false,
+		magneticMainTrack = false,
 	}: {
 		elements: { trackId: string; elementId: string }[];
 		rippleEnabled?: boolean;
+		magneticMainTrack?: boolean;
 	}): void {
-		const command = new DeleteElementsCommand({ elements, rippleEnabled });
+		const command = new DeleteElementsCommand({
+			elements,
+			rippleEnabled,
+			magneticMainTrack,
+		});
 		this.editor.command.execute({ command });
 	}
 

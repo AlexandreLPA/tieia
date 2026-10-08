@@ -11,6 +11,7 @@ import {
 } from "@/lib/timeline/snap-utils";
 import { useTimelineStore } from "@/stores/timeline-store";
 import { getElementPlaybackRate } from "@/lib/timeline/speed";
+import { isMainTrack } from "@/lib/timeline";
 
 export interface ResizeState {
 	elementId: string;
@@ -48,6 +49,8 @@ export function useTimelineElementResize({
 	// Trims are stored in footage seconds; while dragging they are handled in
 	// timeline seconds, so a sped-up clip trims as much footage as it shows
 	const rate = getElementPlaybackRate(element);
+	// The main track is magnetic: a clip there keeps its spot while trimming
+	const keepsStart = isMainTrack(track);
 	const [resizing, setResizing] = useState<ResizeState | null>(null);
 	const [currentTrimStart, setCurrentTrimStart] = useState(element.trimStart);
 	const [currentTrimEnd, setCurrentTrimEnd] = useState(element.trimEnd);
@@ -202,10 +205,12 @@ export function useTimelineElementResize({
 					});
 
 					setCurrentTrimStart(newTrimStart);
-					setCurrentStartTime(newStartTime);
+					setCurrentStartTime(keepsStart ? resizing.initialStartTime : newStartTime);
 					setCurrentDuration(newDuration);
 					currentTrimStartRef.current = newTrimStart;
-					currentStartTimeRef.current = newStartTime;
+					currentStartTimeRef.current = keepsStart
+						? resizing.initialStartTime
+						: newStartTime;
 					currentDurationRef.current = newDuration;
 				} else if (calculated < 0) {
 					if (canExtendElementDuration()) {
@@ -231,10 +236,12 @@ export function useTimelineElementResize({
 						});
 
 						setCurrentTrimStart(0);
-						setCurrentStartTime(newStartTime);
+						setCurrentStartTime(keepsStart ? resizing.initialStartTime : newStartTime);
 						setCurrentDuration(newDuration);
 						currentTrimStartRef.current = 0;
-						currentStartTimeRef.current = newStartTime;
+						currentStartTimeRef.current = keepsStart
+						? resizing.initialStartTime
+						: newStartTime;
 						currentDurationRef.current = newDuration;
 					} else {
 						const trimDelta =
@@ -249,10 +256,12 @@ export function useTimelineElementResize({
 						});
 
 						setCurrentTrimStart(minTrimStartForNeighbor);
-						setCurrentStartTime(newStartTime);
+						setCurrentStartTime(keepsStart ? resizing.initialStartTime : newStartTime);
 						setCurrentDuration(newDuration);
 						currentTrimStartRef.current = minTrimStartForNeighbor;
-						currentStartTimeRef.current = newStartTime;
+						currentStartTimeRef.current = keepsStart
+						? resizing.initialStartTime
+						: newStartTime;
 						currentDurationRef.current = newDuration;
 					}
 				}
@@ -338,6 +347,7 @@ export function useTimelineElementResize({
 			onSnapPointChange,
 			canExtendElementDuration,
 			isShiftHeldRef,
+			keepsStart,
 		],
 	);
 
@@ -361,6 +371,7 @@ export function useTimelineElementResize({
 				startTime: startTimeChanged ? finalStartTime : undefined,
 				duration: durationChanged ? finalDuration : undefined,
 				rippleEnabled: rippleEditingEnabled,
+				magneticMainTrack: true,
 			});
 		}
 

@@ -7,17 +7,22 @@ export class DeleteElementsCommand extends Command {
 	private savedState: TimelineTrack[] | null = null;
 	private readonly elements: { trackId: string; elementId: string }[];
 	private readonly rippleEnabled: boolean;
+	private readonly magneticMainTrack: boolean;
 
 	constructor({
 		elements,
 		rippleEnabled = false,
+		magneticMainTrack = false,
 	}: {
 		elements: { trackId: string; elementId: string }[];
 		rippleEnabled?: boolean;
+	/** Like CapCut's magnetic main track: removing footage there closes the gap */
+	magneticMainTrack?: boolean;
 	}) {
 		super();
 		this.elements = elements;
 		this.rippleEnabled = rippleEnabled;
+		this.magneticMainTrack = magneticMainTrack;
 	}
 
 	execute(): void {
@@ -50,7 +55,9 @@ export class DeleteElementsCommand extends Command {
 						),
 				);
 
-				if (this.rippleEnabled && deletedElementInfos.length > 0) {
+				const shouldRipple =
+					this.rippleEnabled || (this.magneticMainTrack && isMainTrack(track));
+				if (shouldRipple && deletedElementInfos.length > 0) {
 					const sortedByStartDesc = [...deletedElementInfos].sort(
 						(a, b) => b.startTime - a.startTime,
 					);
