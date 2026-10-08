@@ -500,11 +500,11 @@ export function Captions() {
 		toast.success(`Estilo "${style.name}" aplicado a ${updates.length} legendas`);
 	};
 
-	const handleAddSubtitles = () => {
+	const addOriginalCaptions = (): string | null => {
 		const currentSegments = useTranscriptStore.getState().segments;
-		if (currentSegments.length === 0) return;
+		if (currentSegments.length === 0) return null;
 
-		const trackId = addSubtitleTrack({
+		return addSubtitleTrack({
 			subtitleSegments: currentSegments.map((seg) => ({
 				text: seg.text,
 				start: seg.start,
@@ -513,9 +513,33 @@ export function Captions() {
 			})),
 			languageLabel: "Legenda",
 		});
+	};
 
+	const handleAddSubtitles = () => {
+		const trackId = addOriginalCaptions();
+		if (!trackId) return;
 		setSubtitleTracks((prev) => [...prev, { trackId, language: "original" }]);
 		toast.success("Legendas adicionadas com destaque de palavras");
+	};
+
+	// Captions are placed from the transcript and the clips as they are now,
+	// so after cuts or speed changes rebuilding them is enough; no new
+	// transcription needed
+	const handleRedoSubtitles = () => {
+		for (const track of activeSubtitleTracks) {
+			if (track.language !== "original") continue;
+			try {
+				editor.timeline.removeTrack({ trackId: track.trackId });
+			} catch {
+				// Track may already have been removed manually
+			}
+		}
+		const trackId = addOriginalCaptions();
+		setSubtitleTracks((prev) => [
+			...prev.filter((t) => t.language !== "original"),
+			...(trackId ? [{ trackId, language: "original" }] : []),
+		]);
+		if (trackId) toast.success("Legendas refeitas com o estilo escolhido");
 	};
 
 	const handleTranslateAndAdd = async () => {
@@ -697,9 +721,21 @@ export function Captions() {
 	return (
 		<PanelView title="Legendas" ref={containerRef}>
 			<div className="flex flex-col gap-5">
-				<p className="text-xs text-muted-foreground leading-relaxed">
-					Transcreva seu vídeo para editá-lo como um documento. Exclua trechos, remova vícios de linguagem ou reordene segmentos.
-				</p>
+				<div className="rounded-md bg-muted/50 px-3 py-2 text-[11px] leading-relaxed text-muted-foreground">
+					<p className="font-medium text-foreground">Como legendar</p>
+					<ol className="mt-1 list-decimal space-y-0.5 pl-4">
+						<li>
+							Clique em <b>Gerar transcrição</b>: o app escuta a fala do
+							vídeo.
+						</li>
+						<li>
+							Escolha o estilo e clique em <b>Adicionar legendas</b>.
+						</li>
+					</ol>
+					<p className="mt-1">
+						Mudou cortes ou velocidade depois? Use <b>Refazer legendas</b>.
+					</p>
+				</div>
 
 				{/* ── Engine Selector ── */}
 				<div className="flex flex-col gap-2">
@@ -781,7 +817,8 @@ export function Captions() {
 
 				{segments.length > 0 && activeSubtitleTracks.length === 0 && (
 					<p className="text-[11px] text-muted-foreground leading-relaxed rounded-md bg-muted/50 px-3 py-2">
-						A transcrição está pronta. Adicione legendas abaixo ou retranscreva se o vídeo mudou.
+						Transcrição pronta. Agora escolha o estilo abaixo e clique em
+						Adicionar legendas.
 					</p>
 				)}
 
@@ -851,8 +888,20 @@ export function Captions() {
 									onCheckedChange={setUppercaseCaptions}
 								/>
 							</div>
-							{activeSubtitleTracks.length > 0 && (
+							{activeSubtitleTracks.length === 0 ? (
+								<Button className="w-full" onClick={handleAddSubtitles}>
+									Adicionar legendas
+								</Button>
+							) : (
 								<>
+									<Button className="w-full" onClick={handleRedoSubtitles}>
+										Refazer legendas
+									</Button>
+									<p className="text-[10px] leading-snug text-muted-foreground">
+										Refaz com o estilo, as palavras por vez e as maiúsculas
+										escolhidos acima, acompanhando os cortes e a velocidade
+										atuais dos clipes.
+									</p>
 									<Button
 										variant="secondary"
 										size="sm"
@@ -861,12 +910,8 @@ export function Captions() {
 											handleApplyStyleToTracks(getCaptionStyle(captionStyleId))
 										}
 									>
-										Aplicar estilo nas legendas atuais
+										Só trocar o estilo das legendas atuais
 									</Button>
-									<p className="text-[10px] leading-snug text-muted-foreground">
-										Palavras por vez e maiúsculas valem ao adicionar. Para
-										mudar, remova as legendas e adicione de novo.
-									</p>
 								</>
 							)}
 						</div>
@@ -950,13 +995,9 @@ export function Captions() {
 									</Button>
 								</div>
 							) : (
-								<Button
-									variant="outline"
-									className="w-full"
-									onClick={handleAddSubtitles}
-								>
-									Adicionar legendas
-								</Button>
+								<p className="text-[11px] text-muted-foreground">
+									Nenhuma legenda na timeline ainda.
+								</p>
 							)}
 						</div>
 
