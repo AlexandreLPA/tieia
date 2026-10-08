@@ -18,6 +18,7 @@ import { Switch } from "@/components/ui/switch";
 import { useEditor } from "@/hooks/use-editor";
 import { cn } from "@/utils/ui";
 import { SpeedCurveEditor } from "./speed-curve-editor";
+import { buildSpeedChangeUpdates } from "@/lib/timeline/speed";
 
 export function VideoProperties({
 	element,
@@ -73,7 +74,14 @@ export function SpeedSection({
 		});
 	};
 	const handleSpeedChange = (rate: number) =>
-		updateElement({ playbackRate: rate });
+		editor.timeline.updateElements({
+			updates: buildSpeedChangeUpdates({
+				tracks: editor.timeline.getTracks(),
+				trackId,
+				elementId: element.id,
+				rate,
+			}),
+		});
 
 	return (
 		<Section collapsible sectionKey={`${element.type}:speed`}>

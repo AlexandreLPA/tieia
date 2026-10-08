@@ -6,6 +6,7 @@ export * from "./element-utils";
 export * from "./zoom-utils";
 export * from "./ruler-utils";
 export * from "./ripple-utils";
+export * from "./speed";
 export * from "./pixel-utils";
 
 export function calculateTotalDuration({

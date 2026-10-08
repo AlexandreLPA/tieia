@@ -1,5 +1,7 @@
 import type { EditorAction, EditorActionType } from "@/types/ai";
 import { useTranscriptStore } from "@/stores/transcript-store";
+import { buildSpeedChangeUpdates } from "@/lib/timeline/speed";
+import type { TimelineElement, TimelineTrack } from "@/types/timeline";
 
 function getTranscriptStore() {
 	return useTranscriptStore.getState();
@@ -202,25 +204,44 @@ export function executeAction(action: EditorAction): void {
 			try {
 				const editor = getEditorCore();
 				const speed = (action.params.speed as number) ?? 1;
-				const tracks = editor.timeline.getTracks();
-				const updates: Array<{
-					trackId: string;
-					elementId: string;
-					updates: any;
-				}> = [];
-				for (const track of tracks) {
-					for (const el of track.elements) {
-						if (el.type === "video") {
-							updates.push({
-								trackId: track.id,
-								elementId: el.id,
-								updates: { playbackRate: speed },
-							});
-						}
+				// One clip at a time on a working copy, so each length change
+				// moves the clips after it before the next one is measured
+				let working: TimelineTrack[] = editor.timeline.getTracks();
+				const targets = working.flatMap((track) =>
+					track.elements
+						.filter((el) => el.type === "video")
+						.map((el) => ({ trackId: track.id, elementId: el.id })),
+				);
+				const merged = new Map<
+					string,
+					{ trackId: string; elementId: string; updates: Partial<TimelineElement> }
+				>();
+				for (const target of targets) {
+					const changes = buildSpeedChangeUpdates({
+						tracks: working,
+						...target,
+						rate: speed,
+					});
+					for (const change of changes) {
+						const previous = merged.get(change.elementId);
+						merged.set(change.elementId, {
+							...change,
+							updates: {
+								...previous?.updates,
+								...change.updates,
+							} as Partial<TimelineElement>,
+						});
 					}
+					working = working.map((track) => ({
+						...track,
+						elements: track.elements.map((el) => {
+							const change = changes.find((c) => c.elementId === el.id);
+							return change ? { ...el, ...change.updates } : el;
+						}),
+					})) as TimelineTrack[];
 				}
-				if (updates.length > 0) {
-					editor.timeline.updateElements({ updates });
+				if (merged.size > 0) {
+					editor.timeline.updateElements({ updates: [...merged.values()] });
 				}
 			} catch {}
 			break;

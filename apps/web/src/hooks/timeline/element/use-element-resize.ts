@@ -10,6 +10,7 @@ import {
 	type SnapPoint,
 } from "@/lib/timeline/snap-utils";
 import { useTimelineStore } from "@/stores/timeline-store";
+import { getElementPlaybackRate } from "@/lib/timeline/speed";
 
 export interface ResizeState {
 	elementId: string;
@@ -44,6 +45,9 @@ export function useTimelineElementResize({
 		(state) => state.rippleEditingEnabled,
 	);
 
+	// Trims are stored in footage seconds; while dragging they are handled in
+	// timeline seconds, so a sped-up clip trims as much footage as it shows
+	const rate = getElementPlaybackRate(element);
 	const [resizing, setResizing] = useState<ResizeState | null>(null);
 	const [currentTrimStart, setCurrentTrimStart] = useState(element.trimStart);
 	const [currentTrimEnd, setCurrentTrimEnd] = useState(element.trimEnd);
@@ -70,18 +74,18 @@ export function useTimelineElementResize({
 			elementId,
 			side,
 			startX: event.clientX,
-			initialTrimStart: element.trimStart,
-			initialTrimEnd: element.trimEnd,
+			initialTrimStart: element.trimStart / rate,
+			initialTrimEnd: element.trimEnd / rate,
 			initialStartTime: element.startTime,
 			initialDuration: element.duration,
 		});
 
-		setCurrentTrimStart(element.trimStart);
-		setCurrentTrimEnd(element.trimEnd);
+		setCurrentTrimStart(element.trimStart / rate);
+		setCurrentTrimEnd(element.trimEnd / rate);
 		setCurrentStartTime(element.startTime);
 		setCurrentDuration(element.duration);
-		currentTrimStartRef.current = element.trimStart;
-		currentTrimEndRef.current = element.trimEnd;
+		currentTrimStartRef.current = element.trimStart / rate;
+		currentTrimEndRef.current = element.trimEnd / rate;
 		currentStartTimeRef.current = element.startTime;
 		currentDurationRef.current = element.duration;
 		onResizeStateChange?.({ isResizing: true });
@@ -352,8 +356,8 @@ export function useTimelineElementResize({
 		if (trimStartChanged || trimEndChanged || startTimeChanged || durationChanged) {
 			editor.timeline.updateElementTrim({
 				elementId: element.id,
-				trimStart: finalTrimStart,
-				trimEnd: finalTrimEnd,
+				trimStart: trimStartChanged ? finalTrimStart * rate : element.trimStart,
+				trimEnd: trimEndChanged ? finalTrimEnd * rate : element.trimEnd,
 				startTime: startTimeChanged ? finalStartTime : undefined,
 				duration: durationChanged ? finalDuration : undefined,
 				rippleEnabled: rippleEditingEnabled,
@@ -367,6 +371,9 @@ export function useTimelineElementResize({
 		resizing,
 		editor.timeline,
 		element.id,
+		element.trimStart,
+		element.trimEnd,
+		rate,
 		onResizeStateChange,
 		onSnapPointChange,
 		rippleEditingEnabled,

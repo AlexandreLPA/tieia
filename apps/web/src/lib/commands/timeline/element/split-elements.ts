@@ -2,7 +2,7 @@ import { Command } from "@/lib/commands/base-command";
 import type { TimelineTrack } from "@/types/timeline";
 import { generateUUID } from "@/utils/id";
 import { EditorCore } from "@/core";
-import { rippleShiftElements } from "@/lib/timeline";
+import { getFootageSeconds, rippleShiftElements } from "@/lib/timeline";
 import { splitAnimationsAtTime } from "@/lib/animation";
 
 export class SplitElementsCommand extends Command {
@@ -75,6 +75,18 @@ export class SplitElementsCommand extends Command {
 				const relativeTime = this.splitTime - element.startTime;
 				const leftVisibleDuration = relativeTime;
 				const rightVisibleDuration = element.duration - relativeTime;
+				// Trims count footage; on a sped-up clip each timeline second
+				// covers more of it
+				const leftFootage = getFootageSeconds({
+					element,
+					from: 0,
+					to: relativeTime,
+				});
+				const rightFootage = getFootageSeconds({
+					element,
+					from: relativeTime,
+					to: element.duration,
+				});
 				const { leftAnimations, rightAnimations } = splitAnimationsAtTime({
 					animations: element.animations,
 					splitTime: relativeTime,
@@ -86,7 +98,7 @@ export class SplitElementsCommand extends Command {
 						{
 							...element,
 							duration: leftVisibleDuration,
-							trimEnd: element.trimEnd + rightVisibleDuration,
+							trimEnd: element.trimEnd + rightFootage,
 							name: `${element.name} (left)`,
 							animations: leftAnimations,
 						},
@@ -108,7 +120,7 @@ export class SplitElementsCommand extends Command {
 							id: newId,
 							startTime: this.splitTime,
 							duration: rightVisibleDuration,
-							trimStart: element.trimStart + leftVisibleDuration,
+							trimStart: element.trimStart + leftFootage,
 							name: `${element.name} (right)`,
 							animations: rightAnimations,
 						},
@@ -126,7 +138,7 @@ export class SplitElementsCommand extends Command {
 					{
 						...element,
 						duration: leftVisibleDuration,
-						trimEnd: element.trimEnd + rightVisibleDuration,
+						trimEnd: element.trimEnd + rightFootage,
 						name: `${element.name} (left)`,
 						animations: leftAnimations,
 						// The new cut starts plain; the right piece keeps the old transition
@@ -137,7 +149,7 @@ export class SplitElementsCommand extends Command {
 						id: secondElementId,
 						startTime: this.splitTime,
 						duration: rightVisibleDuration,
-						trimStart: element.trimStart + leftVisibleDuration,
+						trimStart: element.trimStart + leftFootage,
 						name: `${element.name} (right)`,
 						animations: rightAnimations,
 					},

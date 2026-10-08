@@ -89,10 +89,12 @@ export abstract class VisualNode<
 	}
 
 	protected isInRange({ time }: { time: number }): boolean {
-		const localTime = this.getSourceLocalTime({ time });
+		// Measured on the timeline: speed changes which footage shows, not how
+		// long the clip stays. Comparing footage time against the timeline
+		// length made a sped-up clip go black before its end.
+		const elapsed = time - this.params.timeOffset;
 		return (
-			localTime >= this.params.trimStart - TIME_EPSILON_SECONDS &&
-			localTime < this.params.trimStart + this.params.duration
+			elapsed >= -TIME_EPSILON_SECONDS && elapsed < this.params.duration
 		);
 	}
 
