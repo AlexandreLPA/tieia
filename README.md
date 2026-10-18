@@ -33,6 +33,57 @@ The biggest release yet: **six new AI features**, all running on-device.
 
 Also in this release: hardened upload endpoints, stabilized VPS deployment, a repaired build/CI pipeline, and community fixes. See the full [changelog](apps/web/content/changelog/0.4.0.md).
 
+---
+
+## 🇧🇷 Guia Rápido (Versão Customizada PT-BR + OpenRouter + Cortes Virais)
+
+Esta versão foi adaptada e traduzida para **Português (PT-BR)** com foco em **criação de vídeos curtos virais (YouTube Shorts, TikTok, Reels)** e **vendas com comissão (TikTok Shop)**, além de permitir o uso de **LLMs na nuvem via OpenRouter** para quem possui placas de vídeo com VRAM limitada (ex: 8 GB – 12 GB) e quer usar modelos gigantes sem pesar no PC.
+
+### ✨ Principais Adaptações desta Versão
+
+1. **Integração com OpenRouter (LLMs na Nuvem):**
+   - Permite rodar todas as análises de IA (detecção de cortes virais, pontuação de engajamento/retenção, gerador de ganchos/hooks, Chat do AI Studio e verificação de diretrizes) usando modelos potentes na nuvem via [OpenRouter](https://openrouter.ai/), mantendo apenas tarefas leves ou de mídia (como Whisper/FFmpeg) localmente.
+   - Seleção de modelo e monitoramento do backend ativo diretamente na interface do editor (**Monitor de IA**).
+2. **Cortes Automáticos de Vídeos Longos para YouTube Shorts / Reels (`YouTube para Reels`):**
+   - Cole a URL de um vídeo longo do YouTube (ou use o **Auto-Compositor de Shorts** na timeline):
+     1. **Ingestão e Transcrição:** Baixa legendas existentes do YouTube instantaneamente (ou transcreve com Whisper com timestamps por palavra).
+     2. **Localização de Momentos Virais por IA (`clip_detector.py`):** O LLM analisa toda a transcrição buscando picos de engajamento, fatos surpreendentes, intensidade emocional, valor isolado (faz sentido sozinho) e força do gancho nos primeiros 2–3 segundos.
+     3. **Pontuação Multi-Sinal (`Virality Score`):** Avalia cada corte de 0 a 100 em 7 sinais (Gancho/Hook, Lacuna de Curiosidade, Energia/Áudio, Sincronia de Batida, Presença de Rosto, Arco Emocional e Potencial Viral).
+     4. **Reframe 9:16 + Legendas Estilo CapCut:** Corta os trechos aprovados com FFmpeg, centraliza o rosto automaticamente no formato vertical `9:16` e aplica legendas dinâmicas.
+3. **Kit TikTok Shop & Verificador de Conformidade (Compliance):**
+   - **Kit TikTok Shop:** Setas animadas, efeitos sonoros (SFX), zooms dinâmicos e simulação da interface do feed do TikTok.
+   - **Compliance Check:** Analisa frames do vídeo e transcrição via IA para evitar bloqueios ou perda de comissão no TikTok Shop.
+4. **Editor Turbinado em Português:**
+   - Legendas estilo CapCut com contorno/sombra, textos recortados (*ransom-note cutout*) e gradientes, busca integrada de GIFs e Stickers animados via **KLIPY**, *time-stretch* mantendo o tom original da voz, trilha principal magnética e miniaturas reais (*filmstrip*) na timeline.
+
+### ⚙️ Como Configurar e Rodar (Passo a Passo)
+
+1. **Configure as variáveis de ambiente na raiz (`.env`) e no frontend (`apps/web/.env.local`):**
+   ```bash
+   cp .env.example .env
+   cp apps/web/.env.example apps/web/.env.local
+   ```
+2. **Adicione sua chave do OpenRouter no arquivo `.env` da raiz:**
+   ```env
+   AI_LLM_BACKEND=openrouter
+   OPENROUTER_API_KEY=sk-or-v1-sua-chave-aqui
+   OPENROUTER_MODEL=nvidia/nemotron-3-ultra-550b-a55b:free
+   ```
+   *(Dica: você pode usar modelos gratuitos do OpenRouter como `nvidia/nemotron-3-ultra-550b-a55b:free` ou modelos rápidos como `google/gemini-2.5-flash` e `openai/gpt-4o-mini`).*
+3. **Suba os serviços de backend com Docker Compose:**
+   ```bash
+   docker compose up -d --build
+   ```
+   *(Se quiser usar sua GPU NVIDIA para acelerar a transcrição do Whisper, veja a Opção B mais abaixo).*
+4. **Instale as dependências e inicie o editor Web:**
+   ```bash
+   bun install
+   bun dev:web
+   ```
+5. Acesse **[http://localhost:3000](http://localhost:3000)**.
+
+---
+
 ## Why OpenCut AI?
 
 Every major video editor sends your footage to the cloud. OpenCut AI doesn't.

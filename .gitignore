@@ -42,4 +42,5 @@ ai-models/
 ai-generated/
 
 *.md
+!README.md
 !apps/web/content/changelog/**/*.md
