@@ -6,7 +6,7 @@ OpenCut AI is a privacy-first, open-source AI video editor. All AI models run lo
 
 ## Architecture
 
-- **Frontend:** `apps/web/` — Next.js 15, TypeScript, TailwindCSS, Zustand
+- **Frontend:** `apps/web/` — Next.js 16, TypeScript, TailwindCSS, Zustand
 - **AI Backend:** `services/ai-backend/` — FastAPI, port 8420, the main API gateway
 - **TurboQuant Service:** `services/turboquant-service/` — FastAPI, port 8430, HuggingFace LLM inference with KV cache compression
 - **Whisper Service:** `services/whisper-service/` — port 8421, faster-whisper

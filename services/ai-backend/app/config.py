@@ -9,7 +9,8 @@ class Settings(BaseSettings):
     """Central configuration for the AI backend service."""
 
     # Server
-    HOST: str = "0.0.0.0"
+    # Loopback by default: the API has no auth. Docker sets 0.0.0.0 inside the container.
+    HOST: str = "127.0.0.1"
     PORT: int = 8420
     DEBUG: bool = False
 
