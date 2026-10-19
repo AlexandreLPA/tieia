@@ -10,7 +10,9 @@ import { Badge } from "@/components/ui/badge";
 import {
 	Select,
 	SelectContent,
+	SelectGroup,
 	SelectItem,
+	SelectLabel,
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
@@ -31,6 +33,9 @@ import {
 	VIDEO_ASPECT_RATIOS,
 	VIDEO_PROVIDER_CONFIGS,
 	getModelsForProvider,
+	formatVideoCostPerSecond,
+	getProviderLabel,
+	sortModelsByCost,
 	getProviderConfig,
 	isProviderKeyRequired,
 	type VideoGenMode,
@@ -67,9 +72,13 @@ export function VideoGenerationPanel({ className }: { className?: string }) {
 		? VIDEO_MODELS
 		: getModelsForProvider(providerFilter);
 
-	const availableModels = filteredModels.filter((m) =>
-		m.supportedModes.includes(genMode),
+	const availableModels = sortModelsByCost(
+		filteredModels.filter((m) => m.supportedModes.includes(genMode)),
 	);
+	const freeModels = availableModels.filter((m) => m.costPerSecondUsd === 0);
+	const paidModels = availableModels.filter((m) => m.costPerSecondUsd !== 0);
+	const estimatedTotal =
+		model?.costPerSecondUsd ? model.costPerSecondUsd * duration : null;
 
 	const handleGenerate = useCallback(() => {
 		generate(prompt);
@@ -175,19 +184,50 @@ export function VideoGenerationPanel({ className }: { className?: string }) {
 							<SelectValue placeholder="Selecionar modelo" />
 						</SelectTrigger>
 						<SelectContent>
-							{availableModels.map((m) => (
-								<SelectItem key={m.id} value={m.id}>
-									<span className="text-[10px]">
-										{m.name}
-										<span className="text-muted-foreground ml-1">({m.provider})</span>
-									</span>
-								</SelectItem>
-							))}
+							{[
+								{ label: "Grátis", models: freeModels },
+								{ label: "Pagos · do mais barato ao mais caro", models: paidModels },
+							]
+								.filter((group) => group.models.length > 0)
+								.map((group) => (
+									<SelectGroup key={group.label}>
+										<SelectLabel className="text-[9px]">{group.label}</SelectLabel>
+										{group.models.map((m) => (
+											<SelectItem key={m.id} value={m.id}>
+												<span className="flex w-full items-center gap-2 text-[10px]">
+													{m.name}
+													<span className="text-muted-foreground">
+														({getProviderLabel(m.provider)})
+													</span>
+													<span
+														className={cn(
+															"ml-auto font-mono",
+															m.costPerSecondUsd === 0 ? "text-green-500" : "text-muted-foreground",
+														)}
+													>
+														{formatVideoCostPerSecond(m)}
+													</span>
+												</span>
+											</SelectItem>
+										))}
+									</SelectGroup>
+								))}
 						</SelectContent>
 					</Select>
 					{model && (
-						<p className="text-[8px] text-muted-foreground">{model.description}</p>
+						<p className="text-[8px] text-muted-foreground">
+							{model.description}
+							{" · "}
+							{model.costPerSecondUsd === 0
+								? "grátis, roda no seu PC (lento sem GPU)"
+								: estimatedTotal !== null
+									? `${formatVideoCostPerSecond(model)} · ≈ US$ ${estimatedTotal.toFixed(2).replace(".", ",")} por ${duration} s`
+									: `cobrado em ${formatVideoCostPerSecond(model)}`}
+						</p>
 					)}
+					<p className="text-[8px] text-muted-foreground/70">
+						Preços estimados; o valor real é o cobrado pelo provedor.
+					</p>
 				</div>
 
 				{/* Aspect Ratio */}
@@ -305,7 +345,7 @@ export function VideoGenerationPanel({ className }: { className?: string }) {
 					>
 						<HugeiconsIcon icon={VideoReplayIcon} className="size-4 mr-1.5" />
 						Gerar vídeo
-						{model && <Badge variant="secondary" className="ml-2 text-[7px]">{model.costLabel}</Badge>}
+						{model && <Badge variant="secondary" className="ml-2 text-[7px]">{formatVideoCostPerSecond(model)}</Badge>}
 					</Button>
 				)}
 

@@ -11,6 +11,8 @@ export interface VideoModel {
 	supportedModes: VideoGenMode[];
 	aspectRatios: string[];
 	costLabel: string;
+	/** Estimated US$ per generated second: 0 = free, null = billed in provider credits */
+	costPerSecondUsd: number | null;
 }
 
 export const VIDEO_MODELS: VideoModel[] = [
@@ -23,6 +25,7 @@ export const VIDEO_MODELS: VideoModel[] = [
 		supportedModes: ["text-to-video", "image-to-video"],
 		aspectRatios: ["16:9", "9:16", "1:1", "4:3", "3:4"],
 		costLabel: "~$0.05/sec",
+		costPerSecondUsd: 0.05,
 	},
 	{
 		id: "pika-1.0",
@@ -33,6 +36,7 @@ export const VIDEO_MODELS: VideoModel[] = [
 		supportedModes: ["text-to-video", "image-to-video"],
 		aspectRatios: ["16:9", "9:16", "1:1"],
 		costLabel: "~$0.03/sec",
+		costPerSecondUsd: 0.03,
 	},
 	{
 		id: "minimax-video-01",
@@ -43,6 +47,7 @@ export const VIDEO_MODELS: VideoModel[] = [
 		supportedModes: ["text-to-video", "image-to-video"],
 		aspectRatios: ["16:9", "9:16", "1:1"],
 		costLabel: "~$0.04/sec",
+		costPerSecondUsd: 0.04,
 	},
 	{
 		id: "stable-video-diffusion",
@@ -53,6 +58,7 @@ export const VIDEO_MODELS: VideoModel[] = [
 		supportedModes: ["image-to-video"],
 		aspectRatios: ["16:9", "9:16", "1:1"],
 		costLabel: "~$0.02/sec",
+		costPerSecondUsd: 0.02,
 	},
 	{
 		id: "kling-v1.6",
@@ -63,6 +69,7 @@ export const VIDEO_MODELS: VideoModel[] = [
 		supportedModes: ["text-to-video", "image-to-video", "video-to-video"],
 		aspectRatios: ["16:9", "9:16", "1:1"],
 		costLabel: "~$0.06/sec",
+		costPerSecondUsd: 0.06,
 	},
 	{
 		id: "seedance-2.0",
@@ -73,6 +80,7 @@ export const VIDEO_MODELS: VideoModel[] = [
 		supportedModes: ["text-to-video"],
 		aspectRatios: ["16:9", "9:16", "1:1", "4:3", "3:4", "21:9"],
 		costLabel: "PiAPI credits",
+		costPerSecondUsd: null,
 	},
 	{
 		id: "stable-video-xt",
@@ -83,6 +91,7 @@ export const VIDEO_MODELS: VideoModel[] = [
 		supportedModes: ["text-to-video", "image-to-video"],
 		aspectRatios: ["16:9", "9:16", "1:1"],
 		costLabel: "~$0.03/sec",
+		costPerSecondUsd: 0.03,
 	},
 	{
 		id: "luma-dream-machine",
@@ -93,6 +102,7 @@ export const VIDEO_MODELS: VideoModel[] = [
 		supportedModes: ["text-to-video", "image-to-video"],
 		aspectRatios: ["16:9", "9:16", "1:1", "4:3", "3:4"],
 		costLabel: "~$0.04/sec",
+		costPerSecondUsd: 0.04,
 	},
 	{
 		id: "cogvideox-2b",
@@ -103,6 +113,7 @@ export const VIDEO_MODELS: VideoModel[] = [
 		supportedModes: ["text-to-video"],
 		aspectRatios: ["16:9", "9:16", "1:1"],
 		costLabel: "Free (local GPU)",
+		costPerSecondUsd: 0,
 	},
 ];
 
@@ -185,4 +196,30 @@ export function getProviderConfig(provider: VideoProvider): VideoGenProviderConf
 
 export function isProviderKeyRequired(provider: VideoProvider): boolean {
 	return provider !== "local";
+}
+
+const PROVIDER_LABELS: Record<VideoProvider, string> = {
+	replicate: "Replicate",
+	seedance: "PiAPI",
+	stability: "Stability AI",
+	luma: "Luma AI",
+	kling: "Kling",
+	local: "no seu PC",
+};
+
+export function getProviderLabel(provider: VideoProvider): string {
+	return PROVIDER_LABELS[provider];
+}
+
+/** "Grátis", "≈ US$ 0,05/s" or "créditos PiAPI" */
+export function formatVideoCostPerSecond(model: VideoModel): string {
+	if (model.costPerSecondUsd === 0) return "Grátis";
+	if (model.costPerSecondUsd === null) return `créditos ${getProviderLabel(model.provider)}`;
+	return `≈ US$ ${model.costPerSecondUsd.toFixed(2).replace(".", ",")}/s`;
+}
+
+/** Free models first, then paid ones from cheapest; credit-billed last */
+export function sortModelsByCost(models: VideoModel[]): VideoModel[] {
+	const rank = (m: VideoModel) => (m.costPerSecondUsd === null ? Number.POSITIVE_INFINITY : m.costPerSecondUsd);
+	return [...models].sort((a, b) => rank(a) - rank(b));
 }
