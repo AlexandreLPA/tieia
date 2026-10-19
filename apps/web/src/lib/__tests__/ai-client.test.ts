@@ -31,16 +31,25 @@ function describeBody(body: BodyInit | null | undefined): unknown {
 	if (body === undefined || body === null) return null;
 	if (typeof body === "string") return body;
 	if (body instanceof FormData) {
-		return [...body.entries()].map(([key, value]) => [
+		// Bun's FormData typings say entries are strings; at runtime files come back as File.
+		return [...body.entries()].map(([key, value]: [string, unknown]) => [
 			key,
-			typeof value === "string" ? value : `<file ${value.name}>`,
+			value instanceof File ? `<file ${value.name}>` : String(value),
 		]);
 	}
 	return `<${Object.prototype.toString.call(body)}>`;
 }
 
-function recordingFetch(input: RequestInfo | URL, init: RequestInit = {}): Promise<Response> {
-	const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+function recordingFetch(
+	input: RequestInfo | URL,
+	init: RequestInit = {},
+): Promise<Response> {
+	const url =
+		typeof input === "string"
+			? input
+			: input instanceof URL
+				? input.href
+				: input.url;
 	calls.push({
 		url: url.replace(BASE, ""),
 		method: init.method ?? "GET",
@@ -64,26 +73,107 @@ afterEach(() => {
 
 // Every public method of aiClient today. The split into per-area files must keep all of them.
 const PUBLIC_METHODS = [
-	"getBaseUrl", "health", "transcribe", "analyzeFillers", "analyzeSilences", "analyzeStructure",
-	"getSuggestions", "executeCommand", "generateImage", "enhancePrompt", "generateInfographic",
-	"removeBackground", "removeVideoBackground", "getVideoBgJob", "videoBgFileUrl", "embedAssetFrames",
-	"embedBRollQuery", "generateSpeech", "generateSpeechBlob", "cloneVoice", "generateSubtitles", "chat",
-	"chatStream", "chatStreamMessages", "getVisionSupport", "translateText", "nllbTranslate",
-	"nllbTranslateBatch", "nllbTranslateStatus", "sarvamTranscribe", "sarvamTranslate", "sarvamTTS",
-	"sarvamDetectLanguage", "sarvamTransliterate", "sarvamStatus", "smallestTTS", "smallestTranscribe",
-	"smallestVoices", "smallestStatus", "factCheck", "llmStatus", "setCloudModel", "setLocalBackend",
-	"pullModel", "setLLMModel", "downloadModel", "getMemoryStatus", "getServicesStatus", "pullOllamaModel",
-	"prepareWhisper", "prepareTTS", "updateConfig", "prepareDiffusion", "analyzeEmotions", "detectFaces",
-	"analyzeSpeakers", "findClips", "extractKeywords", "generateQuestionCards", "suggestBRoll",
-	"denoiseAudio", "transcodeAlphaVideo", "exportRender", "generateReelTemplate", "startTemplateJob",
-	"getTemplateJob", "listTemplateJobs", "turboquantStatus", "turboquantModelTiers",
-	"turboquantKVConfigurations", "turboquantEstimate", "turboquantRecommend", "turboquantApplyTier",
-	"turboquantListModels", "turboquantModelCatalog", "turboquantDownloadModel", "turboquantLoadModel",
-	"turboquantUnloadModel", "turboquantDeleteModel", "generateVideoPrompt", "generateVideo", "getVideoJob",
-	"youtubeIngest", "youtubeJobStatus", "youtubeCancel", "youtubeAnalyze", "youtubeGenerateClips",
-	"engagementScore", "engagementScoreVideo", "engagementScoreBatch", "scoreThumbnails",
-	"generateHookVariants", "checkTikTokCompliance", "recordScore", "getScoreHistory", "getScoreAnalytics",
-	"embedText", "embedTexts", "embedFrames", "zeroShotTags", "clipServiceHealth",
+	"getBaseUrl",
+	"health",
+	"transcribe",
+	"analyzeFillers",
+	"analyzeSilences",
+	"analyzeStructure",
+	"getSuggestions",
+	"executeCommand",
+	"generateImage",
+	"enhancePrompt",
+	"generateInfographic",
+	"removeBackground",
+	"removeVideoBackground",
+	"getVideoBgJob",
+	"videoBgFileUrl",
+	"embedAssetFrames",
+	"embedBRollQuery",
+	"generateSpeech",
+	"generateSpeechBlob",
+	"cloneVoice",
+	"generateSubtitles",
+	"chat",
+	"chatStream",
+	"chatStreamMessages",
+	"getVisionSupport",
+	"translateText",
+	"nllbTranslate",
+	"nllbTranslateBatch",
+	"nllbTranslateStatus",
+	"sarvamTranscribe",
+	"sarvamTranslate",
+	"sarvamTTS",
+	"sarvamDetectLanguage",
+	"sarvamTransliterate",
+	"sarvamStatus",
+	"smallestTTS",
+	"smallestTranscribe",
+	"smallestVoices",
+	"smallestStatus",
+	"factCheck",
+	"llmStatus",
+	"setCloudModel",
+	"setLocalBackend",
+	"pullModel",
+	"setLLMModel",
+	"downloadModel",
+	"getMemoryStatus",
+	"getServicesStatus",
+	"pullOllamaModel",
+	"prepareWhisper",
+	"prepareTTS",
+	"updateConfig",
+	"prepareDiffusion",
+	"analyzeEmotions",
+	"detectFaces",
+	"analyzeSpeakers",
+	"findClips",
+	"extractKeywords",
+	"generateQuestionCards",
+	"suggestBRoll",
+	"denoiseAudio",
+	"transcodeAlphaVideo",
+	"exportRender",
+	"generateReelTemplate",
+	"startTemplateJob",
+	"getTemplateJob",
+	"listTemplateJobs",
+	"turboquantStatus",
+	"turboquantModelTiers",
+	"turboquantKVConfigurations",
+	"turboquantEstimate",
+	"turboquantRecommend",
+	"turboquantApplyTier",
+	"turboquantListModels",
+	"turboquantModelCatalog",
+	"turboquantDownloadModel",
+	"turboquantLoadModel",
+	"turboquantUnloadModel",
+	"turboquantDeleteModel",
+	"generateVideoPrompt",
+	"generateVideo",
+	"getVideoJob",
+	"youtubeIngest",
+	"youtubeJobStatus",
+	"youtubeCancel",
+	"youtubeAnalyze",
+	"youtubeGenerateClips",
+	"engagementScore",
+	"engagementScoreVideo",
+	"engagementScoreBatch",
+	"scoreThumbnails",
+	"generateHookVariants",
+	"checkTikTokCompliance",
+	"recordScore",
+	"getScoreHistory",
+	"getScoreAnalytics",
+	"embedText",
+	"embedTexts",
+	"embedFrames",
+	"zeroShotTags",
+	"clipServiceHealth",
 ] as const;
 
 type AnyMethod = (...args: unknown[]) => unknown;
@@ -97,7 +187,9 @@ function method(name: string): AnyMethod {
 describe("aiClient public surface", () => {
 	test("exposes every public method", () => {
 		for (const name of PUBLIC_METHODS) {
-			expect(typeof (aiClient as unknown as Record<string, unknown>)[name]).toBe("function");
+			expect(
+				typeof (aiClient as unknown as Record<string, unknown>)[name],
+			).toBe("function");
 		}
 	});
 
@@ -129,19 +221,34 @@ describe("aiClient request contract", () => {
 		const outcome = Promise.resolve()
 			.then(() => method(name)(...args))
 			.then(
-				(value: unknown) => (typeof value === "string" ? `resolved: ${value}` : "resolved"),
-				(error: unknown) => `rejected: ${error instanceof Error ? error.message : String(error)}`,
+				(value: unknown) =>
+					typeof value === "string" ? `resolved: ${value}` : "resolved",
+				(error: unknown) =>
+					`rejected: ${error instanceof Error ? error.message : String(error)}`,
 			);
-		const pending = new Promise((resolve) => setTimeout(() => resolve("pending"), 200));
+		const pending = new Promise((resolve) =>
+			setTimeout(() => resolve("pending"), 200),
+		);
 		return Promise.race([outcome, pending]);
 	}
 
 	for (const name of PUBLIC_METHODS) {
 		test(name, async () => {
 			respond = (url) =>
-				url.includes("/stream") || url.includes("pull") || url.includes("download")
-					? ndjsonResponse([{ ping: true }, { token: "a" }, { done: true, result: { ok: true } }])
-					: jsonResponse({ ok: true, response: "ok", status: "done", models: [] });
+				url.includes("/stream") ||
+				url.includes("pull") ||
+				url.includes("download")
+					? ndjsonResponse([
+							{ ping: true },
+							{ token: "a" },
+							{ done: true, result: { ok: true } },
+						])
+					: jsonResponse({
+							ok: true,
+							response: "ok",
+							status: "done",
+							models: [],
+						});
 			const outcome = await settle(name);
 			expect({ outcome, calls }).toMatchSnapshot();
 		});
@@ -155,37 +262,59 @@ describe("aiClient error handling", () => {
 		expect(error).toBeInstanceOf(AIClientError);
 		expect((error as AIClientError).errorType).toBe("backend_error");
 		expect((error as AIClientError).statusCode).toBe(503);
-		expect((error as AIClientError).message).toBe("AI Backend error (503): boom");
+		expect((error as AIClientError).message).toBe(
+			"AI Backend error (503): boom",
+		);
 	});
 
 	test("4xx becomes network_error", async () => {
 		respond = () => new Response("missing", { status: 404 });
-		const error = (await aiClient.health().catch((e: unknown) => e)) as AIClientError;
+		const error = (await aiClient
+			.health()
+			.catch((e: unknown) => e)) as AIClientError;
 		expect(error.errorType).toBe("network_error");
 		expect(error.statusCode).toBe(404);
 	});
 
 	test("a refused connection becomes connection_refused", async () => {
-		globalThis.fetch = (() => Promise.reject(new TypeError("fetch failed"))) as unknown as typeof fetch;
-		const error = (await aiClient.health().catch((e: unknown) => e)) as AIClientError;
+		globalThis.fetch = (() =>
+			Promise.reject(new TypeError("fetch failed"))) as unknown as typeof fetch;
+		const error = (await aiClient
+			.health()
+			.catch((e: unknown) => e)) as AIClientError;
 		expect(error.errorType).toBe("connection_refused");
 	});
 
 	test("an aborted request becomes timeout", async () => {
 		globalThis.fetch = (() =>
-			Promise.reject(new DOMException("aborted", "AbortError"))) as unknown as typeof fetch;
-		const error = (await aiClient.health().catch((e: unknown) => e)) as AIClientError;
+			Promise.reject(
+				new DOMException("aborted", "AbortError"),
+			)) as unknown as typeof fetch;
+		const error = (await aiClient
+			.health()
+			.catch((e: unknown) => e)) as AIClientError;
 		expect(error.errorType).toBe("timeout");
 	});
 
 	test("keepalive streams skip pings and return the result", async () => {
-		respond = () => ndjsonResponse([{ ping: true }, { ping: true }, { result: { claims: [], summary: "ok" } }]);
-		await expect(aiClient.factCheck("texto")).resolves.toEqual({ claims: [], summary: "ok" });
+		respond = () =>
+			ndjsonResponse([
+				{ ping: true },
+				{ ping: true },
+				{ result: { claims: [], summary: "ok" } },
+			]);
+		await expect(aiClient.factCheck("texto")).resolves.toEqual({
+			claims: [],
+			summary: "ok",
+		});
 	});
 
 	test("keepalive streams turn an error line into backend_error", async () => {
-		respond = () => ndjsonResponse([{ ping: true }, { error: "modelo sobrecarregado" }]);
-		const error = (await aiClient.factCheck("texto").catch((e: unknown) => e)) as AIClientError;
+		respond = () =>
+			ndjsonResponse([{ ping: true }, { error: "modelo sobrecarregado" }]);
+		const error = (await aiClient
+			.factCheck("texto")
+			.catch((e: unknown) => e)) as AIClientError;
 		expect(error).toBeInstanceOf(AIClientError);
 		expect(error.errorType).toBe("backend_error");
 		expect(error.message).toBe("modelo sobrecarregado");
@@ -194,7 +323,9 @@ describe("aiClient error handling", () => {
 
 describe("aiClient API key passthrough", () => {
 	test("sends the Sarvam key saved in localStorage as a header", async () => {
-		const store = new Map([["opencut-api-keys", JSON.stringify({ sarvam: " sk-test " })]]);
+		const store = new Map([
+			["opencut-api-keys", JSON.stringify({ sarvam: " sk-test " })],
+		]);
 		Object.assign(globalThis, {
 			window: globalThis,
 			localStorage: { getItem: (key: string) => store.get(key) ?? null },
