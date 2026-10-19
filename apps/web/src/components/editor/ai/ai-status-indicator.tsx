@@ -15,6 +15,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { SparklesIcon, ArrowRight01Icon } from "@hugeicons/core-free-icons";
 import type { AIActiveLLM, AIErrorType } from "@/types/ai";
 import { useServiceHealth } from "@/hooks/use-service-health";
+import { shortModelName } from "@/lib/ai-model-name";
 
 export interface AIStatusInfo {
 	connected: boolean;
@@ -50,6 +51,8 @@ export function AIStatusIndicator({
 	const [isOpen, setIsOpen] = useState(false);
 	const [uptime, setUptime] = useState(0);
 	const { services } = useServiceHealth(isOpen);
+	// The cloud model is failing and answers come from the local fallback
+	const cloudIssue = status.connected ? status.llm?.cloudIssue : undefined;
 
 	// Track uptime when connected
 	useEffect(() => {
@@ -97,16 +100,29 @@ export function AIStatusIndicator({
 						isOpen && "bg-accent",
 						className,
 					)}
-					aria-label={`Backend de IA ${status.connected ? "conectado" : "desconectado"}`}
+					aria-label={
+						cloudIssue
+							? "Backend de IA conectado, usando o modelo local de reserva"
+							: `Backend de IA ${status.connected ? "conectado" : "desconectado"}`
+					}
+					title={
+						cloudIssue
+							? `${shortModelName(cloudIssue.model)} indisponível: usando o modelo local de reserva`
+							: undefined
+					}
 				>
 					<span className="relative flex size-2">
-						{status.connected && (
+						{status.connected && !cloudIssue && (
 							<span className="absolute inline-flex size-full rounded-full opacity-75 animate-ping bg-green-400" />
 						)}
 						<span
 							className={cn(
 								"relative inline-flex size-2 rounded-full",
-								status.connected ? "bg-green-500" : "bg-red-500",
+								!status.connected
+									? "bg-red-500"
+									: cloudIssue
+										? "bg-yellow-500"
+										: "bg-green-500",
 							)}
 						/>
 					</span>
@@ -246,7 +262,15 @@ export function AIStatusIndicator({
 													? (svc.models[0] as { name: string }).name
 													: null
 											: null;
-										const isOllamaReady = key === "ollama" && (cloudLlm !== null || (isRunning && ollamaModelName !== null));
+										const llmIssue = key === "ollama" ? cloudIssue : undefined;
+										const fallbackModel =
+											status.llm?.served && !status.llm.served.cloud
+												? status.llm.served.model
+												: "modelo local";
+										const isOllamaReady =
+											key === "ollama" &&
+											!llmIssue &&
+											(cloudLlm !== null || (isRunning && ollamaModelName !== null));
 										const isModelService = key !== "ollama";
 										const isReady = isModelService
 											? isRunning && modelLoaded
@@ -255,9 +279,11 @@ export function AIStatusIndicator({
 										const statusText = !isRunning
 											? "Offline"
 											: key === "ollama"
-												? cloudLlm
-													? `Nuvem · ${cloudLlm.model}`
-													: ollamaModelName ? `Online (${ollamaModelName})` : "Nenhum modelo"
+												? llmIssue
+													? `Reserva local · ${fallbackModel}`
+													: cloudLlm
+														? `Nuvem · ${shortModelName(cloudLlm.model)}`
+														: ollamaModelName ? `Online (${ollamaModelName})` : "Nenhum modelo"
 												: !modelInstalled
 													? "Não instalado"
 													: modelLoaded
@@ -277,9 +303,10 @@ export function AIStatusIndicator({
 												: "text-yellow-500";
 
 										return (
+											<div key={key} className="flex flex-col">
 											<button
 												type="button"
-												key={key}
+												title={cloudLlm && !llmIssue ? cloudLlm.model : undefined}
 												className="flex items-center gap-2 rounded bg-muted/50 px-2 py-1.5 hover:bg-muted/80 transition-colors cursor-pointer text-left w-full"
 												onClick={() => {
 													setIsOpen(false);
@@ -299,6 +326,14 @@ export function AIStatusIndicator({
 													{statusText}
 												</span>
 											</button>
+											{llmIssue && (
+												<p className="px-2 pt-1 text-[10px] leading-snug text-yellow-500/90">
+													{shortModelName(llmIssue.model)} indisponível:{" "}
+													{llmIssue.message}. Escolha outro modelo em
+													Gerenciar serviços de IA.
+												</p>
+											)}
+											</div>
 										);
 									})}
 								</div>

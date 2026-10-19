@@ -161,6 +161,10 @@ export interface AIActiveLLM {
 	backend: string;
 	model: string;
 	cloud: boolean;
+	/** What really answered last (epoch seconds in `at`) */
+	served?: { backend: string; model: string; cloud: boolean; at: number };
+	/** Set while the cloud model fails and requests fall back to a local model */
+	cloudIssue?: { model: string; message: string; at: number };
 }
 
 export interface AIBackendStatus {

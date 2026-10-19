@@ -10,6 +10,7 @@ import {
 } from "react";
 import ReactMarkdown from "react-markdown";
 import { cn } from "@/utils/ui";
+import { shortModelName } from "@/lib/ai-model-name";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
@@ -662,11 +663,20 @@ export function AIStudioView() {
 
 	// ── Model name display ──
 	const [activeModel, setActiveModel] = useState("");
+	const [modelIssue, setModelIssue] = useState<string | null>(null);
 
 	useEffect(() => {
 		aiClient.llmStatus().then((data) => {
-			if (data.available) {
-				setActiveModel(data.default_model || "");
+			if (!data.available) return;
+			const issue = data.llm?.cloudIssue;
+			if (issue) {
+				// The configured cloud model is failing; say what really answers
+				const fallback = data.llm?.served && !data.llm.served.cloud ? data.llm.served.model : "modelo local";
+				setActiveModel(`${fallback} (reserva)`);
+				setModelIssue(`${shortModelName(issue.model)} indisponível: ${issue.message}`);
+			} else {
+				setActiveModel(data.default_model ? shortModelName(data.default_model) : "");
+				setModelIssue(null);
 			}
 		}).catch(() => {});
 	}, []);
@@ -1009,8 +1019,11 @@ export function AIStudioView() {
 					{activeModel && (
 						<Badge
 							variant="secondary"
-							title={activeModel}
-							className="block max-w-44 truncate text-[10px] px-1.5 py-0 font-mono"
+							title={modelIssue ?? activeModel}
+							className={cn(
+								"block max-w-44 truncate text-[10px] px-1.5 py-0 font-mono",
+								modelIssue && "text-yellow-500",
+							)}
 						>
 							{activeModel}
 						</Badge>

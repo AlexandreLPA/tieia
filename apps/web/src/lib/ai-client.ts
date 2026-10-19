@@ -1189,6 +1189,7 @@ class AIClient {
 		active_backend: string;
 		openrouter_configured: boolean;
 		openrouter_model: string;
+		llm?: AIActiveLLM;
 		models: { name: string; size: number; modified_at: string; details?: Record<string, unknown> }[];
 	}> {
 		return this.request("/api/llm/status");

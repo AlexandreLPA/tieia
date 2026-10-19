@@ -14,6 +14,7 @@ Usage in routes:
 
 import json
 import logging
+import os
 import re
 import time
 from collections.abc import AsyncIterator
@@ -32,6 +33,10 @@ OR_CHAT_MAX_TOKENS = 8000
 JSON_TEMPERATURE = 0.2
 
 OPENROUTER_CATALOG_TTL = 3600  # seconds
+
+# The model picked in the app, kept on the generated volume so a restart
+# doesn't fall back to the .env default
+RUNTIME_SETTINGS_FILE = os.path.join(settings.GENERATED_DIR, "llm-runtime.json")
 
 _MODALITY_LABELS = {"text": "texto", "image": "imagem", "video": "vídeo", "audio": "áudio", "file": "arquivo"}
 _IMAGE_ERROR_RE = re.compile(r"image|modalit|vision|multimodal", re.IGNORECASE)
@@ -61,6 +66,11 @@ class LLMBackend:
         # container restart. None means "use the .env-configured default".
         self._backend_mode_override: str | None = None
         self._openrouter_model_override: str | None = None
+        # What really answered last, and why the cloud model last failed, so the
+        # AI monitor can show a fallback instead of the configured model
+        self._last_served: dict[str, Any] | None = None
+        self._cloud_issue: dict[str, Any] | None = None
+        self._load_runtime_settings()
         # OpenRouter model id -> input modalities, fetched lazily by vision_support()
         self._or_catalog: dict[str, list[str]] | None = None
         self._or_catalog_at = 0.0
@@ -77,10 +87,52 @@ class LLMBackend:
         return self._openrouter_model_override or settings.OPENROUTER_MODEL
 
     def set_backend(self, mode: str, openrouter_model: str | None = None) -> None:
-        """Switch the active backend at runtime (no restart needed)."""
+        """Switch the active backend at runtime (no restart needed); survives restarts."""
         self._backend_mode_override = mode
         if openrouter_model:
             self._openrouter_model_override = openrouter_model
+        self._cloud_issue = None
+        self._save_runtime_settings()
+
+    def _load_runtime_settings(self) -> None:
+        try:
+            with open(RUNTIME_SETTINGS_FILE, encoding="utf-8") as file:
+                data = json.load(file)
+        except (OSError, ValueError):
+            return
+        if isinstance(data, dict):
+            self._backend_mode_override = data.get("backend_mode") or None
+            self._openrouter_model_override = data.get("openrouter_model") or None
+
+    def _save_runtime_settings(self) -> None:
+        try:
+            with open(RUNTIME_SETTINGS_FILE, "w", encoding="utf-8") as file:
+                json.dump(
+                    {
+                        "backend_mode": self._backend_mode_override,
+                        "openrouter_model": self._openrouter_model_override,
+                    },
+                    file,
+                )
+        except OSError:
+            logger.warning("Could not save the LLM choice", exc_info=True)
+
+    def _served(self, backend: str, model: str | None) -> None:
+        self._last_served = {
+            "backend": backend,
+            "model": model or "",
+            "cloud": backend == "openrouter",
+            "at": time.time(),
+        }
+        if backend == "openrouter":
+            self._cloud_issue = None
+
+    def _cloud_failed(self, exc: BaseException) -> None:
+        self._cloud_issue = {
+            "model": self.openrouter_model,
+            "message": _cloud_error_summary(exc),
+            "at": time.time(),
+        }
 
     @property
     def ollama_url(self) -> str:
@@ -133,12 +185,22 @@ class LLMBackend:
         self._tq_available = None
 
     def describe_active(self) -> dict[str, Any]:
-        """Backend/model that serves the next request, from cached state only (no I/O)."""
+        """Backend/model that serves the next request, from cached state only (no I/O).
+
+        `served` is what really answered last; `cloudIssue` is set while the
+        cloud model is failing and requests fall back to a local model.
+        """
         if self._use_openrouter():
-            return {"backend": "openrouter", "model": self.openrouter_model, "cloud": True}
-        if self.backend_mode != "ollama" and self._tq_available:
-            return {"backend": "turboquant", "model": self._tq_model or "", "cloud": False}
-        return {"backend": "ollama", "model": self.default_model, "cloud": False}
+            info: dict[str, Any] = {"backend": "openrouter", "model": self.openrouter_model, "cloud": True}
+        elif self.backend_mode != "ollama" and self._tq_available:
+            info = {"backend": "turboquant", "model": self._tq_model or "", "cloud": False}
+        else:
+            info = {"backend": "ollama", "model": self.default_model, "cloud": False}
+        if self._last_served:
+            info["served"] = dict(self._last_served)
+        if self._cloud_issue and self._use_openrouter():
+            info["cloudIssue"] = dict(self._cloud_issue)
+        return info
 
     # ── Ollama methods ────────────────────────────────────────────────
 
@@ -354,7 +416,13 @@ class LLMBackend:
                 headers=self._or_headers(),
                 json=payload,
             )
-            resp.raise_for_status()
+            if resp.status_code >= 400:
+                try:
+                    data = resp.json()
+                except ValueError:
+                    data = {}
+                message = self._provider_error(data if isinstance(data, dict) else {}, resp)
+                raise RuntimeError(f"O provedor recusou a requisição (HTTP {resp.status_code}): {message}")
             choices = resp.json().get("choices", [])
             return choices[0].get("message", {}).get("content") or "" if choices else ""
 
@@ -370,7 +438,14 @@ class LLMBackend:
                     "stream": True,
                 },
             ) as resp:
-                resp.raise_for_status()
+                if resp.status_code >= 400:
+                    await resp.aread()
+                    try:
+                        data = resp.json()
+                    except ValueError:
+                        data = {}
+                    message = self._provider_error(data if isinstance(data, dict) else {}, resp)
+                    raise RuntimeError(f"O provedor recusou a requisição (HTTP {resp.status_code}): {message}")
                 async for line in resp.aiter_lines():
                     if not line or not line.startswith("data: "):
                         continue
@@ -397,19 +472,26 @@ class LLMBackend:
         """Generate a completion — routes to OpenRouter, TurboQuant or Ollama."""
         if self._use_openrouter():
             try:
-                return await self._or_chat(self._messages(prompt, system))
-            except Exception:
+                text = await self._or_chat(self._messages(prompt, system))
+                self._served("openrouter", self.openrouter_model)
+                return text
+            except Exception as exc:
+                self._cloud_failed(exc)
                 logger.warning("OpenRouter generate failed, falling back to local backend", exc_info=True)
 
         if await self._should_use_turboquant():
             try:
                 logger.debug("Routing generate to TurboQuant")
-                return await self._tq_generate(prompt, model, system)
+                text = await self._tq_generate(prompt, model, system)
+                self._served("turboquant", self._tq_model)
+                return text
             except Exception:
                 logger.warning("TurboQuant generate failed, falling back to Ollama")
                 self._tq_available = False
 
-        return await self._ollama_generate(prompt, model, system, format)
+        text = await self._ollama_generate(prompt, model, system, format)
+        self._served("ollama", model or self.default_model)
+        return text
 
     async def generate_stream(
         self,
@@ -422,8 +504,10 @@ class LLMBackend:
             try:
                 async for token in self._or_generate_stream(prompt, system):
                     yield token
+                self._served("openrouter", self.openrouter_model)
                 return
-            except Exception:
+            except Exception as exc:
+                self._cloud_failed(exc)
                 logger.warning("OpenRouter stream failed, falling back to local backend", exc_info=True)
 
         if await self._should_use_turboquant():
@@ -431,6 +515,7 @@ class LLMBackend:
                 logger.debug("Routing generate_stream to TurboQuant")
                 async for token in self._tq_generate_stream(prompt, model, system):
                     yield token
+                self._served("turboquant", self._tq_model)
                 return
             except Exception:
                 logger.warning("TurboQuant stream failed, falling back to Ollama")
@@ -438,6 +523,7 @@ class LLMBackend:
 
         async for token in self._ollama_generate_stream(prompt, model, system):
             yield token
+        self._served("ollama", model or self.default_model)
 
     async def generate_json(
         self,
@@ -459,11 +545,14 @@ class LLMBackend:
                     raw = await self._or_chat(
                         self._messages(prompt, system), temperature=JSON_TEMPERATURE
                     )
-                    return _parse_json_response(raw)
-                except Exception:
+                    parsed = _parse_json_response(raw)
+                    self._served("openrouter", self.openrouter_model)
+                    return parsed
+                except Exception as exc:
                     if attempt == 0:
                         logger.warning("OpenRouter generate_json failed, retrying once")
                         continue
+                    self._cloud_failed(exc)
                     logger.warning(
                         "OpenRouter generate_json failed, falling back to local backend",
                         exc_info=True,
@@ -473,7 +562,9 @@ class LLMBackend:
             try:
                 logger.debug("Routing generate_json to TurboQuant")
                 raw = await self._tq_generate(prompt, model, system)
-                return _parse_json_response(raw)
+                parsed = _parse_json_response(raw)
+                self._served("turboquant", self._tq_model)
+                return parsed
             except Exception:
                 logger.warning("TurboQuant generate_json failed, falling back to Ollama")
                 self._tq_available = False
@@ -483,7 +574,9 @@ class LLMBackend:
         for attempt in range(_retries + 1):
             try:
                 raw = await self._ollama_generate(prompt, model, system, format="json")
-                return _parse_json_response(raw)
+                parsed = _parse_json_response(raw)
+                self._served("ollama", model or self.default_model)
+                return parsed
             except ValueError as e:
                 last_error = e
                 if attempt < _retries:
@@ -501,12 +594,16 @@ class LLMBackend:
         if await self._should_use_turboquant():
             try:
                 logger.debug("Routing chat to TurboQuant")
-                return await self._tq_chat(messages, model, temperature)
+                text = await self._tq_chat(messages, model, temperature)
+                self._served("turboquant", self._tq_model)
+                return text
             except Exception:
                 logger.warning("TurboQuant chat failed, falling back to Ollama")
                 self._tq_available = False
 
-        return await self._ollama_chat(messages, model, temperature)
+        text = await self._ollama_chat(messages, model, temperature)
+        self._served("ollama", model or self.default_model)
+        return text
 
     # ── Vision (multimodal) ───────────────────────────────────────────
     # Kept apart from generate()/chat(): those fall back to Ollama on errors,
@@ -639,6 +736,8 @@ class LLMBackend:
             async with httpx.AsyncClient(timeout=httpx.Timeout(read_timeout, connect=10.0)) as client:
                 resp = await client.post(url, headers=headers, json=payload)
         except httpx.HTTPError as exc:
+            if backend == "openrouter":
+                self._cloud_failed(exc)
             raise RuntimeError(
                 f"Falha de rede ao chamar o modelo '{model}' ({type(exc).__name__}): {exc}"
             ) from exc
@@ -659,7 +758,10 @@ class LLMBackend:
                 code = error["code"]
             if 400 <= code < 500 and _IMAGE_ERROR_RE.search(message):
                 raise VisionUnsupportedError(f"O modelo '{model}' recusou a imagem: {message}")
-            raise RuntimeError(f"O provedor recusou a requisição (HTTP {code}): {message}")
+            error_text = f"O provedor recusou a requisição (HTTP {code}): {message}"
+            if backend == "openrouter":
+                self._cloud_failed(RuntimeError(error_text))
+            raise RuntimeError(error_text)
 
         choices = data.get("choices") or []
         content = ((choices[0].get("message") or {}).get("content")) if choices else None
@@ -674,6 +776,7 @@ class LLMBackend:
                     " (não é limite diário). Tente de novo."
                 )
             raise RuntimeError(f"O modelo '{model}' devolveu uma resposta vazia.{hint}")
+        self._served(backend, model)
         return text
 
     @staticmethod
@@ -788,8 +891,11 @@ class LLMBackend:
                 async for token in self._openai_stream(url, headers, payload, model):
                     yielded = True
                     yield token
+                self._served(backend, model)
                 return
-            except Exception:
+            except Exception as exc:
+                if backend == "openrouter" and not isinstance(exc, VisionUnsupportedError):
+                    self._cloud_failed(exc)
                 if has_images or yielded or index == len(candidates) - 1:
                     raise
                 logger.warning("Studio chat via %s failed, falling back", backend, exc_info=True)
@@ -863,6 +969,32 @@ class LLMBackend:
                 "model": self.openrouter_model,
             },
         }
+
+
+def _cloud_error_summary(exc: BaseException) -> str:
+    """Short reason (pt-BR) why the cloud model failed, for the AI monitor."""
+    text = str(exc)
+    match = re.search(r"HTTP (\d{3})", text)
+    status = int(match.group(1)) if match else None
+    if isinstance(exc, httpx.HTTPStatusError):
+        status = exc.response.status_code
+        text = f"{text} {exc.response.text[:300]}"
+    lowered = text.lower()
+    if "no endpoints found" in lowered or status == 404:
+        return "o modelo saiu do ar na OpenRouter"
+    if status == 429:
+        return "limite de uso atingido no momento"
+    if status == 402:
+        return "sem créditos na OpenRouter"
+    if status in (401, 403):
+        return "a OpenRouter recusou a chave ou este modelo"
+    if isinstance(exc, httpx.TimeoutException):
+        return "a nuvem demorou demais para responder"
+    if isinstance(exc, httpx.HTTPError):
+        return "falha de rede ao falar com a OpenRouter"
+    if isinstance(exc, ValueError):
+        return "o modelo devolveu uma resposta vazia ou inválida"
+    return text[:140] or type(exc).__name__
 
 
 def _parse_json_response(raw: str) -> dict[str, Any]:

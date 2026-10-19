@@ -120,6 +120,8 @@ async def llm_status() -> dict:
         "models": ollama["models"],
         "openrouter_configured": orouter["configured"],
         "openrouter_model": orouter["model"],
+        # What really answers, incl. a local fallback while the cloud model fails
+        "llm": llm_backend.describe_active(),
     }
 
 
