@@ -91,10 +91,15 @@ All Python services use `uv` (Astral). Install with `uv pip install --system --n
 
 ## Frontend Dev
 
-```bash
-bun install
-bun dev:web   # starts Next.js at localhost:3000
+Hybrid mode (default): Docker runs the AI services, the database and Redis, and the editor runs on Windows with hot reload. The "OpenCut AI" desktop shortcut runs the same script.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/start-opencut.ps1
 ```
+
+- The editor must stay on port **3100**: projects live in the browser's storage per address.
+- `docker compose up -d` no longer starts the `web` container (it has the `docker-web` profile). Use `docker compose --profile docker-web up -d --build web` for the all-Docker setup.
+- Web changes need no rebuild. Backend changes still need `docker compose up -d --build ai-backend`.
 
 ## GPU Support
 

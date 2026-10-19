@@ -298,6 +298,10 @@ services:
   # --- Web App ---
 
   web:
+    # Off by default: the editor runs on Windows via scripts/start-opencut.ps1
+    # (instant updates, no image rebuilds). To run it in Docker instead:
+    #   docker compose --profile docker-web up -d
+    profiles: ["docker-web"]
     build:
       context: .
       dockerfile: ./apps/web/Dockerfile
