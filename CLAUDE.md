@@ -99,6 +99,7 @@ powershell -ExecutionPolicy Bypass -File scripts/start-opencut.ps1 -Dev   # deve
 powershell -ExecutionPolicy Bypass -File scripts/start-opencut.ps1 -Stop  # editor + Docker services off ("Fechar OpenCut" shortcut)
 ```
 
+- **Dependencies:** when `bun.lock` or a `package.json` changes, the launcher runs `bun install --frozen-lockfile` first.
 - **Editor process:** runs hidden and listens on 127.0.0.1 only. Its output goes to `%LOCALAPPDATA%\OpenCut-AI\editor.log`. `-NoBrowser` starts it without opening a window.
 
 - **Default mode:** serves a native production build (`next start`).

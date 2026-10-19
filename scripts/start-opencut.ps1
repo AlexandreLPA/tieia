@@ -67,6 +67,17 @@ function Get-CodeStamp {
     return ([BitConverter]::ToString($sha.ComputeHash($bytes))) -replace '-', ''
 }
 
+# Fingerprint of the dependency lists; when it changes, `bun install` runs first
+function Get-DepsStamp {
+    $files = @('bun.lock', 'package.json', 'apps\web\package.json')
+    $files += Get-ChildItem (Join-Path $repo 'packages') -Directory | ForEach-Object { "packages\$($_.Name)\package.json" }
+    $parts = foreach ($file in $files) {
+        $full = Join-Path $repo $file
+        if (Test-Path $full) { $file + ':' + (Get-FileHash $full -Algorithm SHA256).Hash }
+    }
+    return ($parts -join '|')
+}
+
 function Test-OurServer($state) {
     if (-not $state -or -not $state.pid) { return $false }
     return [bool](Get-Process -Id $state.pid -ErrorAction SilentlyContinue)
@@ -124,7 +135,21 @@ if ($running -and (Test-OurServer $state)) {
 
 if (-not $running) {
     $buildStamp = $null
-    if ($state) { $buildStamp = $state.buildStamp }
+    $depsStamp = $null
+    if ($state) { $buildStamp = $state.buildStamp; $depsStamp = $state.depsStamp }
+
+    # New or changed dependencies: install them before building or serving
+    $currentDeps = Get-DepsStamp
+    if ($depsStamp -ne $currentDeps -or -not (Test-Path (Join-Path $repo 'node_modules'))) {
+        $installCommand = "`$host.UI.RawUI.WindowTitle = 'OpenCut - instalando'; " +
+            "Write-Host 'Instalando as dependências novas do OpenCut...'; " +
+            "Set-Location '$repo'; " +
+            "& '$bun' install --frozen-lockfile; " +
+            "if (`$LASTEXITCODE -ne 0) { Write-Host ''; Write-Host 'A instalação falhou.'; Start-Sleep -Seconds 8 }; " +
+            "exit `$LASTEXITCODE"
+        $install = Start-Process powershell -ArgumentList '-NoProfile', '-Command', $installCommand -PassThru -Wait
+        if ($install.ExitCode -eq 0) { $depsStamp = $currentDeps }
+    }
     $hasBuild = Test-Path (Join-Path $webDir '.next\BUILD_ID')
 
     if ($mode -eq 'prod' -and ($buildStamp -ne $stamp -or -not $hasBuild)) {
@@ -157,7 +182,7 @@ if (-not $running) {
     # Hidden: nothing to close by accident. The "Fechar OpenCut" shortcut (-Stop) ends it
     $command = "Set-Location '$webDir'; $serve *> '$logFile'"
     $server = Start-Process powershell -ArgumentList '-NoProfile', '-Command', $command -WindowStyle Hidden -PassThru
-    Write-State ([pscustomobject]@{ pid = $server.Id; mode = $mode; stamp = $stamp; buildStamp = $buildStamp })
+    Write-State ([pscustomobject]@{ pid = $server.Id; mode = $mode; stamp = $stamp; buildStamp = $buildStamp; depsStamp = $depsStamp })
 
     Write-Host 'Ligando o editor...'
     for ($i = 0; $i -lt 180 -and -not (Test-Url $url); $i++) { Start-Sleep -Seconds 1 }
