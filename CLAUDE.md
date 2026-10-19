@@ -96,10 +96,13 @@ Hybrid mode (default): Docker runs the AI services, the database and Redis, and 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/start-opencut.ps1        # daily use: production build
 powershell -ExecutionPolicy Bypass -File scripts/start-opencut.ps1 -Dev   # development: next dev, hot reload
+powershell -ExecutionPolicy Bypass -File scripts/start-opencut.ps1 -Stop  # editor + Docker services off ("Fechar OpenCut" shortcut)
 ```
 
+- **Editor process:** runs hidden and listens on 127.0.0.1 only. Its output goes to `%LOCALAPPDATA%\OpenCut-AI\editor.log`. `-NoBrowser` starts it without opening a window.
+
 - **Default mode:** serves a native production build (`next start`).
-  - It rebuilds (about 30 s) only when the editor's code fingerprint changed: the commit plus uncommitted edits under `apps/web` and `packages`.
+  - It rebuilds (about 30 s) only when the editor's code fingerprint changed: the committed and uncommitted contents of `apps/web`, `packages`, `package.json` and `bun.lock`. Docs or AI-service changes don't count.
   - If the build fails, it falls back to dev mode.
   - State lives in `%LOCALAPPDATA%\OpenCut-AI\launcher.json`.
 - **After changing web code:** clicking the shortcut again restarts the editor on a fresh build.

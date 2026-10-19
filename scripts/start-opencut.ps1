@@ -8,9 +8,11 @@
 #   changes show up instantly; that's for development sessions.
 #
 # The editor stays on port 3100: projects are saved in the browser per
-# address, so another port would show an empty project list.
+# address, so another port would show an empty project list. It runs hidden
+# in the background (log in %LOCALAPPDATA%\OpenCut-AI\editor.log) and only
+# answers this PC. -Stop shuts the editor and the Docker services down.
 
-param([switch]$Dev)
+param([switch]$Dev, [switch]$Stop, [switch]$NoBrowser)
 
 $ErrorActionPreference = 'Continue'
 $repo = Split-Path -Parent $PSScriptRoot
@@ -19,6 +21,7 @@ $port = 3100
 $url = "http://localhost:$port"
 $stateDir = Join-Path $env:LOCALAPPDATA 'OpenCut-AI'
 $stateFile = Join-Path $stateDir 'launcher.json'
+$logFile = Join-Path $stateDir 'editor.log'
 $bun = Join-Path $env:USERPROFILE '.bun\bin\bun.exe'
 if (-not (Test-Path $bun)) { $bun = 'bun' }
 
@@ -46,12 +49,14 @@ function Write-State($state) {
     $state | ConvertTo-Json | Set-Content -Path $stateFile -Encoding utf8
 }
 
-# Fingerprint of the editor's code: the commit plus uncommitted edits.
+# Fingerprint of what the editor build is made of: the committed contents of
+# the editor, its packages and dependencies (not the whole commit, so docs or
+# AI-service changes don't trigger a rebuild), plus uncommitted edits there.
 # Files the build itself rewrites are left out, or every build would look stale.
 function Get-CodeStamp {
-    $paths = @('apps/web', 'packages', ':(exclude)apps/web/next-env.d.ts', ':(exclude)*.tsbuildinfo')
+    $paths = @('apps/web', 'packages', 'package.json', 'bun.lock', ':(exclude)apps/web/next-env.d.ts', ':(exclude)*.tsbuildinfo')
     $parts = @()
-    $parts += git -C $repo rev-parse HEAD
+    $parts += git -C $repo rev-parse HEAD:apps/web HEAD:packages HEAD:package.json HEAD:bun.lock
     $parts += git -C $repo diff HEAD -- $paths
     foreach ($file in (git -C $repo ls-files --others --exclude-standard -- $paths)) {
         $full = Join-Path $repo $file
@@ -70,6 +75,21 @@ function Test-OurServer($state) {
 function Stop-Editor($state) {
     taskkill /PID $state.pid /T /F *> $null
     for ($i = 0; $i -lt 20 -and (Test-Url $url); $i++) { Start-Sleep -Seconds 1 }
+}
+
+if ($Stop) {
+    $state = Read-State
+    if (Test-OurServer $state) {
+        Write-Host 'Desligando o editor...'
+        Stop-Editor $state
+    }
+    if (Test-Docker) {
+        Write-Host 'Desligando os serviços de IA...'
+        Push-Location $repo
+        docker compose stop
+        Pop-Location
+    }
+    exit 0
 }
 
 # 1. Docker Desktop
@@ -125,16 +145,18 @@ if (-not $running) {
         }
     }
 
+    # 127.0.0.1: the editor answers this PC only, not the network
     if ($mode -eq 'prod') {
-        $serve = "`$env:OPENCUT_LOCAL_BUILD = '1'; & '$bun' x next start --port $port"
+        $serve = "`$env:OPENCUT_LOCAL_BUILD = '1'; & '$bun' x next start --hostname 127.0.0.1 --port $port"
     } else {
         $serve = "`$env:NEXT_PUBLIC_SITE_URL = '$url'; " +
             "`$env:OPENCUT_HIDE_DEV_INDICATORS = '1'; " +
-            "& '$bun' x next dev --turbopack --port $port"
+            "& '$bun' x next dev --turbopack --hostname 127.0.0.1 --port $port"
     }
-    # Its own minimized window: closing that window stops the editor
-    $command = "`$host.UI.RawUI.WindowTitle = 'OpenCut - editor (não feche)'; Set-Location '$webDir'; $serve"
-    $server = Start-Process powershell -ArgumentList '-NoProfile', '-NoExit', '-Command', $command -WindowStyle Minimized -PassThru
+    New-Item -ItemType Directory -Force -Path $stateDir | Out-Null
+    # Hidden: nothing to close by accident. The "Fechar OpenCut" shortcut (-Stop) ends it
+    $command = "Set-Location '$webDir'; $serve *> '$logFile'"
+    $server = Start-Process powershell -ArgumentList '-NoProfile', '-Command', $command -WindowStyle Hidden -PassThru
     Write-State ([pscustomobject]@{ pid = $server.Id; mode = $mode; stamp = $stamp; buildStamp = $buildStamp })
 
     Write-Host 'Ligando o editor...'
@@ -142,6 +164,7 @@ if (-not $running) {
 }
 
 # 4. Editor window (Edge in app mode, like the original shortcut)
+if ($NoBrowser) { exit 0 }
 $edge = Join-Path ${env:ProgramFiles(x86)} 'Microsoft\Edge\Application\msedge.exe'
 if (Test-Path $edge) {
     Start-Process $edge "--app=$url"
