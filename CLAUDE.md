@@ -91,15 +91,21 @@ All Python services use `uv` (Astral). Install with `uv pip install --system --n
 
 ## Frontend Dev
 
-Hybrid mode (default): Docker runs the AI services, the database and Redis, and the editor runs on Windows with hot reload. The "OpenCut AI" desktop shortcut runs the same script.
+Hybrid mode (default): Docker runs the AI services, the database and Redis, and the editor runs on Windows. The "OpenCut AI" desktop shortcut runs the same script.
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts/start-opencut.ps1
+powershell -ExecutionPolicy Bypass -File scripts/start-opencut.ps1        # daily use: production build
+powershell -ExecutionPolicy Bypass -File scripts/start-opencut.ps1 -Dev   # development: next dev, hot reload
 ```
 
-- The editor must stay on port **3100**: projects live in the browser's storage per address.
-- `docker compose up -d` no longer starts the `web` container (it has the `docker-web` profile). Use `docker compose --profile docker-web up -d --build web` for the all-Docker setup.
-- Web changes need no rebuild. Backend changes still need `docker compose up -d --build ai-backend`.
+- **Default mode:** serves a native production build (`next start`).
+  - It rebuilds (about 30 s) only when the editor's code fingerprint changed: the commit plus uncommitted edits under `apps/web` and `packages`.
+  - If the build fails, it falls back to dev mode.
+  - State lives in `%LOCALAPPDATA%\OpenCut-AI\launcher.json`.
+- **After changing web code:** clicking the shortcut again restarts the editor on a fresh build.
+- **Port:** the editor must stay on **3100**, because projects live in the browser's storage per address.
+- **Docker:** `docker compose up -d` no longer starts the `web` container (it has the `docker-web` profile). For the all-Docker setup, use `docker compose --profile docker-web up -d --build web`.
+- **Backend changes** still need `docker compose up -d --build ai-backend`.
 
 ## GPU Support
 
