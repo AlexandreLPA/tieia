@@ -12,6 +12,14 @@ import { GoogleAnalytics } from "@/components/seo/google-analytics";
 
 const siteFont = Inter({ subsets: ["latin"] });
 
+// The desktop launcher (scripts/start-opencut.ps1) runs dev mode for daily
+// use: there it should look like the production app, without React Scan or
+// the Next.js issue overlay (which mostly showed browser-extension noise).
+// Errors still reach the browser console.
+const isDailyDevMode =
+	process.env.NODE_ENV === "development" &&
+	process.env.OPENCUT_HIDE_DEV_INDICATORS === "1";
+
 export const metadata = baseMetaData;
 
 const protectedRoutes = [
@@ -32,12 +40,15 @@ export default function RootLayout({
 				<BotIdClient protect={protectedRoutes} />
 				<JsonLd />
 				<GoogleAnalytics />
-				{process.env.NODE_ENV === "development" && (
+				{process.env.NODE_ENV === "development" && !isDailyDevMode && (
 					<Script
 						src="//unpkg.com/react-scan/dist/auto.global.js"
 						crossOrigin="anonymous"
 						strategy="beforeInteractive"
 					/>
+				)}
+				{isDailyDevMode && (
+					<style>{"nextjs-portal{display:none!important}"}</style>
 				)}
 			</head>
 			<body className={`${siteFont.className} font-sans antialiased`} suppressHydrationWarning>

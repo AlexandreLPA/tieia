@@ -49,6 +49,7 @@ if (-not (Test-Url $url)) {
     $webDir = Join-Path $repo 'apps\web'
     $command = "`$host.UI.RawUI.WindowTitle = 'OpenCut - editor (não feche)'; " +
         "`$env:NEXT_PUBLIC_SITE_URL = '$url'; " +
+        "`$env:OPENCUT_HIDE_DEV_INDICATORS = '1'; " +
         "Set-Location '$webDir'; " +
         "& '$bun' x next dev --turbopack --port $port"
     Start-Process powershell -ArgumentList '-NoExit', '-Command', $command -WindowStyle Minimized

@@ -15,6 +15,12 @@ const nextConfig: NextConfig = {
 		removeConsole: process.env.NODE_ENV === "production",
 	},
 	reactStrictMode: true,
+	// The desktop launcher (scripts/start-opencut.ps1) runs the editor in dev
+	// mode for daily use; there the Next.js issue badge only showed noise such
+	// as browser extensions editing the page before hydration
+	...(process.env.OPENCUT_HIDE_DEV_INDICATORS === "1" && {
+		devIndicators: false,
+	}),
 	productionBrowserSourceMaps: true,
 	output: "standalone",
 	images: {
