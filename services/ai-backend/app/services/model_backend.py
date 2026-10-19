@@ -355,8 +355,16 @@ class LLMBackend:
                 json=payload,
             )
             resp.raise_for_status()
-            choices = resp.json().get("choices", [])
-            return choices[0].get("message", {}).get("content") or "" if choices else ""
+        data = resp.json()
+        choices = data.get("choices") or []
+        # OpenRouter can answer HTTP 200 with an error object when the upstream fails
+        if data.get("error") and not choices:
+            raise RuntimeError(f"OpenRouter upstream error: {self._provider_error(data, resp)}")
+        content = (choices[0].get("message") or {}).get("content") if choices else None
+        if not content:
+            finish = choices[0].get("finish_reason") if choices else None
+            raise RuntimeError(f"OpenRouter returned an empty answer (finish_reason={finish})")
+        return content
 
     async def _or_generate_stream(self, prompt: str, system: str | None) -> AsyncIterator[str]:
         async with httpx.AsyncClient(timeout=httpx.Timeout(300, connect=10.0)) as client:
