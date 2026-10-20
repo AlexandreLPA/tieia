@@ -1,6 +1,7 @@
 """Social platform upload service.
 
-Provides upload capabilities to Instagram Reels, TikTok, and YouTube Shorts.
+Provides upload capabilities to Instagram Reels and YouTube Shorts.
+TikTok is handled by the web app (apps/web/src/app/api/tiktok, docs/tiktok.md).
 Each platform requires its own API credentials and has specific requirements.
 
 This is a framework — actual API integration requires platform-specific
@@ -8,7 +9,6 @@ developer accounts and API keys.
 
 Supported platforms:
   - YouTube Shorts (via YouTube Data API v3)
-  - TikTok (via TikTok Content Posting API)
   - Instagram Reels (via Instagram Graph API)
 """
 
@@ -50,7 +50,7 @@ class UploadResult:
 class SocialUploadService:
     """Upload generated reels to social platforms."""
 
-    SUPPORTED_PLATFORMS = ["youtube_shorts", "tiktok", "instagram_reels"]
+    SUPPORTED_PLATFORMS = ["youtube_shorts", "instagram_reels"]
 
     async def upload(
         self,
@@ -73,8 +73,6 @@ class SocialUploadService:
 
         if platform == "youtube_shorts":
             return await self._upload_youtube_shorts(video_path, title, description, access_token, tags)
-        elif platform == "tiktok":
-            return await self._upload_tiktok(video_path, title, access_token, tags)
         elif platform == "instagram_reels":
             return await self._upload_instagram_reels(video_path, title, access_token)
 
@@ -176,77 +174,6 @@ class SocialUploadService:
 
         except Exception as e:
             return UploadResult(platform="youtube_shorts", success=False, error=str(e)[:300])
-
-    async def _upload_tiktok(
-        self, video_path: str, title: str, access_token: str, tags: list[str] | None,
-    ) -> UploadResult:
-        """Upload to TikTok via the Content Posting API.
-
-        Requires TikTok developer account with Content Posting API access.
-        """
-        try:
-            async with httpx.AsyncClient(timeout=300) as client:
-                # Step 1: Initialize upload
-                file_size = os.path.getsize(video_path)
-                init_resp = await client.post(
-                    "https://open.tiktokapis.com/v2/post/publish/inbox/video/init/",
-                    headers={
-                        "Authorization": f"Bearer {access_token}",
-                        "Content-Type": "application/json",
-                    },
-                    json={
-                        "post_info": {
-                            "title": title[:150],
-                            "privacy_level": "SELF_ONLY",  # User can change after
-                            "disable_duet": False,
-                            "disable_stitch": False,
-                            "disable_comment": False,
-                        },
-                        "source_info": {
-                            "source": "FILE_UPLOAD",
-                            "video_size": file_size,
-                            "chunk_size": file_size,
-                            "total_chunk_count": 1,
-                        },
-                    },
-                )
-
-                if init_resp.status_code != 200:
-                    return UploadResult(
-                        platform="tiktok", success=False,
-                        error=f"TikTok init failed: {init_resp.text[:200]}",
-                    )
-
-                data = init_resp.json().get("data", {})
-                upload_url = data.get("upload_url", "")
-                publish_id = data.get("publish_id", "")
-
-                if not upload_url:
-                    return UploadResult(platform="tiktok", success=False, error="No upload URL")
-
-                # Step 2: Upload video
-                with open(video_path, "rb") as f:
-                    upload_resp = await client.put(
-                        upload_url,
-                        content=f.read(),
-                        headers={
-                            "Content-Type": "video/mp4",
-                            "Content-Range": f"bytes 0-{file_size - 1}/{file_size}",
-                        },
-                    )
-
-                if upload_resp.status_code in (200, 201):
-                    return UploadResult(
-                        platform="tiktok", success=True, post_id=publish_id,
-                    )
-                else:
-                    return UploadResult(
-                        platform="tiktok", success=False,
-                        error=f"Upload failed: {upload_resp.text[:200]}",
-                    )
-
-        except Exception as e:
-            return UploadResult(platform="tiktok", success=False, error=str(e)[:300])
 
     async def _upload_instagram_reels(
         self, video_path: str, caption: str, access_token: str,
