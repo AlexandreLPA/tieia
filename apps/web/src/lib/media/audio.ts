@@ -10,7 +10,12 @@ import { canTracktHaveAudio } from "@/lib/timeline";
 import { mediaSupportsAudio } from "@/lib/media/media-utils";
 import { connectAudioEffectsChain } from "@/lib/audio/audio-effects";
 import { timeStretch } from "@/lib/audio/time-stretch";
-import { resolvePlaybackRateAtTime } from "@/lib/animation";
+import {
+	type ElementFade,
+	getEffectiveFades,
+	getFadeMultiplier,
+	resolvePlaybackRateAtTime,
+} from "@/lib/animation";
 import { getNumberChannelForPath } from "@/lib/animation/number-channel";
 import { Input, ALL_FORMATS, BlobSource, AudioBufferSink } from "mediabunny";
 
@@ -126,6 +131,8 @@ export async function collectAudioElements({
 							playbackRate: element.playbackRate ?? 1,
 							preservePitch: element.preservePitch !== false,
 							animations: element.animations,
+							fadeIn: element.fadeIn,
+							fadeOut: element.fadeOut,
 							trackId: track.id,
 						};
 					}),
@@ -152,6 +159,8 @@ export async function collectAudioElements({
 							playbackRate: element.playbackRate ?? 1,
 							preservePitch: element.preservePitch !== false,
 							animations: element.animations,
+							fadeIn: element.fadeIn,
+							fadeOut: element.fadeOut,
 							trackId: track.id,
 						};
 					}),
@@ -303,6 +312,8 @@ export interface AudioClipSource {
 	volume: number;
 	playbackRate: number;
 	preservePitch: boolean;
+	fadeIn?: number;
+	fadeOut?: number;
 }
 
 async function fetchLibraryAudioSource({
@@ -364,6 +375,8 @@ async function fetchLibraryAudioClip({
 			volume: element.volume ?? 1,
 			playbackRate: element.playbackRate ?? 1,
 			preservePitch: element.preservePitch !== false,
+			fadeIn: element.fadeIn,
+			fadeOut: element.fadeOut,
 		};
 	} catch (error) {
 		console.warn("Failed to fetch library audio:", error);
@@ -411,6 +424,8 @@ function collectMediaAudioClip({
 			"playbackRate" in element ? (element.playbackRate ?? 1) : 1,
 		preservePitch:
 			"preservePitch" in element ? element.preservePitch !== false : true,
+		fadeIn: element.fadeIn,
+		fadeOut: element.fadeOut,
 	};
 }
 
@@ -624,7 +639,10 @@ function renderClipAtSpeed({
 		animations,
 		volume,
 		preservePitch,
+		fadeIn,
+		fadeOut,
 	} = element;
+	const fade = { duration, fadeIn, fadeOut };
 	const length = Math.round(duration * sampleRate);
 	if (length <= 0) return null;
 
@@ -663,6 +681,7 @@ function renderClipAtSpeed({
 			const source = stretched[channel];
 			for (let i = 0; i < length; i++) data[i] = source[i] * volume;
 		}
+		applyFade({ output, sampleRate, fade });
 		return output;
 	}
 	const sourceRatio = buffer.sampleRate / sampleRate;
@@ -692,5 +711,38 @@ function renderClipAtSpeed({
 		}
 	}
 
+	applyFade({ output, sampleRate, fade });
 	return output;
+}
+
+/**
+ * Multiplies the clip's fade in/out into its samples, with the same curve
+ * the picture and the preview playback use. Only the fade regions change.
+ */
+export function applyFade({
+	output,
+	sampleRate,
+	fade,
+}: {
+	output: AudioBuffer;
+	sampleRate: number;
+	fade: ElementFade;
+}): void {
+	const { fadeIn, fadeOut } = getEffectiveFades(fade);
+	if (fadeIn <= 0 && fadeOut <= 0) return;
+
+	const channels = Array.from({ length: output.numberOfChannels }, (_, c) =>
+		output.getChannelData(c),
+	);
+	const fadeInEnd = Math.min(output.length, Math.ceil(fadeIn * sampleRate));
+	const fadeOutStart = Math.max(
+		fadeInEnd,
+		output.length - Math.ceil(fadeOut * sampleRate),
+	);
+	const scale = (i: number) => {
+		const gain = getFadeMultiplier({ ...fade, localTime: i / sampleRate });
+		for (const data of channels) data[i] *= gain;
+	};
+	for (let i = 0; i < fadeInEnd; i++) scale(i);
+	for (let i = fadeOutStart; i < output.length; i++) scale(i);
 }

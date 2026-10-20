@@ -388,6 +388,9 @@ export function useEditorActions() {
 						// Keeps the separated audio in sync with a sped-up clip
 						playbackRate: element.playbackRate,
 						preservePitch: element.preservePitch,
+						// The sound keeps the fade it had inside the video
+						fadeIn: element.fadeIn,
+						fadeOut: element.fadeOut,
 					},
 					placement: { mode: "auto" },
 				});

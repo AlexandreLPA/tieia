@@ -10,6 +10,7 @@ import {
 	SectionTitle,
 } from "./section";
 import { SpeedSection } from "./video-properties";
+import { FadeSection } from "./sections/fade";
 import { KeyframeToggle } from "./keyframe-toggle";
 import { useKeyframedNumberProperty } from "./hooks/use-keyframed-number-property";
 import { useElementPlayhead } from "./hooks/use-element-playhead";
@@ -159,6 +160,7 @@ export function AudioProperties({
 					</div>
 				</SectionContent>
 			</Section>
+			<FadeSection element={element} trackId={trackId} />
 			<SpeedSection element={element} trackId={trackId} />
 		</div>
 	);

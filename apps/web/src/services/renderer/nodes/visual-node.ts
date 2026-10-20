@@ -29,6 +29,9 @@ export interface VisualNodeParams {
 	opacity: number;
 	blendMode?: BlendMode;
 	effects?: Effect[];
+	/** Seconds of fade in/out at the clip's edges */
+	fadeIn?: number;
+	fadeOut?: number;
 }
 
 export abstract class VisualNode<
@@ -125,6 +128,11 @@ export abstract class VisualNode<
 			baseOpacity: this.params.opacity,
 			animations: this.params.animations,
 			localTime: animationLocalTime,
+			fade: {
+				duration: this.params.duration,
+				fadeIn: this.params.fadeIn,
+				fadeOut: this.params.fadeOut,
+			},
 		});
 		const containScale = Math.min(
 			renderer.width / sourceWidth,

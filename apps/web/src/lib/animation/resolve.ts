@@ -9,6 +9,7 @@ import {
 } from "./interpolation";
 import { getColorChannelForPath } from "./color-channel";
 import { getNumberChannelForPath } from "./number-channel";
+import { type ElementFade, getFadeMultiplier } from "./fade";
 
 export function getElementLocalTime({
 	timelineTime,
@@ -79,23 +80,32 @@ export function resolveTransformAtTime({
 	};
 }
 
+/**
+ * With `fade`, the opacity the viewer sees, fade in/out included. Without it,
+ * the opacity property itself, which is what the properties panel edits.
+ */
 export function resolveOpacityAtTime({
 	baseOpacity,
 	animations,
 	localTime,
+	fade,
 }: {
 	baseOpacity: number;
 	animations: ElementAnimations | undefined;
 	localTime: number;
+	fade?: ElementFade;
 }): number {
-	return getNumberChannelValueAtTime({
+	const safeLocalTime = Math.max(0, localTime);
+	const opacity = getNumberChannelValueAtTime({
 		channel: getNumberChannelForPath({
 			animations,
 			propertyPath: "opacity",
 		}),
-		time: Math.max(0, localTime),
+		time: safeLocalTime,
 		fallbackValue: baseOpacity,
 	});
+	if (!fade) return opacity;
+	return opacity * getFadeMultiplier({ ...fade, localTime: safeLocalTime });
 }
 
 export function resolveNumberAtTime({

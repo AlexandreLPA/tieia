@@ -36,6 +36,16 @@ export {
 } from "./property-registry";
 
 export {
+	type ElementFade,
+	getEffectiveFades,
+	getFadeEnvelope,
+	getFadeMultiplier,
+	getMaxFadeDuration,
+	hasFade,
+	MAX_FADE_RATIO,
+} from "./fade";
+
+export {
 	getElementKeyframes,
 	getKeyframeAtTime,
 	hasKeyframesForPath,

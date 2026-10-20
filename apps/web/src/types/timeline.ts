@@ -137,6 +137,10 @@ interface BaseTimelineElement {
 	animations?: ElementAnimations;
 	/** Elements sharing a groupId are selected, moved and duplicated together. */
 	groupId?: string;
+	/** Seconds the clip takes to fade in from transparent/silent. Unset or 0 means none. */
+	fadeIn?: number;
+	/** Seconds the clip takes to fade out at its end. Unset or 0 means none. */
+	fadeOut?: number;
 }
 
 export interface VideoElement extends BaseTimelineElement {
