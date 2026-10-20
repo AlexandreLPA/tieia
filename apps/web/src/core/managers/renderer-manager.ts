@@ -6,6 +6,7 @@ import { SceneExporter } from "@/services/renderer/scene-exporter";
 import { buildScene } from "@/services/renderer/scene-builder";
 import { createTimelineAudioBuffer } from "@/lib/media/audio";
 import { formatTimeCode, getLastFrameTime } from "@/lib/time";
+import { getExportDimensions, isAudioOnlyExportFormat } from "@/lib/export";
 import { downloadBlob } from "@/utils/browser";
 
 export class RendererManager {
@@ -95,7 +96,9 @@ export class RendererManager {
 		onProgress?: ({ progress }: { progress: number }) => void;
 		onCancel?: () => boolean;
 	}): Promise<ExportResult> {
-		const { format, quality, fps, includeAudio, includeWatermark } = options;
+		const { format, quality, resolution, fps, includeWatermark } = options;
+		const isAudioOnly = isAudioOnlyExportFormat({ format });
+		const includeAudio = isAudioOnly || options.includeAudio;
 
 		try {
 			const tracks = this.editor.timeline.getTracks();
@@ -124,20 +127,23 @@ export class RendererManager {
 				});
 			}
 
-			const scene = buildScene({
-				tracks,
-				mediaAssets,
-				duration,
-				canvasSize,
-				background: activeProject.settings.background,
-			});
+			if (isAudioOnly && !audioBuffer) {
+				return {
+					success: false,
+					error: "O projeto não tem áudio para exportar",
+				};
+			}
+
+			const outputSize = getExportDimensions({ canvasSize, resolution });
 
 			const exporter = new SceneExporter({
 				width: canvasSize.width,
 				height: canvasSize.height,
+				outputWidth: outputSize.width,
+				outputHeight: outputSize.height,
 				fps: exportFps,
 				format,
-				watermark: includeWatermark ?? true,
+				watermark: !isAudioOnly && (includeWatermark ?? true),
 				quality,
 				shouldIncludeAudio: !!includeAudio,
 				audioBuffer: audioBuffer || undefined,
@@ -161,7 +167,17 @@ export class RendererManager {
 			const cancelInterval = setInterval(checkCancel, 100);
 
 			try {
-				const buffer = await exporter.export({ rootNode: scene });
+				const buffer = isAudioOnly
+					? await exporter.exportAudio()
+					: await exporter.export({
+							rootNode: buildScene({
+								tracks,
+								mediaAssets,
+								duration,
+								canvasSize,
+								background: activeProject.settings.background,
+							}),
+						});
 				clearInterval(cancelInterval);
 
 				if (cancelled) {

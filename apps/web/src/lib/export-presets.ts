@@ -1,5 +1,11 @@
-import type { ExportFormat, ExportQuality } from "@/types/export";
-import type { TProjectSettings } from "@/types/project";
+import type {
+	ExportFormat,
+	ExportOptions,
+	ExportQuality,
+	ExportResolution,
+	ExportResult,
+} from "@/types/export";
+import { getExportFileExtension } from "@/lib/export";
 import { generateUUID } from "@/utils/id";
 
 export interface ExportPreset {
@@ -7,7 +13,8 @@ export interface ExportPreset {
 	name: string;
 	format: ExportFormat;
 	quality: ExportQuality;
-	canvasSize: { width: number; height: number };
+	// Audio-only formats ignore it; the aspect ratio always follows the project
+	resolution?: ExportResolution;
 	description: string;
 }
 
@@ -17,73 +24,90 @@ export const PLATFORM_PRESETS: ExportPreset[] = [
 		name: "YouTube 1080p",
 		format: "mp4",
 		quality: "high",
-		canvasSize: { width: 1920, height: 1080 },
-		description: "H.264, 1080p, 30fps",
+		resolution: "1080p",
+		description: "MP4 (H.264), 1080p",
 	},
 	{
 		id: "youtube-4k",
 		name: "YouTube 4K",
 		format: "mp4",
 		quality: "very_high",
-		canvasSize: { width: 3840, height: 2160 },
-		description: "H.264, 4K, 30fps",
+		resolution: "4k",
+		description: "MP4 (H.264), 4K",
 	},
 	{
 		id: "tiktok-reels",
 		name: "TikTok / Reels",
 		format: "mp4",
 		quality: "high",
-		canvasSize: { width: 1080, height: 1920 },
-		description: "9:16, 1080x1920",
+		resolution: "1080p",
+		description: "MP4 1080p, ideal em projeto 9:16",
 	},
 	{
-		id: "instagram-square",
-		name: "Instagram Quadrado",
+		id: "instagram",
+		name: "Instagram",
 		format: "mp4",
 		quality: "high",
-		canvasSize: { width: 1080, height: 1080 },
-		description: "1:1, 1080x1080",
-	},
-	{
-		id: "instagram-portrait",
-		name: "Instagram Retrato",
-		format: "mp4",
-		quality: "high",
-		canvasSize: { width: 1080, height: 1350 },
-		description: "4:5, 1080x1350",
+		resolution: "1080p",
+		description: "MP4 1080p, feed, stories e reels",
 	},
 	{
 		id: "twitter",
 		name: "Twitter / X",
 		format: "mp4",
 		quality: "medium",
-		canvasSize: { width: 1280, height: 720 },
-		description: "720p, máx. 140s",
+		resolution: "720p",
+		description: "MP4 720p, máx. 2min20s",
 	},
 	{
 		id: "podcast-audio",
 		name: "Podcast (Somente Áudio)",
-		format: "mp4",
+		format: "m4a",
 		quality: "high",
-		canvasSize: { width: 1920, height: 1080 },
-		description: "Somente áudio, 320kbps",
+		description: "M4A (AAC), sem vídeo",
 	},
 	{
 		id: "web-email",
 		name: "Web / E-mail",
 		format: "webm",
 		quality: "medium",
-		canvasSize: { width: 1280, height: 720 },
-		description: "WebM, 720p, arquivo pequeno",
+		resolution: "720p",
+		description: "WebM 720p, arquivo pequeno",
 	},
 ];
+
+export function getPresetExportOptions({
+	preset,
+}: {
+	preset: ExportPreset;
+}): ExportOptions {
+	return {
+		format: preset.format,
+		quality: preset.quality,
+		resolution: preset.resolution,
+		includeAudio: true,
+	};
+}
+
+// Preset names contain "/", which is not allowed in file names
+export function getPresetExportFilename({
+	projectName,
+	preset,
+}: {
+	projectName: string;
+	preset: ExportPreset;
+}): string {
+	const baseName = `${projectName} - ${preset.name}`
+		.replace(/\s*[\\/:*?"<>|]+\s*/g, " - ")
+		.trim();
+	return `${baseName}${getExportFileExtension({ format: preset.format })}`;
+}
 
 export interface ExportQueueItem {
 	id: string;
 	preset: ExportPreset;
 	status: "queued" | "exporting" | "completed" | "error";
 	progress: number;
-	blob?: Blob;
 	error?: string;
 	startedAt?: number;
 	completedAt?: number;
@@ -96,4 +120,69 @@ export function createQueueItem(preset: ExportPreset): ExportQueueItem {
 		status: "queued",
 		progress: 0,
 	};
+}
+
+// Exports the items one at a time; a failed item doesn't stop the rest
+export async function runExportQueue({
+	items,
+	exportItem,
+	saveResult,
+	onItemChange,
+}: {
+	items: ExportQueueItem[];
+	exportItem: ({ item }: { item: ExportQueueItem }) => Promise<ExportResult>;
+	saveResult: ({
+		item,
+		buffer,
+	}: {
+		item: ExportQueueItem;
+		buffer: ArrayBuffer;
+	}) => void;
+	onItemChange: ({
+		id,
+		changes,
+	}: {
+		id: string;
+		changes: Partial<ExportQueueItem>;
+	}) => void;
+}): Promise<{ completed: number; failed: number }> {
+	let completed = 0;
+	let failed = 0;
+
+	for (const item of items) {
+		onItemChange({
+			id: item.id,
+			changes: { status: "exporting", progress: 0, startedAt: Date.now() },
+		});
+
+		let error: string | null = null;
+		try {
+			const result = await exportItem({ item });
+			if (result.success && result.buffer) {
+				saveResult({ item, buffer: result.buffer });
+			} else if (result.cancelled) {
+				error = "Exportação cancelada";
+			} else {
+				error = result.error || "Falha na exportação";
+			}
+		} catch (err) {
+			error = err instanceof Error ? err.message : "Falha na exportação";
+		}
+
+		if (error) {
+			failed += 1;
+			onItemChange({
+				id: item.id,
+				changes: { status: "error", error, completedAt: Date.now() },
+			});
+		} else {
+			completed += 1;
+			onItemChange({
+				id: item.id,
+				changes: { status: "completed", progress: 100, completedAt: Date.now() },
+			});
+		}
+	}
+
+	return { completed, failed };
 }

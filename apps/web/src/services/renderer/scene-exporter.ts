@@ -15,10 +15,15 @@ import {
 import type { RootNode } from "./nodes/root-node";
 import type { ExportFormat, ExportQuality } from "@/types/export";
 import { CanvasRenderer } from "./canvas-renderer";
+import { createOffscreenCanvas } from "./canvas-utils";
 
 type ExportParams = {
 	width: number;
 	height: number;
+	// Size of the encoded frames; the scene is drawn at width x height and
+	// scaled to this when it differs
+	outputWidth?: number;
+	outputHeight?: number;
 	fps: number;
 	format: ExportFormat;
 	quality: ExportQuality;
@@ -34,6 +39,9 @@ const qualityMap = {
 	very_high: QUALITY_VERY_HIGH,
 };
 
+// Audio-only exports encode in slices so progress moves and cancel works
+const AUDIO_CHUNK_SECONDS = 10;
+
 export type SceneExporterEvents = {
 	progress: [progress: number];
 	complete: [buffer: ArrayBuffer];
@@ -43,6 +51,11 @@ export type SceneExporterEvents = {
 
 export class SceneExporter extends EventEmitter<SceneExporterEvents> {
 	private renderer: CanvasRenderer;
+	private frameCanvas: OffscreenCanvas | HTMLCanvasElement;
+	private frameContext:
+		| OffscreenCanvasRenderingContext2D
+		| CanvasRenderingContext2D
+		| null = null;
 	private format: ExportFormat;
 	private quality: ExportQuality;
 	private shouldIncludeAudio: boolean;
@@ -53,6 +66,8 @@ export class SceneExporter extends EventEmitter<SceneExporterEvents> {
 	constructor({
 		width,
 		height,
+		outputWidth = width,
+		outputHeight = height,
 		fps,
 		format,
 		quality,
@@ -67,6 +82,24 @@ export class SceneExporter extends EventEmitter<SceneExporterEvents> {
 			fps,
 			watermark: watermark ?? false,
 		});
+
+		this.frameCanvas = this.renderer.canvas;
+		if (outputWidth !== width || outputHeight !== height) {
+			this.frameCanvas = createOffscreenCanvas({
+				width: outputWidth,
+				height: outputHeight,
+			});
+			const context = this.frameCanvas.getContext("2d") as
+				| OffscreenCanvasRenderingContext2D
+				| CanvasRenderingContext2D
+				| null;
+			if (!context) {
+				throw new Error("Failed to get export canvas context");
+			}
+			context.imageSmoothingEnabled = true;
+			context.imageSmoothingQuality = "high";
+			this.frameContext = context;
+		}
 
 		this.format = format;
 		this.quality = quality;
@@ -94,7 +127,7 @@ export class SceneExporter extends EventEmitter<SceneExporterEvents> {
 			target: new BufferTarget(),
 		});
 
-		const videoSource = new CanvasSource(this.renderer.canvas, {
+		const videoSource = new CanvasSource(this.frameCanvas, {
 			codec: this.format === "webm" ? "vp9" : "avc",
 			bitrate: qualityMap[this.quality],
 		});
@@ -103,22 +136,8 @@ export class SceneExporter extends EventEmitter<SceneExporterEvents> {
 
 		let audioSource: AudioBufferSource | null = null;
 		if (this.shouldIncludeAudio && this.audioBuffer) {
-			let audioCodec: "aac" | "opus" =
-				this.format === "webm" ? "opus" : "aac";
-
-			if (audioCodec === "aac" && typeof AudioEncoder !== "undefined") {
-				const { supported } = await AudioEncoder.isConfigSupported({
-					codec: "mp4a.40.2",
-					sampleRate: this.audioBuffer.sampleRate,
-					numberOfChannels: this.audioBuffer.numberOfChannels,
-					bitrate: 192000,
-				});
-				if (!supported) audioCodec = "opus";
-			}
-
-			audioSource = new AudioBufferSource({
-				codec: audioCodec,
-				bitrate: qualityMap[this.quality],
+			audioSource = await this.createAudioSource({
+				audioBuffer: this.audioBuffer,
 			});
 			output.addAudioTrack(audioSource);
 		}
@@ -139,6 +158,15 @@ export class SceneExporter extends EventEmitter<SceneExporterEvents> {
 
 			const time = i / fps;
 			await this.renderer.render({ node: rootNode, time });
+			if (this.frameContext) {
+				this.frameContext.drawImage(
+					this.renderer.canvas,
+					0,
+					0,
+					this.frameCanvas.width,
+					this.frameCanvas.height,
+				);
+			}
 			await videoSource.add(time, 1 / fps);
 
 			this.emit("progress", i / frameCount);
@@ -162,5 +190,92 @@ export class SceneExporter extends EventEmitter<SceneExporterEvents> {
 
 		this.emit("complete", buffer);
 		return buffer;
+	}
+
+	// MP4 holds a lone audio track fine (ISOBMFF needs only one track of any
+	// kind), which players open as .m4a
+	async exportAudio(): Promise<ArrayBuffer | null> {
+		const audioBuffer = this.audioBuffer;
+		if (!audioBuffer) {
+			this.emit("error", new Error("No audio to export"));
+			return null;
+		}
+
+		const output = new Output({
+			format: new Mp4OutputFormat(),
+			target: new BufferTarget(),
+		});
+		const audioSource = await this.createAudioSource({ audioBuffer });
+		output.addAudioTrack(audioSource);
+		await output.start();
+
+		const { sampleRate, numberOfChannels, length } = audioBuffer;
+		const chunkLength = AUDIO_CHUNK_SECONDS * sampleRate;
+
+		for (let start = 0; start < length; start += chunkLength) {
+			if (this.isCancelled) {
+				await output.cancel();
+				this.emit("cancelled");
+				return null;
+			}
+
+			const end = Math.min(start + chunkLength, length);
+			const chunk = new AudioBuffer({
+				length: end - start,
+				numberOfChannels,
+				sampleRate,
+			});
+			for (let channel = 0; channel < numberOfChannels; channel++) {
+				chunk.copyToChannel(
+					audioBuffer.getChannelData(channel).subarray(start, end),
+					channel,
+				);
+			}
+			await audioSource.add(chunk);
+
+			this.emit("progress", end / length);
+		}
+
+		if (this.isCancelled) {
+			await output.cancel();
+			this.emit("cancelled");
+			return null;
+		}
+
+		audioSource.close();
+		await output.finalize();
+		this.emit("progress", 1);
+
+		const buffer = output.target.buffer;
+		if (!buffer) {
+			this.emit("error", new Error("Failed to export audio"));
+			return null;
+		}
+
+		this.emit("complete", buffer);
+		return buffer;
+	}
+
+	private async createAudioSource({
+		audioBuffer,
+	}: {
+		audioBuffer: AudioBuffer;
+	}): Promise<AudioBufferSource> {
+		let audioCodec: "aac" | "opus" = this.format === "webm" ? "opus" : "aac";
+
+		if (audioCodec === "aac" && typeof AudioEncoder !== "undefined") {
+			const { supported } = await AudioEncoder.isConfigSupported({
+				codec: "mp4a.40.2",
+				sampleRate: audioBuffer.sampleRate,
+				numberOfChannels: audioBuffer.numberOfChannels,
+				bitrate: 192000,
+			});
+			if (!supported) audioCodec = "opus";
+		}
+
+		return new AudioBufferSource({
+			codec: audioCodec,
+			bitrate: qualityMap[this.quality],
+		});
 	}
 }

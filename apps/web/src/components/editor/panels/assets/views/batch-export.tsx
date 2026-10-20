@@ -7,7 +7,15 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Download04Icon, Add01Icon, Cancel01Icon } from "@hugeicons/core-free-icons";
-import { PLATFORM_PRESETS, createQueueItem, type ExportQueueItem } from "@/lib/export-presets";
+import {
+	PLATFORM_PRESETS,
+	createQueueItem,
+	getPresetExportFilename,
+	getPresetExportOptions,
+	runExportQueue,
+	type ExportQueueItem,
+} from "@/lib/export-presets";
+import { downloadBuffer, getExportMimeType } from "@/lib/export";
 import { useEditor } from "@/hooks/use-editor";
 import { toast } from "sonner";
 
@@ -15,6 +23,9 @@ export function BatchExportPanel({ className }: { className?: string }) {
 	const editor = useEditor();
 	const [queue, setQueue] = useState<ExportQueueItem[]>([]);
 	const [selectedPresets, setSelectedPresets] = useState<Set<string>>(new Set());
+	const [isRunning, setIsRunning] = useState(false);
+	const { isExporting, progress: exportProgress } = editor.project.getExportState();
+	const queuedCount = queue.filter((q) => q.status === "queued").length;
 
 	const togglePreset = useCallback((id: string) => {
 		setSelectedPresets((prev) => {
@@ -42,62 +53,47 @@ export function BatchExportPanel({ className }: { className?: string }) {
 	}, [selectedPresets]);
 
 	const handleExportAll = useCallback(async () => {
+		const project = editor.project.getActiveOrNull();
 		const queued = queue.filter((item) => item.status === "queued");
-		if (queued.length === 0) return;
+		if (!project || queued.length === 0 || isRunning) return;
 
-		for (const item of queued) {
-			setQueue((prev) =>
-				prev.map((q) =>
-					q.id === item.id ? { ...q, status: "exporting", progress: 0, startedAt: Date.now() } : q,
-				),
-			);
+		setIsRunning(true);
+		try {
+			const { completed, failed } = await runExportQueue({
+				items: queued,
+				exportItem: async ({ item }) => {
+					try {
+						return await editor.project.export({
+							options: getPresetExportOptions({ preset: item.preset }),
+						});
+					} finally {
+						editor.project.clearExportState();
+					}
+				},
+				saveResult: ({ item, buffer }) =>
+					downloadBuffer({
+						buffer,
+						filename: getPresetExportFilename({
+							projectName: project.metadata.name,
+							preset: item.preset,
+						}),
+						mimeType: getExportMimeType({ format: item.preset.format }),
+					}),
+				onItemChange: ({ id, changes }) =>
+					setQueue((prev) => prev.map((q) => (q.id === id ? { ...q, ...changes } : q))),
+			});
 
-			try {
-				const preset = item.preset;
-				const originalSettings = editor.project.getActive().settings;
-
-				editor.project.updateSettings({
-					settings: { canvasSize: preset.canvasSize },
-					pushHistory: false,
-				});
-
-				await editor.project.export({
-					options: {
-						format: preset.format,
-						quality: preset.quality,
-					},
-				});
-
-				editor.project.updateSettings({
-					settings: { canvasSize: originalSettings.canvasSize },
-					pushHistory: false,
-				});
-
-				setQueue((prev) =>
-					prev.map((q) =>
-						q.id === item.id
-							? { ...q, status: "completed", progress: 100, completedAt: Date.now() }
-							: q,
-					),
-				);
-			} catch (err) {
-				setQueue((prev) =>
-					prev.map((q) =>
-						q.id === item.id
-							? {
-									...q,
-									status: "error",
-									error: err instanceof Error ? err.message : "Falha na exportação",
-									completedAt: Date.now(),
-								}
-							: q,
-					),
+			if (failed > 0) {
+				toast.error(`${failed} de ${completed + failed} exportações falharam`);
+			} else {
+				toast.success(
+					completed === 1 ? "1 arquivo exportado" : `${completed} arquivos exportados`,
 				);
 			}
+		} finally {
+			setIsRunning(false);
 		}
-
-		toast.success("Exportação em lote concluída");
-	}, [queue, editor]);
+	}, [queue, editor, isRunning]);
 
 	const removeFromQueue = useCallback((id: string) => {
 		setQueue((prev) => prev.filter((q) => q.id !== id));
@@ -160,12 +156,13 @@ export function BatchExportPanel({ className }: { className?: string }) {
 											item.status === "queued" && "text-muted-foreground",
 										)}>
 											{item.status === "queued" && "Na fila"}
-											{item.status === "exporting" && `Exportando ${item.progress}%`}
+											{item.status === "exporting" &&
+												`Exportando ${Math.round(exportProgress * 100)}%`}
 											{item.status === "completed" && "Concluído"}
 											{item.status === "error" && item.error}
 										</span>
 									</div>
-									{item.status === "queued" && (
+									{!isRunning && item.status !== "exporting" && (
 										<button
 											type="button"
 											onClick={() => removeFromQueue(item.id)}
@@ -176,8 +173,13 @@ export function BatchExportPanel({ className }: { className?: string }) {
 									)}
 								</div>
 							))}
-							<Button size="sm" className="w-full" onClick={handleExportAll}>
-								Exportar tudo ({queue.filter((q) => q.status === "queued").length})
+							<Button
+								size="sm"
+								className="w-full"
+								onClick={handleExportAll}
+								disabled={isRunning || isExporting || queuedCount === 0}
+							>
+								Exportar tudo ({queuedCount})
 							</Button>
 						</div>
 					)}

@@ -1,5 +1,43 @@
-import { EXPORT_MIME_TYPES } from "@/constants/export-constants";
-import type { ExportFormat } from "@/types/export";
+import {
+	EXPORT_MIME_TYPES,
+	EXPORT_RESOLUTION_SHORT_SIDE,
+} from "@/constants/export-constants";
+import type { ExportFormat, ExportResolution } from "@/types/export";
+
+export function isAudioOnlyExportFormat({
+	format,
+}: {
+	format: ExportFormat;
+}): boolean {
+	return format === "m4a";
+}
+
+// H.264 encodes 4:2:0 chroma, so both sides must be even
+function roundToEven(value: number): number {
+	return Math.max(2, Math.round(value / 2) * 2);
+}
+
+export function getExportDimensions({
+	canvasSize,
+	resolution = "original",
+}: {
+	canvasSize: { width: number; height: number };
+	resolution?: ExportResolution;
+}): { width: number; height: number } {
+	if (resolution === "original") {
+		return {
+			width: roundToEven(canvasSize.width),
+			height: roundToEven(canvasSize.height),
+		};
+	}
+
+	const shortSide = EXPORT_RESOLUTION_SHORT_SIDE[resolution];
+	const scale = shortSide / Math.min(canvasSize.width, canvasSize.height);
+	return {
+		width: roundToEven(canvasSize.width * scale),
+		height: roundToEven(canvasSize.height * scale),
+	};
+}
 
 export function getExportMimeType({
 	format,
