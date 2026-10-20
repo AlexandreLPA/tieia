@@ -1,5 +1,6 @@
 import { useCallback, useSyncExternalStore } from "react";
 import { useEditor } from "@/hooks/use-editor";
+import { expandRefsToGroups } from "@/lib/timeline/group-utils";
 
 type ElementRef = { trackId: string; elementId: string };
 
@@ -45,10 +46,19 @@ export function useElementSelection() {
 
 	const removeElementFromSelection = useCallback(
 		({ trackId, elementId }: ElementRef) => {
+			// a grouped element leaves the selection together with its group
+			const removed = expandRefsToGroups({
+				tracks: editor.timeline.getTracks(),
+				elements: [{ trackId, elementId }],
+			});
 			editor.selection.setSelectedElements({
 				elements: selectedElements.filter(
 					(element) =>
-						!(element.trackId === trackId && element.elementId === elementId),
+						!removed.some(
+							(ref) =>
+								ref.trackId === element.trackId &&
+								ref.elementId === element.elementId,
+						),
 				),
 			});
 		},

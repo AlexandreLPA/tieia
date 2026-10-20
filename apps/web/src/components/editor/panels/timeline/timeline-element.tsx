@@ -55,6 +55,8 @@ import {
 	KeyframeIcon,
 	MagicWand05Icon,
 	Unlink01Icon,
+	GroupItemsIcon,
+	UngroupItemsIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { uppercase } from "@/utils/string";
@@ -232,10 +234,23 @@ export function TimelineElement({
 		isBeingDragged && dragState.isDragging
 			? dragState.currentMouseY - dragState.startMouseY
 			: 0;
+	// the rest of a dragged element's group follows it in time
+	const isFollowingGroupDrag =
+		dragState.isDragging &&
+		!isBeingDragged &&
+		element.groupId !== undefined &&
+		element.groupId === dragState.groupId;
 	const elementStartTime =
 		isBeingDragged && dragState.isDragging
 			? dragState.currentTime
-			: element.startTime;
+			: isFollowingGroupDrag
+				? Math.max(
+						0,
+						element.startTime +
+							dragState.currentTime -
+							dragState.startElementTime,
+					)
+				: element.startTime;
 	const displayedStartTime = isResizing ? currentStartTime : elementStartTime;
 	const displayedDuration = isResizing ? currentDuration : element.duration;
 	const elementWidth = timelineTimeToPixels({
@@ -367,6 +382,27 @@ export function TimelineElement({
 						</ContextMenuItem>
 					</>
 				)}
+				{selectedElements.length > 1 &&
+					isCurrentElementSelected &&
+					!isWholeSelectionOneGroup({
+						tracks: editor.timeline.getTracks(),
+						selectedElements,
+					}) && (
+						<ActionMenuItem
+							action="group-selected"
+							icon={<HugeiconsIcon icon={GroupItemsIcon} />}
+						>
+							Agrupar
+						</ActionMenuItem>
+					)}
+				{element.groupId && (
+					<ActionMenuItem
+						action="ungroup-selected"
+						icon={<HugeiconsIcon icon={UngroupItemsIcon} />}
+					>
+						Desagrupar
+					</ActionMenuItem>
+				)}
 				<ContextMenuSeparator />
 				<DeleteMenuItem
 					isMultipleSelected={selectedElements.length > 1}
@@ -450,6 +486,14 @@ function ElementInner({
 						/>
 					</div>
 				</button>
+				{element.groupId && (
+					<div
+						className="pointer-events-none absolute top-0.5 right-1 rounded-sm bg-black/50 p-0.5 text-white"
+						title="Agrupado"
+					>
+						<HugeiconsIcon icon={GroupItemsIcon} className="size-3" />
+					</div>
+				)}
 			</div>
 
 			{element.type !== "audio" && element.type !== "effect" && (
@@ -1022,6 +1066,26 @@ function DeleteMenuItem({
 				: `Excluir ${elementType === "text" ? "texto" : "clipe"}`}
 		</ActionMenuItem>
 	);
+}
+
+function isWholeSelectionOneGroup({
+	tracks,
+	selectedElements,
+}: {
+	tracks: TimelineTrack[];
+	selectedElements: { trackId: string; elementId: string }[];
+}): boolean {
+	const groupIds = new Set(
+		selectedElements.map(
+			({ trackId, elementId }) =>
+				tracks
+					.find((track) => track.id === trackId)
+					?.elements.find((trackElement) => trackElement.id === elementId)
+					?.groupId,
+		),
+	);
+	const [onlyGroupId] = groupIds;
+	return groupIds.size === 1 && onlyGroupId !== undefined;
 }
 
 function ActionMenuItem({

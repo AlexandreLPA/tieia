@@ -30,6 +30,8 @@ import {
 	PasteCommand,
 	UpdateElementStartTimeCommand,
 	MoveElementCommand,
+	GroupElementsCommand,
+	UngroupElementsCommand,
 	TracksSnapshotCommand,
 	UpsertKeyframeCommand,
 	RemoveKeyframeCommand,
@@ -44,6 +46,7 @@ import {
 } from "@/lib/commands/timeline";
 import { BatchCommand, PreviewTracker } from "@/lib/commands";
 import type { InsertElementParams } from "@/lib/commands/timeline/element/insert-element";
+import { expandRefsToGroups } from "@/lib/timeline/group-utils";
 
 export class TimelineManager {
 	private listeners = new Set<() => void>();
@@ -576,6 +579,38 @@ export class TimelineManager {
 		if (snapshot !== null) {
 			this.updateTracks(snapshot);
 		}
+	}
+
+	/** Returns false, without touching history, when fewer than 2 elements. */
+	groupElements({
+		elements,
+	}: {
+		elements: { trackId: string; elementId: string }[];
+	}): boolean {
+		const refs = expandRefsToGroups({ tracks: this.getTracks(), elements });
+		if (refs.length < 2) return false;
+		const command = new GroupElementsCommand(refs);
+		this.editor.command.execute({ command });
+		return true;
+	}
+
+	/** Returns false, without touching history, when nothing is grouped. */
+	ungroupElements({
+		elements,
+	}: {
+		elements: { trackId: string; elementId: string }[];
+	}): boolean {
+		const tracks = this.getTracks();
+		const isGrouped = elements.some(
+			({ trackId, elementId }) =>
+				tracks
+					.find((track) => track.id === trackId)
+					?.elements.find((element) => element.id === elementId)?.groupId,
+		);
+		if (!isGrouped) return false;
+		const command = new UngroupElementsCommand(elements);
+		this.editor.command.execute({ command });
+		return true;
 	}
 
 	duplicateElements({

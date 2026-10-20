@@ -7,6 +7,10 @@ import {
 	getHighestInsertIndexForTrack,
 } from "@/lib/timeline/track-utils";
 import { cloneAnimations } from "@/lib/animation";
+import {
+	createGroupIdRemapper,
+	expandRefsToGroups,
+} from "@/lib/timeline/group-utils";
 
 interface DuplicateElementsParams {
 	elements: { trackId: string; elementId: string }[];
@@ -30,9 +34,15 @@ export class DuplicateElementsCommand extends Command {
 		this.duplicatedElements = [];
 
 		const updatedTracks = [...this.savedState];
+		// duplicating part of a group duplicates the whole group, as a new group
+		const elements = expandRefsToGroups({
+			tracks: this.savedState,
+			elements: this.elements,
+		});
+		const remapGroupId = createGroupIdRemapper();
 
 		for (const track of this.savedState) {
-			const elementsToDuplicate = this.elements.filter(
+			const elementsToDuplicate = elements.filter(
 				(elementEntry) => elementEntry.trackId === track.id,
 			);
 
@@ -66,6 +76,7 @@ export class DuplicateElementsCommand extends Command {
 						element,
 						id: newId,
 						startTime: element.startTime,
+						groupId: remapGroupId(element.groupId),
 					}),
 				);
 			}
@@ -110,16 +121,19 @@ function buildDuplicateElement({
 	element,
 	id,
 	startTime,
+	groupId,
 }: {
 	element: TimelineElement;
 	id: string;
 	startTime: number;
+	groupId: string | undefined;
 }): TimelineElement {
 	return {
 		...element,
 		id,
 		name: `${element.name} (copy)`,
 		startTime,
+		groupId,
 		animations: cloneAnimations({
 			animations: element.animations,
 			shouldRegenerateKeyframeIds: true,

@@ -1,5 +1,6 @@
 import type { EditorCore } from "@/core";
 import type { SelectedKeyframeRef } from "@/types/animation";
+import { expandRefsToGroups } from "@/lib/timeline/group-utils";
 
 type ElementRef = { trackId: string; elementId: string };
 
@@ -9,9 +10,7 @@ export class SelectionManager {
 	private keyframeSelectionAnchor: SelectedKeyframeRef | null = null;
 	private listeners = new Set<() => void>();
 
-	constructor(editor: EditorCore) {
-		void editor;
-	}
+	constructor(private editor: EditorCore) {}
 
 	getSelectedElements(): ElementRef[] {
 		return this.selectedElements;
@@ -25,8 +24,12 @@ export class SelectionManager {
 		return this.keyframeSelectionAnchor;
 	}
 
+	/** Selecting any grouped element selects its whole group. */
 	setSelectedElements({ elements }: { elements: ElementRef[] }): void {
-		this.selectedElements = elements;
+		this.selectedElements = expandRefsToGroups({
+			tracks: this.editor.timeline.getTracks(),
+			elements,
+		});
 		this.selectedKeyframes = [];
 		this.keyframeSelectionAnchor = null;
 		this.notify();

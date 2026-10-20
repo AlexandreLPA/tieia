@@ -135,6 +135,8 @@ interface BaseTimelineElement {
 	trimEnd: number;
 	sourceDuration?: number;
 	animations?: ElementAnimations;
+	/** Elements sharing a groupId are selected, moved and duplicated together. */
+	groupId?: string;
 }
 
 export interface VideoElement extends BaseTimelineElement {
@@ -327,6 +329,8 @@ export interface ElementDragState {
 	clickOffsetTime: number;
 	currentTime: number;
 	currentMouseY: number;
+	/** groupId of the dragged element; the rest of its group follows it. */
+	groupId?: string;
 }
 
 export interface DropTarget {
@@ -359,15 +363,3 @@ export interface ClipboardItem {
 	element: CreateTimelineElement;
 }
 
-export interface CompoundClip extends BaseTimelineElement {
-	type: "compound";
-	innerTracks: TimelineTrack[];
-	name: string;
-	transform: Transform;
-	opacity: number;
-	blendMode?: BlendMode;
-	effects?: Effect[];
-	transitionOut?: TransitionData;
-	crop?: CropRect;
-	mask?: MaskShape;
-}

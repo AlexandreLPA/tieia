@@ -9,5 +9,9 @@ export { UpdateElementCommand } from "./update-element";
 export { ToggleElementsVisibilityCommand } from "./toggle-elements-visibility";
 export { ToggleElementsMutedCommand } from "./toggle-elements-muted";
 export { MoveElementCommand } from "./move-elements";
+export {
+	GroupElementsCommand,
+	UngroupElementsCommand,
+} from "./group-elements";
 export * from "./keyframes";
 export * from "./effects";

@@ -60,6 +60,7 @@ interface PendingDragState {
 	startMouseY: number;
 	startElementTime: number;
 	clickOffsetTime: number;
+	groupId?: string;
 }
 
 function getClickOffsetTime({
@@ -192,6 +193,7 @@ export function useElementInteraction({
 			clickOffsetTime,
 			initialCurrentTime,
 			initialCurrentMouseY,
+			groupId,
 		}: StartDragParams) => {
 			setDragState({
 				isDragging: true,
@@ -203,6 +205,7 @@ export function useElementInteraction({
 				clickOffsetTime,
 				currentTime: initialCurrentTime,
 				currentMouseY: initialCurrentMouseY,
+				groupId,
 			});
 		},
 		[],
@@ -563,6 +566,7 @@ export function useElementInteraction({
 				startMouseY: event.clientY,
 				startElementTime: element.startTime,
 				clickOffsetTime,
+				groupId: element.groupId,
 			};
 			setIsPendingDrag(true);
 		},

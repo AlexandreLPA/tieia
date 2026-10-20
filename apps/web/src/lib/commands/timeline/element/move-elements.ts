@@ -12,6 +12,7 @@ import {
 	enforceMainTrackStart,
 } from "@/lib/timeline/track-utils";
 import { rippleShiftElements } from "@/lib/timeline/ripple-utils";
+import { getGroupMembers } from "@/lib/timeline/group-utils";
 
 export class MoveElementCommand extends Command {
 	private savedState: TimelineTrack[] | null = null;
@@ -85,10 +86,26 @@ export class MoveElementCommand extends Command {
 			throw new Error(validation.errorMessage);
 		}
 
+		const groupMembers = element.groupId
+			? getGroupMembers({
+					tracks: tracksToUpdate,
+					groupId: element.groupId,
+				}).filter(({ element: member }) => member.id !== this.elementId)
+			: [];
+		// the group moves as one block, so no member may start before 0
+		const earliestGroupStart = Math.min(
+			element.startTime,
+			...groupMembers.map(({ element: member }) => member.startTime),
+		);
+		const requestedStartTime = Math.max(
+			this.newStartTime,
+			element.startTime - earliestGroupStart,
+		);
+
 		const adjustedStartTime = enforceMainTrackStart({
 			tracks: tracksToUpdate,
 			targetTrackId: this.targetTrackId,
-			requestedStartTime: this.newStartTime,
+			requestedStartTime,
 			excludeElementId: this.elementId,
 		});
 
@@ -133,6 +150,28 @@ export class MoveElementCommand extends Command {
 
 			return track;
 		});
+
+		const groupDelta = adjustedStartTime - element.startTime;
+		if (groupMembers.length > 0 && groupDelta !== 0) {
+			// grouped elements keep their tracks and shift by the same amount
+			const memberIds = new Set(
+				groupMembers.map(({ element: member }) => member.id),
+			);
+			updatedTracks = updatedTracks.map((track): TimelineTrack => {
+				if (!track.elements.some(({ id }) => memberIds.has(id))) return track;
+				return {
+					...track,
+					elements: track.elements.map((trackElement) =>
+						memberIds.has(trackElement.id)
+							? {
+									...trackElement,
+									startTime: Math.max(0, trackElement.startTime + groupDelta),
+								}
+							: trackElement,
+					),
+				} as typeof track;
+			});
+		}
 
 		if (!isSameTrack) {
 			const sourceTrackAfterMove = updatedTracks.find(

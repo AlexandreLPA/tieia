@@ -140,13 +140,15 @@ export const ACTIONS = {
 		description: "Excluir elementos selecionados (edição em cascata)",
 		category: "editing",
 	},
-	"nest-clips": {
-		description: "Agrupar clipes selecionados em um clipe composto",
+	"group-selected": {
+		description: "Agrupar itens selecionados",
 		category: "editing",
+		defaultShortcuts: ["ctrl+g"],
 	},
-	"unnest-clips": {
-		description: "Desagrupar clipe composto",
+	"ungroup-selected": {
+		description: "Desagrupar itens selecionados",
 		category: "editing",
+		defaultShortcuts: ["ctrl+shift+g"],
 	},
 	"select-all": {
 		description: "Selecionar todos os elementos",

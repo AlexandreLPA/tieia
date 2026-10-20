@@ -14,6 +14,7 @@ import {
 	enforceMainTrackStart,
 } from "@/lib/timeline/track-utils";
 import { cloneAnimations } from "@/lib/animation";
+import { createGroupIdRemapper } from "@/lib/timeline/group-utils";
 
 export class PasteCommand extends Command {
 	private savedState: TimelineTrack[] | null = null;
@@ -43,12 +44,15 @@ export class PasteCommand extends Command {
 		const itemsByTrackId = groupClipboardItemsByTrackId({
 			clipboardItems: this.clipboardItems,
 		});
+		// a pasted group becomes a new group, separate from the copied one
+		const remapGroupId = createGroupIdRemapper();
 
 		for (const [trackId, items] of itemsByTrackId) {
 			const elementsToAdd = buildPastedElements({
 				items,
 				minStart,
 				time: this.time,
+				remapGroupId,
 			});
 
 			if (elementsToAdd.length === 0) {
@@ -161,10 +165,12 @@ function buildPastedElements({
 	items,
 	minStart,
 	time,
+	remapGroupId,
 }: {
 	items: ClipboardItem[];
 	minStart: number;
 	time: number;
+	remapGroupId: (groupId: string | undefined) => string | undefined;
 }): TimelineElement[] {
 	const elementsToAdd: TimelineElement[] = [];
 
@@ -177,6 +183,7 @@ function buildPastedElements({
 			...item.element,
 			id: newElementId,
 			startTime,
+			groupId: remapGroupId(item.element.groupId),
 			animations: cloneAnimations({
 				animations: item.element.animations,
 				shouldRegenerateKeyframeIds: true,

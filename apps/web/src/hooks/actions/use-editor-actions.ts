@@ -619,25 +619,27 @@ export function useEditorActions() {
 	);
 
 	useActionHandler(
-		"nest-clips",
+		"group-selected",
 		() => {
-			if (selectedElements.length < 2) {
-				toast.error("Selecione pelo menos 2 clipes para aninhar");
-				return;
+			const grouped = editor.timeline.groupElements({
+				elements: selectedElements,
+			});
+			if (!grouped) {
+				toast.error("Selecione pelo menos 2 itens para agrupar");
 			}
-			toast.success("Clipes aninhados em um clipe composto");
 		},
 		undefined,
 	);
 
 	useActionHandler(
-		"unnest-clips",
+		"ungroup-selected",
 		() => {
-			if (selectedElements.length !== 1) {
-				toast.error("Selecione um clipe composto para desaninhar");
-				return;
+			const ungrouped = editor.timeline.ungroupElements({
+				elements: selectedElements,
+			});
+			if (!ungrouped) {
+				toast.error("Selecione um grupo para desagrupar");
 			}
-			toast.success("Clipe composto desaninhado");
 		},
 		undefined,
 	);

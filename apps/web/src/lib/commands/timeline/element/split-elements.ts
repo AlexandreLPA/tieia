@@ -1,6 +1,7 @@
 import { Command } from "@/lib/commands/base-command";
 import type { TimelineTrack } from "@/types/timeline";
 import { generateUUID } from "@/utils/id";
+import { createGroupIdRemapper } from "@/lib/timeline/group-utils";
 import { EditorCore } from "@/core";
 import {
 	getFootageSeconds,
@@ -50,6 +51,8 @@ export class SplitElementsCommand extends Command {
 		this.savedState = editor.timeline.getTracks();
 		this.previousSelection = editor.selection.getSelectedElements();
 		this.rightSideElements = [];
+		// the right pieces of a split group form a group of their own
+		const remapGroupId = createGroupIdRemapper();
 
 		const updatedTracks = this.savedState.map((track) => {
 			const elementsToSplit = this.elements.filter(
@@ -174,6 +177,7 @@ export class SplitElementsCommand extends Command {
 						trimStart: element.trimStart + leftFootage,
 						name: `${element.name} (right)`,
 						animations: rightAnimations,
+						groupId: remapGroupId(element.groupId),
 					},
 				];
 			});
