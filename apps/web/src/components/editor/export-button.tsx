@@ -14,13 +14,21 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Progress } from "@/components/ui/progress";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/utils/ui";
-import { getExportMimeType, getExportFileExtension, downloadBuffer } from "@/lib/export";
+import {
+	getExportMimeType,
+	getExportFileExtension,
+	getExportDimensions,
+	isAudioOnlyExportFormat,
+	downloadBuffer,
+} from "@/lib/export";
 import { Check, Copy, Download, RotateCcw } from "lucide-react";
 import {
 	EXPORT_FORMAT_VALUES,
 	EXPORT_QUALITY_VALUES,
+	EXPORT_RESOLUTION_VALUES,
 	type ExportFormat,
 	type ExportQuality,
+	type ExportResolution,
 } from "@/types/export";
 import {
 	Section,
@@ -29,7 +37,11 @@ import {
 	SectionTitle,
 } from "@/components/editor/panels/properties/section";
 import { useEditor } from "@/hooks/use-editor";
-import { DEFAULT_EXPORT_OPTIONS, EXPORT_PRESETS } from "@/constants/export-constants";
+import {
+	DEFAULT_EXPORT_OPTIONS,
+	EXPORT_PRESETS,
+	EXPORT_RESOLUTION_LABELS,
+} from "@/constants/export-constants";
 
 function isExportFormat(value: string): value is ExportFormat {
 	return EXPORT_FORMAT_VALUES.some((formatValue) => formatValue === value);
@@ -37,6 +49,12 @@ function isExportFormat(value: string): value is ExportFormat {
 
 function isExportQuality(value: string): value is ExportQuality {
 	return EXPORT_QUALITY_VALUES.some((qualityValue) => qualityValue === value);
+}
+
+function isExportResolution(value: string): value is ExportResolution {
+	return EXPORT_RESOLUTION_VALUES.some(
+		(resolutionValue) => resolutionValue === value,
+	);
 }
 
 export function ExportButton() {
@@ -101,6 +119,9 @@ function ExportPopover({
 	const [quality, setQuality] = useState<ExportQuality>(
 		DEFAULT_EXPORT_OPTIONS.quality,
 	);
+	const [resolution, setResolution] = useState<ExportResolution>(
+		DEFAULT_EXPORT_OPTIONS.resolution,
+	);
 	const [shouldIncludeAudio, setShouldIncludeAudio] = useState<boolean>(
 		DEFAULT_EXPORT_OPTIONS.includeAudio ?? true,
 	);
@@ -112,10 +133,14 @@ function ExportPopover({
 		setSelectedPresetId(presetId);
 		if (isExportFormat(preset.options.format)) setFormat(preset.options.format);
 		if (isExportQuality(preset.options.quality)) setQuality(preset.options.quality);
+		// Audio presets leave the last chosen resolution for the next video
+		if (preset.options.resolution) setResolution(preset.options.resolution);
 		setShouldIncludeAudio(preset.options.includeAudio ?? true);
 	};
 
 	const selectedPreset = EXPORT_PRESETS.find((p) => p.id === selectedPresetId);
+	const isAudioOnly = isAudioOnlyExportFormat({ format });
+	const canvasSize = activeProject.settings.canvasSize;
 
 	const handleExport = async () => {
 		if (!activeProject) return;
@@ -124,6 +149,7 @@ function ExportPopover({
 			options: {
 			format,
 			quality,
+			resolution,
 			fps: activeProject.settings.fps,
 			includeAudio: shouldIncludeAudio,
 			includeWatermark: shouldIncludeWatermark,
@@ -224,9 +250,52 @@ function ExportPopover({
 														WebM (VP9) - Menor tamanho de arquivo
 													</Label>
 												</div>
+												<div className="flex items-center space-x-2">
+													<RadioGroupItem value="m4a" id="m4a" />
+													<Label htmlFor="m4a">M4A (AAC) - Somente áudio</Label>
+												</div>
 											</RadioGroup>
 										</SectionContent>
 									</Section>
+
+									{!isAudioOnly && (
+										<Section collapsible defaultOpen={false}>
+											<SectionHeader>
+												<SectionTitle>Resolução</SectionTitle>
+											</SectionHeader>
+											<SectionContent>
+												<RadioGroup
+													value={resolution}
+													onValueChange={(value) => {
+														if (isExportResolution(value)) {
+															setResolution(value);
+														}
+													}}
+												>
+													{EXPORT_RESOLUTION_VALUES.map((value) => {
+														const { width, height } = getExportDimensions({
+															canvasSize,
+															resolution: value,
+														});
+														return (
+															<div
+																key={value}
+																className="flex items-center space-x-2"
+															>
+																<RadioGroupItem
+																	value={value}
+																	id={`resolution-${value}`}
+																/>
+																<Label htmlFor={`resolution-${value}`}>
+																	{EXPORT_RESOLUTION_LABELS[value]} - {width}×{height}
+																</Label>
+															</div>
+														);
+													})}
+												</RadioGroup>
+											</SectionContent>
+										</Section>
+									)}
 
 									<Section collapsible defaultOpen={false}>
 										<SectionHeader>
@@ -263,50 +332,54 @@ function ExportPopover({
 										</SectionContent>
 									</Section>
 
-									<Section collapsible defaultOpen={false}>
-										<SectionHeader>
-											<SectionTitle>Áudio</SectionTitle>
-										</SectionHeader>
-										<SectionContent>
-											<div className="flex items-center space-x-2">
-												<Checkbox
-													id="include-audio"
-								checked={shouldIncludeAudio}
-												onCheckedChange={(checked) =>
-													setShouldIncludeAudio(!!checked)
-												}
-												/>
-												<Label htmlFor="include-audio">
-													Incluir áudio na exportação
-												</Label>
-											</div>
-										</SectionContent>
-									</Section>
-
-									<Section showTopBorder>
-										<SectionHeader>
-											<SectionTitle>Marca d'água</SectionTitle>
-										</SectionHeader>
-										<SectionContent>
-											<div className="flex items-start space-x-2">
-												<Checkbox
-													id="include-watermark"
-													checked={shouldIncludeWatermark}
+									{!isAudioOnly && (
+										<Section collapsible defaultOpen={false}>
+											<SectionHeader>
+												<SectionTitle>Áudio</SectionTitle>
+											</SectionHeader>
+											<SectionContent>
+												<div className="flex items-center space-x-2">
+													<Checkbox
+														id="include-audio"
+									checked={shouldIncludeAudio}
 													onCheckedChange={(checked) =>
-														setShouldIncludeWatermark(!!checked)
+														setShouldIncludeAudio(!!checked)
 													}
-												/>
-												<div className="flex flex-col gap-0.5">
-													<Label htmlFor="include-watermark">
-														Incluir marca d'água do OpenCut AI
+													/>
+													<Label htmlFor="include-audio">
+														Incluir áudio na exportação
 													</Label>
-													<p className="text-[10px] text-muted-foreground leading-relaxed">
-														Este é um software de código aberto. Incluir a marca d'água ajuda a divulgar e apoiar o projeto.
-													</p>
 												</div>
-											</div>
-										</SectionContent>
-									</Section>
+											</SectionContent>
+										</Section>
+									)}
+
+									{!isAudioOnly && (
+										<Section showTopBorder>
+											<SectionHeader>
+												<SectionTitle>Marca d'água</SectionTitle>
+											</SectionHeader>
+											<SectionContent>
+												<div className="flex items-start space-x-2">
+													<Checkbox
+														id="include-watermark"
+														checked={shouldIncludeWatermark}
+														onCheckedChange={(checked) =>
+															setShouldIncludeWatermark(!!checked)
+														}
+													/>
+													<div className="flex flex-col gap-0.5">
+														<Label htmlFor="include-watermark">
+															Incluir marca d'água do OpenCut AI
+														</Label>
+														<p className="text-[10px] text-muted-foreground leading-relaxed">
+															Este é um software de código aberto. Incluir a marca d'água ajuda a divulgar e apoiar o projeto.
+														</p>
+													</div>
+												</div>
+											</SectionContent>
+										</Section>
+									)}
 								</div>
 
 								<div className="p-3 pt-0">

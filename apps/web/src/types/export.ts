@@ -5,14 +5,25 @@ export const EXPORT_QUALITY_VALUES = [
 	"very_high",
 ] as const;
 
-export const EXPORT_FORMAT_VALUES = ["mp4", "webm"] as const;
+export const EXPORT_FORMAT_VALUES = ["mp4", "webm", "m4a"] as const;
+
+// "original" keeps the canvas size; the others set the shorter side
+export const EXPORT_RESOLUTION_VALUES = [
+	"original",
+	"480p",
+	"720p",
+	"1080p",
+	"4k",
+] as const;
 
 export type ExportFormat = (typeof EXPORT_FORMAT_VALUES)[number];
 export type ExportQuality = (typeof EXPORT_QUALITY_VALUES)[number];
+export type ExportResolution = (typeof EXPORT_RESOLUTION_VALUES)[number];
 
 export interface ExportOptions {
 	format: ExportFormat;
 	quality: ExportQuality;
+	resolution?: ExportResolution;
 	fps?: number;
 	includeAudio?: boolean;
 	includeWatermark?: boolean;
