@@ -142,6 +142,12 @@ export function describeChange(
 	if (path.includes("transform.rotation")) {
 		return `Rotation: ${oldValue}\u00b0 \u2192 ${newValue}\u00b0`;
 	}
+	if (path.includes("transform.flipX")) {
+		return newValue ? "Flipped horizontally" : "Unflipped horizontally";
+	}
+	if (path.includes("transform.flipY")) {
+		return newValue ? "Flipped vertically" : "Unflipped vertically";
+	}
 
 	// Audio changes
 	if (propName === "volume") {

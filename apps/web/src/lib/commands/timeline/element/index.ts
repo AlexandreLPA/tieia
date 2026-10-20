@@ -8,6 +8,11 @@ export { SplitElementsCommand } from "./split-elements";
 export { UpdateElementCommand } from "./update-element";
 export { ToggleElementsVisibilityCommand } from "./toggle-elements-visibility";
 export { ToggleElementsMutedCommand } from "./toggle-elements-muted";
+export {
+	FlipElementsCommand,
+	flipElementsInTracks,
+	type FlipAxis,
+} from "./flip-elements";
 export { MoveElementCommand } from "./move-elements";
 export {
 	GroupElementsCommand,

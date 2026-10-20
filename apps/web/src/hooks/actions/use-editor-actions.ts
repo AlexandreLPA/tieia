@@ -324,6 +324,28 @@ export function useEditorActions() {
 	);
 
 	useActionHandler(
+		"flip-horizontal",
+		() => {
+			editor.timeline.flipElements({
+				elements: selectedElements,
+				axis: "horizontal",
+			});
+		},
+		undefined,
+	);
+
+	useActionHandler(
+		"flip-vertical",
+		() => {
+			editor.timeline.flipElements({
+				elements: selectedElements,
+				axis: "vertical",
+			});
+		},
+		undefined,
+	);
+
+	useActionHandler(
 		"separate-audio",
 		() => {
 			if (selectedElements.length === 0) return;

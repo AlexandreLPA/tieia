@@ -4,8 +4,12 @@ import {
 	ContextMenuCheckboxItem,
 	ContextMenuContent,
 	ContextMenuItem,
+	ContextMenuSeparator,
 } from "@/components/ui/context-menu";
 import { useEditor } from "@/hooks/use-editor";
+import { useElementSelection } from "@/hooks/timeline/element/use-element-selection";
+import { invokeAction } from "@/lib/actions";
+import { isVisualElement } from "@/lib/timeline/element-utils";
 import { usePreviewStore } from "@/stores/preview-store";
 
 export function PreviewContextMenu({
@@ -18,6 +22,10 @@ export function PreviewContextMenu({
 	const editor = useEditor();
 	const { overlays, setOverlayVisibility, layoutGuide, toggleLayoutGuide } =
 		usePreviewStore();
+	const { selectedElements } = useElementSelection();
+	const canFlip = editor.timeline
+		.getElementsWithTracks({ elements: selectedElements })
+		.some(({ element }) => isVisualElement(element));
 
 	return (
 		<ContextMenuContent className="w-56" container={containerRef.current}>
@@ -42,6 +50,21 @@ export function PreviewContextMenu({
 				Guia do TikTok (só no preview)
 			</ContextMenuCheckboxItem>
 			<ContextMenuItem inset>Mostrar grade</ContextMenuItem>
+			<ContextMenuSeparator />
+			<ContextMenuItem
+				inset
+				disabled={!canFlip}
+				onClick={() => invokeAction("flip-horizontal")}
+			>
+				Espelhar na horizontal
+			</ContextMenuItem>
+			<ContextMenuItem
+				inset
+				disabled={!canFlip}
+				onClick={() => invokeAction("flip-vertical")}
+			>
+				Espelhar na vertical
+			</ContextMenuItem>
 		</ContextMenuContent>
 	);
 }

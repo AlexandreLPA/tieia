@@ -150,11 +150,13 @@ export abstract class VisualNode<
 		) as GlobalCompositeOperation;
 		renderer.context.globalAlpha = opacity;
 
-		if (transform.rotate !== 0) {
+		if (transform.rotate !== 0 || transform.flipX || transform.flipY) {
 			const centerX = x + scaledWidth / 2;
 			const centerY = y + scaledHeight / 2;
 			renderer.context.translate(centerX, centerY);
 			renderer.context.rotate((transform.rotate * Math.PI) / 180);
+			// Mirrored after the rotation, along the element's own axes
+			renderer.context.scale(transform.flipX ? -1 : 1, transform.flipY ? -1 : 1);
 			renderer.context.translate(-centerX, -centerY);
 		}
 

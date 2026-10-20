@@ -34,6 +34,8 @@ interface SnapshotElement {
 		scale: number;
 		position: { x: number; y: number };
 		rotate: number;
+		flipX?: boolean;
+		flipY?: boolean;
 	};
 }
 
@@ -368,7 +370,7 @@ function layerStyle(el: SnapshotElement): React.CSSProperties {
 	return {
 		left: `${x * 100}%`,
 		top: `${y * 100}%`,
-		transform: `translate(-50%, -50%) scale(${scale}) rotate(${t?.rotate ?? 0}deg)`,
+		transform: `translate(-50%, -50%) scale(${scale}) rotate(${t?.rotate ?? 0}deg) scale(${t?.flipX ? -1 : 1}, ${t?.flipY ? -1 : 1})`,
 		opacity: el.opacity ?? 1,
 		width: el.type === "text" ? undefined : "80%",
 		objectFit: "contain",

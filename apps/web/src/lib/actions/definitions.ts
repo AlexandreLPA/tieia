@@ -173,6 +173,14 @@ export const ACTIONS = {
 		description: "Mostrar/ocultar elementos selecionados",
 		category: "selection",
 	},
+	"flip-horizontal": {
+		description: "Espelhar elementos selecionados na horizontal",
+		category: "editing",
+	},
+	"flip-vertical": {
+		description: "Espelhar elementos selecionados na vertical",
+		category: "editing",
+	},
 	"separate-audio": {
 		description: "Separar áudio do vídeo",
 		category: "editing",

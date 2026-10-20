@@ -43,6 +43,8 @@ export function resolveTransformAtTime({
 }): Transform {
 	const safeLocalTime = Math.max(0, localTime);
 	return {
+		// Flips are not animatable, so they come straight from the element
+		...baseTransform,
 		position: {
 			x: getNumberChannelValueAtTime({
 				channel: getNumberChannelForPath({
