@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { TransitionTopIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
@@ -19,8 +19,9 @@ import {
 	getExportFileExtension,
 	getExportDimensions,
 	isAudioOnlyExportFormat,
-	downloadBuffer,
+	downloadBlob,
 } from "@/lib/export";
+import { ExportDone } from "@/components/editor/export-done";
 import { Check, Copy, Download, RotateCcw } from "lucide-react";
 import {
 	EXPORT_FORMAT_VALUES,
@@ -98,14 +99,21 @@ export function ExportButton() {
 					</div>
 				</button>
 			</PopoverTrigger>
-			{hasProject && <ExportPopover onOpenChange={setIsExportPopoverOpen} />}
+			{hasProject && (
+				<ExportPopover
+					isOpen={isExportPopoverOpen}
+					onOpenChange={setIsExportPopoverOpen}
+				/>
+			)}
 		</Popover>
 	);
 }
 
 function ExportPopover({
+	isOpen,
 	onOpenChange,
 }: {
+	isOpen: boolean;
 	onOpenChange: (open: boolean) => void;
 }) {
 	const editor = useEditor();
@@ -126,6 +134,18 @@ function ExportPopover({
 		DEFAULT_EXPORT_OPTIONS.includeAudio ?? true,
 	);
 	const [shouldIncludeWatermark, setShouldIncludeWatermark] = useState(true);
+	// The finished file stays here after the download, for "Enviar ao TikTok"
+	const [completedExport, setCompletedExport] = useState<{
+		video: Blob;
+		filename: string;
+	} | null>(null);
+	const [isSendingToTikTok, setIsSendingToTikTok] = useState(false);
+
+	useEffect(() => {
+		if (isOpen) return;
+		setCompletedExport(null);
+		setIsSendingToTikTok(false);
+	}, [isOpen]);
 
 	const handlePresetSelect = (presetId: string) => {
 		const preset = EXPORT_PRESETS.find((p) => p.id === presetId);
@@ -162,16 +182,46 @@ function ExportPopover({
 		}
 
 		if (result.success && result.buffer) {
-			downloadBuffer({
-				buffer: result.buffer,
-				filename: `${activeProject.metadata.name}${getExportFileExtension({ format })}`,
-				mimeType: getExportMimeType({ format }),
+			const video = new Blob([result.buffer], {
+				type: getExportMimeType({ format }),
 			});
+			const filename = `${activeProject.metadata.name}${getExportFileExtension({ format })}`;
+			downloadBlob({ blob: video, filename });
 
 			editor.project.clearExportState();
-			onOpenChange(false);
+			setCompletedExport({ video, filename });
 		}
 	};
+
+	// An inbox upload dies with the popover, so outside clicks don't close it then
+	const keepOpenWhileSending = (event: Event) => {
+		if (isSendingToTikTok) event.preventDefault();
+	};
+
+	if (completedExport) {
+		return (
+			<PopoverContent
+				className="bg-background mr-4 flex w-80 flex-col p-0"
+				onInteractOutside={keepOpenWhileSending}
+				onEscapeKeyDown={keepOpenWhileSending}
+			>
+				<ExportDone
+					video={completedExport.video}
+					filename={completedExport.filename}
+					canvasSize={activeProject.settings.canvasSize}
+					canSendToTikTok={!isAudioOnly}
+					onDownloadAgain={() =>
+						downloadBlob({
+							blob: completedExport.video,
+							filename: completedExport.filename,
+						})
+					}
+					onClose={() => onOpenChange(false)}
+					onBusyChange={setIsSendingToTikTok}
+				/>
+			</PopoverContent>
+		);
+	}
 
 	const handleCancel = () => {
 		editor.project.cancelExport();
