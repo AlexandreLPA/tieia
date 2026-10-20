@@ -135,6 +135,10 @@ interface BaseTimelineElement {
 	trimEnd: number;
 	sourceDuration?: number;
 	animations?: ElementAnimations;
+	/** Seconds the clip takes to fade in from transparent/silent. Unset or 0 means none. */
+	fadeIn?: number;
+	/** Seconds the clip takes to fade out at its end. Unset or 0 means none. */
+	fadeOut?: number;
 }
 
 export interface VideoElement extends BaseTimelineElement {

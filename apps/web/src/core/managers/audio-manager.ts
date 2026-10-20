@@ -3,6 +3,7 @@ import type { AudioClipSource } from "@/lib/media/audio";
 import { createAudioContext, collectAudioClips } from "@/lib/media/audio";
 import { connectAudioEffectsChain } from "@/lib/audio/audio-effects";
 import { timeStretch } from "@/lib/audio/time-stretch";
+import { getFadeEnvelope } from "@/lib/animation";
 import {
 	ALL_FORMATS,
 	AudioBufferSink,
@@ -417,12 +418,23 @@ export class AudioManager {
 
 				if (rate !== 1) node.playbackRate.value = rate;
 
-				this.connectClip({ node, clip, audioContext });
-
 				const startTimestamp =
 					this.playbackStartContextTime +
 					this.playbackLatencyCompensationSeconds +
 					(timelineTime - this.playbackStartTime);
+
+				const localStart = timelineTime - clip.startTime;
+				this.connectClip({
+					node,
+					clip,
+					audioContext,
+					contextStart: startTimestamp,
+					localStart,
+					localEnd: Math.min(
+						clip.duration,
+						localStart + buffer.duration / rate,
+					),
+				});
 
 				if (startTimestamp >= audioContext.currentTime) {
 					node.start(startTimestamp);
@@ -509,22 +521,51 @@ export class AudioManager {
 		node,
 		clip,
 		audioContext,
+		contextStart,
+		localStart,
+		localEnd,
 	}: {
 		node: AudioBufferSourceNode;
 		clip: AudioClipSource;
 		audioContext: AudioContext;
+		/** Context time at which the clip reaches `localStart`, even if already past */
+		contextStart: number;
+		/** Part of the clip this node plays, in seconds from the clip's start */
+		localStart: number;
+		localEnd: number;
 	}): void {
 		const destinationNode = this.getTrackDestination(clip.id);
 
-		const clipVolume = clip.volume ?? 1;
-		if (clipVolume < 1) {
-			const clipGain = audioContext.createGain();
-			clipGain.gain.value = clipVolume;
-			node.connect(clipGain);
-			clipGain.connect(destinationNode);
-		} else {
+		const clipVolume = Math.min(clip.volume ?? 1, 1);
+		const envelope = getFadeEnvelope({
+			duration: clip.duration,
+			fadeIn: clip.fadeIn,
+			fadeOut: clip.fadeOut,
+			from: localStart,
+			to: localEnd,
+		});
+		const isFading = envelope.some((point) => point.value < 1);
+		if (clipVolume >= 1 && !isFading) {
 			node.connect(destinationNode);
+			return;
 		}
+
+		const clipGain = audioContext.createGain();
+		if (isFading) {
+			// Same straight-line curve the export multiplies into the samples
+			const [first, ...rest] = envelope;
+			clipGain.gain.setValueAtTime(first.value * clipVolume, contextStart);
+			for (const point of rest) {
+				clipGain.gain.linearRampToValueAtTime(
+					point.value * clipVolume,
+					contextStart + point.time - localStart,
+				);
+			}
+		} else {
+			clipGain.gain.value = clipVolume;
+		}
+		node.connect(clipGain);
+		clipGain.connect(destinationNode);
 	}
 
 	// Speed with the original pitch can't be done buffer by buffer, so the
@@ -555,12 +596,19 @@ export class AudioManager {
 
 		const node = audioContext.createBufferSource();
 		node.buffer = buffer;
-		this.connectClip({ node, clip, audioContext });
 
 		const when =
 			this.playbackStartContextTime +
 			this.playbackLatencyCompensationSeconds +
 			(from - this.playbackStartTime);
+		this.connectClip({
+			node,
+			clip,
+			audioContext,
+			contextStart: when,
+			localStart: from - clip.startTime,
+			localEnd: clip.duration,
+		});
 		const late = Math.max(0, audioContext.currentTime - when);
 		node.start(
 			Math.max(audioContext.currentTime, when),

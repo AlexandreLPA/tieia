@@ -4,7 +4,7 @@ import type {
 	StickerElement,
 	VideoElement,
 } from "@/types/timeline";
-import { BlendingSection, TransformSection } from "./sections";
+import { BlendingSection, FadeSection, TransformSection } from "./sections";
 import { CropMaskSection } from "./sections/crop-mask";
 import {
 	Section,
@@ -39,6 +39,7 @@ export function VideoProperties({
 				<SpeedSection element={element} trackId={trackId} />
 			)}
 			<BlendingSection element={element} trackId={trackId} />
+			<FadeSection element={element} trackId={trackId} />
 		</div>
 	);
 }

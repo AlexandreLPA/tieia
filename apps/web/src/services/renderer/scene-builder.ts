@@ -99,6 +99,8 @@ function buildTrackNodes({
 							opacity: element.opacity,
 							blendMode: element.blendMode,
 							effects: element.effects,
+							fadeIn: element.fadeIn,
+							fadeOut: element.fadeOut,
 						}),
 					);
 				}
@@ -115,6 +117,8 @@ function buildTrackNodes({
 							opacity: element.opacity,
 							blendMode: element.blendMode,
 							effects: element.effects,
+							fadeIn: element.fadeIn,
+							fadeOut: element.fadeOut,
 							...(isPreview && {
 								maxSourceSize: PREVIEW_MAX_IMAGE_SIZE,
 							}),
@@ -148,6 +152,8 @@ function buildTrackNodes({
 						opacity: element.opacity,
 						blendMode: element.blendMode,
 						effects: element.effects,
+						fadeIn: element.fadeIn,
+						fadeOut: element.fadeOut,
 					}),
 				);
 			}

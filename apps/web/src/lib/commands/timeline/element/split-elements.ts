@@ -165,6 +165,8 @@ export class SplitElementsCommand extends Command {
 						animations: leftAnimations,
 						// The new cut starts plain; the right piece keeps the old transition
 						...("transitionOut" in element && { transitionOut: undefined }),
+						// Same for fades: fade in stays on the left, fade out on the right
+						fadeOut: undefined,
 					},
 					{
 						...element,
@@ -174,6 +176,7 @@ export class SplitElementsCommand extends Command {
 						trimStart: element.trimStart + leftFootage,
 						name: `${element.name} (right)`,
 						animations: rightAnimations,
+						fadeIn: undefined,
 					},
 				];
 			});

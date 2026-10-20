@@ -430,4 +430,33 @@ describe("generic keyframe commands", () => {
 		);
 		expect(keyframe?.time).toBe(4);
 	});
+
+	test("split leaves the new cut without fades", () => {
+		const element = { ...buildVideoElement(), fadeIn: 1, fadeOut: 2 };
+		const tracks = buildTracks({ element });
+		let updatedTracks: TimelineTrack[] = tracks;
+		mockEditorCore({
+			editor: {
+				timeline: {
+					getTracks: () => tracks,
+					updateTracks: (nextTracks) => {
+						updatedTracks = nextTracks;
+					},
+				},
+				selection: {
+					getSelectedElements: () => [],
+					setSelectedElements: () => {},
+				},
+			},
+		});
+
+		new SplitElementsCommand({
+			elements: [{ trackId: "track-1", elementId: "element-1" }],
+			splitTime: 5,
+		}).execute();
+
+		const [left, right] = updatedTracks[0].elements as VideoElement[];
+		expect([left.fadeIn, left.fadeOut]).toEqual([1, undefined]);
+		expect([right.fadeIn, right.fadeOut]).toEqual([undefined, 2]);
+	});
 });

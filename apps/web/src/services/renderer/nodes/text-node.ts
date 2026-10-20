@@ -287,6 +287,11 @@ export class TextNode extends BaseNode<TextNodeParams> {
 			baseOpacity: this.params.opacity,
 			animations: this.params.animations,
 			localTime,
+			fade: {
+				duration: this.params.duration,
+				fadeIn: this.params.fadeIn,
+				fadeOut: this.params.fadeOut,
+			},
 		});
 
 		const x = transform.position.x + this.params.canvasCenter.x;
