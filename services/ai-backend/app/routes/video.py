@@ -410,21 +410,19 @@ async def _run_seedance_generation(
 # Replicate (Runway, Pika, Kling, MiniMax, Stable Video, etc.)
 # ---------------------------------------------------------------------------
 
-REPLICATE_MODELS = {
-    "runway-gen3-alpha": "lucataco/runway-gen3-alpha:...",
-    "pika-1.0": "pika/pika-1.0:...",
-    "minimax-video-01": "minimax/video-01:...",
-    "stable-video-diffusion": "stability-ai/stable-video-diffusion:...",
-    "kling-v1.6": "kling/kling-v1.6-pro:...",
+# Replicate models by app id: (owner/name, name of the start-image input,
+# durations the model accepts). Called by name, so Replicate runs its latest version.
+REPLICATE_MODELS: dict[str, tuple[str, str, tuple[int, ...]]] = {
+    "seedance-1-pro-fast": ("bytedance/seedance-1-pro-fast", "image", (5, 10)),
+    "hailuo-02": ("minimax/hailuo-02", "first_frame_image", (6, 10)),
+    "veo-3.1-lite": ("google/veo-3.1-lite", "image", (4, 6, 8)),
+    "runway-gen4-turbo": ("runwayml/gen4-turbo", "image", (5, 10)),
+    "kling-v2.5-turbo-pro": ("kwaivgi/kling-v2.5-turbo-pro", "start_image", (5, 10)),
 }
 
-DEFAULT_REPLICATE_MODELS = {
-    "runway-gen3-alpha": "lucataco/runway-gen3-alpha:77d5a89a9b352c4b0e0b6b77e4e6c9c3f3e0f0e0",
-    "pika-1.0": "pika/pika:1.0",
-    "minimax-video-01": "minimax/video-01:d6b1c4b6e0e0e0e0e0e0e0e0e0e0e0e0",
-    "stable-video-diffusion": "stability-ai/stable-video-diffusion:db6ef745eb0a0d0e0e0e0e0e0e0e0e0e0",
-    "kling-v1.6": "kling/kling-v1.6-pro:77d5a89a9b352c4b0e0b6b77e4e6c9c3f3e0f0e0",
-}
+
+def _nearest_duration(requested: int, allowed: tuple[int, ...]) -> int:
+    return min(allowed, key=lambda value: abs(value - requested))
 
 
 async def _run_replicate_generation(
@@ -438,33 +436,29 @@ async def _run_replicate_generation(
         _jobs[job_id]["error"] = "Replicate API token not configured. Add it in Settings."
         return
 
-    model_version = DEFAULT_REPLICATE_MODELS.get(req.model, DEFAULT_REPLICATE_MODELS["runway-gen3-alpha"])
+    if req.model not in REPLICATE_MODELS:
+        _jobs[job_id]["status"] = "failed"
+        _jobs[job_id]["error"] = f"Unknown Replicate model: {req.model}"
+        return
+    model_name, image_field, durations = REPLICATE_MODELS[req.model]
 
     input_data: dict = {
         "prompt": req.prompt,
+        "aspect_ratio": _to_aspect_ratio(req.width, req.height),
+        "duration": _nearest_duration(req.duration, durations),
     }
-
     if req.mode == "image-to-video" and req.imageUrl:
-        input_data["image"] = req.imageUrl
-    elif req.mode == "video-to-video" and req.videoUrl:
-        input_data["video"] = req.videoUrl
-
-    aspect_ratio = _to_aspect_ratio(req.width, req.height)
-    input_data["aspect_ratio"] = aspect_ratio
-    input_data["duration"] = req.duration
+        input_data[image_field] = req.imageUrl
 
     try:
         async with httpx.AsyncClient(timeout=30) as client:
             resp = await client.post(
-                "https://api.replicate.com/v1/predictions",
+                f"https://api.replicate.com/v1/models/{model_name}/predictions",
                 headers={
                     "Authorization": f"Bearer {api_key}",
                     "Content-Type": "application/json",
                 },
-                json={
-                    "version": model_version.split(":")[-1] if ":" in model_version else model_version,
-                    "input": input_data,
-                },
+                json={"input": input_data},
             )
 
             if resp.status_code not in (200, 201):
@@ -635,6 +629,9 @@ async def _run_luma_generation(
         async with httpx.AsyncClient(timeout=30) as client:
             payload: dict = {
                 "prompt": req.prompt,
+                "model": "ray-3.2",
+                "resolution": "720p",
+                "duration": "10s" if req.duration >= 8 else "5s",
                 "aspect_ratio": _to_aspect_ratio(req.width, req.height),
             }
 

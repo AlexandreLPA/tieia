@@ -33,6 +33,7 @@ import {
 	VIDEO_ASPECT_RATIOS,
 	VIDEO_PROVIDER_CONFIGS,
 	getModelsForProvider,
+	formatUsd,
 	formatVideoCostPerSecond,
 	getProviderLabel,
 	sortModelsByCost,
@@ -148,7 +149,7 @@ export function VideoGenerationPanel({ className }: { className?: string }) {
 						>
 							Todos
 						</button>
-						{VIDEO_PROVIDER_CONFIGS.map((pc) => (
+						{VIDEO_PROVIDER_CONFIGS.filter((pc) => VIDEO_MODELS.some((m) => m.provider === pc.provider)).map((pc) => (
 							<button
 								key={pc.provider}
 								className={cn(
@@ -221,12 +222,12 @@ export function VideoGenerationPanel({ className }: { className?: string }) {
 							{model.costPerSecondUsd === 0
 								? "grátis, roda no seu PC (lento sem GPU)"
 								: estimatedTotal !== null
-									? `${formatVideoCostPerSecond(model)} · ≈ US$ ${estimatedTotal.toFixed(2).replace(".", ",")} por ${duration} s`
+									? `${formatVideoCostPerSecond(model)} · ≈ ${formatUsd(estimatedTotal)} por ${duration} s`
 									: `cobrado em ${formatVideoCostPerSecond(model)}`}
 						</p>
 					)}
 					<p className="text-[8px] text-muted-foreground/70">
-						Preços estimados; o valor real é o cobrado pelo provedor.
+						Preços dos provedores conferidos em 19/10/2026 (resolução indicada em cada modelo); podem mudar.
 					</p>
 				</div>
 

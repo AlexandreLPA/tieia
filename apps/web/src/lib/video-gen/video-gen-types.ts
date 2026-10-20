@@ -11,109 +11,98 @@ export interface VideoModel {
 	supportedModes: VideoGenMode[];
 	aspectRatios: string[];
 	costLabel: string;
-	/** Estimated US$ per generated second: 0 = free, null = billed in provider credits */
+	/** US$ per generated second, checked 2026-10-19 on the providers' pages: 0 = free, null = billed in provider credits */
 	costPerSecondUsd: number | null;
 }
 
 export const VIDEO_MODELS: VideoModel[] = [
 	{
-		id: "runway-gen3-alpha",
-		name: "Runway Gen-3 Alpha",
+		id: "cogvideox-2b",
+		name: "CogVideoX (Local)",
+		provider: "local",
+		description: "Modelo aberto e antigo, roda no seu PC; clipes curtos e simples",
+		maxDuration: 6,
+		supportedModes: ["text-to-video"],
+		aspectRatios: ["16:9", "9:16", "1:1"],
+		costLabel: "Grátis",
+		costPerSecondUsd: 0,
+	},
+	{
+		id: "seedance-1-pro-fast",
+		name: "Seedance 1 Pro Fast",
 		provider: "replicate",
-		description: "Geração de vídeo cinematográfico de alta qualidade com excelente movimento",
+		description: "ByteDance — rápido e barato, bom para B-roll e produto (720p)",
+		maxDuration: 12,
+		supportedModes: ["text-to-video", "image-to-video"],
+		aspectRatios: ["16:9", "9:16", "1:1"],
+		costLabel: "US$ 0,025/s",
+		costPerSecondUsd: 0.025,
+	},
+	{
+		id: "hailuo-02",
+		name: "Hailuo 02",
+		provider: "replicate",
+		description: "MiniMax — movimento realista, ótimo para pessoas e produto (768p)",
 		maxDuration: 10,
 		supportedModes: ["text-to-video", "image-to-video"],
-		aspectRatios: ["16:9", "9:16", "1:1", "4:3", "3:4"],
-		costLabel: "~$0.05/sec",
+		aspectRatios: ["16:9", "9:16", "1:1"],
+		costLabel: "US$ 0,045/s",
+		costPerSecondUsd: 0.045,
+	},
+	{
+		id: "veo-3.1-lite",
+		name: "Veo 3.1 Lite",
+		provider: "replicate",
+		description: "Google — o mesmo modelo do Flow, versão econômica (720p)",
+		maxDuration: 8,
+		supportedModes: ["text-to-video", "image-to-video"],
+		aspectRatios: ["16:9", "9:16", "1:1"],
+		costLabel: "US$ 0,05/s",
 		costPerSecondUsd: 0.05,
 	},
 	{
-		id: "pika-1.0",
-		name: "Pika 1.0",
+		id: "runway-gen4-turbo",
+		name: "Runway Gen-4 Turbo",
 		provider: "replicate",
-		description: "Geração de vídeo criativo com estilos artísticos",
-		maxDuration: 4,
-		supportedModes: ["text-to-video", "image-to-video"],
-		aspectRatios: ["16:9", "9:16", "1:1"],
-		costLabel: "~$0.03/sec",
-		costPerSecondUsd: 0.03,
-	},
-	{
-		id: "minimax-video-01",
-		name: "MiniMax Video-01",
-		provider: "replicate",
-		description: "Geração de alta fidelidade com forte aderência ao prompt",
-		maxDuration: 6,
-		supportedModes: ["text-to-video", "image-to-video"],
-		aspectRatios: ["16:9", "9:16", "1:1"],
-		costLabel: "~$0.04/sec",
-		costPerSecondUsd: 0.04,
-	},
-	{
-		id: "stable-video-diffusion",
-		name: "Stable Video Diffusion",
-		provider: "replicate",
-		description: "Animação de imagem para vídeo usando tecnologia da Stability AI",
-		maxDuration: 4,
+		description: "Runway — anima uma imagem sua; precisa de imagem inicial (720p)",
+		maxDuration: 10,
 		supportedModes: ["image-to-video"],
 		aspectRatios: ["16:9", "9:16", "1:1"],
-		costLabel: "~$0.02/sec",
-		costPerSecondUsd: 0.02,
+		costLabel: "US$ 0,05/s",
+		costPerSecondUsd: 0.05,
 	},
 	{
-		id: "kling-v1.6",
-		name: "Kling v1.6 Pro",
-		provider: "replicate",
-		description: "Modelo de vídeo da ByteDance com movimento forte e sincronia labial",
+		id: "luma-ray-3.2",
+		name: "Luma Ray 3.2",
+		provider: "luma",
+		description: "Luma — cinematográfico, boa câmera e iluminação (720p)",
 		maxDuration: 10,
-		supportedModes: ["text-to-video", "image-to-video", "video-to-video"],
+		supportedModes: ["text-to-video", "image-to-video"],
 		aspectRatios: ["16:9", "9:16", "1:1"],
-		costLabel: "~$0.06/sec",
+		costLabel: "US$ 0,06/s",
 		costPerSecondUsd: 0.06,
+	},
+	{
+		id: "kling-v2.5-turbo-pro",
+		name: "Kling 2.5 Turbo Pro",
+		provider: "replicate",
+		description: "Kling — muito bom para pessoas e ações (1080p)",
+		maxDuration: 10,
+		supportedModes: ["text-to-video", "image-to-video"],
+		aspectRatios: ["16:9", "9:16", "1:1"],
+		costLabel: "US$ 0,07/s",
+		costPerSecondUsd: 0.07,
 	},
 	{
 		id: "seedance-2.0",
 		name: "Seedance 2.0",
 		provider: "seedance",
-		description: "ByteDance Seedance via PiAPI — alta qualidade, rápido",
+		description: "ByteDance via PiAPI — alta qualidade, até 15 s (720p)",
 		maxDuration: 15,
 		supportedModes: ["text-to-video"],
-		aspectRatios: ["16:9", "9:16", "1:1", "4:3", "3:4", "21:9"],
-		costLabel: "PiAPI credits",
-		costPerSecondUsd: null,
-	},
-	{
-		id: "stable-video-xt",
-		name: "Stable Video XT",
-		provider: "stability",
-		description: "Modelo de geração de vídeo mais recente da Stability AI",
-		maxDuration: 4,
-		supportedModes: ["text-to-video", "image-to-video"],
 		aspectRatios: ["16:9", "9:16", "1:1"],
-		costLabel: "~$0.03/sec",
-		costPerSecondUsd: 0.03,
-	},
-	{
-		id: "luma-dream-machine",
-		name: "Luma Dream Machine",
-		provider: "luma",
-		description: "Dream Machine da Luma AI para movimento e câmera realistas",
-		maxDuration: 5,
-		supportedModes: ["text-to-video", "image-to-video"],
-		aspectRatios: ["16:9", "9:16", "1:1", "4:3", "3:4"],
-		costLabel: "~$0.04/sec",
-		costPerSecondUsd: 0.04,
-	},
-	{
-		id: "cogvideox-2b",
-		name: "CogVideoX (Local)",
-		provider: "local",
-		description: "Geração local gratuita via CogVideoX-2b (não precisa de chave de API)",
-		maxDuration: 6,
-		supportedModes: ["text-to-video"],
-		aspectRatios: ["16:9", "9:16", "1:1"],
-		costLabel: "Free (local GPU)",
-		costPerSecondUsd: 0,
+		costLabel: "US$ 0,20/s",
+		costPerSecondUsd: 0.2,
 	},
 ];
 
@@ -211,11 +200,15 @@ export function getProviderLabel(provider: VideoProvider): string {
 	return PROVIDER_LABELS[provider];
 }
 
-/** "Grátis", "≈ US$ 0,05/s" or "créditos PiAPI" */
+export function formatUsd(value: number): string {
+	return `US$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 3 })}`;
+}
+
+/** "Grátis", "US$ 0,025/s" or "créditos PiAPI" */
 export function formatVideoCostPerSecond(model: VideoModel): string {
 	if (model.costPerSecondUsd === 0) return "Grátis";
 	if (model.costPerSecondUsd === null) return `créditos ${getProviderLabel(model.provider)}`;
-	return `≈ US$ ${model.costPerSecondUsd.toFixed(2).replace(".", ",")}/s`;
+	return `${formatUsd(model.costPerSecondUsd)}/s`;
 }
 
 /** Free models first, then paid ones from cheapest; credit-billed last */

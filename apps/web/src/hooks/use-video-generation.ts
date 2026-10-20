@@ -53,7 +53,7 @@ export function useVideoGeneration(): UseVideoGenerationReturn {
 	const [currentJob, setCurrentJob] = useState<VideoGenJob | null>(null);
 	const [jobs, setJobs] = useState<VideoGenJob[]>([]);
 	const [error, setError] = useState<string | null>(null);
-	const [selectedModel, setSelectedModel] = useState("runway-gen3-alpha");
+	const [selectedModel, setSelectedModel] = useState("seedance-1-pro-fast");
 	const [selectedAspectRatio, setSelectedAspectRatio] = useState("16:9");
 	const [duration, setDuration] = useState(5);
 	const [genMode, setGenMode] = useState<VideoGenMode>("text-to-video");
