@@ -87,15 +87,6 @@ export function SendToTikTok({
 		};
 	}, [refreshAccount]);
 
-	const handleOpenWebsite = () => {
-		window.open(TIKTOK_UPLOAD_PAGE_URL, "_blank", "noopener,noreferrer");
-		setHasOpenedWebsite(true);
-	};
-
-	const handleConnect = () => {
-		window.open(TIKTOK_LOGIN_PATH, "_blank");
-	};
-
 	const handleDisconnect = async () => {
 		try {
 			await disconnectTikTok();
@@ -152,20 +143,27 @@ export function SendToTikTok({
 				<InboxSection
 					account={account}
 					send={send}
-					onConnect={handleConnect}
 					onDisconnect={handleDisconnect}
 					onSend={handleSendToInbox}
 				/>
 			)}
 
 			<div className="flex flex-col gap-1.5">
+				{/* A real link, not window.open: a new tab from a click is never popup-blocked */}
 				<Button
+					asChild
 					variant={showInbox && account?.connected ? "outline" : "default"}
 					className="w-full gap-2"
-					onClick={handleOpenWebsite}
 				>
-					<ExternalLink className="size-4" />
-					Postar pelo site do TikTok
+					<a
+						href={TIKTOK_UPLOAD_PAGE_URL}
+						target="_blank"
+						rel="noopener noreferrer"
+						onClick={() => setHasOpenedWebsite(true)}
+					>
+						<ExternalLink className="size-4" />
+						Postar pelo site do TikTok
+					</a>
 				</Button>
 				{hasOpenedWebsite ? (
 					<p className="text-muted-foreground text-[11px] leading-relaxed">
@@ -194,22 +192,23 @@ export function SendToTikTok({
 function InboxSection({
 	account,
 	send,
-	onConnect,
 	onDisconnect,
 	onSend,
 }: {
 	account: TikTokAccountResponse;
 	send: SendState;
-	onConnect: () => void;
 	onDisconnect: () => void;
 	onSend: () => void;
 }) {
 	if (!account.connected) {
+		// The login finishes in that tab, which tells this one over a BroadcastChannel
 		return (
 			<div className="flex flex-col gap-1.5">
-				<Button className="w-full gap-2" onClick={onConnect}>
-					<Inbox className="size-4" />
-					Conectar conta do TikTok
+				<Button asChild className="w-full gap-2">
+					<a href={TIKTOK_LOGIN_PATH} target="_blank" rel="noopener">
+						<Inbox className="size-4" />
+						Conectar conta do TikTok
+					</a>
 				</Button>
 				<p className="text-muted-foreground text-[11px] leading-relaxed">
 					Uma vez conectada, o vídeo vai direto para a caixa de entrada do app do

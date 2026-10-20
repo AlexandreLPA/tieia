@@ -21,7 +21,8 @@ const SESSION_TTL_MS = 60 * 60 * 1000;
 const globalStore = globalThis as typeof globalThis & {
 	__opencutTikTokUploads?: Map<string, TikTokUploadSession>;
 };
-const sessions = (globalStore.__opencutTikTokUploads ??= new Map());
+globalStore.__opencutTikTokUploads ??= new Map();
+const sessions = globalStore.__opencutTikTokUploads;
 
 function pruneExpired(): void {
 	const now = Date.now();
