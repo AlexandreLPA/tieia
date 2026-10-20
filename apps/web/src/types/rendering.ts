@@ -5,6 +5,10 @@ export interface Transform {
 		y: number;
 	};
 	rotate: number;
+	/** Mirrors the element left to right, around its own center */
+	flipX?: boolean;
+	/** Mirrors the element top to bottom, around its own center */
+	flipY?: boolean;
 }
 
 export interface CropRect {

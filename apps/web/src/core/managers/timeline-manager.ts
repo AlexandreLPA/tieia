@@ -25,6 +25,9 @@ import {
 	DuplicateElementsCommand,
 	ToggleElementsVisibilityCommand,
 	ToggleElementsMutedCommand,
+	FlipElementsCommand,
+	flipElementsInTracks,
+	type FlipAxis,
 	UpdateElementCommand,
 	SplitElementsCommand,
 	PasteCommand,
@@ -603,6 +606,20 @@ export class TimelineManager {
 		elements: { trackId: string; elementId: string }[];
 	}): void {
 		const command = new ToggleElementsMutedCommand(elements);
+		this.editor.command.execute({ command });
+	}
+
+	flipElements({
+		elements,
+		axis,
+	}: {
+		elements: { trackId: string; elementId: string }[];
+		axis: FlipAxis;
+	}): void {
+		const tracks = this.getTracks();
+		// Audio and effect clips can't flip; don't leave an empty undo step
+		if (flipElementsInTracks({ tracks, elements, axis }) === tracks) return;
+		const command = new FlipElementsCommand(elements, axis);
 		this.editor.command.execute({ command });
 	}
 

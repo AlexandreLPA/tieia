@@ -563,6 +563,10 @@ export class TextNode extends BaseNode<TextNodeParams> {
 			if (transform.rotate) {
 				ctx.rotate((transform.rotate * Math.PI) / 180);
 			}
+			// Mirrored around the text's anchor; element-bounds mirrors its box the same way
+			if (transform.flipX || transform.flipY) {
+				ctx.scale(transform.flipX ? -1 : 1, transform.flipY ? -1 : 1);
+			}
 		};
 
 		const enabledEffects = this.params.effects?.filter((effect) => effect.enabled) ?? [];

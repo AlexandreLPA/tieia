@@ -143,7 +143,8 @@ export function usePreviewInteraction({
 		}: React.PointerEvent) => {
 			if (!canvasRef.current) return;
 			if (editingText) return;
-			if (button !== 0) return;
+			const isRightClick = button === 2;
+			if (button !== 0 && !isRightClick) return;
 
 			const tracks = editor.timeline.getTracks();
 			const currentTime = editor.playback.getCurrentTime();
@@ -168,6 +169,24 @@ export function usePreviewInteraction({
 				canvasY: startPos.y,
 				elementsWithBounds,
 			});
+
+			if (isRightClick) {
+				// The context menu acts on the element under the cursor; a
+				// selection that already holds it stays as it is
+				const isHitSelected = (target: { trackId: string; elementId: string }) =>
+					editor.selection
+						.getSelectedElements()
+						.some(
+							({ trackId, elementId }) =>
+								trackId === target.trackId && elementId === target.elementId,
+						);
+				if (hit && !isHitSelected(hit)) {
+					editor.selection.setSelectedElements({
+						elements: [{ trackId: hit.trackId, elementId: hit.elementId }],
+					});
+				}
+				return;
+			}
 
 			if (!hit) {
 				editor.selection.clearSelection();

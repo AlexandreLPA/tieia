@@ -3,6 +3,7 @@ import { useEditor } from "@/hooks/use-editor";
 import { clamp, isNearlyEqual } from "@/utils/math";
 import type { AnimationPropertyPath } from "@/types/animation";
 import type { VisualElement } from "@/types/timeline";
+import type { FlipAxis } from "@/lib/commands/timeline";
 import {
 	Section,
 	SectionContent,
@@ -15,6 +16,8 @@ import { Button } from "@/components/ui/button";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
 	ArrowExpandIcon,
+	FlipHorizontalIcon,
+	FlipVerticalIcon,
 	Link05Icon,
 	RotateClockwiseIcon,
 } from "@hugeicons/core-free-icons";
@@ -182,6 +185,12 @@ export function TransformSection({
 			},
 		}),
 	});
+
+	const flip = (axis: FlipAxis) =>
+		editor.timeline.flipElements({
+			elements: [{ trackId, elementId: element.id }],
+			axis,
+		});
 
 	const hasPositionKeyframe =
 		positionX.isKeyframedAtTime || positionY.isKeyframedAtTime;
@@ -373,6 +382,33 @@ export function TransformSection({
 									defaultValue: DEFAULT_TRANSFORM.rotate,
 								})}
 							/>
+						</div>
+					</SectionField>
+
+					<SectionField label="Espelhar">
+						<div className="flex items-center gap-2">
+							<Button
+								type="button"
+								variant={element.transform.flipX ? "secondary" : "ghost"}
+								size="icon"
+								aria-pressed={!!element.transform.flipX}
+								title="Espelhar na horizontal"
+								aria-label="Espelhar na horizontal"
+								onClick={() => flip("horizontal")}
+							>
+								<HugeiconsIcon icon={FlipHorizontalIcon} />
+							</Button>
+							<Button
+								type="button"
+								variant={element.transform.flipY ? "secondary" : "ghost"}
+								size="icon"
+								aria-pressed={!!element.transform.flipY}
+								title="Espelhar na vertical"
+								aria-label="Espelhar na vertical"
+								onClick={() => flip("vertical")}
+							>
+								<HugeiconsIcon icon={FlipVerticalIcon} />
+							</Button>
 						</div>
 					</SectionField>
 				</SectionFields>

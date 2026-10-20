@@ -191,8 +191,12 @@ export function getElementBounds({
 			});
 			measuredWidth = visualRect.width;
 			measuredHeight = visualRect.height;
-			const localCenterX = visualRect.left + visualRect.width / 2;
-			const localCenterY = visualRect.top + visualRect.height / 2;
+			// A flip mirrors the text around its anchor, so an off-center box
+			// (left/right aligned text) lands on the other side
+			const localCenterX =
+				(visualRect.left + visualRect.width / 2) * (transform.flipX ? -1 : 1);
+			const localCenterY =
+				(visualRect.top + visualRect.height / 2) * (transform.flipY ? -1 : 1);
 			const scaledCenterX = localCenterX * transform.scale;
 			const scaledCenterY = localCenterY * transform.scale;
 			const rotationRad = (transform.rotate * Math.PI) / 180;
