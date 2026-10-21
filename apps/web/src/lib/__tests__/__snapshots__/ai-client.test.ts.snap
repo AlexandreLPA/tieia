@@ -1,0 +1,1732 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`aiClient request contract getBaseUrl 1`] = `
+{
+  "calls": [],
+  "outcome": "resolved: http://localhost:8420",
+}
+`;
+
+exports[`aiClient request contract health 1`] = `
+{
+  "calls": [
+    {
+      "body": null,
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "GET",
+      "url": "/health",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract transcribe 1`] = `
+{
+  "calls": [
+    {
+      "body": [
+        [
+          "file",
+          "<file sample.wav>",
+        ],
+        [
+          "language",
+          "arg-1",
+        ],
+      ],
+      "headers": {},
+      "method": "POST",
+      "url": "/api/transcribe",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract analyzeFillers 1`] = `
+{
+  "calls": [
+    {
+      "body": [
+        [
+          "file",
+          "<file sample.wav>",
+        ],
+        [
+          "filler_words",
+          "arg-1",
+        ],
+        [
+          "threshold",
+          "arg-2",
+        ],
+      ],
+      "headers": {},
+      "method": "POST",
+      "url": "/api/analyze/fillers",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract analyzeSilences 1`] = `
+{
+  "calls": [
+    {
+      "body": [
+        [
+          "file",
+          "<file sample.wav>",
+        ],
+        [
+          "threshold_db",
+          "arg-1",
+        ],
+        [
+          "min_duration",
+          "arg-2",
+        ],
+      ],
+      "headers": {},
+      "method": "POST",
+      "url": "/api/analyze/silences",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract analyzeStructure 1`] = `
+{
+  "calls": [
+    {
+      "body": [
+        [
+          "file",
+          "<file sample.wav>",
+        ],
+        [
+          "language",
+          "arg-1",
+        ],
+      ],
+      "headers": {},
+      "method": "POST",
+      "url": "/api/analyze/structure",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract getSuggestions 1`] = `
+{
+  "calls": [
+    {
+      "body": [
+        [
+          "file",
+          "<file sample.wav>",
+        ],
+        [
+          "language",
+          "arg-1",
+        ],
+      ],
+      "headers": {},
+      "method": "POST",
+      "url": "/api/analyze/suggestions",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract executeCommand 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"command":{},"timelineState":"arg-1"}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/llm/command",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract generateImage 1`] = `
+{
+  "calls": [
+    {
+      "body": "{}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/generate/image",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract enhancePrompt 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"prompt":{},"style":"arg-1"}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/generate/enhance-prompt",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract generateInfographic 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"topic":{},"data_points":"arg-1","style":"arg-2"}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/generate/infographic",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract removeBackground 1`] = `
+{
+  "calls": [
+    {
+      "body": [
+        [
+          "file",
+          "<file sample.wav>",
+        ],
+      ],
+      "headers": {},
+      "method": "POST",
+      "url": "/api/generate/remove-bg",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract removeVideoBackground 1`] = `
+{
+  "calls": [
+    {
+      "body": [
+        [
+          "file",
+          "<file sample.wav>",
+        ],
+        [
+          "fps",
+          "arg-1",
+        ],
+        [
+          "max_duration",
+          "arg-2",
+        ],
+      ],
+      "headers": {},
+      "method": "POST",
+      "url": "/api/background/remove-video",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract getVideoBgJob 1`] = `
+{
+  "calls": [
+    {
+      "body": null,
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "GET",
+      "url": "/api/background/job/[object Blob]",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract videoBgFileUrl 1`] = `
+{
+  "calls": [],
+  "outcome": "resolved: http://localhost:8420[object Blob]",
+}
+`;
+
+exports[`aiClient request contract embedAssetFrames 1`] = `
+{
+  "calls": [
+    {
+      "body": [
+        [
+          "file",
+          "<file sample.wav>",
+        ],
+        [
+          "sample_interval",
+          "arg-1",
+        ],
+        [
+          "max_frames",
+          "arg-2",
+        ],
+      ],
+      "headers": {},
+      "method": "POST",
+      "url": "/api/broll/embed-asset",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract embedBRollQuery 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"text":{}}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/broll/embed-query",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract generateSpeech 1`] = `
+{
+  "calls": [
+    {
+      "body": "{}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/tts/generate",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract generateSpeechBlob 1`] = `
+{
+  "calls": [
+    {
+      "body": "{}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/tts/generate",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract cloneVoice 1`] = `
+{
+  "calls": [
+    {
+      "body": [
+        [
+          "file",
+          "<file sample.wav>",
+        ],
+        [
+          "name",
+          "arg-1",
+        ],
+      ],
+      "headers": {},
+      "method": "POST",
+      "url": "/api/tts/clone-voice",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract generateSubtitles 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"segments":{},"format":"arg-1","max_chars_per_line":"arg-2"}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/transcribe/subtitles",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract chat 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"message":{},"system":"arg-1"}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/llm/chat",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract chatStream 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"message":"oi","system":"system"}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/llm/chat/stream",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract chatStreamMessages 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"messages":[{"role":"user","content":"oi"}]}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/llm/chat/stream",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract getVisionSupport 1`] = `
+{
+  "calls": [
+    {
+      "body": null,
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "GET",
+      "url": "/api/llm/vision-support",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract translateText 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"message":"Translate the following text to arg-1. Return ONLY the translated text, nothing else. Do not add quotes, explanations, or notes.\\n\\n[object Blob]","system":"You are a professional translator. Translate accurately and naturally into arg-1. Return only the translated text."}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/llm/chat",
+    },
+  ],
+  "outcome": "resolved: ok",
+}
+`;
+
+exports[`aiClient request contract nllbTranslate 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"text":{},"source_lang":"arg-2","target_lang":"arg-1"}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/translate/translate",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract nllbTranslateBatch 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"texts":["a","b"],"source_lang":"pt","target_lang":"en"}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/translate/translate-batch",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract nllbTranslateStatus 1`] = `
+{
+  "calls": [
+    {
+      "body": null,
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "GET",
+      "url": "/api/translate/health",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract sarvamTranscribe 1`] = `
+{
+  "calls": [
+    {
+      "body": [
+        [
+          "file",
+          "<file sample.wav>",
+        ],
+        [
+          "language_code",
+          "arg-1",
+        ],
+        [
+          "model",
+          "saaras:v3",
+        ],
+        [
+          "mode",
+          "arg-2",
+        ],
+      ],
+      "headers": {},
+      "method": "POST",
+      "url": "/api/sarvam/transcribe",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract sarvamTranslate 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"input":{},"source_language_code":"arg-1","target_language_code":"arg-2","model":3}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/sarvam/translate",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract sarvamTTS 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"text":{},"target_language_code":"arg-1","speaker":"arg-2","pace":3,"model":"bulbul:v3"}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/sarvam/tts",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract sarvamDetectLanguage 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"input":{}}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/sarvam/detect-language",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract sarvamTransliterate 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"input":{},"source_language_code":"arg-1","target_language_code":"arg-2"}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/sarvam/transliterate",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract sarvamStatus 1`] = `
+{
+  "calls": [
+    {
+      "body": null,
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "GET",
+      "url": "/api/sarvam/status",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract smallestTTS 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"text":{},"voice_id":"arg-1","language":"arg-2","speed":3,"output_format":4,"sample_rate":24000}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/smallest/tts",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract smallestTranscribe 1`] = `
+{
+  "calls": [
+    {
+      "body": [
+        [
+          "file",
+          "<file sample.wav>",
+        ],
+        [
+          "language",
+          "arg-1",
+        ],
+      ],
+      "headers": {},
+      "method": "POST",
+      "url": "/api/smallest/transcribe",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract smallestVoices 1`] = `
+{
+  "calls": [
+    {
+      "body": null,
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "GET",
+      "url": "/api/smallest/voices",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract smallestStatus 1`] = `
+{
+  "calls": [
+    {
+      "body": null,
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "GET",
+      "url": "/api/smallest/status",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract factCheck 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"text":{}}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/factcheck",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract llmStatus 1`] = `
+{
+  "calls": [
+    {
+      "body": null,
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "GET",
+      "url": "/api/llm/status",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract setCloudModel 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"model":{}}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/llm/set-cloud-model",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract setLocalBackend 1`] = `
+{
+  "calls": [
+    {
+      "body": null,
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/llm/set-local-backend",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract pullModel 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"model":{}}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/llm/pull-model",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract setLLMModel 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"model":{}}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/llm/set-model",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract downloadModel 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"model":{}}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/setup/download-model",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract getMemoryStatus 1`] = `
+{
+  "calls": [
+    {
+      "body": null,
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "GET",
+      "url": "/api/system/memory",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract getServicesStatus 1`] = `
+{
+  "calls": [
+    {
+      "body": null,
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "GET",
+      "url": "/api/services/status",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract pullOllamaModel 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"model":{}}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/llm/pull-model",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract prepareWhisper 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"model_type":"whisper","model_name":{}}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/setup/download-model",
+    },
+  ],
+  "outcome": "rejected: SyntaxError",
+}
+`;
+
+exports[`aiClient request contract prepareTTS 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"model_type":"tts","model_name":""}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/setup/download-model",
+    },
+  ],
+  "outcome": "rejected: SyntaxError",
+}
+`;
+
+exports[`aiClient request contract updateConfig 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"updates":{"key":"value"}}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/config/update",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract prepareDiffusion 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"model_type":"diffusion","model_name":""}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/setup/download-model",
+    },
+  ],
+  "outcome": "rejected: SyntaxError",
+}
+`;
+
+exports[`aiClient request contract analyzeEmotions 1`] = `
+{
+  "calls": [
+    {
+      "body": [
+        [
+          "file",
+          "<file sample.wav>",
+        ],
+        [
+          "window_seconds",
+          "arg-1",
+        ],
+      ],
+      "headers": {},
+      "method": "POST",
+      "url": "/api/analyze/emotions",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract detectFaces 1`] = `
+{
+  "calls": [
+    {
+      "body": [
+        [
+          "file",
+          "<file sample.wav>",
+        ],
+      ],
+      "headers": {},
+      "method": "POST",
+      "url": "/api/analyze/faces",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract analyzeSpeakers 1`] = `
+{
+  "calls": [
+    {
+      "body": [
+        [
+          "file",
+          "<file sample.wav>",
+        ],
+      ],
+      "headers": {},
+      "method": "POST",
+      "url": "/api/analyze/speakers",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract findClips 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"segments":{},"min_duration":15,"max_duration":90,"max_clips":10}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/analyze/find-clips",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract extractKeywords 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"segments":{}}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/analyze/keywords",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract generateQuestionCards 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"segments":{},"max_cards":"arg-1"}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/analyze/question-cards",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract suggestBRoll 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"segments":{}}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/analyze/broll-suggestions",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract denoiseAudio 1`] = `
+{
+  "calls": [
+    {
+      "body": [
+        [
+          "file",
+          "<file sample.wav>",
+        ],
+        [
+          "strength",
+          "arg-1",
+        ],
+      ],
+      "headers": {},
+      "method": "POST",
+      "url": "/api/audio/denoise",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract transcodeAlphaVideo 1`] = `
+{
+  "calls": [
+    {
+      "body": [
+        [
+          "file",
+          "<file sample.wav>",
+        ],
+      ],
+      "headers": {},
+      "method": "POST",
+      "url": "/api/video/transcode-alpha",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract exportRender 1`] = `
+{
+  "calls": [
+    {
+      "body": "{}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/export/render",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract generateReelTemplate 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"topic":{},"duration":"arg-1","style":"arg-2"}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/template/generate",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract startTemplateJob 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"topic":{},"duration":"arg-1","style":"arg-2","language":3}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/template/generate",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract getTemplateJob 1`] = `
+{
+  "calls": [
+    {
+      "body": null,
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "GET",
+      "url": "/api/template/jobs/[object Blob]",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract listTemplateJobs 1`] = `
+{
+  "calls": [
+    {
+      "body": null,
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "GET",
+      "url": "/api/template/jobs",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract turboquantStatus 1`] = `
+{
+  "calls": [
+    {
+      "body": null,
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "GET",
+      "url": "/api/turboquant/status",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract turboquantModelTiers 1`] = `
+{
+  "calls": [
+    {
+      "body": null,
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "GET",
+      "url": "/api/turboquant/model-tiers",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract turboquantKVConfigurations 1`] = `
+{
+  "calls": [
+    {
+      "body": null,
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "GET",
+      "url": "/api/turboquant/kv-configurations",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract turboquantEstimate 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"model_tag":{},"context_length":"arg-1","kv_bits":"arg-2"}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/turboquant/estimate",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract turboquantRecommend 1`] = `
+{
+  "calls": [
+    {
+      "body": null,
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "GET",
+      "url": "/api/turboquant/recommend?budget=%5Bobject+Blob%5D&tier=arg-1",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract turboquantApplyTier 1`] = `
+{
+  "calls": [
+    {
+      "body": null,
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/turboquant/apply-tier?tier=%5Bobject+Blob%5D",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract turboquantListModels 1`] = `
+{
+  "calls": [
+    {
+      "body": null,
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "GET",
+      "url": "/api/turboquant/models",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract turboquantModelCatalog 1`] = `
+{
+  "calls": [
+    {
+      "body": null,
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "GET",
+      "url": "/api/turboquant/models/catalog",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract turboquantDownloadModel 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"model_id":{}}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/turboquant/models/download",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract turboquantLoadModel 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"model_id":{}}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/turboquant/models/load",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract turboquantUnloadModel 1`] = `
+{
+  "calls": [
+    {
+      "body": null,
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/turboquant/models/unload",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract turboquantDeleteModel 1`] = `
+{
+  "calls": [
+    {
+      "body": null,
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "DELETE",
+      "url": "/api/turboquant/models/%5Bobject%20Blob%5D",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract generateVideoPrompt 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"title":{},"description":"arg-1","style":"arg-2"}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/video/generate-prompt",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract generateVideo 1`] = `
+{
+  "calls": [
+    {
+      "body": "{}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/video/generate",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract getVideoJob 1`] = `
+{
+  "calls": [
+    {
+      "body": null,
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "GET",
+      "url": "/api/video/jobs/[object Blob]",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract youtubeIngest 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"url":{},"ownership_confirmed":"arg-1","language":"arg-2"}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/youtube/ingest",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract youtubeJobStatus 1`] = `
+{
+  "calls": [
+    {
+      "body": null,
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "GET",
+      "url": "/api/youtube/status/[object Blob]",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract youtubeCancel 1`] = `
+{
+  "calls": [
+    {
+      "body": null,
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/youtube/cancel/[object Blob]",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract youtubeAnalyze 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"job_id":{},"min_clip_duration":15,"max_clip_duration":90,"max_clips":10}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/youtube/analyze",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract youtubeGenerateClips 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"job_id":{},"selected_clips":"arg-1","output_format":"9:16","caption_style":"modern","auto_reframe":true,"add_hook":false,"resolution":"1080"}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/youtube/clips",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract engagementScore 1`] = `
+{
+  "calls": [
+    {
+      "body": "{}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/engagement/score",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract engagementScoreVideo 1`] = `
+{
+  "calls": [
+    {
+      "body": [
+        [
+          "file",
+          "<file sample.wav>",
+        ],
+      ],
+      "headers": {},
+      "method": "POST",
+      "url": "/api/engagement/score-video",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract engagementScoreBatch 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"clips":{}}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/engagement/score-batch",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract scoreThumbnails 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"image_urls":{},"headline":"arg-1","platform":"arg-2"}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/engagement/score-thumbnails",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract generateHookVariants 1`] = `
+{
+  "calls": [
+    {
+      "body": "{}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/engagement/generate-hook-variants",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract checkTikTokCompliance 1`] = `
+{
+  "calls": [
+    {
+      "body": "{}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/compliance/tiktok",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract recordScore 1`] = `
+{
+  "calls": [
+    {
+      "body": "{}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/engagement/record-score",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract getScoreHistory 1`] = `
+{
+  "calls": [
+    {
+      "body": null,
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "GET",
+      "url": "/api/engagement/score-history?project_id=%5Bobject+Blob%5D&limit=arg-1",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract getScoreAnalytics 1`] = `
+{
+  "calls": [
+    {
+      "body": null,
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "GET",
+      "url": "/api/engagement/score-analytics?project_id=%5Bobject+Blob%5D",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract embedText 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"text":{}}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/search/embed-text",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract embedTexts 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"texts":["a","b"]}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/search/embed-texts",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract embedFrames 1`] = `
+{
+  "calls": [
+    {
+      "body": [
+        [
+          "frame",
+          "<file sample.wav>",
+        ],
+      ],
+      "headers": {},
+      "method": "POST",
+      "url": "/api/search/embed-frames",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract zeroShotTags 1`] = `
+{
+  "calls": [
+    {
+      "body": [
+        [
+          "frame",
+          "<file sample.wav>",
+        ],
+        [
+          "labels",
+          "cat,dog",
+        ],
+      ],
+      "headers": {},
+      "method": "POST",
+      "url": "/api/search/zero-shot-tags",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract clipServiceHealth 1`] = `
+{
+  "calls": [
+    {
+      "body": null,
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "GET",
+      "url": "/api/search/health",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
