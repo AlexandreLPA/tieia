@@ -224,7 +224,10 @@ describe("aiClient request contract", () => {
 				(value: unknown) =>
 					typeof value === "string" ? `resolved: ${value}` : "resolved",
 				(error: unknown) =>
-					`rejected: ${error instanceof Error ? error.message : String(error)}`,
+					// JSON parse messages differ between Bun versions, keep only the type.
+					error instanceof SyntaxError
+						? "rejected: SyntaxError"
+						: `rejected: ${error instanceof Error ? error.message : String(error)}`,
 			);
 		const pending = new Promise((resolve) =>
 			setTimeout(() => resolve("pending"), 200),

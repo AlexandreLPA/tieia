@@ -875,7 +875,7 @@ exports[`aiClient request contract prepareWhisper 1`] = `
       "url": "/api/setup/download-model",
     },
   ],
-  "outcome": "rejected: JSON Parse error: Unable to parse JSON string",
+  "outcome": "rejected: SyntaxError",
 }
 `;
 
@@ -891,7 +891,7 @@ exports[`aiClient request contract prepareTTS 1`] = `
       "url": "/api/setup/download-model",
     },
   ],
-  "outcome": "rejected: JSON Parse error: Unable to parse JSON string",
+  "outcome": "rejected: SyntaxError",
 }
 `;
 
@@ -923,7 +923,7 @@ exports[`aiClient request contract prepareDiffusion 1`] = `
       "url": "/api/setup/download-model",
     },
   ],
-  "outcome": "rejected: JSON Parse error: Unable to parse JSON string",
+  "outcome": "rejected: SyntaxError",
 }
 `;
 
