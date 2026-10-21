@@ -304,11 +304,7 @@ class LLMBackend:
                 },
             )
             resp.raise_for_status()
-            data = resp.json()
-            choices = data.get("choices", [])
-            if choices:
-                return choices[0].get("message", {}).get("content", "")
-            return ""
+        return self._completion_text(resp, "TurboQuant")
 
     async def _tq_chat(
         self,
@@ -327,11 +323,7 @@ class LLMBackend:
                 },
             )
             resp.raise_for_status()
-            data = resp.json()
-            choices = data.get("choices", [])
-            if choices:
-                return choices[0].get("message", {}).get("content", "")
-            return ""
+        return self._completion_text(resp, "TurboQuant")
 
     async def _tq_generate_stream(
         self,
@@ -358,6 +350,7 @@ class LLMBackend:
                 },
             ) as resp:
                 resp.raise_for_status()
+                yielded = False
                 async for line in resp.aiter_lines():
                     if not line or not line.startswith("data: "):
                         continue
@@ -366,12 +359,14 @@ class LLMBackend:
                         break
                     try:
                         data = json.loads(data_str)
-                        delta = data.get("choices", [{}])[0].get("delta", {})
-                        token = delta.get("content", "")
-                        if token:
-                            yield token
-                    except (json.JSONDecodeError, IndexError):
+                    except json.JSONDecodeError:
                         continue
+                    token = self._stream_token(data, "TurboQuant")
+                    if token:
+                        yielded = True
+                        yield token
+                if not yielded:
+                    raise RuntimeError("TurboQuant stream ended without content")
 
     # ── OpenRouter (cloud) methods ────────────────────────────────────
     # Scoped to this app only — no other codebase on this machine calls
@@ -423,8 +418,36 @@ class LLMBackend:
                     data = {}
                 message = self._provider_error(data if isinstance(data, dict) else {}, resp)
                 raise RuntimeError(f"O provedor recusou a requisição (HTTP {resp.status_code}): {message}")
-            choices = resp.json().get("choices", [])
-            return choices[0].get("message", {}).get("content") or "" if choices else ""
+        return self._completion_text(resp, "OpenRouter")
+
+    @classmethod
+    def _completion_text(cls, resp: httpx.Response, source: str) -> str:
+        """Content of a non-streamed chat completion; raises instead of returning ''."""
+        try:
+            data = resp.json()
+        except ValueError:
+            data = {}
+        if not isinstance(data, dict):
+            data = {}
+        choices = data.get("choices") or []
+        # OpenRouter can answer HTTP 200 with an error object when the upstream fails
+        if data.get("error") and not choices:
+            raise RuntimeError(f"{source} upstream error: {cls._provider_error(data, resp)}")
+        content = (choices[0].get("message") or {}).get("content") if choices else None
+        if not content:
+            finish = choices[0].get("finish_reason") if choices else None
+            raise RuntimeError(f"{source} returned an empty answer (finish_reason={finish})")
+        return content
+
+    @classmethod
+    def _stream_token(cls, chunk: dict[str, Any], source: str) -> str:
+        """Content delta of one SSE chunk; raises on an in-stream error object."""
+        error = chunk.get("error")
+        if error:
+            message = error.get("message") if isinstance(error, dict) else error
+            raise RuntimeError(f"{source} stream error: {message}")
+        choices = chunk.get("choices") or [{}]
+        return (choices[0].get("delta") or {}).get("content") or ""
 
     async def _or_generate_stream(self, prompt: str, system: str | None) -> AsyncIterator[str]:
         async with httpx.AsyncClient(timeout=httpx.Timeout(300, connect=10.0)) as client:
@@ -446,6 +469,7 @@ class LLMBackend:
                         data = {}
                     message = self._provider_error(data if isinstance(data, dict) else {}, resp)
                     raise RuntimeError(f"O provedor recusou a requisição (HTTP {resp.status_code}): {message}")
+                yielded = False
                 async for line in resp.aiter_lines():
                     if not line or not line.startswith("data: "):
                         continue
@@ -453,12 +477,15 @@ class LLMBackend:
                     if data_str.strip() == "[DONE]":
                         break
                     try:
-                        delta = json.loads(data_str).get("choices", [{}])[0].get("delta", {})
-                        token = delta.get("content") or ""
-                        if token:
-                            yield token
-                    except (json.JSONDecodeError, IndexError):
+                        chunk = json.loads(data_str)
+                    except json.JSONDecodeError:
                         continue
+                    token = self._stream_token(chunk, "OpenRouter")
+                    if token:
+                        yielded = True
+                        yield token
+                if not yielded:
+                    raise RuntimeError("OpenRouter stream ended without content")
 
     # ── Unified public interface ──────────────────────────────────────
 
