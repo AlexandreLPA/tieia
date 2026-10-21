@@ -20,14 +20,14 @@ export const SUGGESTED_MODELS = [
 // machine. Only usable once OPENROUTER_API_KEY is set in .env.
 export const SUGGESTED_CLOUD_MODELS = [
 	{
-		id: "nvidia/nemotron-3-ultra-550b-a55b:free",
-		name: "Nemotron 3 Ultra",
-		description: "NVIDIA — grátis, 262K de contexto, só texto. Provedor identificado.",
+		id: "minimax/minimax-m3.1-flash:free",
+		name: "MiniMax M3.1 Flash",
+		description: "MiniMax — grátis, 1M de contexto, aceita texto/imagem/vídeo.",
 	},
 	{
-		id: "stealth/space-bunny-alpha",
-		name: "Space Bunny Alpha",
-		description: "Grátis, 1M de contexto, aceita texto/imagem/vídeo. Provedor anônimo — dados podem ser retidos.",
+		id: "nvidia/nemotron-3-ultra-550b-a55b:free",
+		name: "Nemotron 3 Ultra",
+		description: "NVIDIA — grátis, 1M de contexto, só texto. Pode ficar sobrecarregado.",
 	},
 ];
 
