@@ -67,9 +67,9 @@ Esta versão foi adaptada e traduzida para **Português (PT-BR)** com foco em **
    ```env
    AI_LLM_BACKEND=openrouter
    OPENROUTER_API_KEY=sk-or-v1-sua-chave-aqui
-   OPENROUTER_MODEL=nvidia/nemotron-3-ultra-550b-a55b:free
+   OPENROUTER_MODEL=minimax/minimax-m3.1-flash:free
    ```
-   *(Dica: você pode usar modelos gratuitos do OpenRouter como `nvidia/nemotron-3-ultra-550b-a55b:free` ou modelos rápidos como `google/gemini-2.5-flash` e `openai/gpt-4o-mini`).*
+   *(Dica: você pode usar modelos gratuitos do OpenRouter como `minimax/minimax-m3.1-flash:free`, `nvidia/nemotron-3-ultra-550b-a55b:free` ou modelos rápidos como `google/gemini-2.5-flash` e `openai/gpt-4o-mini`).*
 3. **Suba os serviços de backend com Docker Compose:**
    ```bash
    docker compose up -d --build

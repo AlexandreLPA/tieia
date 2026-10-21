@@ -103,7 +103,7 @@ services:
       - OPENCUTAI_KV_CACHE_BITS=${KV_CACHE_BITS:-4}
       - OPENCUTAI_AI_LLM_BACKEND=${AI_LLM_BACKEND:-auto}
       - OPENCUTAI_OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
-      - OPENCUTAI_OPENROUTER_MODEL=${OPENROUTER_MODEL:-nvidia/nemotron-3-ultra-550b-a55b:free}
+      - OPENCUTAI_OPENROUTER_MODEL=${OPENROUTER_MODEL:-minimax/minimax-m3.1-flash:free}
       - OPENCUTAI_SARVAM_API_KEY=${SARVAM_API_KEY:-}
     volumes:
       - ai_models:/app/models
