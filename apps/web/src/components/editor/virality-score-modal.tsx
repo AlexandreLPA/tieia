@@ -404,8 +404,8 @@ export function ViralityScoreModal({ open, onOpenChange }: ViralityScoreModalPro
 										{score.suggestions.length > 0 && (
 											<div className="space-y-2">
 												<h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Sugestões</h4>
-												{score.suggestions.map((s, i) => (
-													<div key={i} className="flex items-start gap-2 text-xs">
+												{score.suggestions.map((s) => (
+													<div key={s.suggestion} className="flex items-start gap-2 text-xs">
 														<span className={cn(
 															"mt-1 h-2 w-2 rounded-full flex-shrink-0",
 															s.expected_impact === "high" ? "bg-red-400" : "bg-yellow-400",

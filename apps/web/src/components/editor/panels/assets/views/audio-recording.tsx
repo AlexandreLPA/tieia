@@ -72,6 +72,7 @@ export function AudioRecordingPanel({ className }: { className?: string }) {
 						<div className="flex items-end justify-center gap-0.5 h-8">
 							{state.levels.map((level, i) => (
 								<div
+									// biome-ignore lint/suspicious/noArrayIndexKey: static level meter; bars are positional and never reordered
 									key={i}
 									className={cn(
 										"w-2 rounded-t transition-all duration-75",

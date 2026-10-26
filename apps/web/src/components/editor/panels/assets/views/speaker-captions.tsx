@@ -125,9 +125,9 @@ export function SpeakerCaptionsPanel({ className }: { className?: string }) {
 
 			<ScrollArea className="flex-1 min-h-0">
 				<div className="px-4 py-3 space-y-1">
-					{captionSegments.map((seg, idx) => (
+					{captionSegments.map((seg) => (
 						<div
-							key={idx}
+							key={seg.start}
 							className="rounded border p-2 space-y-1"
 							style={{ borderLeftColor: seg.speakerColor, borderLeftWidth: 3 }}
 						>

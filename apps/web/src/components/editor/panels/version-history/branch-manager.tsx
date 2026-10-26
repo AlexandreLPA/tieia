@@ -120,8 +120,8 @@ export function BranchManager({
 											className="text-xs"
 										/>
 										<div className="flex items-center gap-2">
-											<label className="text-xs text-muted-foreground">Cor:</label>
-											<input
+											<label htmlFor="branch-edit-color" className="text-xs text-muted-foreground">Cor:</label>
+											<input id="branch-edit-color"
 												type="color"
 												value={editColor || "#6366f1"}
 												onChange={(e) => setEditColor(e.target.value)}

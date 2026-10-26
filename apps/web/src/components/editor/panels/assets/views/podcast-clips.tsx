@@ -804,9 +804,9 @@ export function PodcastClipsView() {
 
 							{questionCards.length > 0 && (
 								<div className="flex flex-col gap-1 mt-1">
-									{questionCards.map((card, idx) => (
+									{questionCards.map((card) => (
 										<div
-											key={`${card.timestamp}-${idx}`}
+											key={card.timestamp}
 											className="flex items-center gap-2 rounded-md border px-2 py-1.5"
 										>
 											{card.emoji && (
@@ -837,9 +837,9 @@ export function PodcastClipsView() {
 							<div className="border-t pt-3 flex flex-col gap-2">
 								<Label className="text-xs font-medium">Palavras-chave detectadas</Label>
 								<div className="flex flex-wrap gap-1">
-									{keywords.slice(0, 20).map((kw, idx) => (
+									{keywords.slice(0, 20).map((kw) => (
 										<Badge
-											key={`${kw.word}-${idx}`}
+											key={kw.word}
 											variant="outline"
 											className="text-[10px] px-1.5 py-0 h-5"
 											style={{ borderColor: kw.color, color: kw.color }}

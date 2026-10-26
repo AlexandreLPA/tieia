@@ -87,6 +87,7 @@ export function renderTransition({
 	const textureB = createTexture({ context, source: sourceB });
 
 	context.bindFramebuffer(context.FRAMEBUFFER, null);
+	// biome-ignore lint/correctness/useHookAtTopLevel: WebGL useProgram, not a React hook
 	context.useProgram(program);
 
 	context.activeTexture(context.TEXTURE0);
@@ -112,6 +113,7 @@ export function renderTransition({
 
 	context.deleteTexture(textureA);
 	context.deleteTexture(textureB);
+	// biome-ignore lint/correctness/useHookAtTopLevel: WebGL useProgram, not a React hook
 	context.useProgram(null);
 
 	const outputCanvas = createOffscreenCanvas({ width, height });

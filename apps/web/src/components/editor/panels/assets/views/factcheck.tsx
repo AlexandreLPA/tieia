@@ -159,11 +159,11 @@ export function FactCheckView() {
 							<p className="text-xs text-muted-foreground">{result.summary}</p>
 						</div>
 
-						{result.claims.map((claim, i) => {
+						{result.claims.map((claim) => {
 							const style = getVerdictStyle(claim.verdict);
 							return (
 								<div
-									key={i}
+									key={claim.claim}
 									className={cn(
 										"rounded-md border p-3 flex flex-col gap-2",
 										style.bg,

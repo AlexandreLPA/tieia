@@ -31,11 +31,21 @@ export function ClipCard({ clip, selected, onToggle, onExpand }: ClipCardProps) 
 	const duration = clip.end - clip.start;
 
 	return (
+		// biome-ignore lint/a11y/useSemanticElements: card holds action buttons; a native button cannot contain them
 		<div
 			className={cn(
 				"rounded-lg border p-3 space-y-2 cursor-pointer transition-colors",
 				selected ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/30",
 			)}
+			role="button"
+			tabIndex={0}
+			onKeyDown={(e) => {
+				if (e.target !== e.currentTarget) return;
+				if (e.key === "Enter" || e.key === " ") {
+					e.preventDefault();
+					e.currentTarget.click();
+				}
+			}}
 			onClick={onExpand}
 		>
 			{/* Header */}

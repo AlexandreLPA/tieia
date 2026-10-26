@@ -659,7 +659,7 @@ function AIOptimizationSection() {
 							>
 								<div className="flex items-center gap-1.5">
 									{isActive ? (
-										<svg className="size-3 text-primary shrink-0" viewBox="0 0 16 16" fill="none">
+										<svg aria-hidden="true" className="size-3 text-primary shrink-0" viewBox="0 0 16 16" fill="none">
 											<path d="M3 8.5L6.5 12L13 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
 										</svg>
 									) : (
@@ -718,7 +718,7 @@ function AIOptimizationSection() {
 							>
 								<div className="flex items-center gap-1.5">
 									{isActive ? (
-										<svg className="size-3 text-primary shrink-0" viewBox="0 0 16 16" fill="none">
+										<svg aria-hidden="true" className="size-3 text-primary shrink-0" viewBox="0 0 16 16" fill="none">
 											<path d="M3 8.5L6.5 12L13 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
 										</svg>
 									) : (
@@ -781,7 +781,7 @@ function AIOptimizationSection() {
 							>
 								<div className="flex items-center gap-1.5">
 									{isActive ? (
-										<svg className="size-3 text-primary shrink-0" viewBox="0 0 16 16" fill="none">
+										<svg aria-hidden="true" className="size-3 text-primary shrink-0" viewBox="0 0 16 16" fill="none">
 											<path d="M3 8.5L6.5 12L13 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
 										</svg>
 									) : (
@@ -887,7 +887,7 @@ function ComputeModeSelector({
 						>
 							<div className="flex items-center gap-1.5">
 								{isActive ? (
-									<svg className="size-3 text-primary shrink-0" viewBox="0 0 16 16" fill="none">
+									<svg aria-hidden="true" className="size-3 text-primary shrink-0" viewBox="0 0 16 16" fill="none">
 										<path d="M3 8.5L6.5 12L13 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
 									</svg>
 								) : (
@@ -1147,12 +1147,12 @@ function APIKeysSection() {
 						</div>
 
 						{hasValue && !isVisible ? (
-							<div
+							<button type="button"
 								className="w-full rounded-md border bg-muted/30 px-2.5 py-1.5 text-[11px] font-mono text-muted-foreground cursor-default select-none"
 								onClick={() => toggleVisibility(field.key)}
 							>
 								{"•".repeat(Math.min(effectiveValue.length, 24))}
-							</div>
+							</button>
 						) : (
 							<input
 								type={isVisible ? "text" : "password"}

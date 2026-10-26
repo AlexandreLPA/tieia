@@ -374,7 +374,7 @@ export function TemplatePanel({ className }: TemplatePanelProps) {
 				completedAt: Date.now(),
 			});
 		}
-	}, [topic, duration, style, language, isGenerating, startPolling]);
+	}, [topic, duration, style, language, isGenerating, startPolling, addBgTask, updateBgTask]);
 
 	const handleImport = useCallback(async (templateToImport: ReelTemplate, storedId: string) => {
 
@@ -552,10 +552,10 @@ export function TemplatePanel({ className }: TemplatePanelProps) {
 			{/* Input Section */}
 			<div className="px-4 py-3 border-b space-y-3">
 				<div>
-					<label className="text-xs font-medium text-muted-foreground mb-1.5 block">
+					<label htmlFor="template-topic-input" className="text-xs font-medium text-muted-foreground mb-1.5 block">
 						Tópico
 					</label>
-					<Input
+					<Input id="template-topic-input"
 						value={topic}
 						onChange={(e) => setTopic(e.target.value)}
 						onKeyDown={handleKeyDown}
@@ -567,9 +567,9 @@ export function TemplatePanel({ className }: TemplatePanelProps) {
 
 				<div className="flex gap-2">
 					<div className="flex-1">
-						<label className="text-xs font-medium text-muted-foreground mb-1.5 block">
+						<span className="text-xs font-medium text-muted-foreground mb-1.5 block">
 							Duração
-						</label>
+						</span>
 						<div className="flex gap-1">
 							{DURATION_OPTIONS.map((opt) => (
 								<button
@@ -592,9 +592,9 @@ export function TemplatePanel({ className }: TemplatePanelProps) {
 				</div>
 
 				<div>
-					<label className="text-xs font-medium text-muted-foreground mb-1.5 block">
+					<span className="text-xs font-medium text-muted-foreground mb-1.5 block">
 						Estilo
-					</label>
+					</span>
 					<div className="flex gap-1">
 						{STYLE_OPTIONS.map((opt) => (
 							<button
@@ -616,9 +616,9 @@ export function TemplatePanel({ className }: TemplatePanelProps) {
 				</div>
 
 				<div>
-					<label className="text-xs font-medium text-muted-foreground mb-1.5 block">
+					<span className="text-xs font-medium text-muted-foreground mb-1.5 block">
 						Idioma
-					</label>
+					</span>
 					<div className="flex flex-wrap gap-1">
 						{LANGUAGE_OPTIONS.map((opt) => (
 							<button
@@ -777,8 +777,8 @@ function TemplateHistoryCard({
 			)}
 		>
 			{/* Collapsed header — always visible */}
-			<div
-				className="px-3 py-2 flex items-center gap-2 cursor-pointer hover:bg-accent/50"
+			<button type="button"
+				className="w-full text-left px-3 py-2 flex items-center gap-2 cursor-pointer hover:bg-accent/50"
 				onClick={onToggle}
 			>
 				<span className="text-[10px]">{isExpanded ? "▾" : "▸"}</span>
@@ -796,7 +796,7 @@ function TemplateHistoryCard({
 						<HugeiconsIcon icon={Tick01Icon} className="size-3 text-green-500" />
 					)}
 				</div>
-			</div>
+			</button>
 
 			{/* Expanded content */}
 			{isExpanded && (
@@ -886,8 +886,8 @@ function SegmentCard({ segment }: { segment: ReelTemplateSegment }) {
 	return (
 		<div className="rounded-lg border bg-card overflow-hidden">
 			{/* Header — always visible */}
-			<div
-				className="px-3 py-2 flex items-center gap-2 cursor-pointer"
+			<button type="button"
+				className="w-full text-left px-3 py-2 flex items-center gap-2 cursor-pointer"
 				onClick={() => setExpanded(!expanded)}
 			>
 				<div className="flex items-center justify-center size-5 rounded-full bg-primary/10 text-primary shrink-0">
@@ -902,7 +902,7 @@ function SegmentCard({ segment }: { segment: ReelTemplateSegment }) {
 						{segment.start_time}s – {segment.end_time}s
 					</span>
 				</div>
-				<svg
+				<svg aria-hidden="true"
 					width="10"
 					height="10"
 					viewBox="0 0 16 16"
@@ -914,7 +914,7 @@ function SegmentCard({ segment }: { segment: ReelTemplateSegment }) {
 				>
 					<path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
 				</svg>
-			</div>
+			</button>
 
 			{expanded && (
 				<div className="px-3 pb-3 space-y-2.5 border-t pt-2">

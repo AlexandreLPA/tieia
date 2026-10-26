@@ -188,7 +188,7 @@ export function ThumbnailGenPanel({ className }: { className?: string }) {
 						</div>
 						<div className="grid grid-cols-2 gap-1.5">
 							{generatedThumbnails.map((thumb, i) => (
-								<div key={`${thumb.seed}-${i}`} className="rounded border overflow-hidden group">
+								<div key={thumb.seed} className="rounded border overflow-hidden group">
 									<img
 										src={thumb.imageUrl}
 										alt={`Miniatura ${i + 1}`}

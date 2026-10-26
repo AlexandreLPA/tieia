@@ -30,6 +30,7 @@ export function UndoHistoryPanel({ className }: { className?: string }) {
 
 					{history.map((cmd, i) => (
 						<button
+							// biome-ignore lint/suspicious/noArrayIndexKey: history is a stack that only changes at its end, so the index is a stable identity
 							key={`hist-${i}`}
 							type="button"
 							className={cn(
@@ -50,6 +51,7 @@ export function UndoHistoryPanel({ className }: { className?: string }) {
 							<span className="text-[8px] text-muted-foreground px-2">Pilha de refazer</span>
 							{redoStack.map((cmd, i) => (
 								<button
+									// biome-ignore lint/suspicious/noArrayIndexKey: redo stack is a stack that only changes at its end, so the index is a stable identity
 									key={`redo-${i}`}
 									type="button"
 									className="w-full text-left rounded px-2 py-1 text-[10px] text-muted-foreground/50 hover:bg-accent/50 transition-colors"

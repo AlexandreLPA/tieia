@@ -337,6 +337,8 @@ export function CommandPalette() {
 	return (
 		<>
 			{/* Backdrop */}
+			{/* biome-ignore lint/a11y/noStaticElementInteractions: backdrop click dismisses; Escape also closes the palette (keydown handler) */}
+			{/* biome-ignore lint/a11y/useKeyWithClickEvents: backdrop click dismisses; Escape also closes the palette (keydown handler) */}
 			<div
 				className="fixed inset-0 z-50 bg-black/40"
 				onClick={() => setOpen(false)}
@@ -347,7 +349,7 @@ export function CommandPalette() {
 				<div className="rounded-lg border border-border bg-background shadow-2xl overflow-hidden">
 					{/* Search input */}
 					<div className="flex items-center gap-2 px-4 py-3 border-b border-border">
-						<svg
+						<svg aria-hidden="true"
 							width="16"
 							height="16"
 							viewBox="0 0 16 16"

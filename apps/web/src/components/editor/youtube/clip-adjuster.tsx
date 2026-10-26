@@ -40,8 +40,8 @@ export function ClipAdjuster({ clip, onSave, onCancel }: ClipAdjusterProps) {
 
 			<div className="grid grid-cols-2 gap-3">
 				<div className="space-y-1">
-					<label className="text-[10px] text-muted-foreground">Início</label>
-					<input
+					<label htmlFor="clip-start-input" className="text-[10px] text-muted-foreground">Início</label>
+					<input id="clip-start-input"
 						type="number"
 						step="0.5"
 						value={start.toFixed(1)}
@@ -51,8 +51,8 @@ export function ClipAdjuster({ clip, onSave, onCancel }: ClipAdjusterProps) {
 					<span className="text-[10px] text-muted-foreground">{formatTime(start)}</span>
 				</div>
 				<div className="space-y-1">
-					<label className="text-[10px] text-muted-foreground">Fim</label>
-					<input
+					<label htmlFor="clip-end-input" className="text-[10px] text-muted-foreground">Fim</label>
+					<input id="clip-end-input"
 						type="number"
 						step="0.5"
 						value={end.toFixed(1)}

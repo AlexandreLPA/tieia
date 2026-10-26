@@ -239,6 +239,7 @@ function ThumbnailsTab({
 
 					{scores.results.map((s, i) => (
 						<button
+							// biome-ignore lint/suspicious/noArrayIndexKey: results array is replaced as a whole and never reordered in place
 							key={i}
 							type="button"
 							onClick={() => onSelect(selected === i ? null : i)}
@@ -325,7 +326,7 @@ function HooksTab({
 						const isBest = v.estimated_score === bestScore;
 						return (
 							<div
-								key={i}
+								key={v.text}
 								className={cn(
 									"rounded-lg border p-2 space-y-1",
 									isBest && "border-green-500/50 bg-green-500/5",
@@ -447,6 +448,7 @@ function AnalyticsTab({
 										: 0;
 									return (
 										<div
+											// biome-ignore lint/suspicious/noArrayIndexKey: static bar chart; bars are positional and never reordered
 											key={i}
 											className="flex-1 rounded-t bg-primary/60 transition-all"
 											style={{ height: `${Math.max(4, height)}%` }}

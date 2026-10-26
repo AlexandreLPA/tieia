@@ -744,7 +744,9 @@ export function VoiceoverView() {
 							src={generatedAudioUrl}
 							controls
 							className="w-full h-8"
-						/>
+						>
+							<track kind="captions" />
+						</audio>
 						<Button
 							variant="outline"
 							size="sm"

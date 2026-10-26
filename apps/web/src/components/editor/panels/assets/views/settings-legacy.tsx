@@ -214,7 +214,7 @@ const BackgroundPreviews = memo(
 			() =>
 				backgrounds.map((bg, index) => (
 					<button
-						key={`${index}-${bg}`}
+						key={bg}
 						className={cn(
 							"border-foreground/15 hover:border-primary aspect-square size-20 cursor-pointer rounded-sm border",
 							isColorBackground &&

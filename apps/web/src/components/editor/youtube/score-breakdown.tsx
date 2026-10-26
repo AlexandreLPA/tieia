@@ -74,8 +74,8 @@ export function ScoreBreakdown({ score }: { score: EngagementScoreResult }) {
 					<span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
 						Suggestions
 					</span>
-					{score.suggestions.map((s, i) => (
-						<div key={i} className="flex items-start gap-1.5">
+					{score.suggestions.map((s) => (
+						<div key={s.suggestion} className="flex items-start gap-1.5">
 							<span className={cn(
 								"mt-0.5 h-1.5 w-1.5 rounded-full flex-shrink-0",
 								s.expected_impact === "high" ? "bg-red-400" : "bg-yellow-400",

@@ -126,9 +126,9 @@ export function ChangeSummary({ diff }: { diff: TimelineDiff }) {
 						>
 							{CATEGORY_LABELS[category]} ({changes.length})
 						</div>
-						{changes.slice(0, 5).map((change, idx) => (
+						{changes.slice(0, 5).map((change) => (
 							<div
-								key={`${change.path}-${idx}`}
+								key={change.path}
 								className="flex items-center gap-2 pl-3"
 							>
 								<span className="text-yellow-400 text-xs font-mono">~</span>

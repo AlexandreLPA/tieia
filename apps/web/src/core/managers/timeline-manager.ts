@@ -616,7 +616,7 @@ export class TimelineManager {
 	}
 
 	private notify(): void {
-		this.listeners.forEach((fn) => fn());
+		this.listeners.forEach((fn) => { fn(); });
 	}
 
 	renameTrack({ trackId, name }: { trackId: string; name: string }): void {

@@ -127,7 +127,7 @@ function FrameIcon({
 	const { w, h } = dimensions[ratio] ?? { w: 12, h: 8 };
 
 	return (
-		<svg
+		<svg aria-hidden="true"
 			width={w}
 			height={h}
 			viewBox={`0 0 ${w} ${h}`}

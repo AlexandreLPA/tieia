@@ -235,7 +235,7 @@ function FAQ({ question, answer }: { question: string; answer: string }) {
 			<summary className="font-medium cursor-pointer list-none flex items-center justify-between">
 				{question}
 				<span className="text-muted-foreground group-open:rotate-180 transition-transform">
-					<svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+					<svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
 						<path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
 					</svg>
 				</span>

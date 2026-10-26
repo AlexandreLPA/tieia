@@ -463,6 +463,7 @@ function MediaLabelRow({
 	if (isEditing) {
 		return (
 			<input
+				// biome-ignore lint/a11y/noAutofocus: focus must land in this inline editor the moment the user opens it
 				autoFocus
 				type="text"
 				value={draft}

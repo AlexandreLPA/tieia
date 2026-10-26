@@ -93,9 +93,9 @@ export function BeatDetectionPanel({ className }: { className?: string }) {
 
 						<div className="rounded bg-accent/30 p-2">
 							<div className="h-8 flex items-end gap-px">
-								{result.beats.slice(0, 100).map((beat, i) => (
+								{result.beats.slice(0, 100).map((beat) => (
 									<div
-										key={i}
+										key={beat.index}
 										className={cn(
 											"flex-1 rounded-t min-w-[2px]",
 											beat.strength > 0.8

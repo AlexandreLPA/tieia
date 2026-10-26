@@ -86,7 +86,7 @@ export function BranchSwitcher() {
 						type="button"
 						className="flex items-center gap-1.5 px-2 py-1 rounded text-xs hover:bg-muted transition-colors"
 					>
-						<svg
+						<svg aria-hidden="true"
 							width="12"
 							height="12"
 							viewBox="0 0 16 16"
@@ -108,7 +108,7 @@ export function BranchSwitcher() {
 						{isDirty && (
 							<span className="w-1.5 h-1.5 rounded-full bg-yellow-500" />
 						)}
-						<svg
+						<svg aria-hidden="true"
 							width="10"
 							height="10"
 							viewBox="0 0 16 16"
@@ -153,7 +153,7 @@ export function BranchSwitcher() {
 									<span className="truncate">{branch.name}</span>
 								</div>
 								{branch.name === currentBranch && (
-									<svg
+									<svg aria-hidden="true"
 										width="14"
 										height="14"
 										viewBox="0 0 16 16"

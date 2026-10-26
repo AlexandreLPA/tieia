@@ -171,7 +171,7 @@ export class MediaManager {
 		this.notify();
 
 		// Drop embedding index entries for the removed assets (fire-and-forget).
-		mediaIds.forEach((id) => deleteEmbedding(id).catch(() => undefined));
+		mediaIds.forEach((id) => { deleteEmbedding(id).catch(() => undefined); });
 
 		try {
 			await Promise.all(
@@ -391,6 +391,6 @@ export class MediaManager {
 	}
 
 	private notify(): void {
-		this.listeners.forEach((fn) => fn());
+		this.listeners.forEach((fn) => { fn(); });
 	}
 }

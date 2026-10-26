@@ -190,12 +190,22 @@ function ConflictCard({
 						<div className="text-[10px] text-muted-foreground/60 mb-0.5">Base</div>
 						<div className="font-mono truncate">{formatValue(conflict.baseValue)}</div>
 					</div>
+					{/* biome-ignore lint/a11y/useSemanticElements: card holds action buttons; a native button cannot contain them */}
 					<div
 						className={`rounded p-2 cursor-pointer transition-colors ${
 							resolvedWith === "source"
 								? "bg-primary/10 border border-primary/30"
 								: "bg-muted/50 hover:bg-muted"
 						}`}
+						role="button"
+						tabIndex={0}
+						onKeyDown={(e) => {
+							if (e.target !== e.currentTarget) return;
+							if (e.key === "Enter" || e.key === " ") {
+								e.preventDefault();
+								e.currentTarget.click();
+							}
+						}}
 						onClick={() => onResolve(conflict.id, "source")}
 					>
 						<div className="text-[10px] text-muted-foreground/60 mb-0.5">Origem</div>
@@ -207,12 +217,22 @@ function ConflictCard({
 							Usar este
 						</button>
 					</div>
+					{/* biome-ignore lint/a11y/useSemanticElements: card holds action buttons; a native button cannot contain them */}
 					<div
 						className={`rounded p-2 cursor-pointer transition-colors ${
 							resolvedWith === "target"
 								? "bg-primary/10 border border-primary/30"
 								: "bg-muted/50 hover:bg-muted"
 						}`}
+						role="button"
+						tabIndex={0}
+						onKeyDown={(e) => {
+							if (e.target !== e.currentTarget) return;
+							if (e.key === "Enter" || e.key === " ") {
+								e.preventDefault();
+								e.currentTarget.click();
+							}
+						}}
 						onClick={() => onResolve(conflict.id, "target")}
 					>
 						<div className="text-[10px] text-muted-foreground/60 mb-0.5">Destino</div>

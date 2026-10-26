@@ -196,9 +196,9 @@ function SuggestionRow({
 				</span>
 			</div>
 			<div className="flex flex-col gap-1">
-				{suggestion.matches.slice(0, 3).map((m, i) => (
+				{suggestion.matches.slice(0, 3).map((m) => (
 					<button
-						key={`${m.mediaId}-${m.timestampSec}-${i}`}
+						key={`${m.mediaId}-${m.timestampSec}`}
 						type="button"
 						onClick={() => onApply(m)}
 						className="flex items-center gap-1.5 rounded border border-border hover:border-primary/40 hover:bg-accent px-1.5 py-1 transition-colors text-left"

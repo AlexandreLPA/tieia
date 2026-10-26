@@ -155,6 +155,7 @@ function MarkerItem({
 			</div>
 			{isEditing ? (
 				<input
+					// biome-ignore lint/a11y/noAutofocus: focus must land in this inline editor the moment the user opens it
 					autoFocus
 					className="w-full text-xs bg-transparent border-b border-primary outline-none"
 					value={marker.note ?? ""}
@@ -166,12 +167,12 @@ function MarkerItem({
 					placeholder="Adicionar uma nota..."
 				/>
 			) : (
-				<p
-					className="text-[10px] text-muted-foreground cursor-pointer truncate"
+				<button type="button"
+					className="text-left text-[10px] text-muted-foreground cursor-pointer truncate"
 					onClick={onStartEdit}
 				>
 					{marker.note || "Clique para adicionar uma nota..."}
-				</p>
+				</button>
 			)}
 		</div>
 	);

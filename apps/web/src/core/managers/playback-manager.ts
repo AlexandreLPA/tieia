@@ -174,7 +174,7 @@ export class PlaybackManager {
 	}
 
 	private notify(): void {
-		this.listeners.forEach((fn) => fn());
+		this.listeners.forEach((fn) => { fn(); });
 	}
 
 	private startTimer(): void {

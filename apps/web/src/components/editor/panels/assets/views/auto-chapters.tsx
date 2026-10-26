@@ -147,7 +147,7 @@ export function AutoChaptersPanel() {
 				<div className="flex flex-col gap-1">
 					{chapters.map((chapter, i) => (
 						<button
-							key={`ch-${i}`}
+							key={chapter.start}
 							type="button"
 							onClick={() => handleChapterClick(chapter.start)}
 							className="flex items-start gap-2 rounded-md border px-2.5 py-2 text-left hover:bg-accent transition-colors"

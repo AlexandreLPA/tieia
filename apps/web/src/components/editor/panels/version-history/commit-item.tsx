@@ -62,12 +62,12 @@ export function CommitItem({
 				<div className="flex-1 min-w-0">
 					<div className="text-sm font-medium truncate flex items-center gap-1">
 						{commit.message.startsWith("Merge ") && (
-							<svg width="12" height="12" viewBox="0 0 16 16" fill="none" className="flex-shrink-0 text-purple-400">
+							<svg aria-hidden="true" width="12" height="12" viewBox="0 0 16 16" fill="none" className="flex-shrink-0 text-purple-400">
 								<path d="M5 3v6.5a3.5 3.5 0 1 0 3 3.46V3M11 3v3.5a3.5 3.5 0 0 1-3 3.46" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
 							</svg>
 						)}
 						{commit.message.startsWith("Cherry-pick:") && (
-							<svg width="12" height="12" viewBox="0 0 16 16" fill="none" className="flex-shrink-0 text-pink-400">
+							<svg aria-hidden="true" width="12" height="12" viewBox="0 0 16 16" fill="none" className="flex-shrink-0 text-pink-400">
 								<circle cx="8" cy="6" r="3" stroke="currentColor" strokeWidth="1.5" />
 								<path d="M8 9v4M6 12h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
 							</svg>

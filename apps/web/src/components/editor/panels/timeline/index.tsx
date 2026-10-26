@@ -559,6 +559,7 @@ function TrackLabelList({ tracks, editor }: { tracks: TimelineTrack[]; editor: R
 	return (
 		<div className="flex flex-col gap-1">
 			{tracks.map((track, index) => (
+				// biome-ignore lint/a11y/noStaticElementInteractions: HTML5 drag-and-drop reorder row; keyboard reorder is out of scope for this change
 				<div
 					key={track.id}
 					draggable
