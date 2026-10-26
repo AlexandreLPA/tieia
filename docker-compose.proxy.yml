@@ -1,0 +1,62 @@
+# Public deploy override: Caddy with HTTPS and a login in front of the whole stack.
+#
+# The browser calls the AI backend and the whisper/tts/image services directly, so they
+# are served under the same domain (/ai, /whisper, ...) behind the same login. Host ports
+# from docker-compose.yml stay on 127.0.0.1; only Caddy listens on 80/443.
+#
+# Required in .env:
+#   OPENCUT_DOMAIN=editor.example.com
+#   OPENCUT_USER=admin
+#   OPENCUT_PASSWORD_HASH=...   # docker run --rm caddy:2 caddy hash-password --plaintext 'your password'
+#   OPENCUTAI_API_TOKEN=...     # openssl rand -hex 32
+#   NEXT_PUBLIC_SITE_URL=https://editor.example.com
+#   plus real POSTGRES_PASSWORD, SRH_TOKEN and BETTER_AUTH_SECRET
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.proxy.yml up -d --build
+services:
+  caddy:
+    image: caddy:2.10
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      - OPENCUT_DOMAIN=${OPENCUT_DOMAIN:?set OPENCUT_DOMAIN}
+      - OPENCUT_USER=${OPENCUT_USER:?set OPENCUT_USER}
+      - OPENCUT_PASSWORD_HASH=${OPENCUT_PASSWORD_HASH:?set OPENCUT_PASSWORD_HASH}
+      - OPENCUTAI_API_TOKEN=${OPENCUTAI_API_TOKEN:?set OPENCUTAI_API_TOKEN}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - web
+      - ai-backend
+
+  ai-backend:
+    environment:
+      - OPENCUTAI_API_TOKEN=${OPENCUTAI_API_TOKEN:?set OPENCUTAI_API_TOKEN}
+      - OPENCUTAI_CORS_ORIGINS=["https://${OPENCUT_DOMAIN}"]
+
+  web:
+    build:
+      args:
+        - NEXT_PUBLIC_SITE_URL=https://${OPENCUT_DOMAIN}
+        - NEXT_PUBLIC_AI_BACKEND_URL=https://${OPENCUT_DOMAIN}/ai
+        - NEXT_PUBLIC_OLLAMA_URL=https://${OPENCUT_DOMAIN}/ollama
+        - NEXT_PUBLIC_WHISPER_SERVICE_URL=https://${OPENCUT_DOMAIN}/whisper
+        - NEXT_PUBLIC_TTS_SERVICE_URL=https://${OPENCUT_DOMAIN}/tts
+        - NEXT_PUBLIC_IMAGE_SERVICE_URL=https://${OPENCUT_DOMAIN}/image
+    environment:
+      - NEXT_PUBLIC_SITE_URL=https://${OPENCUT_DOMAIN}
+      - NEXT_PUBLIC_AI_BACKEND_URL=https://${OPENCUT_DOMAIN}/ai
+      - NEXT_PUBLIC_OLLAMA_URL=https://${OPENCUT_DOMAIN}/ollama
+      - NEXT_PUBLIC_WHISPER_SERVICE_URL=https://${OPENCUT_DOMAIN}/whisper
+      - NEXT_PUBLIC_TTS_SERVICE_URL=https://${OPENCUT_DOMAIN}/tts
+      - NEXT_PUBLIC_IMAGE_SERVICE_URL=https://${OPENCUT_DOMAIN}/image
+
+volumes:
+  caddy_data:
+  caddy_config:

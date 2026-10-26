@@ -1,0 +1,29 @@
+# Public deploy: one login in front of the editor and every service the browser calls.
+# Used by docker-compose.proxy.yml. Caddy gets the HTTPS certificate for {$OPENCUT_DOMAIN}.
+{$OPENCUT_DOMAIN} {
+	basic_auth {
+		{$OPENCUT_USER} {$OPENCUT_PASSWORD_HASH}
+	}
+
+	# The AI backend also checks OPENCUTAI_API_TOKEN; Caddy adds it so it never reaches the browser.
+	handle_path /ai/* {
+		reverse_proxy ai-backend:8420 {
+			header_up Authorization "Bearer {$OPENCUTAI_API_TOKEN}"
+		}
+	}
+	handle_path /whisper/* {
+		reverse_proxy whisper-service:8421
+	}
+	handle_path /tts/* {
+		reverse_proxy tts-service:8422
+	}
+	handle_path /image/* {
+		reverse_proxy image-service:8423
+	}
+	handle_path /ollama/* {
+		reverse_proxy ollama:11434
+	}
+	handle {
+		reverse_proxy web:3000
+	}
+}
