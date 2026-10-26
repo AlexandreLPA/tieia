@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
+from app.security import install_api_token
 from app.routes import analyze, autopilot, audio, background, broll, command, compliance, dub, engagement, export, factcheck, generate, llm, podcast, sarvam, search, setup, smallest, template, transcribe, transcribe_ws, translate, tts, turboquant, video, youtube
 from app.services.model_backend import llm_backend
 
@@ -66,6 +67,8 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan,
 )
+
+install_api_token(app)  # registered first so CORS wraps it
 
 # CORS middleware
 app.add_middleware(

@@ -32,6 +32,8 @@ OR_CHAT_MAX_TOKENS = 8000
 JSON_TEMPERATURE = 0.2
 
 OPENROUTER_CATALOG_TTL = 3600  # seconds
+# HTTP statuses that mean "this model cannot answer now": try the next fallback model
+OR_FALLBACK_STATUSES = frozenset({402, 404, 408, 429, 500, 502, 503, 504})
 
 _MODALITY_LABELS = {"text": "texto", "image": "imagem", "video": "vídeo", "audio": "áudio", "file": "arquivo"}
 _IMAGE_ERROR_RE = re.compile(r"image|modalit|vision|multimodal", re.IGNORECASE)
@@ -327,13 +329,26 @@ class LLMBackend:
         messages.append({"role": "user", "content": prompt})
         return messages
 
-    async def _or_chat(
+    def _or_candidate_models(self) -> list[str]:
+        """Active model first, then the configured fallbacks (deduplicated, order kept)."""
+        fallbacks = [m.strip() for m in settings.OPENROUTER_FALLBACK_MODELS.split(",") if m.strip()]
+        return list(dict.fromkeys([self.openrouter_model, *fallbacks]))
+
+    @staticmethod
+    def _or_should_try_next(exc: Exception) -> bool:
+        """Model-level failures (gone, rate-limited, overloaded, empty) are worth another model."""
+        if isinstance(exc, httpx.HTTPStatusError):
+            return exc.response.status_code in OR_FALLBACK_STATUSES
+        return isinstance(exc, (RuntimeError, httpx.TransportError))
+
+    async def _or_chat_once(
         self,
+        model: str,
         messages: list[dict[str, str]],
         temperature: float | None = None,
     ) -> str:
         payload: dict[str, Any] = {
-            "model": self.openrouter_model,
+            "model": model,
             "messages": messages,
             # With default reasoning the model could spend the whole answer
             # budget thinking and return empty content; ignored by models
@@ -351,6 +366,28 @@ class LLMBackend:
             )
             resp.raise_for_status()
         return self._completion_text(resp, "OpenRouter")
+
+    async def _or_chat(
+        self,
+        messages: list[dict[str, str]],
+        temperature: float | None = None,
+    ) -> str:
+        """Chat on the active model; on a model-level failure try the fallback models."""
+        last_error: Exception | None = None
+        for model in self._or_candidate_models():
+            try:
+                answer = await self._or_chat_once(model, messages, temperature)
+            except Exception as exc:
+                if not self._or_should_try_next(exc):
+                    raise
+                logger.warning("OpenRouter model %s failed (%s); trying the next one", model, exc)
+                last_error = exc
+                continue
+            if model != self.openrouter_model:
+                logger.info("OpenRouter answered with fallback model %s", model)
+            return answer
+        assert last_error is not None
+        raise last_error
 
     @classmethod
     def _completion_text(cls, resp: httpx.Response, source: str) -> str:
@@ -381,14 +418,14 @@ class LLMBackend:
         choices = chunk.get("choices") or [{}]
         return (choices[0].get("delta") or {}).get("content") or ""
 
-    async def _or_generate_stream(self, prompt: str, system: str | None) -> AsyncIterator[str]:
+    async def _or_stream_once(self, model: str, prompt: str, system: str | None) -> AsyncIterator[str]:
         async with httpx.AsyncClient(timeout=httpx.Timeout(300, connect=10.0)) as client:
             async with client.stream(
                 "POST",
                 f"{settings.OPENROUTER_BASE_URL}/chat/completions",
                 headers=self._or_headers(),
                 json={
-                    "model": self.openrouter_model,
+                    "model": model,
                     "messages": self._messages(prompt, system),
                     "stream": True,
                 },
@@ -411,6 +448,24 @@ class LLMBackend:
                         yield token
                 if not yielded:
                     raise RuntimeError("OpenRouter stream ended without content")
+
+    async def _or_generate_stream(self, prompt: str, system: str | None) -> AsyncIterator[str]:
+        """Stream on the active model; fall back to the next one only before any token was sent."""
+        last_error: Exception | None = None
+        for model in self._or_candidate_models():
+            started = False
+            try:
+                async for token in self._or_stream_once(model, prompt, system):
+                    started = True
+                    yield token
+                return
+            except Exception as exc:
+                if started or not self._or_should_try_next(exc):
+                    raise
+                logger.warning("OpenRouter model %s failed to stream (%s); trying the next one", model, exc)
+                last_error = exc
+        assert last_error is not None
+        raise last_error
 
     # ── Unified public interface ──────────────────────────────────────
 
