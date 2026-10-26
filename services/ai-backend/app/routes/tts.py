@@ -12,6 +12,7 @@ from fastapi.responses import Response
 
 from app.config import settings
 from app.models.audio import TTSRequest
+from app.services import edge_tts_service
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +65,30 @@ async def generate_speech(request: TTSRequest):
 
     Checks model readiness first, then proxies to the tts-service.
     """
-    await _check_tts_ready()
+    try:
+        await _check_tts_ready()
+    except HTTPException as local_error:
+        if not settings.TTS_EDGE_FALLBACK or request.speaker_wav:
+            raise
+        logger.info("Local TTS unavailable (%s); using edge-tts", local_error.detail)
+        try:
+            audio = await edge_tts_service.synthesize(
+                request.text, request.language, request.speaker, request.speed
+            )
+        except Exception as exc:
+            logger.exception("edge-tts fallback failed")
+            raise HTTPException(
+                status_code=503,
+                detail=f"{local_error.detail} Fallback edge-tts also failed: {exc}",
+            ) from exc
+        return Response(
+            content=audio,
+            media_type="audio/mpeg",
+            headers={
+                "Content-Disposition": 'attachment; filename="tts_output.mp3"',
+                "X-TTS-Provider": edge_tts_service.PROVIDER_LABEL,
+            },
+        )
 
     try:
         async with httpx.AsyncClient(timeout=300) as client:
