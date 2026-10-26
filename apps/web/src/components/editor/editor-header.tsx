@@ -26,6 +26,7 @@ import { OpenCutAILogo } from "@/components/footer";
 import { cn } from "@/utils/ui";
 import { AIStatusIndicator, type AIStatusInfo } from "@/components/editor/ai/ai-status-indicator";
 import { ViralityScoreModal } from "@/components/editor/virality-score-modal";
+import { AutopilotDialog } from "@/components/editor/ai/autopilot-dialog";
 import { useAIStatus } from "@/hooks/use-ai-status";
 import { useAIStore } from "@/stores/ai-store";
 import { aiClient } from "@/lib/ai-client";
@@ -48,6 +49,7 @@ export function EditorHeader() {
 	const toggleSetupGuide = useAIStore((s) => s.toggleSetupGuide);
 	const [vcDrawerOpen, setVcDrawerOpen] = useState(false);
 	const [viralityOpen, setViralityOpen] = useState(false);
+	const [autopilotOpen, setAutopilotOpen] = useState(false);
 
 	// Listen for keyboard shortcut events to toggle VC drawer
 	useEffect(() => {
@@ -107,11 +109,16 @@ export function EditorHeader() {
 					<HugeiconsIcon icon={SparklesIcon} className="size-3.5" />
 					Pontuação Viral
 				</Button>
-				<ExportButton />
+				<Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs" onClick={() => setAutopilotOpen(true)}>
+						<HugeiconsIcon icon={SparklesIcon} className="size-3.5" />
+						Criar vídeo com IA
+					</Button>
+					<ExportButton />
 				<ThemeToggle />
 			</nav>
 			<VersionControlDrawer open={vcDrawerOpen} onOpenChange={setVcDrawerOpen} />
 			<ViralityScoreModal open={viralityOpen} onOpenChange={setViralityOpen} />
+				<AutopilotDialog open={autopilotOpen} onOpenChange={setAutopilotOpen} />
 		</header>
 	);
 }

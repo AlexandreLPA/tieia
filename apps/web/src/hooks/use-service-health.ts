@@ -126,7 +126,7 @@ async function checkAllViaBackend(): Promise<AllServicesHealth> {
 	const backendUrl = SERVICE_URLS.backend;
 	try {
 		const resp = await fetch(`${backendUrl}/services/health`, {
-			signal: AbortSignal.timeout(10_000),
+			signal: AbortSignal.timeout(30_000),
 		});
 		if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
 		const data = await resp.json();

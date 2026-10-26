@@ -26,6 +26,7 @@ export function useAudioRecording() {
 	const analyserRef = useRef<AnalyserNode | null>(null);
 	const audioContextRef = useRef<AudioContext | null>(null);
 	const startTimeRef = useRef<number>(0);
+	const pausedAtRef = useRef<number>(0);
 	const pausedDurationRef = useRef<number>(0);
 
 	const startRecording = useCallback(async () => {
@@ -105,6 +106,7 @@ export function useAudioRecording() {
 	const pauseRecording = useCallback(() => {
 		if (mediaRecorderRef.current?.state === "recording") {
 			mediaRecorderRef.current.pause();
+			pausedAtRef.current = Date.now();
 			if (timerRef.current) clearInterval(timerRef.current);
 			setState((prev) => ({ ...prev, isPaused: true }));
 		}
@@ -113,11 +115,10 @@ export function useAudioRecording() {
 	const resumeRecording = useCallback(() => {
 		if (mediaRecorderRef.current?.state === "paused") {
 			mediaRecorderRef.current.resume();
-			const pauseStart = Date.now();
-			startTimeRef.current = startTimeRef.current;
+			pausedDurationRef.current += Date.now() - pausedAtRef.current;
 
 			timerRef.current = setInterval(() => {
-				const elapsed = (Date.now() - startTimeRef.current) / 1000;
+				const elapsed = (Date.now() - startTimeRef.current - pausedDurationRef.current) / 1000;
 				setState((prev) => ({ ...prev, duration: elapsed }));
 			}, 50);
 
@@ -138,7 +139,7 @@ export function useAudioRecording() {
 				const duration = state.duration;
 
 				if (streamRef.current) {
-					streamRef.current.getTracks().forEach((t) => t.stop());
+					streamRef.current.getTracks().forEach((t) => { t.stop(); });
 					streamRef.current = null;
 				}
 				if (audioContextRef.current) {

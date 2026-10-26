@@ -27,12 +27,13 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang="en" suppressHydrationWarning>
+		<html lang="en" translate="no" suppressHydrationWarning>
 			<head>
 				<BotIdClient protect={protectedRoutes} />
 				<JsonLd />
 				<GoogleAnalytics />
-				{process.env.NODE_ENV === "development" && (
+				{process.env.NODE_ENV === "development" &&
+						process.env.NEXT_PUBLIC_REACT_SCAN === "1" && (
 					<Script
 						src="//unpkg.com/react-scan/dist/auto.global.js"
 						crossOrigin="anonymous"

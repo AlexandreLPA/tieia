@@ -166,6 +166,8 @@ export interface AIActiveLLM {
 export interface AIBackendStatus {
 	available: boolean;
 	models: string[];
+	/** Microservices the backend currently reaches (e.g. "whisper", "clip"). */
+	services?: string[];
 	gpuAvailable: boolean;
 	memoryUsage?: {
 		ram?: { usedMb: number; totalMb: number; percent: number };

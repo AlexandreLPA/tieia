@@ -5,6 +5,8 @@ import { aiClient } from "@/lib/ai-client";
 import type { ScriptToVideoConfig } from "@/lib/script-to-video/script-types";
 import { DEFAULT_SCRIPT_CONFIG } from "@/lib/script-to-video/script-types";
 import { toast } from "sonner";
+import { addMediaFromUrl } from "@/lib/media/add-media-from-url";
+import { buildImageElement } from "@/lib/timeline/element-utils";
 
 export function useScriptToVideo() {
 	const editor = useEditor();
@@ -120,6 +122,38 @@ export function useScriptToVideo() {
 					},
 				});
 
+				// Place each generated image over its section, stretched to the narration length
+				const plannedTotal = sections.reduce((sum, s) => sum + s.duration, 0);
+				const scale = plannedTotal > 0 ? totalAudioDuration / plannedTotal : 1;
+				let imageStart = 0;
+				let imagesPlaced = 0;
+				for (let i = 0; i < sections.length; i++) {
+					const length = sections[i].duration * scale;
+					const imageUrl = generatedImages[i];
+					if (imageUrl) {
+						try {
+							const { mediaId } = await addMediaFromUrl({
+								editor,
+								url: imageUrl,
+								name: `scene-${i + 1}`,
+							});
+							editor.timeline.insertElement({
+								element: buildImageElement({
+									mediaId,
+									name: `Cena ${i + 1}`,
+									duration: length,
+									startTime: imageStart,
+								}),
+								placement: { mode: "auto", trackType: "video" },
+							});
+							imagesPlaced += 1;
+						} catch {
+							// keep going: a missing scene image should not drop the narration
+						}
+					}
+					imageStart += length;
+				}
+
 				const tracks = editor.timeline.getTracks();
 				const audioTrack = tracks.find((t) => t.type === "audio");
 
@@ -144,12 +178,12 @@ export function useScriptToVideo() {
 
 				bgTasks.updateTask(taskId, {
 					status: "completed",
-					progress: `Video created: ${totalAudioDuration.toFixed(0)}s, ${sections.length} sections`,
+					progress: `Video created: ${totalAudioDuration.toFixed(0)}s, ${sections.length} sections, ${imagesPlaced} images`,
 					completedAt: Date.now(),
 				});
 
 				toast.success(
-					`Roteiro convertido em vídeo: ${totalAudioDuration.toFixed(0)}s com ${sections.length} seções`,
+					`Roteiro convertido em vídeo: ${totalAudioDuration.toFixed(0)}s, ${imagesPlaced}/${sections.length} cenas com imagem`,
 				);
 			} catch (err) {
 				const msg = err instanceof Error ? err.message : "Falha na geração";

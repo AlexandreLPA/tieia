@@ -10,7 +10,7 @@
  * live entirely on-device, keeping the privacy-first promise intact.
  */
 
-import { aiClient } from "@/lib/ai-client";
+import { AIClientError, aiClient } from "@/lib/ai-client";
 import {
 	getAllEmbeddings,
 	getEmbedding,
@@ -126,6 +126,25 @@ async function sampleImageFrame(
 	return { blob, timestampSec: 0 };
 }
 
+/** After a 503 the CLIP service is down; skip the endpoint for a while instead of retrying per asset. */
+const CLIP_RETRY_DELAY_MS = 60_000;
+let clipUnavailableUntil = 0;
+let clipCheck: { at: number; online: Promise<boolean> } | null = null;
+
+/** Ask /health (cached) whether the CLIP service is up, so we never call a stopped endpoint. */
+function isClipOnline(): Promise<boolean> {
+	if (!clipCheck || Date.now() - clipCheck.at > CLIP_RETRY_DELAY_MS) {
+		clipCheck = {
+			at: Date.now(),
+			online: aiClient
+				.health()
+				.then((status) => (status.services ?? []).includes("clip"))
+				.catch(() => false),
+		};
+	}
+	return clipCheck.online;
+}
+
 /** Batch a list of frame blobs through the CLIP embedding backend. */
 async function embedBatches(
 	frames: { blob: Blob; timestampSec: number }[],
@@ -140,7 +159,21 @@ async function embedBatches(
 			// FastAPI only binds multipart parts whose name equals `files`.
 			formData.append("files", f.blob, `frame-${i + idx}.jpg`);
 		});
-		const result = await aiClient.embedFrames(formData);
+		if (!(await isClipOnline())) {
+			clipUnavailableUntil = Date.now() + CLIP_RETRY_DELAY_MS;
+		}
+		if (Date.now() < clipUnavailableUntil) {
+			throw new Error("CLIP service unavailable (retrying later)");
+		}
+		let result: Awaited<ReturnType<typeof aiClient.embedFrames>>;
+		try {
+			result = await aiClient.embedFrames(formData);
+		} catch (error) {
+			if (error instanceof AIClientError && error.statusCode === 503) {
+				clipUnavailableUntil = Date.now() + CLIP_RETRY_DELAY_MS;
+			}
+			throw error;
+		}
 		const vectors = result.vectors ?? [];
 		for (let j = 0; j < vectors.length; j++) {
 			out.push({
