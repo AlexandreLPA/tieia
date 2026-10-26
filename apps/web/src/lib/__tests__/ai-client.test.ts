@@ -174,6 +174,9 @@ const PUBLIC_METHODS = [
 	"embedFrames",
 	"zeroShotTags",
 	"clipServiceHealth",
+	"autopilotPlan",
+	"autopilotStock",
+	"autopilotFetchMedia",
 ] as const;
 
 type AnyMethod = (...args: unknown[]) => unknown;
@@ -208,6 +211,9 @@ describe("aiClient request contract", () => {
 	const ARGS: unknown[] = [sampleFile, "arg-1", "arg-2", 3, 4, 5];
 	const ARGS_BY_METHOD: Record<string, unknown[]> = {
 		embedFrames: [formData],
+		autopilotPlan: [{ topic: "oceano", duration: 30, language: "pt" }],
+		autopilotStock: ["deep sea", "landscape"],
+		autopilotFetchMedia: ["https://upload.wikimedia.org/a.jpg"],
 		zeroShotTags: [formData, ["cat", "dog"]],
 		updateConfig: [{ key: "value" }],
 		embedTexts: [["a", "b"]],

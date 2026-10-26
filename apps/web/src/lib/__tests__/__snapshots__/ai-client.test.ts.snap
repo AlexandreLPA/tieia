@@ -1730,3 +1730,49 @@ exports[`aiClient request contract clipServiceHealth 1`] = `
   "outcome": "resolved",
 }
 `;
+
+exports[`aiClient request contract autopilotPlan 1`] = `
+{
+  "calls": [
+    {
+      "body": "{"topic":"oceano","duration":30,"language":"pt"}",
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "POST",
+      "url": "/api/autopilot/plan",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract autopilotStock 1`] = `
+{
+  "calls": [
+    {
+      "body": null,
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "GET",
+      "url": "/api/autopilot/stock?query=deep+sea&orientation=landscape&limit=5",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
+exports[`aiClient request contract autopilotFetchMedia 1`] = `
+{
+  "calls": [
+    {
+      "body": null,
+      "headers": {},
+      "method": "GET",
+      "url": "/api/autopilot/fetch?url=https%3A%2F%2Fupload.wikimedia.org%2Fa.jpg",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
