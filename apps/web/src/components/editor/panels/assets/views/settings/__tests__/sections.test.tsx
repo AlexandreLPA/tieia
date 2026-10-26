@@ -18,8 +18,11 @@ describe("APIKeysSection", () => {
 		}
 	});
 
-	test("marks only the two Freesound fields as required", () => {
-		expect(html.split("Obrigatório").length - 1).toBe(2);
+	test("shows Obrigatório only on the Freesound fields that have no value in the environment", () => {
+		const unset = ["FREESOUND_CLIENT_ID", "FREESOUND_API_KEY"].filter(
+			(name) => !process.env[name],
+		);
+		expect(html.split("Obrigatório").length - 1).toBe(unset.length);
 	});
 });
 
