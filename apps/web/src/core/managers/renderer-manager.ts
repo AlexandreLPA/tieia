@@ -5,6 +5,7 @@ import { CanvasRenderer } from "@/services/renderer/canvas-renderer";
 import { SceneExporter } from "@/services/renderer/scene-exporter";
 import { buildScene } from "@/services/renderer/scene-builder";
 import { createTimelineAudioBuffer } from "@/lib/media/audio";
+import { normalizeLoudness } from "@/lib/audio/loudness";
 import { formatTimeCode, getLastFrameTime } from "@/lib/time";
 import { getExportDimensions, isAudioOnlyExportFormat } from "@/lib/export";
 import { downloadBlob } from "@/utils/browser";
@@ -125,6 +126,9 @@ export class RendererManager {
 					mediaAssets,
 					duration,
 				});
+				if (audioBuffer && options.normalizeLoudness) {
+					normalizeLoudness(audioBuffer);
+				}
 			}
 
 			if (isAudioOnly && !audioBuffer) {

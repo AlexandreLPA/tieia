@@ -26,6 +26,8 @@ export interface ExportOptions {
 	resolution?: ExportResolution;
 	fps?: number;
 	includeAudio?: boolean;
+	/** Brings the mix to the -14 LUFS the platforms play at */
+	normalizeLoudness?: boolean;
 	includeWatermark?: boolean;
 }
 

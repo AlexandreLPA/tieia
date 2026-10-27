@@ -5,6 +5,7 @@ export const DEFAULT_EXPORT_OPTIONS = {
 	quality: "high",
 	resolution: "original",
 	includeAudio: true,
+	normalizeLoudness: true,
 } satisfies ExportOptions;
 
 export const EXPORT_MIME_TYPES = {

@@ -133,6 +133,9 @@ function ExportPopover({
 	const [shouldIncludeAudio, setShouldIncludeAudio] = useState<boolean>(
 		DEFAULT_EXPORT_OPTIONS.includeAudio ?? true,
 	);
+	const [shouldNormalizeLoudness, setShouldNormalizeLoudness] = useState<boolean>(
+		DEFAULT_EXPORT_OPTIONS.normalizeLoudness,
+	);
 	const [shouldIncludeWatermark, setShouldIncludeWatermark] = useState(true);
 	// The finished file stays here after the download, for "Enviar ao TikTok"
 	const [completedExport, setCompletedExport] = useState<{
@@ -172,6 +175,7 @@ function ExportPopover({
 			resolution,
 			fps: activeProject.settings.fps,
 			includeAudio: shouldIncludeAudio,
+			normalizeLoudness: shouldNormalizeLoudness,
 			includeWatermark: shouldIncludeWatermark,
 			},
 		});
@@ -382,27 +386,46 @@ function ExportPopover({
 										</SectionContent>
 									</Section>
 
-									{!isAudioOnly && (
-										<Section collapsible defaultOpen={false}>
-											<SectionHeader>
-												<SectionTitle>Áudio</SectionTitle>
-											</SectionHeader>
-											<SectionContent>
+									<Section collapsible defaultOpen={false}>
+										<SectionHeader>
+											<SectionTitle>Áudio</SectionTitle>
+										</SectionHeader>
+										<SectionContent className="flex flex-col gap-3">
+											{!isAudioOnly && (
 												<div className="flex items-center space-x-2">
 													<Checkbox
 														id="include-audio"
-									checked={shouldIncludeAudio}
-													onCheckedChange={(checked) =>
-														setShouldIncludeAudio(!!checked)
-													}
+														checked={shouldIncludeAudio}
+														onCheckedChange={(checked) =>
+															setShouldIncludeAudio(!!checked)
+														}
 													/>
 													<Label htmlFor="include-audio">
 														Incluir áudio na exportação
 													</Label>
 												</div>
-											</SectionContent>
-										</Section>
-									)}
+											)}
+											{(isAudioOnly || shouldIncludeAudio) && (
+												<div className="flex items-start space-x-2">
+													<Checkbox
+														id="normalize-loudness"
+														checked={shouldNormalizeLoudness}
+														onCheckedChange={(checked) =>
+															setShouldNormalizeLoudness(!!checked)
+														}
+													/>
+													<div className="flex flex-col gap-0.5">
+														<Label htmlFor="normalize-loudness">
+															Volume no padrão das redes (-14 LUFS)
+														</Label>
+														<p className="text-[10px] text-muted-foreground leading-relaxed">
+															Deixa o som tão alto quanto os outros vídeos no TikTok, Reels e YouTube, sem estourar.
+														</p>
+													</div>
+												</div>
+											)}
+										</SectionContent>
+									</Section>
 
 									{!isAudioOnly && (
 										<Section showTopBorder>
