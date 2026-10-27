@@ -33,6 +33,7 @@ import type {
 import type { MediaAsset } from "@/types/assets";
 import { mediaSupportsAudio } from "@/lib/media/media-utils";
 import { useElementSelection } from "@/hooks/timeline/element/use-element-selection";
+import { canRemoveSilences } from "@/lib/timeline/remove-silences";
 import {
 	ScissorIcon,
 	Copy01Icon,
@@ -46,7 +47,7 @@ import { cn } from "@/utils/ui";
 import { usePropertiesStore } from "@/stores/properties-store";
 import { KeyframeIndicators, getKeyframeIndicators, ELEMENT_RING_WIDTH_PX, } from "./timeline-element/keyframe-indicators";
 import { EffectsButton, ElementContent } from "./timeline-element/element-content";
-import { ActionMenuItem, CopyMenuItem, DeleteMenuItem, MuteMenuItem, SeparateAudioMenuItem, VisibilityMenuItem, } from "./timeline-element/menu-items";
+import { ActionMenuItem, CopyMenuItem, DeleteMenuItem, MuteMenuItem, RemoveSilencesMenuItem, SeparateAudioMenuItem, VisibilityMenuItem, } from "./timeline-element/menu-items";
 
 interface TimelineElementProps {
 	element: TimelineElementType;
@@ -227,6 +228,9 @@ export function TimelineElement({
 						})}
 					/>
 				)}
+				{selectedElements.length === 1 &&
+					canRemoveSilences(element) &&
+					hasAudio && <RemoveSilencesMenuItem />}
 				{canElementBeHidden(element) && (
 					<VisibilityMenuItem
 						element={element}

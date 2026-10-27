@@ -7,6 +7,16 @@ import { useElementSelection } from "../timeline/element/use-element-selection";
 import { useKeyframeSelection } from "../timeline/element/use-keyframe-selection";
 import { getElementsAtTime } from "@/lib/timeline";
 import { hasMediaId, hasSeparatedAudio } from "@/lib/timeline/element-utils";
+import {
+	canRemoveSilences,
+	getLinkedMediaElements,
+	getSilenceCuts,
+	SILENCE_MIN_DURATION_S,
+	SILENCE_THRESHOLD_DB,
+} from "@/lib/timeline/remove-silences";
+import { aiClient } from "@/lib/ai-client";
+import type { SilenceRegion } from "@/types/ai";
+import { TIME_EPSILON_SECONDS } from "@/constants/animation-constants";
 import { useAIStore } from "@/stores/ai-store";
 import { useSearchStore } from "@/stores/search-store";
 import { useAssetsPanelStore } from "@/stores/assets-panel-store";
@@ -419,6 +429,95 @@ export function useEditorActions() {
 			}
 
 			toast.success("Áudio separado para uma nova faixa");
+		},
+		undefined,
+	);
+
+	useActionHandler(
+		"remove-silences",
+		async () => {
+			const [selected] = editor.timeline.getElementsWithTracks({
+				elements: selectedElements,
+			});
+			if (
+				selectedElements.length !== 1 ||
+				!selected ||
+				!canRemoveSilences(selected.element)
+			) {
+				toast.error("Selecione um clipe de vídeo ou áudio (sem curva de velocidade)");
+				return;
+			}
+
+			const { element } = selected;
+			const target = { trackId: selected.track.id, elementId: element.id };
+			const asset = editor.media
+				.getAssets()
+				.find((candidate) => candidate.id === element.mediaId);
+			if (!asset?.file) {
+				toast.error("O arquivo deste clipe não está disponível");
+				return;
+			}
+
+			const toastId = toast.loading("Procurando silêncios no clipe...");
+			let silences: SilenceRegion[];
+			try {
+				({ silences } = await aiClient.analyzeSilences(
+					asset.file,
+					SILENCE_THRESHOLD_DB,
+					SILENCE_MIN_DURATION_S,
+				));
+			} catch {
+				toast.error("Não deu para analisar o áudio. Os serviços de IA estão ligados?", {
+					id: toastId,
+				});
+				return;
+			}
+
+			// The clip may have been edited while the analysis ran
+			const [current] = editor.timeline.getElementsWithTracks({ elements: [target] });
+			if (!current || !canRemoveSilences(current.element)) {
+				toast.dismiss(toastId);
+				return;
+			}
+
+			const cuts = getSilenceCuts({ element: current.element, silences });
+			if (cuts.length === 0) {
+				toast.info("Nenhum silêncio longo neste clipe", { id: toastId });
+				return;
+			}
+
+			const linked = getLinkedMediaElements({
+				tracks: editor.timeline.getTracks(),
+				trackId: current.track.id,
+				element: current.element,
+			});
+			const clipStart = current.element.startTime;
+
+			editor.command.beginTransaction();
+			try {
+				// Latest cut first: the pieces before it keep their ids and times
+				for (const cut of cuts) {
+					editor.timeline.splitElements({ elements: linked, splitTime: cut.end });
+					const silent =
+						cut.start - clipStart < TIME_EPSILON_SECONDS
+							? linked
+							: editor.timeline.splitElements({
+									elements: linked,
+									splitTime: cut.start,
+								});
+					if (silent.length > 0) {
+						editor.timeline.deleteElements({ elements: silent, rippleEnabled: true });
+					}
+				}
+			} finally {
+				editor.command.commitTransaction();
+			}
+
+			const removed = cuts.reduce((sum, cut) => sum + cut.end - cut.start, 0);
+			toast.success(
+				`${cuts.length} ${cuts.length === 1 ? "silêncio removido" : "silêncios removidos"} (${removed.toLocaleString("pt-BR", { maximumFractionDigits: 1 })} s a menos)`,
+				{ id: toastId },
+			);
 		},
 		undefined,
 	);

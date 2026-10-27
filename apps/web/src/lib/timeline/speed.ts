@@ -12,7 +12,7 @@ export function getElementPlaybackRate(element: TimelineElement): number {
 		: 1;
 }
 
-function hasSpeedCurve(element: TimelineElement): boolean {
+export function hasSpeedCurve(element: TimelineElement): boolean {
 	const channel = element.animations
 		? getNumberChannelForPath({
 				animations: element.animations,

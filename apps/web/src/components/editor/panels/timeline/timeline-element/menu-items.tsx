@@ -19,6 +19,7 @@ import {
 	VolumeOffIcon,
 	VolumeMute02Icon,
 	Unlink01Icon,
+	AudioWave01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { uppercase } from "@/utils/string";
@@ -81,6 +82,17 @@ export function SeparateAudioMenuItem({ isSeparated }: { isSeparated: boolean })
 			disabled={isSeparated}
 		>
 			{isSeparated ? "Áudio já separado" : "Separar áudio"}
+		</ActionMenuItem>
+	);
+}
+
+export function RemoveSilencesMenuItem() {
+	return (
+		<ActionMenuItem
+			action="remove-silences"
+			icon={<HugeiconsIcon icon={AudioWave01Icon} />}
+		>
+			Remover silêncios
 		</ActionMenuItem>
 	);
 }

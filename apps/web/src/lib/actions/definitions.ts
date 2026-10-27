@@ -185,6 +185,10 @@ export const ACTIONS = {
 		description: "Separar áudio do vídeo",
 		category: "editing",
 	},
+	"remove-silences": {
+		description: "Remover os silêncios do clipe",
+		category: "editing",
+	},
 	"freeze-frame": {
 		description: "Inserir quadro congelado na posição do cursor",
 		category: "editing",
