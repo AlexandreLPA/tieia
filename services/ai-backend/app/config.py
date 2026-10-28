@@ -55,6 +55,8 @@ class Settings(BaseSettings):
     CLIP_SERVICE_URL: str = "http://localhost:8426"
     # NLLB-200 translation service — fully-local, privacy-first. Powers AI dubbing.
     TRANSLATE_SERVICE_URL: str = "http://localhost:8427"
+    # Chatterbox voice cloning — its own service: it needs a newer torch than tts-service.
+    CHATTERBOX_SERVICE_URL: str = "http://localhost:8428"
 
     # Sarvam AI (Indian language APIs)
     SARVAM_API_KEY: str = ""

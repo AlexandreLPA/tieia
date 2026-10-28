@@ -98,6 +98,7 @@ services:
       - OPENCUTAI_TURBOQUANT_SERVICE_URL=http://turboquant-service:8430
       - OPENCUTAI_CLIP_SERVICE_URL=http://clip-service:8426
       - OPENCUTAI_TRANSLATE_SERVICE_URL=http://translate-service:8427
+      - OPENCUTAI_CHATTERBOX_SERVICE_URL=http://chatterbox-service:8428
       - OPENCUTAI_AI_MEMORY_BUDGET=${AI_MEMORY_BUDGET:-auto}
       - OPENCUTAI_AI_MODEL_TIER=${AI_MODEL_TIER:-auto}
       - OPENCUTAI_KV_CACHE_BITS=${KV_CACHE_BITS:-4}
@@ -166,6 +167,30 @@ services:
       timeout: 10s
       retries: 5
       start_period: 60s
+
+  # Chatterbox voice cloning, apart from tts-service: it needs torch 2.8 (CUDA 12.8,
+  # for Blackwell GPUs) where coqui-tts pins torch < 2.6. Runs on the CPU here;
+  # docker-compose.gpu.yml gives it the GPU. The model (~3 GB) downloads on first use.
+  chatterbox-service:
+    build:
+      context: ./services/chatterbox-service
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8428:8428"
+    environment:
+      - DEVICE=${CHATTERBOX_DEVICE:-auto}
+      - CHATTERBOX_AUTOLOAD=${CHATTERBOX_AUTOLOAD:-false}
+      - HF_TOKEN=${HF_TOKEN:-}
+    volumes:
+      - chatterbox_models:/root/.cache
+      - chatterbox_voices:/app/generated/voices
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8428/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
 
   image-service:
     build:
@@ -373,6 +398,8 @@ volumes:
   image_generated:
   clip_models:
   translate_models:
+  chatterbox_models:
+  chatterbox_voices:
 
 networks:
   default:

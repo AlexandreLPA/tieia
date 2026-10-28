@@ -1,8 +1,9 @@
-# GPU override for the turboquant-service.
+# GPU override for the turboquant-service and the chatterbox-service.
 #
 # Layer this file on top of docker-compose.yml to run turboquant-service with
-# an NVIDIA GPU attached and the cuTile kernel extras installed. CPU users
-# should continue to run `docker compose up` without this file.
+# an NVIDIA GPU attached and the cuTile kernel extras installed, and Chatterbox
+# voice cloning on the GPU. CPU users should continue to run `docker compose up`
+# without this file.
 #
 # Usage:
 #   docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d --build
@@ -40,3 +41,16 @@ services:
   translate-service:
     environment:
       - DEVICE=cuda
+
+  # Chatterbox voice cloning on the GPU: ~4 s per sentence instead of minutes.
+  # Its image already carries torch built for CUDA 12.8 (RTX 50xx included).
+  chatterbox-service:
+    environment:
+      - DEVICE=${CHATTERBOX_DEVICE:-cuda}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]

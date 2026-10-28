@@ -31,12 +31,20 @@ import {
 	SMALLEST_DEFAULT_VOICE,
 	getSmallestVoicesForLanguage,
 } from "@/constants/smallest-constants";
+import { CHATTERBOX_LANGUAGES } from "@/lib/voiceover/chatterbox";
+import {
+	ChatterboxVoice,
+	DEFAULT_CHATTERBOX_SETTINGS,
+	type ChatterboxSettings,
+	type ChatterboxTakeMetrics,
+} from "./chatterbox-voice";
+import type { ReferenceAnalysis } from "@/types/ai";
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
-type TTSEngine = "local" | "sarvam" | "smallest";
+type TTSEngine = "local" | "chatterbox" | "sarvam" | "smallest";
 
 const TTS_MODELS = [
 	{ id: "xtts_v2", name: "Coqui XTTS v2", description: "Multilingual with voice cloning", size: "~1.8 GB", supportsCloning: true, quality: "Alta", speed: "Lenta", installed: true },
@@ -64,6 +72,7 @@ const COQUI_LANGUAGES = [
 
 const ALL_TTS_LANGUAGES = [
 	...COQUI_LANGUAGES,
+	...CHATTERBOX_LANGUAGES.filter((l) => !COQUI_LANGUAGES.some((c) => c.code === l.code)),
 	...SARVAM_TTS_LANGUAGES.filter((l) => l.code !== "en"),
 	...SMALLEST_TTS_LANGUAGES.filter(
 		(l) => !COQUI_LANGUAGES.some((c) => c.code === l.code) && !SARVAM_TTS_LANGUAGES.some((s) => s.code === l.code),
@@ -101,6 +110,13 @@ export function VoiceoverView() {
 	const [isUploading, setIsUploading] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
+	// Chatterbox engine state (its reference lives in chatterbox-service, apart from Coqui's)
+	const [chatterboxSettings, setChatterboxSettings] = useState<ChatterboxSettings>(DEFAULT_CHATTERBOX_SETTINGS);
+	const [chatterboxVoice, setChatterboxVoice] = useState<{ name: string; path: string } | null>(null);
+	const [referenceAnalysis, setReferenceAnalysis] = useState<ReferenceAnalysis | null>(null);
+	const [isAnalyzing, setIsAnalyzing] = useState(false);
+	const [lastTake, setLastTake] = useState<ChatterboxTakeMetrics | null>(null);
+
 	// Sarvam engine state
 	const [sarvamSpeaker, setSarvamSpeaker] = useState(SARVAM_DEFAULT_SPEAKER);
 
@@ -121,6 +137,7 @@ export function VoiceoverView() {
 		const e = value as TTSEngine;
 		setEngine(e);
 		if (e === "sarvam") setLanguage("hi");
+		else if (e === "chatterbox") setLanguage("pt");
 		else if (e === "smallest") setLanguage("en");
 		else setLanguage("en");
 	};
@@ -178,13 +195,23 @@ export function VoiceoverView() {
 		if (engine === "smallest") {
 			return aiClient.smallestTTS(text, smallestVoice, language, smallestSpeed);
 		}
+		if (engine === "chatterbox") {
+			const take = await aiClient.generateChatterbox({
+				text,
+				language,
+				speakerWav: chatterboxVoice?.path,
+				...chatterboxSettings,
+			});
+			setLastTake({ similarity: take.similarity, wordsPerMinute: take.wordsPerMinute, seed: take.seed });
+			return take.blob;
+		}
 		return aiClient.generateSpeechBlob({
 			text,
 			language,
 			speakerWav: clonedVoicePath ?? undefined,
 			speaker: clonedVoicePath ? undefined : voiceGender,
 		});
-	}, [engine, language, sarvamSpeaker, smallestVoice, smallestSpeed, clonedVoicePath, voiceGender]);
+	}, [engine, language, sarvamSpeaker, smallestVoice, smallestSpeed, chatterboxVoice, chatterboxSettings, clonedVoicePath, voiceGender]);
 
 	// Generate full voiceover
 	const handleGenerate = useCallback(async () => {
@@ -200,6 +227,7 @@ export function VoiceoverView() {
 		setError(null);
 		setGeneratedAudioUrl(null);
 		setGeneratedBlob(null);
+		setLastTake(null);
 		setGenerationProgress("Preparando texto...");
 
 		try {
@@ -339,8 +367,45 @@ export function VoiceoverView() {
 		}
 	}, []);
 
+	// Upload a reference for Chatterbox, then check what it is worth for a clone
+	const handleUploadChatterboxVoice = useCallback(async (file: File) => {
+		setIsUploading(true);
+		setError(null);
+		setReferenceAnalysis(null);
+		setLastTake(null);
+		try {
+			const result = await aiClient.cloneChatterboxVoice(file, file.name.replace(/\.[^.]+$/, ""));
+			setChatterboxVoice({ name: result.name, path: result.path });
+			toast.success(`Voz "${result.name}" pronta para clonagem`);
+		} catch (err) {
+			setError(err instanceof Error ? err.message : "Falha ao enviar a voz");
+		} finally {
+			setIsUploading(false);
+		}
+	}, []);
+
+	useEffect(() => {
+		if (!chatterboxVoice) return;
+		let cancelled = false;
+		setIsAnalyzing(true);
+		aiClient
+			.analyzeChatterboxReference(chatterboxVoice.path)
+			.then((analysis) => {
+				if (!cancelled) setReferenceAnalysis(analysis);
+			})
+			.catch((err) => {
+				if (!cancelled) toast.error(err instanceof Error ? err.message : "Falha ao analisar a gravação");
+			})
+			.finally(() => {
+				if (!cancelled) setIsAnalyzing(false);
+			});
+		return () => {
+			cancelled = true;
+		};
+	}, [chatterboxVoice]);
+
 	// Can generate?
-	const canGenerate = engine === "sarvam" || engine === "smallest" || currentModel.installed;
+	const canGenerate = engine !== "local" || currentModel.installed;
 
 	return (
 		<PanelView title="Narração">
@@ -410,6 +475,7 @@ export function VoiceoverView() {
 						</SelectTrigger>
 						<SelectContent>
 							<SelectItem value="local">Local (Coqui XTTS)</SelectItem>
+							<SelectItem value="chatterbox">Local (Chatterbox, clonagem)</SelectItem>
 							<SelectItem value="sarvam">Sarvam AI (idiomas indianos)</SelectItem>
 							<SelectItem value="smallest">Smallest AI (Lightning TTS)</SelectItem>
 						</SelectContent>
@@ -419,12 +485,33 @@ export function VoiceoverView() {
 							? "Nuvem — 10 idiomas indianos, mais de 37 vozes naturais"
 							: engine === "smallest"
 								? "Nuvem — 15 idiomas, mais de 80 vozes, ~100ms de latência"
-								: "No dispositivo — 12 idiomas globais, clonagem de voz"}
+								: engine === "chatterbox"
+									? "No dispositivo (GPU) — 23 idiomas, clonagem a partir de 10 s de fala, com nota de semelhança"
+									: "No dispositivo — 12 idiomas globais, clonagem de voz"}
 					</p>
 				</div>
 
 				{/* ── Engine-specific UI ── */}
-				{engine === "sarvam" ? (
+				{engine === "chatterbox" ? (
+					<ChatterboxVoice
+						language={language}
+						onLanguageChange={setLanguage}
+						needsTranslation={needsTranslation}
+						settings={chatterboxSettings}
+						onSettingsChange={setChatterboxSettings}
+						voiceName={chatterboxVoice?.name ?? null}
+						isUploading={isUploading}
+						onUploadVoice={handleUploadChatterboxVoice}
+						onRemoveVoice={() => {
+							setChatterboxVoice(null);
+							setReferenceAnalysis(null);
+							setLastTake(null);
+						}}
+						analysis={referenceAnalysis}
+						isAnalyzing={isAnalyzing}
+						lastTake={lastTake}
+					/>
+				) : engine === "sarvam" ? (
 					<>
 						{/* Sarvam: Language */}
 						<div className="flex flex-col gap-2">

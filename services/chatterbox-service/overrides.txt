@@ -1,0 +1,11 @@
+# Applied on top of requirements.txt when compiling requirements.lock, from this folder:
+#   uv pip compile requirements.txt --override overrides.txt -o requirements.lock \
+#     --python-version 3.11 --python-platform x86_64-manylinux_2_28 \
+#     --index-strategy unsafe-best-match --extra-index-url https://download.pytorch.org/whl/cu128
+#
+# chatterbox-tts 0.1.7 pins torch 2.6, which has no kernels for Blackwell GPUs
+# (sm_120, RTX 50xx). 2.8 built for CUDA 12.8 runs them, and Chatterbox works on it.
+torch==2.8.0
+torchaudio==2.8.0
+# resemble-perth (the watermarker) still imports pkg_resources, gone in setuptools 81.
+setuptools<81
