@@ -57,6 +57,14 @@ def test_a_long_recording_says_only_the_start_counts():
     assert "10 s" in check["advice"]
 
 
+def test_loudness_is_judged_on_the_number_shown():
+    # A 0.256 sine measures -15.8 LUFS, shown as -16: inside the range.
+    result = analyze_reference(tone(10, amplitude=0.256), RATE)
+    assert round(result["lufs"]) == -16
+    assert statuses(result)["loudness"] == "ok"
+    assert statuses(analyze_reference(tone(10, amplitude=0.6), RATE))["loudness"] == "warn"
+
+
 def test_leading_silence_over_half_a_second_is_flagged():
     result = analyze_reference(np.concatenate([silence(1.5), tone(10)]), RATE)
     assert statuses(result)["leading_silence"] == "warn"

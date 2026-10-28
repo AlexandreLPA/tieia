@@ -122,7 +122,8 @@ def analyze_reference(wav: np.ndarray, sample_rate: int) -> dict:
         loudness = float("-inf")
     if np.isfinite(loudness):
         result["lufs"] = round(loudness, 1)
-        in_range = -26 <= loudness <= -16
+        # Judged on the whole number shown, so "-16 LUFS" is never called out of range.
+        in_range = -26 <= round(loudness) <= -16
         checks.append(_check(
             "loudness", "ok" if in_range else "warn",
             f"Volume médio de {loudness:.0f} LUFS (o ideal fica entre -26 e -16).",

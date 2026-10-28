@@ -50,6 +50,11 @@ MODEL_NAME = "chatterbox-multilingual"
 
 VOICES_DIR.mkdir(parents=True, exist_ok=True)
 
+# The model is public. An empty HF_TOKEN would make huggingface_hub send an
+# invalid "Bearer " header and fail the download, so it is dropped.
+if not os.environ.get("HF_TOKEN"):
+    os.environ.pop("HF_TOKEN", None)
+
 # Languages of the multilingual model (chatterbox.mtl_tts.SUPPORTED_LANGUAGES),
 # listed here so /health answers without importing torch.
 SUPPORTED_LANGUAGES = [

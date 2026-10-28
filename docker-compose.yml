@@ -181,7 +181,6 @@ services:
     environment:
       - DEVICE=${CHATTERBOX_DEVICE:-auto}
       - CHATTERBOX_AUTOLOAD=${CHATTERBOX_AUTOLOAD:-false}
-      - HF_TOKEN=${HF_TOKEN:-}
     volumes:
       - chatterbox_models:/root/.cache
       - chatterbox_voices:/app/generated/voices
