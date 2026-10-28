@@ -1,4 +1,5 @@
 import pytest
+from starlette.websockets import WebSocketDisconnect
 
 from app.config import settings
 
@@ -45,3 +46,20 @@ def test_401_still_carries_cors_headers(client, token: str) -> None:
     resp = client.get("/api/llm/status", headers={"Origin": "http://localhost:3000"})
     assert resp.status_code == 401
     assert resp.headers["access-control-allow-origin"] == "http://localhost:3000"
+
+
+def test_a_non_ascii_token_is_just_wrong(client, token: str) -> None:
+    resp = client.get("/api/llm/status", headers={"X-API-Key": "s\xe9cret".encode("latin-1")})
+    assert resp.status_code == 401
+
+
+def test_live_transcription_socket_needs_the_token(client, token: str) -> None:
+    with pytest.raises(WebSocketDisconnect) as refused:
+        with client.websocket_connect("/ws/transcribe"):
+            pass
+    assert refused.value.code == 1008
+
+
+def test_live_transcription_socket_opens_with_the_token(client, token: str) -> None:
+    with client.websocket_connect("/ws/transcribe", headers={"Authorization": "Bearer s3cret"}):
+        pass
