@@ -835,7 +835,7 @@ export function VoiceoverView() {
 						<Button
 							variant="outline"
 							size="sm"
-							className="w-full text-[11px]"
+							className="w-full h-auto min-h-8 py-1.5 whitespace-normal text-[11px] leading-tight"
 							onClick={handleAddToTimeline}
 						>
 							Adicionar à linha do tempo como faixa de voz
