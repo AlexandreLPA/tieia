@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import type { ReferenceAnalysis } from "@/types/ai";
 import {
+	bestVariation,
 	CHATTERBOX_CONTROLS,
 	CHATTERBOX_LANGUAGES,
 	describePace,
@@ -311,6 +312,106 @@ export function ChatterboxVoice({
 					</div>
 				)}
 		</>
+	);
+}
+
+export interface ChatterboxVariation extends ChatterboxTakeMetrics {
+	blob: Blob;
+	url: string;
+}
+
+interface ChatterboxVariationsProps {
+	variations: ChatterboxVariation[];
+	/** The one in the preview, the one that goes to the timeline. */
+	chosen: number | null;
+	onChoose: (index: number) => void;
+}
+
+/** Takes of the same text side by side: listen to each, keep the best. */
+export function ChatterboxVariations({
+	variations,
+	chosen,
+	onChoose,
+}: ChatterboxVariationsProps) {
+	const [playing, setPlaying] = useState<number | null>(null);
+	const playerRef = useRef<HTMLAudioElement | null>(null);
+	const best = bestVariation(variations);
+
+	useEffect(() => () => playerRef.current?.pause(), []);
+
+	const toggle = (index: number) => {
+		playerRef.current?.pause();
+		if (playing === index) {
+			setPlaying(null);
+			return;
+		}
+		const player = new Audio(variations[index].url);
+		player.addEventListener("ended", () => setPlaying(null));
+		playerRef.current = player;
+		setPlaying(index);
+		void player.play();
+	};
+
+	return (
+		<div className="flex flex-col gap-1.5 rounded-md border bg-muted/30 p-2.5">
+			<p className="text-[10px] text-muted-foreground font-medium">
+				Variações: ouça e escolha a melhor
+			</p>
+			{variations.map((take, index) => (
+				<div
+					key={take.url}
+					className={cn(
+						"flex flex-col gap-1 rounded-md border px-2 py-1.5",
+						chosen === index ? "border-primary bg-primary/5" : "border-border",
+					)}
+				>
+					<div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5">
+						<span className="text-[11px] font-medium whitespace-nowrap">
+							Variação {index + 1}
+							{best === index && (
+								<span className="ml-1.5 text-[9px] font-normal text-green-500">
+									sugerida
+								</span>
+							)}
+						</span>
+						<div className="flex items-center gap-2 whitespace-nowrap">
+							<button
+								type="button"
+								className="text-[10px] text-primary hover:underline"
+								onClick={() => toggle(index)}
+							>
+								{playing === index ? "Parar" : "Ouvir"}
+							</button>
+							{chosen === index ? (
+								<span className="text-[10px] text-muted-foreground">
+									Escolhida
+								</span>
+							) : (
+								<button
+									type="button"
+									className="text-[10px] text-primary hover:underline"
+									onClick={() => onChoose(index)}
+								>
+									Usar esta
+								</button>
+							)}
+						</div>
+					</div>
+					{take.similarity !== null && (
+						<Verdict
+							label="Similaridade"
+							verdict={describeSimilarity(take.similarity)}
+						/>
+					)}
+					{take.wordsPerMinute !== null && take.wordsPerMinute > 0 && (
+						<Verdict
+							label="Ritmo"
+							verdict={describePace(take.wordsPerMinute)}
+						/>
+					)}
+				</div>
+			))}
+		</div>
 	);
 }
 

@@ -32,12 +32,14 @@ import {
 	SMALLEST_DEFAULT_VOICE,
 	getSmallestVoicesForLanguage,
 } from "@/constants/smallest-constants";
-import { CHATTERBOX_LANGUAGES } from "@/lib/voiceover/chatterbox";
+import { CHATTERBOX_LANGUAGES, VARIATION_COUNT } from "@/lib/voiceover/chatterbox";
 import {
+	ChatterboxVariations,
 	ChatterboxVoice,
 	DEFAULT_CHATTERBOX_SETTINGS,
 	type ChatterboxSettings,
 	type ChatterboxTakeMetrics,
+	type ChatterboxVariation,
 } from "./chatterbox-voice";
 import type { ReferenceAnalysis } from "@/types/ai";
 
@@ -117,6 +119,8 @@ export function VoiceoverView() {
 	const [referenceAnalysis, setReferenceAnalysis] = useState<ReferenceAnalysis | null>(null);
 	const [isAnalyzing, setIsAnalyzing] = useState(false);
 	const [lastTake, setLastTake] = useState<ChatterboxTakeMetrics | null>(null);
+	const [variations, setVariations] = useState<ChatterboxVariation[]>([]);
+	const [chosenVariation, setChosenVariation] = useState<number | null>(null);
 
 	// Sarvam engine state
 	const [sarvamSpeaker, setSarvamSpeaker] = useState(SARVAM_DEFAULT_SPEAKER);
@@ -214,6 +218,14 @@ export function VoiceoverView() {
 		});
 	}, [engine, language, sarvamSpeaker, smallestVoice, smallestSpeed, chatterboxVoice, chatterboxSettings, clonedVoicePath, voiceGender]);
 
+	const replaceVariations = useCallback((next: ChatterboxVariation[]) => {
+		setVariations((previous) => {
+			for (const take of previous) URL.revokeObjectURL(take.url);
+			return next;
+		});
+		setChosenVariation(null);
+	}, []);
+
 	// Generate full voiceover
 	const handleGenerate = useCallback(async () => {
 		if (!textToGenerate) {
@@ -229,6 +241,7 @@ export function VoiceoverView() {
 		setGeneratedAudioUrl(null);
 		setGeneratedBlob(null);
 		setLastTake(null);
+		replaceVariations([]);
 		setGenerationProgress("Preparando texto...");
 
 		try {
@@ -251,7 +264,72 @@ export function VoiceoverView() {
 		} finally {
 			setIsGenerating(false);
 		}
-	}, [textToGenerate, translateForTTS, generateSpeech, addTask, updateTask]);
+	}, [textToGenerate, translateForTTS, generateSpeech, replaceVariations, addTask, updateTask]);
+
+	// Several Chatterbox takes of the same text, each with its own random seed,
+	// to listen side by side and keep the best one.
+	const handleGenerateVariations = useCallback(async () => {
+		if (!textToGenerate) {
+			toast.error("Nenhum texto para gerar fala");
+			return;
+		}
+
+		const taskId = `vo-var-${Date.now()}`;
+		addTask({ id: taskId, type: "voiceover", label: `Gerando ${VARIATION_COUNT} variações`, progress: "Preparando..." });
+
+		setIsGenerating(true);
+		setError(null);
+		setGeneratedAudioUrl(null);
+		setGeneratedBlob(null);
+		setLastTake(null);
+		replaceVariations([]);
+		setGenerationProgress("Preparando texto...");
+
+		try {
+			const ttsText = await translateForTTS(textToGenerate, taskId);
+			const takes: ChatterboxVariation[] = [];
+			for (let i = 0; i < VARIATION_COUNT; i++) {
+				const progress = `Gerando variação ${i + 1}/${VARIATION_COUNT}...`;
+				setGenerationProgress(progress);
+				updateTask(taskId, { progress });
+				const take = await aiClient.generateChatterbox({
+					text: ttsText,
+					language,
+					speakerWav: chatterboxVoice?.path,
+					...chatterboxSettings,
+					seed: 0,
+				});
+				takes.push({
+					blob: take.blob,
+					url: URL.createObjectURL(take.blob),
+					similarity: take.similarity,
+					wordsPerMinute: take.wordsPerMinute,
+					seed: take.seed,
+				});
+				// Each take shows up as soon as it is ready.
+				setVariations([...takes]);
+			}
+			setGenerationProgress("");
+			updateTask(taskId, { status: "completed", completedAt: Date.now() });
+		} catch (err) {
+			const msg = err instanceof Error ? err.message : "Falha na geração";
+			setError(msg);
+			setGenerationProgress("");
+			updateTask(taskId, { status: "error", error: msg, completedAt: Date.now() });
+		} finally {
+			setIsGenerating(false);
+		}
+	}, [textToGenerate, translateForTTS, language, chatterboxVoice, chatterboxSettings, replaceVariations, addTask, updateTask]);
+
+	// The chosen take goes to the preview, and from there to the timeline.
+	const handleChooseVariation = useCallback((index: number) => {
+		const take = variations[index];
+		if (!take) return;
+		setChosenVariation(index);
+		setGeneratedBlob(take.blob);
+		setGeneratedAudioUrl(URL.createObjectURL(take.blob));
+		setLastTake({ similarity: take.similarity, wordsPerMinute: take.wordsPerMinute, seed: take.seed });
+	}, [variations]);
 
 	// Generated speech becomes a media asset of the project, as recordings and
 	// generated music do, so it is still there after a reload (a blob: URL on the
@@ -507,6 +585,7 @@ export function VoiceoverView() {
 							setChatterboxVoice(null);
 							setReferenceAnalysis(null);
 							setLastTake(null);
+							replaceVariations([]);
 						}}
 						analysis={referenceAnalysis}
 						isAnalyzing={isAnalyzing}
@@ -816,12 +895,36 @@ export function VoiceoverView() {
 						Gerar narração completa
 					</Button>
 
+					{engine === "chatterbox" && (
+						<>
+							<Button
+								variant="outline"
+								className="w-full"
+								onClick={handleGenerateVariations}
+								disabled={isGenerating || !textToGenerate}
+							>
+								Gerar {VARIATION_COUNT} variações
+							</Button>
+							<p className="text-[9px] text-muted-foreground text-center">
+								O mesmo texto com sementes diferentes, para escolher a melhor. Rende mais com uma frase por vez.
+							</p>
+						</>
+					)}
+
 					{engine === "local" && !currentModel.installed && (
 						<p className="text-[10px] text-yellow-500 text-center">
 							Este modelo não está instalado. Use o Coqui XTTS v2 (instalado) ou instale este modelo no backend.
 						</p>
 					)}
 				</div>
+
+				{engine === "chatterbox" && variations.length > 0 && (
+					<ChatterboxVariations
+						variations={variations}
+						chosen={chosenVariation}
+						onChoose={handleChooseVariation}
+					/>
+				)}
 
 				{/* ── Audio preview ── */}
 				{generatedAudioUrl && (

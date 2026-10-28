@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import {
+	bestVariation,
 	CHATTERBOX_LANGUAGES,
 	describePace,
 	describeSimilarity,
@@ -36,6 +37,37 @@ describe("describePace", () => {
 			text: "210 palavras por minuto, rápida demais: baixe o cfg",
 		});
 		expect(describePace(100).text).toContain("suba o cfg");
+	});
+});
+
+describe("bestVariation", () => {
+	test("picks the closest voice among takes at a natural pace", () => {
+		expect(
+			bestVariation([
+				{ similarity: 0.97, wordsPerMinute: 230 },
+				{ similarity: 0.91, wordsPerMinute: 160 },
+				{ similarity: 0.93, wordsPerMinute: 150 },
+			]),
+		).toBe(2);
+	});
+
+	test("falls back to the closest voice when no pace is natural", () => {
+		expect(
+			bestVariation([
+				{ similarity: 0.9, wordsPerMinute: 220 },
+				{ similarity: 0.95, wordsPerMinute: 100 },
+			]),
+		).toBe(1);
+	});
+
+	test("suggests nothing without a reference to compare to", () => {
+		expect(
+			bestVariation([
+				{ similarity: null, wordsPerMinute: 150 },
+				{ similarity: null, wordsPerMinute: 160 },
+			]),
+		).toBeNull();
+		expect(bestVariation([])).toBeNull();
 	});
 });
 

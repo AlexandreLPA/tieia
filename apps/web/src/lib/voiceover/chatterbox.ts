@@ -65,3 +65,33 @@ export function describePace(wordsPerMinute: number): TakeVerdict {
 	}
 	return { ok: true, text: `${pace}, ritmo natural` };
 }
+
+/** Takes generated side by side from the same text, so the best one can be kept. */
+export const VARIATION_COUNT = 3;
+
+/**
+ * The take to suggest among variations: the closest to the reference among
+ * those at a natural pace, or among all of them when none is. Null without a
+ * reference, since there is no similarity to compare.
+ */
+export function bestVariation(
+	takes: { similarity: number | null; wordsPerMinute: number | null }[],
+): number | null {
+	const scored = takes
+		.map((take, index) => ({ ...take, index }))
+		.filter(
+			(take): take is typeof take & { similarity: number } =>
+				take.similarity !== null,
+		);
+	if (scored.length === 0) return null;
+	const natural = scored.filter(
+		(take) =>
+			take.wordsPerMinute !== null &&
+			take.wordsPerMinute >= NATURAL_PACE.min &&
+			take.wordsPerMinute <= NATURAL_PACE.max,
+	);
+	const pool = natural.length > 0 ? natural : scored;
+	return pool.reduce((best, take) =>
+		take.similarity > best.similarity ? take : best,
+	).index;
+}
