@@ -17,6 +17,7 @@ import { useEditor } from "@/hooks/use-editor";
 import { useTranscriptStore } from "@/stores/transcript-store";
 import { aiClient } from "@/lib/ai-client";
 import { useBackgroundTasksStore } from "@/stores/background-tasks-store";
+import { buildUploadAudioElement } from "@/lib/timeline/element-utils";
 import { cn } from "@/utils/ui";
 import { toast } from "sonner";
 import {
@@ -252,6 +253,30 @@ export function VoiceoverView() {
 		}
 	}, [textToGenerate, translateForTTS, generateSpeech, addTask, updateTask]);
 
+	// Generated speech becomes a media asset of the project, as recordings and
+	// generated music do, so it is still there after a reload (a blob: URL on the
+	// element would not be).
+	const insertVoice = useCallback(async ({ blob, fileName, name, startTime, trackId, fallbackDuration }: {
+		blob: Blob;
+		fileName: string;
+		name: string;
+		startTime: number;
+		trackId: string;
+		fallbackDuration: number;
+	}) => {
+		const file = new File([blob], fileName, { type: "audio/wav" });
+		const url = URL.createObjectURL(file);
+		const duration = (await getAudioDuration(url)) || fallbackDuration;
+		const mediaId = await editor.media.addMediaAsset({
+			projectId: editor.project.getActive().metadata.id,
+			asset: { name: fileName, type: "audio", file, url, duration },
+		});
+		editor.timeline.insertElement({
+			placement: { mode: "explicit", trackId },
+			element: buildUploadAudioElement({ mediaId, name, duration, startTime }),
+		});
+	}, [editor]);
+
 	// Generate per-segment and auto-add to timeline
 	const handleGeneratePerSegment = useCallback(async () => {
 		if (!hasTranscript || segments.length === 0) {
@@ -288,24 +313,13 @@ export function VoiceoverView() {
 
 				const blob = await generateSpeech(ttsText);
 
-				const file = new File([blob], `voiceover_seg_${i}.wav`, { type: "audio/wav" });
-				const audioUrl = URL.createObjectURL(file);
-				const duration = await getAudioDuration(audioUrl);
-
-				editor.timeline.insertElement({
-					placement: { mode: "explicit", trackId },
-					element: {
-						type: "audio",
-						sourceType: "library",
-						sourceUrl: audioUrl,
-						name: `Voz [${language}]: ${originalText.slice(0, 25)}...`,
-						startTime: seg.start,
-						duration: duration || (seg.end - seg.start),
-						trimStart: 0,
-						trimEnd: 0,
-						sourceDuration: duration || (seg.end - seg.start),
-						volume: 1,
-					},
+				await insertVoice({
+					blob,
+					fileName: `voiceover_seg_${i}_${Date.now()}.wav`,
+					name: `Voz [${language}]: ${originalText.slice(0, 25)}...`,
+					startTime: seg.start,
+					trackId,
+					fallbackDuration: seg.end - seg.start,
 				});
 			}
 
@@ -319,37 +333,24 @@ export function VoiceoverView() {
 		} finally {
 			setIsGenerating(false);
 		}
-	}, [segments, hasTranscript, language, needsTranslation, editor, translateForTTS, generateSpeech, addTask, updateTask]);
+	}, [segments, hasTranscript, language, needsTranslation, editor, translateForTTS, generateSpeech, insertVoice, addTask, updateTask]);
 
 	// Add full voiceover to timeline
 	const handleAddToTimeline = useCallback(async () => {
 		if (!generatedBlob) return;
 
-		const file = new File([generatedBlob], `voiceover_${Date.now()}.wav`, { type: "audio/wav" });
-		const audioUrl = URL.createObjectURL(file);
-		const duration = await getAudioDuration(audioUrl);
-		const currentTime = editor.playback.getCurrentTime();
-
 		const trackId = editor.timeline.addTrack({ type: "audio", index: 0 });
-
-		editor.timeline.insertElement({
-			placement: { mode: "explicit", trackId },
-			element: {
-				type: "audio",
-				sourceType: "library",
-				sourceUrl: audioUrl,
-				name: "Narração",
-				startTime: currentTime,
-				duration: duration || 5,
-				trimStart: 0,
-				trimEnd: 0,
-				sourceDuration: duration || 5,
-				volume: 1,
-			},
+		await insertVoice({
+			blob: generatedBlob,
+			fileName: `narracao_${Date.now()}.wav`,
+			name: "Narração",
+			startTime: editor.playback.getCurrentTime(),
+			trackId,
+			fallbackDuration: 5,
 		});
 
 		toast.success("Narração adicionada à linha do tempo");
-	}, [editor, generatedBlob]);
+	}, [editor, generatedBlob, insertVoice]);
 
 	// Upload voice sample for cloning (local engine only)
 	const handleUploadVoice = useCallback(async (file: File) => {
