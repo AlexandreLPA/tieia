@@ -440,8 +440,12 @@ class LLMBackend:
         messages: list[dict[str, str]],
         temperature: float | None = None,
     ) -> str:
-        """Chat on the active model; on a model-level failure try the fallback models."""
-        last_error: Exception | None = None
+        """Chat on the active model; on a model-level failure try the fallback models.
+
+        Records the model that really answered, so the AI monitor names a fallback. When
+        every model fails, raises the error of the chosen one, the one the user knows.
+        """
+        first_error: Exception | None = None
         for model in self._or_candidate_models():
             try:
                 answer = await self._or_chat_once(model, messages, temperature)
@@ -449,13 +453,14 @@ class LLMBackend:
                 if not self._or_should_try_next(exc):
                     raise
                 logger.warning("OpenRouter model %s failed (%s); trying the next one", model, exc)
-                last_error = exc
+                first_error = first_error or exc
                 continue
             if model != self.openrouter_model:
                 logger.info("OpenRouter answered with fallback model %s", model)
+            self._served("openrouter", model)
             return answer
-        assert last_error is not None
-        raise last_error
+        assert first_error is not None
+        raise first_error
 
     @classmethod
     def _completion_text(cls, resp: httpx.Response, source: str) -> str:
@@ -525,22 +530,26 @@ class LLMBackend:
                     raise RuntimeError("OpenRouter stream ended without content")
 
     async def _or_generate_stream(self, prompt: str, system: str | None) -> AsyncIterator[str]:
-        """Stream on the active model; fall back to the next one only before any token was sent."""
-        last_error: Exception | None = None
+        """Stream on the active model; fall back to the next one only before any token was sent.
+
+        Like `_or_chat`, records the model that answered and raises the chosen model's error.
+        """
+        first_error: Exception | None = None
         for model in self._or_candidate_models():
             started = False
             try:
                 async for token in self._or_stream_once(model, prompt, system):
                     started = True
                     yield token
+                self._served("openrouter", model)
                 return
             except Exception as exc:
                 if started or not self._or_should_try_next(exc):
                     raise
                 logger.warning("OpenRouter model %s failed to stream (%s); trying the next one", model, exc)
-                last_error = exc
-        assert last_error is not None
-        raise last_error
+                first_error = first_error or exc
+        assert first_error is not None
+        raise first_error
 
     # ── Unified public interface ──────────────────────────────────────
 
@@ -554,9 +563,7 @@ class LLMBackend:
         """Generate a completion — routes to OpenRouter, TurboQuant or Ollama."""
         if self._use_openrouter():
             try:
-                text = await self._or_chat(self._messages(prompt, system))
-                self._served("openrouter", self.openrouter_model)
-                return text
+                return await self._or_chat(self._messages(prompt, system))
             except Exception as exc:
                 self._cloud_failed(exc)
                 logger.warning("OpenRouter generate failed, falling back to local backend", exc_info=True)
@@ -586,7 +593,6 @@ class LLMBackend:
             try:
                 async for token in self._or_generate_stream(prompt, system):
                     yield token
-                self._served("openrouter", self.openrouter_model)
                 return
             except Exception as exc:
                 self._cloud_failed(exc)
@@ -627,9 +633,7 @@ class LLMBackend:
                     raw = await self._or_chat(
                         self._messages(prompt, system), temperature=JSON_TEMPERATURE
                     )
-                    parsed = _parse_json_response(raw)
-                    self._served("openrouter", self.openrouter_model)
-                    return parsed
+                    return _parse_json_response(raw)
                 except Exception as exc:
                     if attempt == 0:
                         logger.warning("OpenRouter generate_json failed, retrying once")

@@ -33,6 +33,9 @@ async def test_falls_back_when_the_model_does_not_exist(backend: LLMBackend, mon
     monkeypatch.setattr(backend, "_or_chat_once", fake_once)
     assert await backend._or_chat([{"role": "user", "content": "hi"}]) == "hello"
     assert tried == ["primary/model:free", "fallback/a:free"]
+    # The AI monitor names the model that really answered, not the chosen one
+    assert backend._last_served is not None
+    assert backend._last_served["model"] == "fallback/a:free"
 
 
 async def test_falls_back_on_rate_limit_and_empty_answer(backend: LLMBackend, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -60,13 +63,16 @@ async def test_auth_error_is_not_retried_on_another_model(backend: LLMBackend, m
     assert tried == ["primary/model:free"]
 
 
-async def test_raises_the_last_error_when_every_model_fails(backend: LLMBackend, monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_raises_the_chosen_models_error_when_every_model_fails(
+    backend: LLMBackend, monkeypatch: pytest.MonkeyPatch
+) -> None:
     async def fake_once(model: str, messages: list, temperature: float | None = None) -> str:
-        raise _status_error(503)
+        raise _status_error(429 if model == "primary/model:free" else 404)
 
     monkeypatch.setattr(backend, "_or_chat_once", fake_once)
-    with pytest.raises(httpx.HTTPStatusError):
+    with pytest.raises(httpx.HTTPStatusError) as raised:
         await backend._or_chat([])
+    assert raised.value.response.status_code == 429
 
 
 async def test_stream_falls_back_only_before_the_first_token(backend: LLMBackend, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -78,6 +84,8 @@ async def test_stream_falls_back_only_before_the_first_token(backend: LLMBackend
 
     monkeypatch.setattr(backend, "_or_stream_once", fake_stream)
     assert [t async for t in backend._or_generate_stream("hi", None)] == ["to", "ken"]
+    assert backend._last_served is not None
+    assert backend._last_served["model"] == "fallback/a:free"
 
 
 async def test_stream_does_not_restart_after_tokens_were_sent(backend: LLMBackend, monkeypatch: pytest.MonkeyPatch) -> None:
