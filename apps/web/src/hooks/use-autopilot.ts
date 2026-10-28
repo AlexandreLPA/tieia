@@ -13,8 +13,16 @@ import {
 	buildTextElement,
 	buildVideoElement,
 } from "@/lib/timeline/element-utils";
+import {
+	CANVAS_SIZES,
+	ORIENTATIONS,
+	coverScale,
+	pickStock,
+	stockQueries,
+	type AutopilotAspect,
+} from "@/lib/autopilot/helpers";
 
-export type AutopilotAspect = "16:9" | "9:16" | "1:1";
+export type { AutopilotAspect };
 
 export interface AutopilotConfig {
 	topic: string;
@@ -45,18 +53,6 @@ const IDLE_STATE: AutopilotState = {
 	error: null,
 };
 
-const CANVAS_SIZES: Record<AutopilotAspect, { width: number; height: number }> = {
-	"16:9": { width: 1920, height: 1080 },
-	"9:16": { width: 1080, height: 1920 },
-	"1:1": { width: 1080, height: 1080 },
-};
-
-const ORIENTATIONS = {
-	"16:9": "landscape",
-	"9:16": "portrait",
-	"1:1": "square",
-} as const;
-
 async function decodeDuration(blob: Blob): Promise<number> {
 	const context = new AudioContext();
 	try {
@@ -65,17 +61,6 @@ async function decodeDuration(blob: Blob): Promise<number> {
 	} finally {
 		void context.close();
 	}
-}
-
-/** Extra scale so an image (fitted inside the canvas) covers it, cropping the overflow. */
-function coverScale(
-	asset: { width?: number; height?: number },
-	canvas: { width: number; height: number },
-): number {
-	if (!asset.width || !asset.height) return 1;
-	const fitX = canvas.width / asset.width;
-	const fitY = canvas.height / asset.height;
-	return Math.max(fitX, fitY) / Math.min(fitX, fitY);
 }
 
 /** Finds footage for one scene and fills `sceneDuration` seconds, looping the clip if it is short. */
@@ -96,16 +81,12 @@ async function insertFootage({
 	sceneDuration: number;
 	projectId: string;
 }): Promise<void> {
-	const words = scene.search_query.split(/\s+/).filter(Boolean);
-	const queries = [...new Set([scene.search_query, words.slice(0, 2).join(" "), words[0]])];
 	let results: AutopilotStockVideo[] = [];
-	for (const query of queries) {
+	for (const query of stockQueries(scene.search_query)) {
 		results = (await aiClient.autopilotStock(query, orientation)).results;
 		if (results.length > 0) break;
 	}
-	const pick =
-		results.find((v) => v.duration >= sceneDuration) ??
-		[...results].sort((a, b) => b.duration - a.duration)[0];
+	const pick = pickStock(results, sceneDuration);
 	if (!pick) {
 		toast.warning(`Sem midia para "${scene.search_query}"`);
 		return;

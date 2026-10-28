@@ -24,7 +24,7 @@ Available action types:
 - delete: Delete a clip. params: {}
 - split: Split a clip at a point. params: {time: float}
 - add_text: Add a text overlay. params: {text: str, start: float, duration: float, \
-position?: str, fontSize?: int, color?: str}
+position?: "top" | "center" | "bottom", fontSize?: int, color?: str}
 - add_transition: Add a transition between clips. params: {type: str, duration: float}
 - adjust_speed: Change playback speed. params: {speed: float}
 - adjust_volume: Change audio volume. params: {volume: float}
@@ -39,6 +39,9 @@ saturation?: float, temperature?: float}
 - mute: Mute a clip's audio. params: {}
 - duplicate: Duplicate a clip. params: {}
 - ripple_delete: Delete and close the gap. params: {}
+
+All times are in seconds from the start of the timeline. Write "explanation" in the same \
+language as the user's command.
 
 Respond with ONLY a JSON object in this format:
 {

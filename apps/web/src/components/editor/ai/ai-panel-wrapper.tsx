@@ -13,6 +13,14 @@ import { Button } from "@/components/ui/button";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { SparklesIcon, Cancel01Icon } from "@hugeicons/core-free-icons";
 import { generateUUID } from "@/utils/id";
+import { toast } from "sonner";
+import { useEditor } from "@/hooks/use-editor";
+import { applyStudioAction } from "@/lib/ai-editor-actions";
+import {
+	describeCommandAction,
+	toStudioAction,
+	type RawCommandAction,
+} from "@/lib/ai-command-actions";
 
 export function AIPanelWrapper() {
 	const {
@@ -24,6 +32,7 @@ export function AIPanelWrapper() {
 		dismissSuggestion,
 		backendStatus,
 	} = useAIStore();
+	const editor = useEditor();
 	const { executeCommand, isExecuting } = useAICommand();
 	const { isConnected, error: connectionError, errorType } = useAIStatus();
 
@@ -66,13 +75,18 @@ export function AIPanelWrapper() {
 					role: "assistant",
 					content: result.explanation,
 					timestamp: new Date(),
-					actions: result.actions.map((action) => ({
-						id: generateUUID(),
-						type: action.type,
-						label: action.type.replace(/_/g, " ").toLowerCase(),
-						description: action.description,
-						status: "pending" as const,
-					})),
+					actions: result.actions.map((action) => {
+						const payload = action as unknown as RawCommandAction;
+						const supported = toStudioAction(payload) !== null;
+						return {
+							id: generateUUID(),
+							type: action.type,
+							label: action.type.replace(/_/g, " ").toLowerCase(),
+							description: describeCommandAction(payload),
+							status: supported ? ("pending" as const) : ("unsupported" as const),
+							payload,
+						};
+					}),
 				};
 				setMessages((prev) => [...prev, assistantMessage]);
 			} catch (error) {
@@ -98,17 +112,20 @@ export function AIPanelWrapper() {
 		[executeCommand, isConnected],
 	);
 
-	const handleApplyAction = useCallback(
-		(messageId: string, actionId: string) => {
+	const setActionResult = useCallback(
+		(
+			messageId: string,
+			actionId: string,
+			status: "applied" | "failed",
+			message: string,
+		) => {
 			setMessages((prev) =>
 				prev.map((msg) =>
 					msg.id === messageId
 						? {
 								...msg,
 								actions: msg.actions?.map((a) =>
-									a.id === actionId
-										? { ...a, status: "applied" as const }
-										: a,
+									a.id === actionId ? { ...a, status, message } : a,
 								),
 							}
 						: msg,
@@ -116,6 +133,28 @@ export function AIPanelWrapper() {
 			);
 		},
 		[],
+	);
+
+	const handleApplyAction = useCallback(
+		async (messageId: string, actionId: string) => {
+			const preview = messages
+				.find((msg) => msg.id === messageId)
+				?.actions?.find((a) => a.id === actionId);
+			const studioAction = preview?.payload ? toStudioAction(preview.payload) : null;
+			if (!studioAction) {
+				setActionResult(messageId, actionId, "failed", "O editor não sabe executar esta ação ainda.");
+				return;
+			}
+			try {
+				const done = await applyStudioAction(editor, studioAction);
+				setActionResult(messageId, actionId, "applied", done);
+			} catch (error) {
+				const reason = error instanceof Error ? error.message : "Falha ao aplicar a ação";
+				setActionResult(messageId, actionId, "failed", reason);
+				toast.error("Não foi possível aplicar", { description: reason });
+			}
+		},
+		[messages, editor, setActionResult],
 	);
 
 	const handleCancelAction = useCallback(

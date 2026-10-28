@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     # Loopback by default: the API has no auth. Docker sets 0.0.0.0 inside the container.
     HOST: str = "127.0.0.1"
     PORT: int = 8420
+    # Shared secret for the whole API (off when empty); meant for a reverse proxy, see app/security.py
+    API_TOKEN: str = ""
     DEBUG: bool = False
 
     # CORS
@@ -37,6 +39,8 @@ class Settings(BaseSettings):
     # AND a key is set below; empty key = silently behaves exactly like before (Ollama).
     OPENROUTER_API_KEY: str = ""
     OPENROUTER_MODEL: str = "nvidia/nemotron-3-ultra-550b-a55b:free"
+    # Tried in order when the active model is gone (404), rate-limited (429), overloaded or empty
+    OPENROUTER_FALLBACK_MODELS: str = "recursive/flint-v1.0:free,dots-studio/dots-3-note-preview:free"
     OPENROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
     KV_CACHE_BITS: int = 2  # 2, 3, or 4 — TurboQuant KV cache quantization bits (2 = most memory efficient, default)
     # Compute mode for the TurboQuant inference service.

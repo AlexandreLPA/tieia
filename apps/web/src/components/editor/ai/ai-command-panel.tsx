@@ -18,6 +18,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useAIStore } from "@/stores/ai-store";
+import type { RawCommandAction } from "@/lib/ai-command-actions";
 
 // ----- Types -----
 
@@ -34,7 +35,11 @@ export interface AIActionPreview {
 	type: string;
 	label: string;
 	description: string;
-	status: "pending" | "applied" | "cancelled";
+	status: "pending" | "applied" | "cancelled" | "failed" | "unsupported";
+	/** The command as returned by the backend, needed to run it on Apply */
+	payload?: RawCommandAction;
+	/** Outcome shown under the description (what was done, or why it failed) */
+	message?: string;
 }
 
 interface SuggestedCommand {
@@ -103,10 +108,13 @@ export function AICommandPanel({
 	const inputRef = useRef<HTMLInputElement>(null);
 	const scrollRef = useRef<HTMLDivElement>(null);
 
-	// Keyboard shortcut: Cmd/Ctrl+K
+	// Ctrl/Cmd+K opens the panel through the global keybinding, which ignores text inputs.
+	// This handler closes it while the panel's own input has focus. It must only react to
+	// events from that input: otherwise it also ran for the keypress that just opened the
+	// panel and closed it again in the same event.
 	useEffect(() => {
 		const handler = (e: KeyboardEvent) => {
-			if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+			if ((e.metaKey || e.ctrlKey) && e.key === "k" && e.target === inputRef.current) {
 				e.preventDefault();
 				if (isOpen) {
 					onClose();
@@ -117,10 +125,13 @@ export function AICommandPanel({
 		return () => document.removeEventListener("keydown", handler);
 	}, [isOpen, onClose]);
 
-	// Focus input when panel opens
+	// Focus the input when the panel opens; drop the focus when it closes, or the hidden
+	// input keeps it and the global Ctrl+K (which ignores text inputs) cannot reopen the panel
 	useEffect(() => {
 		if (isOpen) {
 			requestAnimationFrame(() => inputRef.current?.focus());
+		} else {
+			inputRef.current?.blur();
 		}
 	}, [isOpen]);
 
@@ -372,6 +383,13 @@ function MessageBubble({
 	);
 }
 
+const ACTION_STATUS_LABEL: Partial<Record<AIActionPreview["status"], string>> = {
+	applied: "Aplicado",
+	cancelled: "Ignorado",
+	failed: "Falhou",
+	unsupported: "Não suportado",
+};
+
 function ActionPreviewCard({
 	action,
 	onApply,
@@ -392,6 +410,16 @@ function ActionPreviewCard({
 						<p className="text-[11px] text-muted-foreground mt-0.5">
 							{action.description}
 						</p>
+						{action.message && (
+							<p
+								className={cn(
+									"text-[11px] mt-1",
+									action.status === "failed" ? "text-destructive" : "text-muted-foreground",
+								)}
+							>
+								{action.message}
+							</p>
+						)}
 					</div>
 					<Badge
 						variant={
@@ -403,11 +431,7 @@ function ActionPreviewCard({
 						}
 						className="text-[10px] shrink-0"
 					>
-						{action.status === "applied"
-							? "Aplicado"
-							: action.status === "cancelled"
-								? "Ignorado"
-								: action.type}
+						{ACTION_STATUS_LABEL[action.status] ?? action.type}
 					</Badge>
 				</div>
 
