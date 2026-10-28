@@ -55,3 +55,19 @@ export function pickStock<T extends { duration: number }>(
 		[...results].sort((a, b) => b.duration - a.duration)[0]
 	);
 }
+
+/**
+ * Lengths of the copies of a clip that fill `sceneDuration`, looping a short clip.
+ * A clip of unknown length (0, NaN) fills the scene with one copy instead of looping forever.
+ */
+export function loopLengths(clipDuration: number, sceneDuration: number): number[] {
+	if (!(clipDuration > 0)) return [sceneDuration];
+	const lengths: number[] = [];
+	let placed = 0;
+	while (placed < sceneDuration - 0.05) {
+		const length = Math.min(clipDuration, sceneDuration - placed);
+		lengths.push(length);
+		placed += length;
+	}
+	return lengths;
+}

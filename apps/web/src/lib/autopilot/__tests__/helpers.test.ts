@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import {
 	CANVAS_SIZES,
 	coverScale,
+	loopLengths,
 	pickStock,
 	stockQueries,
 } from "@/lib/autopilot/helpers";
@@ -73,5 +74,20 @@ describe("pickStock", () => {
 
 	test("is undefined for an empty list", () => {
 		expect(pickStock([], 6)).toBeUndefined();
+	});
+});
+
+describe("loopLengths", () => {
+	test("loops a short clip until the scene is full", () => {
+		expect(loopLengths(4, 10)).toEqual([4, 4, 2]);
+	});
+
+	test("uses one copy when the clip is long enough", () => {
+		expect(loopLengths(30, 8)).toEqual([8]);
+	});
+
+	test("fills the scene once when the clip length is unknown, instead of looping forever", () => {
+		expect(loopLengths(0, 8)).toEqual([8]);
+		expect(loopLengths(Number.NaN, 8)).toEqual([8]);
 	});
 });

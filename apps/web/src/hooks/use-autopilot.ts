@@ -17,6 +17,7 @@ import {
 	CANVAS_SIZES,
 	ORIENTATIONS,
 	coverScale,
+	loopLengths,
 	pickStock,
 	stockQueries,
 	type AutopilotAspect,
@@ -116,10 +117,9 @@ async function insertFootage({
 		return;
 	}
 
-	const clipDuration = processed.duration ?? pick.duration;
+	const clipDuration = processed.duration || pick.duration;
 	let placed = 0;
-	while (placed < sceneDuration - 0.05) {
-		const length = Math.min(clipDuration, sceneDuration - placed);
+	for (const length of loopLengths(clipDuration, sceneDuration)) {
 		editor.timeline.insertElement({
 			element: {
 				...buildVideoElement({
@@ -128,7 +128,7 @@ async function insertFootage({
 					duration: length,
 					startTime: startTime + placed,
 				}),
-				sourceDuration: clipDuration,
+				sourceDuration: clipDuration || length,
 				muted: true,
 			},
 			placement: { mode: "auto", trackType: "video" },
