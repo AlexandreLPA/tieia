@@ -57,7 +57,7 @@ export function VideoBgRemovalPanel() {
 			</p>
 
 			<div className="flex items-start gap-1 rounded-md border border-amber-500/30 bg-amber-500/5 px-2 py-1.5">
-				<svg className="size-3 text-amber-600 shrink-0 mt-0.5" viewBox="0 0 16 16" fill="none">
+				<svg aria-hidden="true" className="size-3 text-amber-600 shrink-0 mt-0.5" viewBox="0 0 16 16" fill="none">
 					<path d="M8 2C4.7 2 2 4.7 2 8s2.7 6 6 6 6-2.7 6-6-2.7-6-6-6zm0 3v3m0 2.5h.01" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
 				</svg>
 				<span className="text-[9px] text-amber-700 dark:text-amber-400 leading-relaxed">

@@ -225,7 +225,7 @@ export function AIOptimizationSection() {
 							>
 								<div className="flex items-center gap-1.5">
 									{isActive ? (
-										<svg className="size-3 text-primary shrink-0" viewBox="0 0 16 16" fill="none">
+										<svg aria-hidden="true" className="size-3 text-primary shrink-0" viewBox="0 0 16 16" fill="none">
 											<path d="M3 8.5L6.5 12L13 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
 										</svg>
 									) : (
@@ -284,7 +284,7 @@ export function AIOptimizationSection() {
 							>
 								<div className="flex items-center gap-1.5">
 									{isActive ? (
-										<svg className="size-3 text-primary shrink-0" viewBox="0 0 16 16" fill="none">
+										<svg aria-hidden="true" className="size-3 text-primary shrink-0" viewBox="0 0 16 16" fill="none">
 											<path d="M3 8.5L6.5 12L13 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
 										</svg>
 									) : (
@@ -347,7 +347,7 @@ export function AIOptimizationSection() {
 							>
 								<div className="flex items-center gap-1.5">
 									{isActive ? (
-										<svg className="size-3 text-primary shrink-0" viewBox="0 0 16 16" fill="none">
+										<svg aria-hidden="true" className="size-3 text-primary shrink-0" viewBox="0 0 16 16" fill="none">
 											<path d="M3 8.5L6.5 12L13 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
 										</svg>
 									) : (
@@ -453,7 +453,7 @@ function ComputeModeSelector({
 						>
 							<div className="flex items-center gap-1.5">
 								{isActive ? (
-									<svg className="size-3 text-primary shrink-0" viewBox="0 0 16 16" fill="none">
+									<svg aria-hidden="true" className="size-3 text-primary shrink-0" viewBox="0 0 16 16" fill="none">
 										<path d="M3 8.5L6.5 12L13 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
 									</svg>
 								) : (

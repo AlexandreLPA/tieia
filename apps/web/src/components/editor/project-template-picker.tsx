@@ -355,10 +355,10 @@ function TemplateDetailEditor({
 
 			{/* Heading */}
 			<div className="flex flex-col gap-1.5">
-				<label className="text-xs font-medium text-muted-foreground">
+				<label htmlFor="template-edit-title" className="text-xs font-medium text-muted-foreground">
 					Título
 				</label>
-				<Input
+				<Input id="template-edit-title"
 					value={editTitle}
 					onChange={(e) => setEditTitle(e.target.value)}
 					placeholder="Título do modelo..."
@@ -368,10 +368,10 @@ function TemplateDetailEditor({
 
 			{/* Description */}
 			<div className="flex flex-col gap-1.5">
-				<label className="text-xs font-medium text-muted-foreground">
+				<label htmlFor="template-edit-description" className="text-xs font-medium text-muted-foreground">
 					Descrição
 				</label>
-				<Textarea
+				<Textarea id="template-edit-description"
 					value={editDescription}
 					onChange={(e) => setEditDescription(e.target.value)}
 					placeholder="Descreva o que este vídeo deve conter..."
@@ -383,9 +383,9 @@ function TemplateDetailEditor({
 			{/* Prompt section */}
 			<div className="flex flex-col gap-1.5">
 				<div className="flex items-center justify-between">
-					<label className="text-xs font-medium text-muted-foreground">
+					<span className="text-xs font-medium text-muted-foreground">
 						Prompt de Geração de Vídeo
-					</label>
+					</span>
 					<Button
 						variant="outline"
 						size="sm"
@@ -483,7 +483,9 @@ function TemplateDetailEditor({
 							src={videoResult.url}
 							controls
 							className="w-full max-h-48 object-contain"
-						/>
+						>
+							<track kind="captions" />
+						</video>
 					</div>
 				)}
 

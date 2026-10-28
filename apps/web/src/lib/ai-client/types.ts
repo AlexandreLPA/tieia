@@ -313,3 +313,41 @@ export interface BRollAssetEmbedding {
 	model: string;
 	dim: number;
 }
+
+// ── Autopilot (topic -> script -> stock footage) ─────────────────────
+
+export interface AutopilotPlanRequest {
+	topic: string;
+	duration: number;
+	language: string;
+}
+
+export interface AutopilotScene {
+	narration: string;
+	on_screen_text: string;
+	search_query: string;
+	duration: number;
+}
+
+export interface AutopilotPlan {
+	title: string;
+	research: string[];
+	scenes: AutopilotScene[];
+}
+
+export interface AutopilotStockVideo {
+	id: number;
+	kind: "video" | "image";
+	url: string;
+	thumbnail: string | null;
+	duration: number;
+	width: number | null;
+	height: number | null;
+	credit: string;
+	page: string;
+}
+
+export interface AutopilotStockResult {
+	query: string;
+	results: AutopilotStockVideo[];
+}

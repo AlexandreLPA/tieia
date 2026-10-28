@@ -238,12 +238,12 @@ export function APIKeysSection() {
 						</div>
 
 						{hasValue && !isVisible ? (
-							<div
-								className="w-full rounded-md border bg-muted/30 px-2.5 py-1.5 text-[11px] font-mono text-muted-foreground cursor-default select-none"
+							<button type="button"
+								className="w-full rounded-md border bg-muted/30 px-2.5 py-1.5 text-left text-[11px] font-mono text-muted-foreground cursor-default select-none"
 								onClick={() => toggleVisibility(field.key)}
 							>
 								{"•".repeat(Math.min(effectiveValue.length, 24))}
-							</div>
+							</button>
 						) : (
 							<input
 								type={isVisible ? "text" : "password"}

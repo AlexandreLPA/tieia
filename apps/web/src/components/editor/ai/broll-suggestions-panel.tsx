@@ -20,6 +20,7 @@ import { useTranscriptStore } from "@/stores/transcript-store";
 import { useBackgroundTasksStore } from "@/stores/background-tasks-store";
 import { useEditor } from "@/hooks/use-editor";
 import { buildImageElement } from "@/lib/timeline/element-utils";
+import { addMediaFromUrl } from "@/lib/media/add-media-from-url";
 import type { BRollSuggestion, ImageGenResult } from "@/types/ai";
 import { toast } from "sonner";
 
@@ -222,26 +223,35 @@ export function BRollSuggestionsPanel({
 	// ── Auto-insert image as overlay at the suggestion's timestamp ──
 
 	const handleInsertToTimeline = useCallback(
-		(idx: number, suggestion: BRollSuggestion, imageUrl: string) => {
+		async (idx: number, suggestion: BRollSuggestion, imageUrl: string) => {
 			const duration = suggestion.endTime - suggestion.startTime;
-			const element = buildImageElement({
-				mediaId: `broll-${suggestion.segmentIndex}-${Date.now()}`,
-				name: `B-Roll: ${suggestion.visualDescription.slice(0, 30)}`,
-				duration: Math.max(duration, 2),
-				startTime: suggestion.startTime,
-			});
+			try {
+				const { mediaId } = await addMediaFromUrl({
+					editor,
+					url: imageUrl,
+					name: `broll-${suggestion.segmentIndex}`,
+				});
+				editor.timeline.insertElement({
+					element: buildImageElement({
+						mediaId,
+						name: `B-Roll: ${suggestion.visualDescription.slice(0, 30)}`,
+						duration: Math.max(duration, 2),
+						startTime: suggestion.startTime,
+					}),
+					placement: { mode: "auto" },
+				});
 
-			editor.timeline.insertElement({
-				element,
-				placement: { mode: "auto" },
-			});
+				setImageStates((prev) => ({
+					...prev,
+					[idx]: { ...prev[idx], inserted: true },
+				}));
 
-			setImageStates((prev) => ({
-				...prev,
-				[idx]: { ...prev[idx], inserted: true },
-			}));
-
-			toast.success(`Inserido em ${suggestion.startTime.toFixed(1)}s`);
+				toast.success(`Inserido em ${suggestion.startTime.toFixed(1)}s`);
+			} catch (err) {
+				toast.error("Falha ao inserir a imagem", {
+					description: err instanceof Error ? err.message : undefined,
+				});
+			}
 		},
 		[editor],
 	);
@@ -252,7 +262,7 @@ export function BRollSuggestionsPanel({
 		async (idx: number, suggestion: BRollSuggestion) => {
 			const result = await handleGenerateImage(idx, suggestion.imagePrompt);
 			if (result?.imageUrl) {
-				handleInsertToTimeline(idx, suggestion, result.imageUrl);
+				await handleInsertToTimeline(idx, suggestion, result.imageUrl);
 			}
 		},
 		[handleGenerateImage, handleInsertToTimeline],
@@ -430,21 +440,29 @@ export function BRollSuggestionsPanel({
 	// ── Insert a stock photo to timeline ──
 
 	const handleInsertStockPhoto = useCallback(
-		(suggestion: BRollSuggestion, photo: PexelsPhoto) => {
+		async (suggestion: BRollSuggestion, photo: PexelsPhoto) => {
 			const duration = suggestion.endTime - suggestion.startTime;
-			const element = buildImageElement({
-				mediaId: `pexels-${photo.id}-${Date.now()}`,
-				name: `Banco: ${photo.alt || photo.photographer}`,
-				duration: Math.max(duration, 2),
-				startTime: suggestion.startTime,
-			});
-
-			editor.timeline.insertElement({
-				element,
-				placement: { mode: "auto" },
-			});
-
-			toast.success(`Imagem de banco inserida em ${suggestion.startTime.toFixed(1)}s`);
+			try {
+				const { mediaId } = await addMediaFromUrl({
+					editor,
+					url: photo.src.large,
+					name: `pexels-${photo.id}`,
+				});
+				editor.timeline.insertElement({
+					element: buildImageElement({
+						mediaId,
+						name: `Banco: ${photo.alt || photo.photographer}`,
+						duration: Math.max(duration, 2),
+						startTime: suggestion.startTime,
+					}),
+					placement: { mode: "auto" },
+				});
+				toast.success(`Imagem de banco inserida em ${suggestion.startTime.toFixed(1)}s`);
+			} catch (err) {
+				toast.error("Falha ao inserir a imagem de banco", {
+					description: err instanceof Error ? err.message : undefined,
+				});
+			}
 		},
 		[editor],
 	);
@@ -503,16 +521,25 @@ export function BRollSuggestionsPanel({
 									<>
 										<Spinner className="size-3.5 mr-2" />
 										Gerando {batchProgress.done}/{batchProgress.total}...
-										<button
-											type="button"
+										{/* biome-ignore lint/a11y/useSemanticElements: a native <button> cannot nest inside the outer Button */}
+										<span
+											role="button"
+											tabIndex={0}
 											className="ml-2 text-[9px] text-destructive hover:underline"
 											onClick={(e) => {
 												e.stopPropagation();
 												batchCancelRef.current = true;
 											}}
+											onKeyDown={(e) => {
+												if (e.key === "Enter" || e.key === " ") {
+													e.preventDefault();
+													e.stopPropagation();
+													batchCancelRef.current = true;
+												}
+											}}
 										>
 											Cancelar
-										</button>
+										</span>
 									</>
 								) : (
 									<>
@@ -562,7 +589,7 @@ export function BRollSuggestionsPanel({
 
 					{suggestions.map((suggestion, idx) => (
 						<BRollCard
-							key={`${suggestion.segmentIndex}-${idx}`}
+							key={suggestion.segmentIndex}
 							idx={idx}
 							suggestion={suggestion}
 							isExpanded={expandedIdx === idx}
@@ -656,11 +683,21 @@ function BRollCard({
 	}, [onSeekTo, suggestion.startTime]);
 
 	return (
+		// biome-ignore lint/a11y/useSemanticElements: card holds action buttons; a native button cannot contain them
 		<div
 			className={cn(
 				"rounded-lg border overflow-hidden cursor-pointer transition-colors",
 				PRIORITY_STYLES[suggestion.priority] ?? PRIORITY_STYLES.medium,
 			)}
+			role="button"
+			tabIndex={0}
+			onKeyDown={(e) => {
+				if (e.target !== e.currentTarget) return;
+				if (e.key === "Enter" || e.key === " ") {
+					e.preventDefault();
+					e.currentTarget.click();
+				}
+			}}
 			onClick={onToggle}
 		>
 			{/* Collapsed header */}
@@ -931,7 +968,9 @@ function BRollCard({
 											src={videoGenState.videoUrl}
 											controls
 											className="w-full max-h-32 object-contain"
-										/>
+										>
+											<track kind="captions" />
+										</video>
 									</div>
 								) : (
 									<Button

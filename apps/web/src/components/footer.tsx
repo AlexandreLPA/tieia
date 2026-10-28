@@ -136,7 +136,7 @@ export function Footer() {
 
 export function OpenCutAILogo({ size = 26 }: { size?: number }) {
 	return (
-		<svg
+		<svg aria-hidden="true"
 			width={size}
 			height={size}
 			viewBox="0 0 48 48"

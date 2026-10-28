@@ -165,6 +165,7 @@ function AudioVolumeLine({
 	}, [volume, volumePercent, onVolumeChange, onVolumeCommit, calcVolume]);
 
 	return (
+		// biome-ignore lint/a11y/noStaticElementInteractions: pointer-only volume drag surface; keyboard volume control is out of scope for this change
 		<div
 			ref={containerRef}
 			className="absolute inset-0 z-10"

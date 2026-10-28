@@ -539,6 +539,7 @@ export function TranscriptionPanel({
 												value={editingName}
 												onChange={(e) => setEditingName(e.target.value)}
 												className="text-[11px] font-medium bg-primary/10 border border-primary/30 rounded px-1.5 py-0.5 w-24 outline-none focus:ring-1 focus:ring-primary/50"
+												// biome-ignore lint/a11y/noAutofocus: focus must land in this inline editor the moment the user opens it
 												autoFocus
 												onBlur={() => {
 													if (editingName.trim() && onRenameSpeaker) {
@@ -659,6 +660,7 @@ export function TranscriptionPanel({
 															)}
 
 															{/* Segment */}
+															{/* biome-ignore lint/a11y/useSemanticElements: row contains inline action buttons, so a native <button> would nest invalid HTML */}
 															<div
 																role="button"
 																tabIndex={0}
@@ -699,6 +701,8 @@ export function TranscriptionPanel({
 																)}
 															>
 																{/* Drag handle */}
+																{/* biome-ignore lint/a11y/noStaticElementInteractions: drag handle only stops click propagation so the row does not toggle; it has no action of its own */}
+																{/* biome-ignore lint/a11y/useKeyWithClickEvents: drag handle only stops click propagation so the row does not toggle; it has no action of its own */}
 																<div
 																	{...draggableProvided.dragHandleProps}
 																	className="flex items-start pt-0.5 opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity cursor-grab active:cursor-grabbing"
@@ -722,6 +726,7 @@ export function TranscriptionPanel({
 																	<div className="flex items-center gap-2 mb-1">
 																		{segment.speaker && (
 																			editingSpeaker === segment.speaker ? (
+																				// biome-ignore lint/a11y/useKeyWithClickEvents: form only stops click propagation so the row does not toggle; submit is keyboard-operable
 																				<form
 																					className="flex items-center gap-1"
 																					onSubmit={(e) => {
@@ -738,6 +743,7 @@ export function TranscriptionPanel({
 																						value={editingName}
 																						onChange={(e) => setEditingName(e.target.value)}
 																						className="text-[11px] font-medium text-primary bg-primary/10 border border-primary/30 rounded px-1.5 py-0.5 w-24 outline-none focus:ring-1 focus:ring-primary/50"
+																						// biome-ignore lint/a11y/noAutofocus: focus must land in this inline editor the moment the user opens it
 																						autoFocus
 																						onBlur={() => {
 																							if (editingName.trim() && onRenameSpeaker) {
@@ -812,8 +818,7 @@ export function TranscriptionPanel({
 																						<ContextMenuTrigger
 																							asChild
 																						>
-																							<span
-																								role="button"
+																							<button type="button"
 																								tabIndex={
 																									0
 																								}
@@ -861,7 +866,7 @@ export function TranscriptionPanel({
 																								{
 																									word.text
 																								}{" "}
-																							</span>
+																							</button>
 																						</ContextMenuTrigger>
 																						<ContextMenuContent>
 																							<ContextMenuItem

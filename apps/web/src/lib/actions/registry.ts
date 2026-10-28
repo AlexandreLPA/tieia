@@ -57,5 +57,5 @@ export const invokeAction: InvokeActionFunc = <A extends TAction>(
 	args?: TArgOfAction<A>,
 	trigger?: TInvocationTrigger,
 ) => {
-	boundActions[action]?.forEach((handler) => handler(args, trigger));
+	boundActions[action]?.forEach((handler) => { handler(args, trigger); });
 };

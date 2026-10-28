@@ -24,7 +24,8 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import { aiClient } from "@/lib/ai-client";
 import { useEditor } from "@/hooks/use-editor";
-import { buildImageElement } from "@/lib/timeline/element-utils";
+import { buildImageElement, buildVideoElement } from "@/lib/timeline/element-utils";
+import { addMediaFromUrl } from "@/lib/media/add-media-from-url";
 import type { TextElement } from "@/types/timeline";
 import { toast } from "sonner";
 
@@ -219,25 +220,35 @@ export function TemplateGuideProperties({
 
 	// ── Insert generated media to timeline at segment position ──
 
-	const handleInsertToTimeline = useCallback(() => {
+	const handleInsertToTimeline = useCallback(async () => {
 		if (!generatedUrl) return;
 
-		const imgElement = buildImageElement({
-			mediaId: `guide-media-${element.id}-${Date.now()}`,
-			name: `${parsed.title}`,
-			duration: element.duration,
-			startTime: element.startTime,
-		});
+		try {
+			const { mediaId, type } = await addMediaFromUrl({
+				editor,
+				url: generatedUrl,
+				name: `guide-${element.id}`,
+			});
+			const build = type === "video" ? buildVideoElement : buildImageElement;
+			editor.timeline.insertElement({
+				element: build({
+					mediaId,
+					name: `${parsed.title}`,
+					duration: element.duration,
+					startTime: element.startTime,
+				}),
+				placement: { mode: "auto" },
+			});
 
-		editor.timeline.insertElement({
-			element: imgElement,
-			placement: { mode: "auto" },
-		});
-
-		setInserted(true);
-		toast.success(
-			`Inserido em ${element.startTime.toFixed(1)}s (${element.duration.toFixed(1)}s)`,
-		);
+			setInserted(true);
+			toast.success(
+				`Inserido em ${element.startTime.toFixed(1)}s (${element.duration.toFixed(1)}s)`,
+			);
+		} catch (err) {
+			toast.error("Falha ao inserir na timeline", {
+				description: err instanceof Error ? err.message : undefined,
+			});
+		}
 	}, [generatedUrl, element, parsed.title, editor]);
 
 	return (
@@ -351,9 +362,9 @@ export function TemplateGuideProperties({
 							{/* Prompt */}
 							<div className="flex flex-col gap-1">
 								<div className="flex items-center justify-between">
-									<label className="text-[10px] font-medium text-muted-foreground">
+									<span className="text-[10px] font-medium text-muted-foreground">
 										Prompt
-									</label>
+									</span>
 									<Button
 										variant="ghost"
 										size="sm"
@@ -389,7 +400,9 @@ export function TemplateGuideProperties({
 											src={generatedUrl}
 											controls
 											className="w-full max-h-28 object-contain"
-										/>
+										>
+											<track kind="captions" />
+										</video>
 									) : (
 										<img
 											src={generatedUrl}

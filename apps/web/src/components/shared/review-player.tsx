@@ -216,7 +216,6 @@ export function ReviewPlayer({
 								);
 							}
 							return (
-								// biome-ignore lint/a11y/useMediaCaption: raw user footage has no caption tracks; text overlays render as layers below
 								<video
 									key={el.id}
 									ref={(node) => {
@@ -243,7 +242,9 @@ export function ReviewPlayer({
 									}}
 									src={`/api/sharing/${token}/media/${hash}`}
 								 preload="auto"
-								/>
+								>
+									<track kind="captions" />
+								</audio>
 							);
 						}
 						if (el.type === "text") {

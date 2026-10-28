@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     ]
 
     # Ollama
-    OLLAMA_URL: str = "http://localhost:11434"
+    OLLAMA_URL: str = "http://127.0.0.1:11434"
     OLLAMA_DEFAULT_MODEL: str = "llama3.2:1b"
     OLLAMA_TIMEOUT: int = 300
 
@@ -36,7 +36,7 @@ class Settings(BaseSettings):
     # unrelated codebases never call this). Only active when AI_LLM_BACKEND="openrouter"
     # AND a key is set below; empty key = silently behaves exactly like before (Ollama).
     OPENROUTER_API_KEY: str = ""
-    OPENROUTER_MODEL: str = "minimax/minimax-m3.1-flash:free"
+    OPENROUTER_MODEL: str = "nvidia/nemotron-3-ultra-550b-a55b:free"
     OPENROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
     KV_CACHE_BITS: int = 2  # 2, 3, or 4 — TurboQuant KV cache quantization bits (2 = most memory efficient, default)
     # Compute mode for the TurboQuant inference service.
@@ -45,16 +45,16 @@ class Settings(BaseSettings):
     AI_COMPUTE_MODE: str = "auto"
 
     # Microservice URLs
-    WHISPER_SERVICE_URL: str = "http://localhost:8421"
-    TTS_SERVICE_URL: str = "http://localhost:8422"
-    IMAGE_SERVICE_URL: str = "http://localhost:8423"
-    SPEAKER_SERVICE_URL: str = "http://localhost:8424"
-    FACE_SERVICE_URL: str = "http://localhost:8425"
-    TURBOQUANT_SERVICE_URL: str = "http://localhost:8430"
+    WHISPER_SERVICE_URL: str = "http://127.0.0.1:8421"
+    TTS_SERVICE_URL: str = "http://127.0.0.1:8422"
+    IMAGE_SERVICE_URL: str = "http://127.0.0.1:8423"
+    SPEAKER_SERVICE_URL: str = "http://127.0.0.1:8424"
+    FACE_SERVICE_URL: str = "http://127.0.0.1:8425"
+    TURBOQUANT_SERVICE_URL: str = "http://127.0.0.1:8430"
     # CLIP embedding service — powers privacy-first semantic media search
-    CLIP_SERVICE_URL: str = "http://localhost:8426"
+    CLIP_SERVICE_URL: str = "http://127.0.0.1:8426"
     # NLLB-200 translation service — fully-local, privacy-first. Powers AI dubbing.
-    TRANSLATE_SERVICE_URL: str = "http://localhost:8427"
+    TRANSLATE_SERVICE_URL: str = "http://127.0.0.1:8427"
 
     # Sarvam AI (Indian language APIs)
     SARVAM_API_KEY: str = ""
@@ -63,6 +63,12 @@ class Settings(BaseSettings):
     # Smallest AI (Waves — Lightning TTS + Pulse STT)
     SMALLEST_API_KEY: str = ""
     SMALLEST_API_BASE_URL: str = "https://api.smallest.ai/waves/v1"
+
+    # Use Microsoft edge-tts (cloud, no key) when the local tts-service is down
+    TTS_EDGE_FALLBACK: bool = True
+
+    # Pexels (free stock video search for the autopilot)
+    PEXELS_API_KEY: str = ""
 
     # Seedance (ByteDance text-to-video generation via PiAPI)
     SEEDANCE_API_KEY: str = ""

@@ -33,9 +33,9 @@ export function YouTubeUrlInput({ onSubmit, disabled }: YouTubeUrlInputProps) {
 
 	return (
 		<div className="space-y-3">
-			<label className="text-sm font-medium text-foreground">URL do Vídeo do YouTube</label>
+			<label htmlFor="youtube-url-input" className="text-sm font-medium text-foreground">URL do Vídeo do YouTube</label>
 			<div className="flex gap-2">
-				<input
+				<input id="youtube-url-input"
 					type="url"
 					value={url}
 					onChange={(e) => setUrl(e.target.value)}

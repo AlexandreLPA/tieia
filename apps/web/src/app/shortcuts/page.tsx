@@ -164,6 +164,7 @@ function ShortcutRow({
 			<div>
 				{isEditing ? (
 					<input
+						// biome-ignore lint/a11y/noAutofocus: focus must land in this inline editor the moment the user opens it
 						autoFocus
 						readOnly
 						value="Press shortcut..."

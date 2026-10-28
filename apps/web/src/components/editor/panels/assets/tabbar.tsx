@@ -69,7 +69,7 @@ export function TabBar() {
 					className="flex items-center justify-center size-5 rounded-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
 					aria-label="Rolar para cima para ver mais abas"
 				>
-					<svg width="10" height="6" viewBox="0 0 10 6" fill="none" className="shrink-0">
+					<svg aria-hidden="true" width="10" height="6" viewBox="0 0 10 6" fill="none" className="shrink-0">
 						<path d="M1 5L5 1L9 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
 					</svg>
 				</button>
@@ -129,7 +129,7 @@ export function TabBar() {
 					className="flex items-center justify-center size-5 rounded-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
 					aria-label="Rolar para baixo para ver mais abas"
 				>
-					<svg width="10" height="6" viewBox="0 0 10 6" fill="none" className="shrink-0">
+					<svg aria-hidden="true" width="10" height="6" viewBox="0 0 10 6" fill="none" className="shrink-0">
 						<path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
 					</svg>
 				</button>

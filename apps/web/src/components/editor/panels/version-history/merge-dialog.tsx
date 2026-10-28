@@ -171,8 +171,8 @@ export function MergeDialog({
 
 							{mergeResult.autoResolved.length > 0 && (
 								<div className="rounded border border-border bg-muted/30 p-3 max-h-40 overflow-y-auto space-y-1">
-									{mergeResult.autoResolved.map((change, idx) => (
-										<div key={idx} className="text-xs text-muted-foreground">
+									{mergeResult.autoResolved.map((change) => (
+										<div key={change.path} className="text-xs text-muted-foreground">
 											{change.humanReadable}
 										</div>
 									))}

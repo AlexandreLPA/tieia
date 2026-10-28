@@ -105,13 +105,14 @@ export function BackgroundTasksWidget() {
 	return (
 		<div className="fixed bottom-4 right-4 z-50 w-72 rounded-lg border bg-background shadow-lg overflow-hidden">
 			{/* Header */}
+			{/* biome-ignore lint/a11y/useSemanticElements: header contains a nested Button (Clear), so a native <button> would be invalid HTML */}
 			<div
+				role="button"
 				className="flex items-center justify-between px-3 py-2 border-b cursor-pointer hover:bg-accent/50 transition-colors"
 				onClick={() => setMinimized(!isMinimized)}
 				onKeyDown={(e) => {
 					if (e.key === "Enter" || e.key === " ") setMinimized(!isMinimized);
 				}}
-				role="button"
 				tabIndex={0}
 			>
 				<div className="flex items-center gap-2">

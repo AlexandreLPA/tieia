@@ -1,6 +1,6 @@
 import type { AIBackendStatus, AIErrorType } from "@/types/ai";
 
-export const HEALTH_TIMEOUT_MS = 5_000;
+export const HEALTH_TIMEOUT_MS = 15_000;
 export const REQUEST_TIMEOUT_MS = 120_000;
 export const LLM_TIMEOUT_MS = 600_000; // 10 min — LLM generation can be slow on CPU
 

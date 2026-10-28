@@ -281,7 +281,7 @@ export function Features() {
 
 function EditByTextIcon() {
 	return (
-		<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+		<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
 			<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
 			<path d="m15 5 4 4" />
 		</svg>
@@ -290,7 +290,7 @@ function EditByTextIcon() {
 
 function SpeakerIcon() {
 	return (
-		<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+		<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
 			<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
 			<circle cx="9" cy="7" r="4" />
 			<path d="M22 21v-2a4 4 0 0 0-3-3.87" />
@@ -301,7 +301,7 @@ function SpeakerIcon() {
 
 function VoiceIcon() {
 	return (
-		<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+		<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
 			<path d="M2 10v3" /><path d="M6 6v11" /><path d="M10 3v18" /><path d="M14 8v7" /><path d="M18 5v13" /><path d="M22 10v3" />
 		</svg>
 	);
@@ -309,7 +309,7 @@ function VoiceIcon() {
 
 function PrivacyIcon() {
 	return (
-		<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+		<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
 			<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
 			<path d="m9 12 2 2 4-4" />
 		</svg>
@@ -318,7 +318,7 @@ function PrivacyIcon() {
 
 function ClipFinderIcon() {
 	return (
-		<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+		<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
 			<circle cx="11" cy="11" r="8" />
 			<path d="m21 21-4.3-4.3" />
 			<path d="m9 9 2 2 4-4" />
@@ -328,7 +328,7 @@ function ClipFinderIcon() {
 
 function KaraokeIcon() {
 	return (
-		<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+		<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
 			<rect width="20" height="16" x="2" y="4" rx="2" />
 			<path d="M7 15h2" />
 			<path d="M11 15h2" style={{ strokeWidth: 2.8 }} />
@@ -340,7 +340,7 @@ function KaraokeIcon() {
 
 function ReframeIcon() {
 	return (
-		<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+		<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
 			<rect width="8" height="14" x="8" y="5" rx="1.5" />
 			<path d="M4 9h4" /><path d="M16 9h4" />
 			<path d="M4 15h4" /><path d="M16 15h4" />
@@ -351,7 +351,7 @@ function ReframeIcon() {
 
 function BrandIcon() {
 	return (
-		<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+		<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
 			<path d="M12 2 2 7l10 5 10-5-10-5Z" />
 			<path d="M2 17l10 5 10-5" />
 			<path d="M2 12l10 5 10-5" />
@@ -361,7 +361,7 @@ function BrandIcon() {
 
 function CardIcon() {
 	return (
-		<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+		<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
 			<rect width="18" height="14" x="3" y="5" rx="2" />
 			<path d="M12 12h.01" />
 			<path d="M8 9h8" />
@@ -372,7 +372,7 @@ function CardIcon() {
 
 function EmotionIcon() {
 	return (
-		<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+		<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
 			<circle cx="12" cy="12" r="10" />
 			<path d="M8 14s1.5 2 4 2 4-2 4-2" />
 			<line x1="9" x2="9.01" y1="9" y2="9" />
@@ -383,7 +383,7 @@ function EmotionIcon() {
 
 function SpeedIcon() {
 	return (
-		<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+		<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
 			<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
 		</svg>
 	);
@@ -391,7 +391,7 @@ function SpeedIcon() {
 
 function IndianLangIcon() {
 	return (
-		<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+		<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
 			<circle cx="12" cy="12" r="10" />
 			<path d="M2 12h20" />
 			<path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
@@ -401,7 +401,7 @@ function IndianLangIcon() {
 
 function TranscriptionIcon() {
 	return (
-		<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+		<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
 			<path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
 			<path d="M19 10v2a7 7 0 0 1-14 0v-2" />
 			<line x1="12" x2="12" y1="19" y2="22" />

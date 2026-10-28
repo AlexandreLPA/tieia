@@ -1,5 +1,6 @@
 """FastAPI application entry point."""
 
+import asyncio
 import logging
 from contextlib import asynccontextmanager
 
@@ -8,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
-from app.routes import analyze, audio, background, broll, command, compliance, dub, engagement, export, factcheck, generate, llm, podcast, sarvam, search, setup, smallest, template, transcribe, transcribe_ws, translate, tts, turboquant, video, youtube
+from app.routes import analyze, autopilot, audio, background, broll, command, compliance, dub, engagement, export, factcheck, generate, llm, podcast, sarvam, search, setup, smallest, template, transcribe, transcribe_ws, translate, tts, turboquant, video, youtube
 from app.services.model_backend import llm_backend
 
 # Configure logging
@@ -23,6 +24,7 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     """Application lifespan: startup and shutdown."""
     logger.info("OpenCut AI Backend starting on %s:%d", settings.HOST, settings.PORT)
+    asyncio.get_running_loop().create_task(services_health())  # warm the health cache
     logger.info(
         "Microservice URLs: whisper=%s  tts=%s  image=%s  ollama=%s",
         settings.WHISPER_SERVICE_URL,
@@ -103,6 +105,7 @@ app.include_router(dub.router)
 app.include_router(background.router)
 app.include_router(broll.router)
 app.include_router(compliance.router)
+app.include_router(autopilot.router)
 
 
 @app.get("/health")
@@ -112,43 +115,17 @@ async def health() -> dict:
     Checks downstream microservices and returns aggregated status
     so the frontend has everything it needs in one call.
     """
-    import httpx
-
-    # Check which microservices are online
-    online_services: list[str] = []
-
-    async def _ping(name: str, url: str) -> None:
-        try:
-            async with httpx.AsyncClient(timeout=3) as client:
-                resp = await client.get(f"{url}/health")
-                if resp.status_code == 200:
-                    online_services.append(name)
-        except Exception:
-            pass
-
-    # Check Ollama models
-    ollama_models: list[str] = []
-    try:
-        async with httpx.AsyncClient(timeout=3) as client:
-            resp = await client.get(f"{settings.OLLAMA_URL}/api/tags")
-            if resp.status_code == 200:
-                online_services.append("ollama")
-                data = resp.json()
-                ollama_models = [m.get("name", "") for m in data.get("models", [])]
-    except Exception:
-        pass
-
-    import asyncio
-    await asyncio.gather(
-        _ping("whisper", settings.WHISPER_SERVICE_URL),
-        _ping("tts", settings.TTS_SERVICE_URL),
-        _ping("image", settings.IMAGE_SERVICE_URL),
-        _ping("speaker", settings.SPEAKER_SERVICE_URL),
-        _ping("face", settings.FACE_SERVICE_URL),
-        _ping("turboquant", settings.TURBOQUANT_SERVICE_URL),
-        _ping("clip", settings.CLIP_SERVICE_URL),
-        _ping("translate", settings.TRANSLATE_SERVICE_URL),
-    )
+    # Reuse the cached probe: closed ports are slow on Windows, /health must stay fast.
+    cache = _services_health_cache
+    asyncio.get_running_loop().create_task(services_health())  # keeps the cache fresh
+    probed: dict = cache["data"] or {}
+    online_services: list[str] = [
+        name for name, entry in probed.items()
+        if name != "backend" and entry.get("status") == "running"
+    ]
+    ollama_models: list[str] = [
+        m.get("name", "") for m in probed.get("ollama", {}).get("models", [])
+    ]
 
     # System RAM via psutil
     ram_info = None
@@ -192,8 +169,40 @@ async def health() -> dict:
     }
 
 
+_SERVICES_HEALTH_TTL = 20.0
+_services_health_cache: dict = {"at": 0.0, "data": None, "task": None}
+
+
 @app.get("/services/health")
 async def services_health() -> dict:
+    """Cached health of all downstream services.
+
+    Probing closed ports is slow on Windows (~2.5 s each, serialized), so the
+    result is served from a short-lived cache and refreshed in the background.
+    """
+    import asyncio
+    import time
+
+    cache = _services_health_cache
+    fresh = cache["data"] is not None and time.monotonic() - cache["at"] < _SERVICES_HEALTH_TTL
+    if fresh:
+        return cache["data"]
+
+    task = cache["task"]
+    if task is None or task.done():
+        async def _refresh() -> dict:
+            data = await _collect_services_health()
+            cache["data"], cache["at"] = data, time.monotonic()
+            return data
+
+        task = cache["task"] = asyncio.create_task(_refresh())
+
+    if cache["data"] is not None:
+        return cache["data"]  # stale while the refresh runs
+    return await asyncio.shield(task)
+
+
+async def _collect_services_health() -> dict:
     """Detailed health check for all downstream services.
 
     Returns per-service status including model info so the frontend
@@ -255,7 +264,6 @@ async def services_health() -> dict:
             results["ollama"] = {"status": "stopped", "detail": "Not reachable"}
 
     await asyncio.gather(
-        _check("backend", f"http://localhost:{settings.PORT}"),
         _check_ollama(),
         _check("whisper", settings.WHISPER_SERVICE_URL),
         _check("tts", settings.TTS_SERVICE_URL),

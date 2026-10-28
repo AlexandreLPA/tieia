@@ -85,7 +85,7 @@ const FEATURES = [
 
 function CheckIcon() {
 	return (
-		<svg className="size-4 text-green-500 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+		<svg aria-hidden="true" className="size-4 text-green-500 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
 			<path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
 		</svg>
 	);
@@ -93,7 +93,7 @@ function CheckIcon() {
 
 function CrossIcon() {
 	return (
-		<svg className="size-4 text-red-400 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+		<svg aria-hidden="true" className="size-4 text-red-400 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
 			<path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
 		</svg>
 	);
@@ -241,7 +241,7 @@ function FAQ({ question, answer }: { question: string; answer: string }) {
 			<summary className="font-medium cursor-pointer list-none flex items-center justify-between">
 				{question}
 				<span className="text-muted-foreground group-open:rotate-180 transition-transform">
-					<svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+					<svg aria-hidden="true" className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
 						<path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
 					</svg>
 				</span>

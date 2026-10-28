@@ -66,6 +66,7 @@ export function TimelineTrackContent({
 	});
 
 	return (
+		// biome-ignore lint/a11y/useSemanticElements: the track holds clip buttons, so a native <button> would nest invalid HTML
 		<div
 			className="group/track size-full"
 			role="button"

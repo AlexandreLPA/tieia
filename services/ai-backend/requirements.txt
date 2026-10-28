@@ -23,3 +23,6 @@ redis>=5.0.0
 # Audio Intelligence (optional — falls back to FFmpeg-based analysis)
 # beatnet>=1.0.0   # Uncomment for BeatNet beat detection (MIT license)
 # madmom>=0.17.0   # Uncomment for alternative beat tracking (BSD-2)
+
+# Cloud TTS fallback (Microsoft Edge neural voices, no API key)
+edge-tts==7.3.1

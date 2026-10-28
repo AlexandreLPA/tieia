@@ -110,8 +110,8 @@ export function DiffView() {
 			{mode === "commits" && (
 				<div className="px-3 py-2 space-y-2 border-b border-border">
 					<div>
-						<label className="text-[10px] text-muted-foreground">Versão A (mais antiga)</label>
-						<select
+						<label htmlFor="diff-commit-a" className="text-[10px] text-muted-foreground">Versão A (mais antiga)</label>
+						<select id="diff-commit-a"
 							value={commitA}
 							onChange={(e) => setCommitA(e.target.value)}
 							className="w-full mt-0.5 rounded-md border border-border bg-background px-2 py-1 text-xs"
@@ -125,8 +125,8 @@ export function DiffView() {
 						</select>
 					</div>
 					<div>
-						<label className="text-[10px] text-muted-foreground">Versão B (mais recente)</label>
-						<select
+						<label htmlFor="diff-commit-b" className="text-[10px] text-muted-foreground">Versão B (mais recente)</label>
+						<select id="diff-commit-b"
 							value={commitB}
 							onChange={(e) => setCommitB(e.target.value)}
 							className="w-full mt-0.5 rounded-md border border-border bg-background px-2 py-1 text-xs"
@@ -235,7 +235,7 @@ export function DiffView() {
 													({changes.length})
 												</span>
 											</div>
-											<svg
+											<svg aria-hidden="true"
 												width="12"
 												height="12"
 												viewBox="0 0 16 16"
@@ -256,9 +256,9 @@ export function DiffView() {
 
 										{!isCollapsed && (
 											<div className="pl-9 pr-3 pb-1 space-y-0.5">
-												{changes.map((change, idx) => (
+												{changes.map((change) => (
 													<div
-														key={`${change.path}-${idx}`}
+														key={change.path}
 														className="text-xs text-muted-foreground py-0.5"
 													>
 														{change.humanReadable}

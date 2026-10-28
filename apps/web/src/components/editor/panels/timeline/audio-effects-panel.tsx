@@ -24,10 +24,9 @@ interface AudioEffectsChainProps {
 export function AudioEffectsChainPanel({ trackId, trackType, className }: AudioEffectsChainProps) {
 	const editor = useEditor();
 	const track = editor.timeline.getTrackById({ trackId });
-	if (!track || (trackType !== "audio" && trackType !== "video")) return null;
 
 	const effects: TrackAudioEffect[] =
-		(track.type === "audio" || track.type === "video"
+		(track && (track.type === "audio" || track.type === "video")
 			? track.audioEffects
 			: undefined) ?? [];
 
@@ -87,6 +86,8 @@ export function AudioEffectsChainPanel({ trackId, trackType, className }: AudioE
 		},
 		[effects, trackId, editor],
 	);
+
+	if (!track || (trackType !== "audio" && trackType !== "video")) return null;
 
 	const availableEffects = getAllAudioEffectDefinitions();
 

@@ -133,7 +133,7 @@ export const StepFlow: FC<StepFlowProps> = ({
                   marginTop: -60,
                 }}
               >
-                <svg
+                <svg aria-hidden="true"
                   width="60"
                   height="24"
                   viewBox="0 0 60 24"

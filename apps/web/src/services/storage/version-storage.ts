@@ -596,8 +596,7 @@ function navigateTo(
 function tokenizePath(path: string): (string | number)[] {
 	const tokens: (string | number)[] = [];
 	const regex = /([^.[]+)|\[(\d+)\]/g;
-	let match: RegExpExecArray | null;
-	while ((match = regex.exec(path))) {
+	for (let match = regex.exec(path); match; match = regex.exec(path)) {
 		if (match[1]) tokens.push(match[1]);
 		else if (match[2]) tokens.push(parseInt(match[2], 10));
 	}

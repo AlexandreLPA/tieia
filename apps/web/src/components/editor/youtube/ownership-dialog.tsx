@@ -29,7 +29,7 @@ export function OwnershipDialog({ onConfirm, onCancel }: OwnershipDialogProps) {
 			</p>
 			<div className="space-y-2">
 				{labels.map((label, i) => (
-					<label key={i} className="flex items-center gap-2 text-sm cursor-pointer">
+					<label key={label} className="flex items-center gap-2 text-sm cursor-pointer">
 						<input
 							type="checkbox"
 							checked={checks[i]}

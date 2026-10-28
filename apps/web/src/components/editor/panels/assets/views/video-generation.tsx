@@ -118,7 +118,7 @@ export function VideoGenerationPanel({ className }: { className?: string }) {
 				{/* Generation Mode Tabs */}
 				<div className="flex gap-1">
 					{(Object.entries(MODE_LABELS) as [VideoGenMode, typeof MODE_LABELS[VideoGenMode]][]).map(([mode, info]) => (
-						<button
+						<button type="button"
 							key={mode}
 							className={cn(
 								"flex-1 rounded border px-2 py-1.5 text-[8px] text-center transition-colors",
@@ -138,7 +138,7 @@ export function VideoGenerationPanel({ className }: { className?: string }) {
 				<div className="space-y-1">
 					<span className="text-[9px] font-medium text-muted-foreground">Provedor</span>
 					<div className="flex flex-wrap gap-1">
-						<button
+						<button type="button"
 							className={cn(
 								"rounded px-1.5 py-0.5 text-[8px] transition-colors",
 								providerFilter === "all"
@@ -150,7 +150,7 @@ export function VideoGenerationPanel({ className }: { className?: string }) {
 							Todos
 						</button>
 						{VIDEO_PROVIDER_CONFIGS.filter((pc) => VIDEO_MODELS.some((m) => m.provider === pc.provider)).map((pc) => (
-							<button
+							<button type="button"
 								key={pc.provider}
 								className={cn(
 									"rounded px-1.5 py-0.5 text-[8px] transition-colors",
@@ -163,7 +163,7 @@ export function VideoGenerationPanel({ className }: { className?: string }) {
 								{pc.label}
 							</button>
 						))}
-						<button
+						<button type="button"
 							className={cn(
 								"rounded px-1.5 py-0.5 text-[8px] transition-colors",
 								providerFilter === "local"
@@ -236,7 +236,7 @@ export function VideoGenerationPanel({ className }: { className?: string }) {
 					<span className="text-[9px] font-medium text-muted-foreground">Proporção</span>
 					<div className="flex flex-wrap gap-1">
 						{VIDEO_ASPECT_RATIOS.filter((r) => !model || model.aspectRatios.includes(r.id)).map((ar) => (
-							<button
+							<button type="button"
 								key={ar.id}
 								className={cn(
 									"rounded border px-2 py-1 text-[8px] transition-colors",
@@ -390,7 +390,9 @@ export function VideoGenerationPanel({ className }: { className?: string }) {
 							controls
 							className="w-full rounded"
 							style={{ maxHeight: 200 }}
-						/>
+						>
+							<track kind="captions" />
+						</video>
 						<div className="flex gap-1.5">
 							<Button
 								className="flex-1 h-6 text-[9px]"

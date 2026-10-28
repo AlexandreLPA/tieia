@@ -129,9 +129,9 @@ export function CherryPickDialog({
 												Changes to apply ({applied.length})
 											</div>
 											<div className="space-y-0.5 max-h-32 overflow-y-auto">
-												{applied.map((change, idx) => (
+												{applied.map((change) => (
 													<div
-														key={idx}
+														key={change.path}
 														className="text-xs text-muted-foreground"
 													>
 														{change.humanReadable}

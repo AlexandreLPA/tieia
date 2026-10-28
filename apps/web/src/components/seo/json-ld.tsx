@@ -72,14 +72,17 @@ export function JsonLd() {
 		<>
 			<script
 				type="application/ld+json"
+				// biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD built from our own constant objects, JSON.stringify output only
 				dangerouslySetInnerHTML={{ __html: JSON.stringify(organization) }}
 			/>
 			<script
 				type="application/ld+json"
+				// biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD built from our own constant objects, JSON.stringify output only
 				dangerouslySetInnerHTML={{ __html: JSON.stringify(website) }}
 			/>
 			<script
 				type="application/ld+json"
+				// biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD built from our own constant objects, JSON.stringify output only
 				dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareApp) }}
 			/>
 		</>

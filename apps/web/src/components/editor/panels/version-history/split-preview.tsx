@@ -108,6 +108,7 @@ export function SplitPreview({
 					<div className="h-4 rounded overflow-hidden flex bg-muted">
 						{heatmap.map((segment, idx) => (
 							<div
+								// biome-ignore lint/suspicious/noArrayIndexKey: static heatmap; segments are positional and never reordered
 								key={idx}
 								className="h-full transition-all"
 								style={{

@@ -129,7 +129,7 @@ export function AIDubbingPanel() {
 
 			{engine === "local" && (
 				<div className="flex items-center gap-1 rounded-md border border-emerald-500/30 bg-emerald-500/5 px-2 py-1">
-					<svg
+					<svg aria-hidden="true"
 						className="size-3 text-emerald-600 shrink-0"
 						viewBox="0 0 16 16"
 						fill="none"
@@ -187,7 +187,7 @@ export function AIDubbingPanel() {
 							>
 								<div className="flex items-center gap-1.5">
 									{isActive ? (
-										<svg
+										<svg aria-hidden="true"
 											className="size-3 text-primary shrink-0"
 											viewBox="0 0 16 16"
 											fill="none"
