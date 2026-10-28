@@ -34,6 +34,15 @@ JSON_TEMPERATURE = 0.2
 
 OPENROUTER_CATALOG_TTL = 3600  # seconds
 
+
+def is_free_openrouter_model(model: str) -> bool:
+    """OpenRouter's free variants end in ":free" and never touch the credits."""
+    return model.endswith(":free")
+
+
+def openrouter_model_allowed(model: str) -> bool:
+    return settings.OPENROUTER_ALLOW_PAID or is_free_openrouter_model(model)
+
 # The model picked in the app, kept on the generated volume so a restart
 # doesn't fall back to the .env default
 RUNTIME_SETTINGS_FILE = os.path.join(settings.GENERATED_DIR, "llm-runtime.json")
@@ -133,6 +142,15 @@ class LLMBackend:
             "message": _cloud_error_summary(exc),
             "at": time.time(),
         }
+        # A saved model that OpenRouter retired (free periods end) gives way
+        # to the .env model from the next request on
+        retired = self._openrouter_model_override
+        if retired and retired != settings.OPENROUTER_MODEL and "(HTTP 404)" in str(exc):
+            logger.warning(
+                "Cloud model %s is gone (404); back to %s", retired, settings.OPENROUTER_MODEL
+            )
+            self._openrouter_model_override = None
+            self._save_runtime_settings()
 
     @property
     def ollama_url(self) -> str:
@@ -200,6 +218,13 @@ class LLMBackend:
             info["served"] = dict(self._last_served)
         if self._cloud_issue and self._use_openrouter():
             info["cloudIssue"] = dict(self._cloud_issue)
+        elif self.backend_mode == "openrouter" and not openrouter_model_allowed(self.openrouter_model):
+            # A paid model was chosen: the local model answers instead of spending credits
+            info["cloudIssue"] = {
+                "model": self.openrouter_model,
+                "message": "modelo pago bloqueado para não gastar créditos; escolha um modelo grátis",
+                "at": time.time(),
+            }
         return info
 
     # ── Ollama methods ────────────────────────────────────────────────
@@ -373,7 +398,11 @@ class LLMBackend:
     # this module, so enabling this here cannot route anything else's data.
 
     def _use_openrouter(self) -> bool:
-        return self.backend_mode == "openrouter" and bool(settings.OPENROUTER_API_KEY)
+        return (
+            self.backend_mode == "openrouter"
+            and bool(settings.OPENROUTER_API_KEY)
+            and openrouter_model_allowed(self.openrouter_model)
+        )
 
     def _or_headers(self) -> dict[str, str]:
         return {

@@ -9,7 +9,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field, model_validator
 
 from app.config import settings
-from app.services.model_backend import VisionUnsupportedError, llm_backend
+from app.services.model_backend import VisionUnsupportedError, llm_backend, openrouter_model_allowed
 from app.services.ollama_service import ollama_service
 from app.services.tiktok_compliance import validate_image_data_uri
 
@@ -290,6 +290,16 @@ async def set_cloud_model(request: SetCloudModelRequest) -> dict:
         raise HTTPException(
             status_code=400,
             detail="Nenhuma chave da OpenRouter configurada. Adicione OPENROUTER_API_KEY no .env primeiro.",
+        )
+
+    if not openrouter_model_allowed(request.model):
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"O modelo '{request.model}' é pago e gastaria créditos da OpenRouter. "
+                "Escolha um modelo grátis (o nome termina em ':free') ou defina "
+                "OPENROUTER_ALLOW_PAID=true no .env."
+            ),
         )
 
     old_backend = llm_backend.backend_mode

@@ -20,14 +20,14 @@ export const SUGGESTED_MODELS = [
 // machine. Only usable once OPENROUTER_API_KEY is set in .env.
 export const SUGGESTED_CLOUD_MODELS = [
 	{
-		id: "minimax/minimax-m3.1-flash:free",
-		name: "MiniMax M3.1 Flash",
-		description: "Recomendado — grátis, rápido, 1M de contexto, aceita texto/imagem/vídeo (necessário para a Pontuação Viral).",
-	},
-	{
 		id: "nvidia/nemotron-3.5-super-vl:free",
 		name: "Nemotron 3.5 Super VL",
-		description: "NVIDIA — grátis, 1M de contexto, aceita texto/imagem/vídeo. Boa reserva.",
+		description: "Recomendado — NVIDIA, grátis, 1M de contexto, aceita texto/imagem/vídeo (necessário para a Pontuação Viral).",
+	},
+	{
+		id: "google/gemma-4-31b-it:free",
+		name: "Gemma 4 31B",
+		description: "Google — grátis, 262K de contexto, aceita texto/imagem/vídeo. Boa reserva.",
 	},
 	{
 		id: "nvidia/nemotron-3-ultra-550b-a55b:free",

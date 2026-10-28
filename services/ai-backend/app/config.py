@@ -36,7 +36,9 @@ class Settings(BaseSettings):
     # unrelated codebases never call this). Only active when AI_LLM_BACKEND="openrouter"
     # AND a key is set below; empty key = silently behaves exactly like before (Ollama).
     OPENROUTER_API_KEY: str = ""
-    OPENROUTER_MODEL: str = "minimax/minimax-m3.1-flash:free"
+    OPENROUTER_MODEL: str = "nvidia/nemotron-3.5-super-vl:free"
+    # Only ":free" models run unless this is turned on, so no credits get spent
+    OPENROUTER_ALLOW_PAID: bool = False
     OPENROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
     KV_CACHE_BITS: int = 2  # 2, 3, or 4 — TurboQuant KV cache quantization bits (2 = most memory efficient, default)
     # Compute mode for the TurboQuant inference service.
