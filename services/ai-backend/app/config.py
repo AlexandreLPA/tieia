@@ -68,8 +68,9 @@ class Settings(BaseSettings):
     SMALLEST_API_KEY: str = ""
     SMALLEST_API_BASE_URL: str = "https://api.smallest.ai/waves/v1"
 
-    # Use Microsoft edge-tts (cloud, no key) when the local tts-service is down
-    TTS_EDGE_FALLBACK: bool = True
+    # Use Microsoft edge-tts (cloud, no key) when the local tts-service is down.
+    # Off by default: it sends the script text to Microsoft.
+    TTS_EDGE_FALLBACK: bool = False
 
     # Pexels (free stock video search for the autopilot)
     PEXELS_API_KEY: str = ""
