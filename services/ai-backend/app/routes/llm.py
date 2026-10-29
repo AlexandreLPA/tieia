@@ -275,6 +275,23 @@ async def set_model(request: SetModelRequest) -> dict:
     }
 
 
+@router.get("/cloud-models")
+async def cloud_models() -> dict:
+    """Chat models OpenRouter serves for free right now, best first.
+
+    `active` is the one that answers; it differs from `configured` when the
+    picked model stopped being free and the best free one took its place.
+    """
+    free = await llm_backend.refresh_openrouter_models()
+    return {
+        "models": free or [],
+        "catalogAvailable": free is not None,
+        "active": llm_backend.openrouter_model,
+        "configured": llm_backend.configured_openrouter_model,
+        "allowPaid": settings.OPENROUTER_ALLOW_PAID,
+    }
+
+
 class SetCloudModelRequest(BaseModel):
     model: str
 
@@ -299,6 +316,16 @@ async def set_cloud_model(request: SetCloudModelRequest) -> dict:
                 f"O modelo '{request.model}' é pago e gastaria créditos da OpenRouter. "
                 "Escolha um modelo grátis (o nome termina em ':free') ou defina "
                 "OPENROUTER_ALLOW_PAID=true no .env."
+            ),
+        )
+
+    free = await llm_backend.refresh_openrouter_models()
+    if not settings.OPENROUTER_ALLOW_PAID and free and request.model not in {m["id"] for m in free}:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"O modelo '{request.model}' não está grátis na OpenRouter agora. "
+                "Escolha um da lista de modelos grátis."
             ),
         )
 

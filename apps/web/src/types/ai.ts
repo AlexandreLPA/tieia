@@ -206,6 +206,31 @@ export interface AIActiveLLM {
 	served?: { backend: string; model: string; cloud: boolean; at: number };
 	/** Set while the cloud model fails and requests fall back to a local model */
 	cloudIssue?: { model: string; message: string; at: number };
+	/** Set when the picked cloud model stopped being free and `model` stands in for it */
+	replaced?: { model: string; message: string };
+}
+
+/** A chat model OpenRouter serves for free right now. */
+export interface CloudModel {
+	id: string;
+	name: string;
+	/** Context window, in tokens */
+	context: number;
+	/** Input kinds: "text", "image", "video", ... */
+	inputs: string[];
+	vision: boolean;
+}
+
+export interface CloudModels {
+	/** Free right now, best first */
+	models: CloudModel[];
+	/** False when the OpenRouter catalog could not be read */
+	catalogAvailable: boolean;
+	/** The model that answers */
+	active: string;
+	/** The model picked; differs from `active` when it stopped being free */
+	configured: string;
+	allowPaid: boolean;
 }
 
 export interface AIBackendStatus {

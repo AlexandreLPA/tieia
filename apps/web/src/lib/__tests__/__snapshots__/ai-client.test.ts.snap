@@ -1730,3 +1730,19 @@ exports[`aiClient request contract clipServiceHealth 1`] = `
   "outcome": "resolved",
 }
 `;
+
+exports[`aiClient request contract listCloudModels 1`] = `
+{
+  "calls": [
+    {
+      "body": null,
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "GET",
+      "url": "/api/llm/cloud-models",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;

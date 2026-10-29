@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { cn } from "@/utils/ui";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -44,6 +44,11 @@ import {
 	SUGGESTED_WHISPER_MODELS,
 } from "./ai-setup-guide/suggested-models";
 import { CommandBlock, ServiceCard } from "./ai-setup-guide/service-card";
+import { cloudModelSummary, shortModelName } from "@/lib/ai-model-name";
+import type { CloudModels } from "@/types/ai";
+
+// Free cloud models listed before "Ver todos"
+const CLOUD_MODELS_SHOWN = 5;
 
 // ----- Types -----
 
@@ -77,6 +82,9 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 	const [openRouterConfigured, setOpenRouterConfigured] = useState(false);
 	const [openRouterModel, setOpenRouterModel] = useState<string>("");
 	const [isSwitchingCloudModel, setIsSwitchingCloudModel] = useState<string | null>(null);
+	// Free OpenRouter models read from its catalog; null until loaded (or without a key)
+	const [cloudModels, setCloudModels] = useState<CloudModels | null>(null);
+	const [showAllCloudModels, setShowAllCloudModels] = useState(false);
 
 	const isLoading = isChecking;
 
@@ -89,6 +97,10 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 				if (data.active_backend) setActiveBackend(data.active_backend);
 				setOpenRouterConfigured(!!data.openrouter_configured);
 				if (data.openrouter_model) setOpenRouterModel(data.openrouter_model);
+				// Only with a key: without one nothing should leave this machine
+				if (data.openrouter_configured) {
+					aiClient.listCloudModels().then(setCloudModels).catch(() => {});
+				}
 			}).catch(() => {});
 			// Fetch active TTS model + device
 			fetch(`${SERVICE_URLS.tts}/models`, { signal: AbortSignal.timeout(5000) })
@@ -137,6 +149,7 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 			const result = await aiClient.setCloudModel(modelId);
 			setActiveBackend(result.current_backend);
 			setOpenRouterModel(modelId);
+			setCloudModels((prev) => prev && { ...prev, active: modelId, configured: modelId });
 			toast.success(`Agora usando ${modelId} (nuvem)`);
 		} catch (err) {
 			toast.error(err instanceof Error ? err.message : "Falha ao trocar para o modelo em nuvem");
@@ -157,6 +170,19 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 			setIsSwitchingCloudModel(null);
 		}
 	}, []);
+
+	// The catalog's free models when it could be read; the fixed suggestions otherwise
+	const cloudModelList = useMemo(
+		() =>
+			cloudModels?.models.length
+				? cloudModels.models.map((model) => ({
+						id: model.id,
+						name: model.name,
+						description: cloudModelSummary(model),
+					}))
+				: SUGGESTED_CLOUD_MODELS,
+		[cloudModels],
+	);
 
 	const handleRefresh = useCallback(async () => {
 		await refresh();
@@ -622,8 +648,14 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 									</Button>
 								)}
 
+								{cloudModels && cloudModels.configured !== cloudModels.active && (
+									<div className="rounded bg-yellow-500/10 px-2.5 py-2 text-[11px] text-yellow-400 leading-relaxed">
+										{shortModelName(cloudModels.configured)} não está mais grátis na OpenRouter. Em uso no lugar dele: {shortModelName(cloudModels.active)}. Escolha outro abaixo se preferir.
+									</div>
+								)}
+
 								<div className="flex flex-col gap-1">
-									{SUGGESTED_CLOUD_MODELS.map((model) => {
+									{cloudModelList.slice(0, showAllCloudModels ? undefined : CLOUD_MODELS_SHOWN).map((model) => {
 										const isActive = activeBackend === "openrouter" && openRouterModel === model.id;
 										const isSwitching = isSwitchingCloudModel === model.id;
 
@@ -667,6 +699,22 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 										);
 									})}
 								</div>
+								{cloudModelList.length > CLOUD_MODELS_SHOWN && (
+									<button
+										type="button"
+										className="w-fit text-[10px] text-primary hover:underline"
+										onClick={() => setShowAllCloudModels((all) => !all)}
+									>
+										{showAllCloudModels
+											? "Mostrar menos"
+											: `Ver todos os ${cloudModelList.length} modelos grátis`}
+									</button>
+								)}
+								<p className="text-[10px] text-muted-foreground">
+									{cloudModels?.models.length
+										? "Lista lida da OpenRouter agora: só modelos grátis neste momento, os que aceitam imagem primeiro. Se o modelo em uso deixar de ser grátis, o do .env (ou o primeiro desta lista) entra no lugar sozinho."
+										: "Não deu para ler a lista atual da OpenRouter; estes são modelos sugeridos, que podem ter deixado de ser grátis."}
+								</p>
 							</div>
 						</ServiceCard>
 

@@ -12,6 +12,7 @@ Usage in routes:
     data = await llm_backend.generate_json(prompt="...", system="...")
 """
 
+import asyncio
 import json
 import logging
 import os
@@ -42,6 +43,79 @@ def is_free_openrouter_model(model: str) -> bool:
 
 def openrouter_model_allowed(model: str) -> bool:
     return settings.OPENROUTER_ALLOW_PAID or is_free_openrouter_model(model)
+
+
+# Classifiers OpenRouter lists among text models, but that do not hold a chat
+_NOT_ASSISTANT_RE = re.compile(r"safety|guard|moderation", re.IGNORECASE)
+# Words in a model id that mark a smaller or unfinished variant
+_LIGHT_VARIANT_WORDS = {"small", "mini", "nano", "lite", "lightning", "xs", "tiny", "preview"}
+
+
+def _is_light_variant(model_id: str) -> bool:
+    return bool(_LIGHT_VARIANT_WORDS & set(re.split(r"[-/:._]", model_id.lower())))
+
+
+def _context_tier(tokens: int) -> int:
+    """A few thousand tokens more say nothing about a model: compare in tiers."""
+    return 2 if tokens >= 900_000 else 1 if tokens >= 200_000 else 0
+
+
+def _costs_nothing(pricing: Any) -> bool:
+    if not isinstance(pricing, dict):
+        return False
+    try:
+        return all(float(pricing.get(key) or 0) == 0 for key in ("prompt", "completion"))
+    except (TypeError, ValueError):
+        return False
+
+
+def _display_name(name: Any, model_id: str) -> str:
+    """"NVIDIA: Nemotron 3.5 Super VL (free)" -> "Nemotron 3.5 Super VL"."""
+    if not isinstance(name, str) or not name.strip():
+        return model_id.split("/")[-1].removesuffix(":free")
+    name = name.split(": ", 1)[-1]
+    return re.sub(r"\s*\(free\)\s*$", "", name, flags=re.IGNORECASE).strip()
+
+
+def free_chat_models(entries: list[Any]) -> list[dict[str, Any]]:
+    """Chat models OpenRouter serves for free right now, best first.
+
+    Free periods start and end without notice, so this list, read from the
+    catalog, replaces any fixed one. The catalog says nothing of quality, so
+    the order only follows what it does say: takes images (the viral score
+    sends video frames), not a small or preview variant, a longer context
+    tier, then the newest.
+    """
+    models: list[dict[str, Any]] = []
+    for entry in entries:
+        if not isinstance(entry, dict) or not isinstance(entry.get("id"), str):
+            continue
+        model_id = entry["id"]
+        if not is_free_openrouter_model(model_id) or not _costs_nothing(entry.get("pricing")):
+            continue
+        architecture = entry.get("architecture") or {}
+        inputs = list(architecture.get("input_modalities") or ["text"])
+        outputs = architecture.get("output_modalities") or ["text"]
+        if "text" not in outputs or _NOT_ASSISTANT_RE.search(model_id):
+            continue
+        models.append({
+            "id": model_id,
+            "name": _display_name(entry.get("name"), model_id),
+            "context": int(entry.get("context_length") or 0),
+            "inputs": inputs,
+            "vision": "image" in inputs,
+            "created": int(entry.get("created") or 0),
+        })
+    models.sort(
+        key=lambda m: (
+            m["vision"],
+            not _is_light_variant(m["id"]),
+            _context_tier(m["context"]),
+            m["created"],
+        ),
+        reverse=True,
+    )
+    return models
 
 # The model picked in the app, kept on the generated volume so a restart
 # doesn't fall back to the .env default
@@ -83,6 +157,8 @@ class LLMBackend:
         # OpenRouter model id -> input modalities, fetched lazily by vision_support()
         self._or_catalog: dict[str, list[str]] | None = None
         self._or_catalog_at = 0.0
+        # Chat models free right now, best first; None until the catalog is read
+        self._or_free: list[dict[str, Any]] | None = None
 
     # ── Public properties ─────────────────────────────────────────────
 
@@ -92,8 +168,43 @@ class LLMBackend:
         return self._backend_mode_override or settings.AI_LLM_BACKEND
 
     @property
-    def openrouter_model(self) -> str:
+    def configured_openrouter_model(self) -> str:
+        """The cloud model picked in the app, or the .env default."""
         return self._openrouter_model_override or settings.OPENROUTER_MODEL
+
+    @property
+    def openrouter_model(self) -> str:
+        """The cloud model that answers.
+
+        The picked one, unless the catalog says it is no longer free (or gone)
+        and paid models are off: then the .env model if that one is free, or
+        else the first of the free list.
+        """
+        chosen = self.configured_openrouter_model
+        if settings.OPENROUTER_ALLOW_PAID or not self._or_free:
+            return chosen
+        free_ids = [model["id"] for model in self._or_free]
+        for candidate in (chosen, settings.OPENROUTER_MODEL):
+            if candidate in free_ids:
+                return candidate
+        return free_ids[0]
+
+    async def refresh_openrouter_models(self, force: bool = False) -> list[dict[str, Any]] | None:
+        """Read the OpenRouter catalog again if it is over an hour old (or `force`).
+
+        Returns the free chat models, best first; None if the catalog was never read.
+        """
+        if force:
+            self._or_catalog_at = float("-inf")
+        await self._openrouter_catalog()
+        return self._or_free
+
+    async def keep_openrouter_models_fresh(self) -> None:
+        """Re-read the free models every hour while the server runs, with a key set."""
+        while True:
+            if settings.OPENROUTER_API_KEY:
+                await self.refresh_openrouter_models()
+            await asyncio.sleep(OPENROUTER_CATALOG_TTL)
 
     def set_backend(self, mode: str, openrouter_model: str | None = None) -> None:
         """Switch the active backend at runtime (no restart needed); survives restarts."""
@@ -151,6 +262,13 @@ class LLMBackend:
             )
             self._openrouter_model_override = None
             self._save_runtime_settings()
+        if "(HTTP 404)" in str(exc):
+            # The model may have just left the free list: read the catalog now
+            # rather than within the hour, so the next request uses a free one
+            try:
+                asyncio.get_running_loop().create_task(self.refresh_openrouter_models(force=True))
+            except RuntimeError:
+                pass
 
     @property
     def ollama_url(self) -> str:
@@ -210,6 +328,11 @@ class LLMBackend:
         """
         if self._use_openrouter():
             info: dict[str, Any] = {"backend": "openrouter", "model": self.openrouter_model, "cloud": True}
+            if self.openrouter_model != self.configured_openrouter_model:
+                info["replaced"] = {
+                    "model": self.configured_openrouter_model,
+                    "message": "não está mais grátis na OpenRouter; trocado por um modelo grátis de agora",
+                }
         elif self.backend_mode != "ollama" and self._tq_available:
             info = {"backend": "turboquant", "model": self._tq_model or "", "cloud": False}
         else:
@@ -688,6 +811,14 @@ class LLMBackend:
             return self._or_catalog
         self._or_catalog = catalog
         self._or_catalog_at = now
+        before = self.openrouter_model
+        self._or_free = free_chat_models(entries)
+        if self.openrouter_model != before:
+            logger.warning(
+                "Cloud model %s is no longer free on OpenRouter; using %s",
+                self.configured_openrouter_model,
+                self.openrouter_model,
+            )
         return catalog
 
     async def _openrouter_vision(self, model: str) -> tuple[bool, str]:

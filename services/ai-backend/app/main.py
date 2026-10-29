@@ -1,5 +1,6 @@
 """FastAPI application entry point."""
 
+import asyncio
 import logging
 from contextlib import asynccontextmanager
 
@@ -55,7 +56,10 @@ async def lifespan(app: FastAPI):
         settings.SEEDANCE_API_BASE_URL,
         "configured" if settings.SEEDANCE_API_KEY else "NOT configured",
     )
+    # Which OpenRouter models are free changes without notice: read it now and hourly
+    free_models = asyncio.create_task(llm_backend.keep_openrouter_models_fresh())
     yield
+    free_models.cancel()
     logger.info("Shutdown complete.")
 
 
