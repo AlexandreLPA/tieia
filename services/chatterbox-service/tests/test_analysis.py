@@ -11,6 +11,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from analysis import (  # noqa: E402
+    apply_fixes,
     MAX_CHUNK_CHARS,
     analyze_reference,
     speech_seconds,
@@ -130,3 +131,49 @@ def test_a_sentence_over_the_limit_is_cut_at_commas_then_spaces():
     chunks = split_text(words, limit=50)
     assert all(len(chunk) <= 50 for chunk in chunks)
     assert " ".join(chunks) == words
+
+
+def fix_ids(result: dict) -> list[str]:
+    return [fix["id"] for fix in result["fixes"]]
+
+
+def test_a_click_before_the_voice_does_not_hide_the_leading_silence():
+    # A messaging app's record-button click at 0.75 s, then the voice at 3.6 s
+    wav = np.concatenate([silence(0.75), tone(0.1, amplitude=0.3), silence(2.75), tone(10)])
+    result = analyze_reference(wav, RATE)
+    assert abs(result["leading_silence"] - 3.6) < 0.05
+    assert "trim_start" in fix_ids(result)
+
+
+def test_each_problem_comes_with_its_fix():
+    wav = np.concatenate([silence(3), tone(4, amplitude=0.6), silence(2), tone(20, amplitude=0.6)])
+    assert fix_ids(analyze_reference(wav, RATE)) == [
+        "trim_start", "best_window", "tighten_pauses", "normalize",
+    ]
+    assert fix_ids(analyze_reference(np.concatenate([silence(0.2), tone(12, amplitude=0.12)]), RATE)) == []
+
+
+def test_trimming_the_start_keeps_a_little_room_before_the_voice():
+    wav = np.concatenate([silence(3), tone(10)])
+    fixed = apply_fixes(wav, RATE, ["trim_start"])
+    assert abs(len(fixed) / RATE - 10.15) < 0.05
+
+
+def test_the_best_window_is_the_stretch_with_the_most_speech():
+    wav = np.concatenate([tone(2), silence(5), tone(14), silence(1)])
+    fixed = apply_fixes(wav, RATE, ["best_window"])
+    assert 8 <= len(fixed) / RATE <= 10.6
+    # It starts at the long phrase, not at the short one before the pause
+    assert speech_seconds(fixed, RATE) > 9.5
+
+
+def test_long_pauses_are_shortened():
+    wav = np.concatenate([tone(3), silence(3), tone(3)])
+    fixed = apply_fixes(wav, RATE, ["tighten_pauses"])
+    assert abs(len(fixed) / RATE - 6.3) < 0.1
+
+
+def test_the_volume_goes_to_the_target_without_clipping():
+    fixed = apply_fixes(tone(10, amplitude=0.01), RATE, ["normalize"])
+    assert abs(round(analyze_reference(fixed, RATE)["lufs"]) - (-20)) <= 1
+    assert float(np.max(np.abs(fixed))) <= 0.98

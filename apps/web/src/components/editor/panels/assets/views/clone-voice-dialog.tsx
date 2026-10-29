@@ -29,6 +29,7 @@ import { describeSimilarity } from "@/lib/voiceover/chatterbox";
 import { DEFAULT_VOICE_TUNING, voiceLabel } from "@/lib/voiceover/voice-preferences";
 import type { ReferenceAnalysis } from "@/types/ai";
 import { cn } from "@/utils/ui";
+import { ReferenceFixes } from "./reference-fixes";
 
 /** About 15 s read at a calm pace: enough for Chatterbox, which reads the first 10 s */
 const READING_SCRIPT =
@@ -83,6 +84,7 @@ export function CloneVoiceDialog({
 	const [saving, setSaving] = useState(false);
 	const [voice, setVoice] = useState<ClonedVoice | null>(null);
 	const [analysis, setAnalysis] = useState<ReferenceAnalysis | null>(null);
+	const [improved, setImproved] = useState(false);
 	const [testing, setTesting] = useState(false);
 	const [test, setTest] = useState<{ url: string; similarity: number | null } | null>(null);
 	const fileInputRef = useRef<HTMLInputElement>(null);
@@ -106,6 +108,7 @@ export function CloneVoiceDialog({
 		setConsent(false);
 		setVoice(null);
 		setAnalysis(null);
+		setImproved(false);
 		setTest(null);
 		setName(freeName("Minha voz", existingNames));
 	}, [open]);
@@ -319,6 +322,25 @@ export function CloneVoiceDialog({
 									</div>
 								))}
 							</div>
+						)}
+
+						{analysis && voice && (
+							<ReferenceFixes
+								voiceName={voice.name}
+								analysis={analysis}
+								improved={improved}
+								onApplied={(next) => {
+									setAnalysis(next);
+									setImproved(true);
+									setTest(null);
+								}}
+								onRestored={() => {
+									setImproved(false);
+									setTest(null);
+									setAnalysis(null);
+									void aiClient.analyzeChatterboxReference(voice.path).then(setAnalysis);
+								}}
+							/>
 						)}
 
 						<div className="flex flex-col gap-2">

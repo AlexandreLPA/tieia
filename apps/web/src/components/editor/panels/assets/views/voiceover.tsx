@@ -41,7 +41,8 @@ import {
 	type ChatterboxTakeMetrics,
 	type ChatterboxVariation,
 } from "./chatterbox-voice";
-import type { ChatterboxSavedVoice } from "@/types/ai";
+import type { ChatterboxSavedVoice, ReferenceAnalysis } from "@/types/ai";
+import { ReferenceFixes } from "./reference-fixes";
 import {
 	forgetVoice,
 	getLastVoice,
@@ -141,6 +142,9 @@ export function VoiceoverView() {
 		return cachedVoices.find((voice) => voice.name === last)?.name ?? cachedVoices[0]?.name ?? null;
 	});
 	const [cloneDialogOpen, setCloneDialogOpen] = useState(false);
+	// How the selected voice's recording measures, and whether its fixes are open
+	const [voiceAnalysis, setVoiceAnalysis] = useState<ReferenceAnalysis | null>(null);
+	const [showFixes, setShowFixes] = useState(false);
 	const [lastTake, setLastTake] = useState<ChatterboxTakeMetrics | null>(null);
 	const [variations, setVariations] = useState<ChatterboxVariation[]>([]);
 	const [chosenVariation, setChosenVariation] = useState<number | null>(null);
@@ -164,6 +168,31 @@ export function VoiceoverView() {
 		() => savedVoices.find((voice) => voice.name === selectedVoiceName) ?? null,
 		[savedVoices, selectedVoiceName],
 	);
+
+	const analyzeSelectedVoice = useCallback((path: string) => {
+		let cancelled = false;
+		setVoiceAnalysis(null);
+		aiClient
+			.analyzeChatterboxReference(path)
+			.then((analysis) => {
+				if (!cancelled) setVoiceAnalysis(analysis);
+			})
+			// Without the analysis the panel just shows no suggestions
+			.catch(() => {});
+		return () => {
+			cancelled = true;
+		};
+	}, []);
+
+	const selectedVoicePath = chatterboxVoice?.path;
+	useEffect(() => {
+		setShowFixes(false);
+		if (!selectedVoicePath) {
+			setVoiceAnalysis(null);
+			return;
+		}
+		return analyzeSelectedVoice(selectedVoicePath);
+	}, [selectedVoicePath, analyzeSelectedVoice]);
 
 	// Picking a voice brings back the tuning settled on for it
 	const selectVoice = useCallback((name: string | null) => {
@@ -570,6 +599,40 @@ export function VoiceoverView() {
 						onDeleted={handleVoiceDeleted}
 					/>
 				)}
+
+				{engine === "chatterbox" && chatterboxVoice && voiceAnalysis &&
+					(voiceAnalysis.fixes.length > 0 || chatterboxVoice.improved) &&
+					(showFixes || voiceAnalysis.fixes.length === 0 ? (
+						<ReferenceFixes
+							compact
+							voiceName={chatterboxVoice.name}
+							analysis={voiceAnalysis}
+							improved={chatterboxVoice.improved}
+							onApplied={(analysis) => {
+								setVoiceAnalysis(analysis);
+								setShowFixes(false);
+								void loadVoices(chatterboxVoice.name);
+							}}
+							onRestored={() => {
+								void loadVoices(chatterboxVoice.name);
+								analyzeSelectedVoice(chatterboxVoice.path);
+							}}
+						/>
+					) : (
+						<button
+							type="button"
+							className="flex items-center justify-between gap-2 rounded-md border border-yellow-500/30 bg-yellow-500/5 px-2.5 py-1.5 text-left hover:bg-yellow-500/10"
+							onClick={() => setShowFixes(true)}
+						>
+							<span className="text-[10px] leading-snug">
+								A gravação desta voz pode melhorar
+							</span>
+							<span className="shrink-0 text-[10px] font-medium text-primary">
+								Ver {voiceAnalysis.fixes.length}{" "}
+								{voiceAnalysis.fixes.length === 1 ? "sugestão" : "sugestões"}
+							</span>
+						</button>
+					))}
 
 				{/* ── Source text ── */}
 				{hasTranscript && (

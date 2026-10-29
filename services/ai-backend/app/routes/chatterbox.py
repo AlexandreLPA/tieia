@@ -194,3 +194,38 @@ async def delete_voice(name: str) -> dict:
         raise _service_error(e)
     except (httpx.ConnectError, httpx.TimeoutException):
         raise HTTPException(status_code=503, detail=NOT_RUNNING)
+
+
+@router.post("/voices/{name}/improve")
+async def improve_voice(name: str, body: dict) -> Response:
+    """Apply the suggested fixes to a saved voice: a WAV to preview, or saved (JSON)."""
+    try:
+        async with httpx.AsyncClient(timeout=60) as client:
+            resp = await client.post(
+                f"{settings.CHATTERBOX_SERVICE_URL}/voices/{quote(name)}/improve", json=body
+            )
+            resp.raise_for_status()
+    except httpx.HTTPStatusError as e:
+        raise _service_error(e)
+    except (httpx.ConnectError, httpx.TimeoutException):
+        raise HTTPException(status_code=503, detail=NOT_RUNNING)
+    headers = {k: resp.headers[k] for k in ("X-Audio-Duration",) if k in resp.headers}
+    return Response(
+        content=resp.content,
+        media_type=resp.headers.get("content-type", "application/json"),
+        headers=headers,
+    )
+
+
+@router.post("/voices/{name}/restore")
+async def restore_voice(name: str) -> dict:
+    """Put back the recording as it was before it was improved."""
+    try:
+        async with httpx.AsyncClient(timeout=HEALTH_TIMEOUT) as client:
+            resp = await client.post(f"{settings.CHATTERBOX_SERVICE_URL}/voices/{quote(name)}/restore")
+            resp.raise_for_status()
+            return resp.json()
+    except httpx.HTTPStatusError as e:
+        raise _service_error(e)
+    except (httpx.ConnectError, httpx.TimeoutException):
+        raise HTTPException(status_code=503, detail=NOT_RUNNING)

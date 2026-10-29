@@ -22,6 +22,17 @@ MAX_CHUNK_CHARS = 250
 # Under this peak a recording is taken as digital silence: the 30 dB rule below
 # is relative to the loudest part, and would call pure silence all speech.
 SILENT_PEAK = 1e-4
+# Sound shorter than this is a click (a messaging app's record button, a tap on
+# the mic), not the voice starting
+MIN_SPEECH_PART = 0.25
+# Room left before the first word and around shortened pauses
+EDGE_PAD = 0.15
+# A reference cut to its best stretch: a bit over what the model reads
+WINDOW_SECONDS = 10.5
+# Pauses longer than this are shortened to KEEP_PAUSE
+LONG_PAUSE = 0.6
+KEEP_PAUSE = 0.3
+TARGET_LUFS = -20.0
 
 # Advice is shown as is in the editor's Voiceover panel, which is in Portuguese.
 
@@ -31,6 +42,12 @@ def speech_parts(wav: np.ndarray) -> np.ndarray:
     if not len(wav) or float(np.max(np.abs(wav))) < SILENT_PEAK:
         return np.empty((0, 2), dtype=int)
     return librosa.effects.split(wav, top_db=30)
+
+
+def sustained_parts(wav: np.ndarray, sample_rate: int) -> np.ndarray:
+    """Speech parts without the clicks."""
+    parts = speech_parts(wav)
+    return parts[(parts[:, 1] - parts[:, 0]) >= MIN_SPEECH_PART * sample_rate] if len(parts) else parts
 
 
 def speech_seconds(wav: np.ndarray, sample_rate: int) -> float:
@@ -54,7 +71,9 @@ def analyze_reference(wav: np.ndarray, sample_rate: int) -> dict:
     """
     total = len(wav) / sample_rate
     parts = speech_parts(wav)
+    voice = sustained_parts(wav, sample_rate)
     checks: list[dict] = []
+    fixes: list[dict] = []
     result: dict = {
         "duration": round(total, 2),
         "reference_seconds": REFERENCE_SECONDS,
@@ -65,6 +84,7 @@ def analyze_reference(wav: np.ndarray, sample_rate: int) -> dict:
         "lufs": None,
         "noise_db": None,
         "checks": checks,
+        "fixes": fixes,
     }
 
     if total < 6:
@@ -79,17 +99,32 @@ def analyze_reference(wav: np.ndarray, sample_rate: int) -> dict:
             "duration", "ok", f"Boa duração. Lembre que só os primeiros {REFERENCE_SECONDS} s contam.",
         ))
 
-    if len(parts):
-        lead = parts[0][0] / sample_rate
+    if len(voice):
+        lead = voice[0][0] / sample_rate
         result["leading_silence"] = round(float(lead), 2)
         if lead > 0.5:
             checks.append(_check(
                 "leading_silence", "warn",
                 f"{lead:.1f} s de silêncio no começo: corte, ele ocupa os {REFERENCE_SECONDS} s úteis.",
             ))
+            fixes.append(_fix(
+                "trim_start", "Cortar o silêncio do começo",
+                f"A voz só começa aos {lead:.1f} s.",
+            ))
         head = wav[: REFERENCE_SECONDS * sample_rate]
         spoken = speech_seconds(head, sample_rate)
         result["speech_seconds"] = round(spoken, 2)
+        if total > WINDOW_SECONDS + 2:
+            fixes.append(_fix(
+                "best_window", f"Ficar só com o melhor trecho de {REFERENCE_SECONDS} s",
+                f"A gravação tem {total:.0f} s e só os primeiros {REFERENCE_SECONDS} s são usados; "
+                "fica o trecho com mais fala contínua.",
+            ))
+        if _has_long_pauses(voice, sample_rate):
+            fixes.append(_fix(
+                "tighten_pauses", "Encurtar as pausas longas",
+                f"Pausas de mais de {LONG_PAUSE:.1f} s viram {KEEP_PAUSE:.1f} s, para caber mais fala.",
+            ))
         if spoken < 0.6 * min(total, REFERENCE_SECONDS):
             checks.append(_check(
                 "speech", "warn",
@@ -128,6 +163,11 @@ def analyze_reference(wav: np.ndarray, sample_rate: int) -> dict:
             "loudness", "ok" if in_range else "warn",
             f"Volume médio de {loudness:.0f} LUFS (o ideal fica entre -26 e -16).",
         ))
+        if not in_range:
+            fixes.append(_fix(
+                "normalize", f"Ajustar o volume para {TARGET_LUFS:.0f} LUFS",
+                f"Está em {loudness:.0f} LUFS.",
+            ))
 
     mask = np.ones(len(wav), dtype=bool)
     for start, end in parts:
@@ -142,6 +182,88 @@ def analyze_reference(wav: np.ndarray, sample_rate: int) -> dict:
                 "noise", "warn", f"Ruído de fundo ({noise:.0f} dB): grave num cômodo mais quieto.",
             ))
     return result
+
+
+def _fix(fix_id: str, label: str, reason: str) -> dict:
+    return {"id": fix_id, "label": label, "reason": reason}
+
+
+def _has_long_pauses(voice: np.ndarray, sample_rate: int) -> bool:
+    """A pause that wastes the seconds the model reads, among the first ones."""
+    limit = REFERENCE_SECONDS * sample_rate + (voice[0][0] if len(voice) else 0)
+    gaps = [
+        (start - end) / sample_rate
+        for (_, end), (start, _) in zip(voice[:-1], voice[1:])
+        if end < limit
+    ]
+    return any(gap > LONG_PAUSE for gap in gaps)
+
+
+FIX_ORDER = ("trim_start", "tighten_pauses", "best_window", "normalize")
+
+
+def apply_fixes(wav: np.ndarray, sample_rate: int, fixes: list[str]) -> np.ndarray:
+    """The recording with the chosen fixes, in an order where each helps the next."""
+    pad = int(EDGE_PAD * sample_rate)
+    for fix in FIX_ORDER:
+        if fix not in fixes:
+            continue
+        voice = sustained_parts(wav, sample_rate)
+        if not len(voice):
+            break
+        if fix == "trim_start":
+            wav = wav[max(0, voice[0][0] - pad):]
+        elif fix == "tighten_pauses":
+            wav = _tighten_pauses(wav, voice, sample_rate)
+        elif fix == "best_window":
+            wav = _best_window(wav, voice, sample_rate)
+        elif fix == "normalize":
+            wav = _normalize(wav, sample_rate)
+    return wav
+
+
+def _tighten_pauses(wav: np.ndarray, voice: np.ndarray, sample_rate: int) -> np.ndarray:
+    keep = int(KEEP_PAUSE * sample_rate) // 2
+    pieces = [wav[: voice[0][1]]]
+    for (_, end), (start, next_end) in zip(voice[:-1], voice[1:]):
+        if (start - end) / sample_rate > LONG_PAUSE:
+            pieces.append(wav[end : end + keep])
+            pieces.append(wav[start - keep : next_end])
+        else:
+            pieces.append(wav[end:next_end])
+    pieces.append(wav[voice[-1][1] :])
+    return np.concatenate(pieces)
+
+
+def _best_window(wav: np.ndarray, voice: np.ndarray, sample_rate: int) -> np.ndarray:
+    """The stretch, starting where a phrase starts, with the most speech in it."""
+    pad = int(EDGE_PAD * sample_rate)
+    length = int(WINDOW_SECONDS * sample_rate)
+    best_start, best_speech = 0, -1
+    for onset, _ in voice:
+        start = max(0, onset - pad)
+        end = start + length
+        speech = sum(max(0, min(b, end) - max(a, start)) for a, b in voice)
+        if speech > best_speech:
+            best_start, best_speech = start, speech
+    end = min(len(wav), best_start + length)
+    # End in a pause, not in the middle of a word, unless that loses too much
+    endings = [b + pad for a, b in voice if best_start < b + pad <= end]
+    if endings and (endings[-1] - best_start) >= 8 * sample_rate:
+        end = endings[-1]
+    return wav[best_start:end]
+
+
+def _normalize(wav: np.ndarray, sample_rate: int) -> np.ndarray:
+    try:
+        loudness = pyloudnorm.Meter(sample_rate).integrated_loudness(wav)
+    except ValueError:
+        return wav
+    if not np.isfinite(loudness):
+        return wav
+    out = wav * (10 ** ((TARGET_LUFS - loudness) / 20))
+    peak = float(np.max(np.abs(out)))
+    return out * (0.98 / peak) if peak > 0.98 else out
 
 
 def split_text(text: str, limit: int = MAX_CHUNK_CHARS) -> list[str]:

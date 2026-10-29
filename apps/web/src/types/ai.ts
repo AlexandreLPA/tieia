@@ -122,6 +122,15 @@ export interface ChatterboxSavedVoice {
 	duration: number;
 	/** Unix seconds */
 	created_at: number;
+	/** The recording was fixed; the original can be put back */
+	improved: boolean;
+}
+
+/** A fix the analysis suggests for a reference, applied only if the user accepts it. */
+export interface ReferenceFix {
+	id: "trim_start" | "best_window" | "tighten_pauses" | "normalize";
+	label: string;
+	reason: string;
 }
 
 /** What a reference recording is worth for a clone, check by check. */
@@ -136,6 +145,7 @@ export interface ReferenceAnalysis {
 	lufs: number | null;
 	noise_db: number | null;
 	checks: { id: string; status: ReferenceCheckStatus; advice: string }[];
+	fixes: ReferenceFix[];
 }
 
 // Audio types

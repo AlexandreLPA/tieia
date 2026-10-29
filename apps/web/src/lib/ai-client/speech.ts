@@ -151,6 +151,41 @@ export class SpeechClient extends ImageClient {
 		return response.blob();
 	}
 
+	/** The voice with the chosen fixes applied, to listen to before deciding. Nothing is saved. */
+	async previewImprovedVoice(name: string, fixes: string[]): Promise<Blob> {
+		const response = await fetch(
+			`${this.baseUrl}/api/chatterbox/voices/${encodeURIComponent(name)}/improve`,
+			{
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ fixes, save: false }),
+			},
+		);
+		if (!response.ok) {
+			throw new AIClientError(
+				`Chatterbox error (${response.status}): ${await response.text().catch(() => "")}`,
+				response.status >= 500 ? "backend_error" : "network_error",
+				response.status,
+			);
+		}
+		return response.blob();
+	}
+
+	/** Saves the fixes over the voice (the original is kept for "Desfazer"); returns the new analysis. */
+	async saveImprovedVoice(name: string, fixes: string[]): Promise<ReferenceAnalysis> {
+		const result = await this.request<{ analysis: ReferenceAnalysis }>(
+			`/api/chatterbox/voices/${encodeURIComponent(name)}/improve`,
+			{ method: "POST", body: JSON.stringify({ fixes, save: true }) },
+		);
+		return result.analysis;
+	}
+
+	async restoreChatterboxVoice(name: string): Promise<void> {
+		await this.request(`/api/chatterbox/voices/${encodeURIComponent(name)}/restore`, {
+			method: "POST",
+		});
+	}
+
 	async deleteChatterboxVoice(name: string): Promise<void> {
 		await this.request(`/api/chatterbox/voices/${encodeURIComponent(name)}`, {
 			method: "DELETE",

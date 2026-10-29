@@ -19,19 +19,24 @@ import threading
 import uuid
 from pathlib import Path
 
+import io
+import shutil
+
 import librosa
 import numpy as np
 import soundfile
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from starlette.background import BackgroundTask
 from pydantic import BaseModel, Field
 
 from analysis import (
     ANALYSIS_RATE,
     REFERENCE_SECONDS,
+    FIX_ORDER,
     analyze_reference,
+    apply_fixes,
     split_text,
     words_per_minute,
 )
@@ -44,11 +49,14 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 GENERATED_DIR = Path(os.getenv("GENERATED_DIR", "generated"))
 VOICES_DIR = GENERATED_DIR / "voices"
+# The recording as it was before "Melhorar gravação", so it can be put back
+ORIGINALS_DIR = VOICES_DIR / "originals"
 DEVICE = os.getenv("DEVICE", "auto")
 AUTOLOAD = os.getenv("CHATTERBOX_AUTOLOAD", "false").lower() in ("true", "1", "yes")
 MODEL_NAME = "chatterbox-multilingual"
 
 VOICES_DIR.mkdir(parents=True, exist_ok=True)
+ORIGINALS_DIR.mkdir(parents=True, exist_ok=True)
 
 # The model is public. An empty HF_TOKEN would make huggingface_hub send an
 # invalid "Bearer " header and fail the download, so it is dropped.
@@ -87,6 +95,12 @@ class GenerateRequest(BaseModel):
 
 class AnalyzeRequest(BaseModel):
     speaker_wav: str
+
+
+class ImproveRequest(BaseModel):
+    fixes: list[str] = Field(min_length=1)
+    # False: hand back the result to listen to; True: replace the saved voice
+    save: bool = False
 
 
 # ---------------------------------------------------------------------------
@@ -384,6 +398,7 @@ async def list_voices():
                 "path": str(path),
                 "duration": round(duration, 2),
                 "created_at": stat.st_mtime,
+                "improved": (ORIGINALS_DIR / path.name).is_file(),
             }
         )
     voices.sort(key=lambda voice: voice["created_at"], reverse=True)
@@ -402,8 +417,55 @@ async def voice_audio(name: str):
 
 @app.delete("/voices/{name}")
 async def delete_voice(name: str):
-    saved_voice(name).unlink()
+    path = saved_voice(name)
+    path.unlink()
+    (ORIGINALS_DIR / path.name).unlink(missing_ok=True)
     return {"status": "deleted", "name": name}
+
+
+@app.post("/voices/{name}/improve")
+async def improve_voice(name: str, request: ImproveRequest):
+    """Apply the fixes the analysis suggested: as a preview, or saved over the voice.
+
+    Saving keeps the first original aside, so "Desfazer" can always go back to
+    what was recorded.
+    """
+    unknown = set(request.fixes) - set(FIX_ORDER)
+    if unknown:
+        raise HTTPException(status_code=400, detail=f"Unknown fixes: {', '.join(sorted(unknown))}.")
+    path = saved_voice(name)
+    loop = asyncio.get_running_loop()
+    wav, rate = await loop.run_in_executor(None, lambda: librosa.load(str(path), sr=None, mono=True))
+    fixed = await loop.run_in_executor(None, apply_fixes, wav, rate, request.fixes)
+
+    if not request.save:
+        buffer = io.BytesIO()
+        soundfile.write(buffer, fixed, rate, format="WAV")
+        return Response(
+            content=buffer.getvalue(),
+            media_type="audio/wav",
+            headers={"X-Audio-Duration": f"{len(fixed) / rate:.2f}"},
+        )
+
+    original = ORIGINALS_DIR / path.name
+    if not original.is_file():
+        shutil.copy2(path, original)
+    soundfile.write(str(path), fixed, rate)
+    analysis = await loop.run_in_executor(
+        None, lambda: analyze_reference(librosa.resample(fixed, orig_sr=rate, target_sr=ANALYSIS_RATE), ANALYSIS_RATE)
+    )
+    return {"status": "improved", "name": name, "analysis": analysis}
+
+
+@app.post("/voices/{name}/restore")
+async def restore_voice(name: str):
+    """Put back the recording as it was before it was improved."""
+    path = saved_voice(name)
+    original = ORIGINALS_DIR / path.name
+    if not original.is_file():
+        raise HTTPException(status_code=404, detail="There is no original to restore.")
+    shutil.move(str(original), str(path))
+    return {"status": "restored", "name": name}
 
 
 @app.post("/load")
