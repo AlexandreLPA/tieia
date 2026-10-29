@@ -6,6 +6,7 @@ import { SceneExporter } from "@/services/renderer/scene-exporter";
 import { buildScene } from "@/services/renderer/scene-builder";
 import { createTimelineAudioBuffer } from "@/lib/media/audio";
 import { normalizeLoudness } from "@/lib/audio/loudness";
+import { encodeForDownload, MP3_BITRATE } from "@/lib/media/audio-download";
 import { formatTimeCode, getLastFrameTime } from "@/lib/time";
 import { getExportDimensions, isAudioOnlyExportFormat } from "@/lib/export";
 import { downloadBlob } from "@/utils/browser";
@@ -136,6 +137,13 @@ export class RendererManager {
 					success: false,
 					error: "O projeto não tem áudio para exportar",
 				};
+			}
+
+			// The mix is already rendered: WAV is written here, MP3 by the backend's ffmpeg
+			if (audioBuffer && (format === "wav" || format === "mp3")) {
+				const file = await encodeForDownload(audioBuffer, format, MP3_BITRATE[quality]);
+				onProgress?.({ progress: 1 });
+				return { success: true, buffer: await file.arrayBuffer() };
 			}
 
 			const outputSize = getExportDimensions({ canvasSize, resolution });

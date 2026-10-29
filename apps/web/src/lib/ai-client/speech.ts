@@ -128,6 +128,25 @@ export class SpeechClient extends ImageClient {
 		);
 	}
 
+	/** Encodes audio as MP3 with the backend's ffmpeg (browsers cannot write MP3). */
+	async convertAudioToMp3(audio: Blob, bitrate: number): Promise<Blob> {
+		const formData = new FormData();
+		formData.append("file", audio, "audio.wav");
+		formData.append("bitrate", String(bitrate));
+		const response = await fetch(`${this.baseUrl}/api/audio/convert`, {
+			method: "POST",
+			body: formData,
+		});
+		if (!response.ok) {
+			throw new AIClientError(
+				`Não foi possível gerar o MP3 (${response.status}): ${await response.text().catch(() => "")}`,
+				response.status >= 500 ? "backend_error" : "network_error",
+				response.status,
+			);
+		}
+		return response.blob();
+	}
+
 	/** The voices cloned so far, newest first. */
 	async listChatterboxVoices(): Promise<ChatterboxSavedVoice[]> {
 		const result = await this.request<{ voices: ChatterboxSavedVoice[] }>(

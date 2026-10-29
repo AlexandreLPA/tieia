@@ -32,7 +32,7 @@ export const UI_DESTINATIONS: UiDestination[] = [
 		id: "narracao",
 		name: "Narração (texto para fala)",
 		path: "Barra lateral esquerda → Áudio → Narração",
-		about: "digita um texto e gera a fala com a voz clonada ou uma voz pronta; adiciona à linha do tempo",
+		about: "digita um texto e gera a fala com a voz clonada ou uma voz pronta; adiciona à linha do tempo ou baixa em MP3 ou WAV",
 		tab: "audio",
 		subTab: "voiceover",
 		target: "voice/text",
@@ -176,7 +176,7 @@ export const UI_DESTINATIONS: UiDestination[] = [
 		id: "exportar",
 		name: "Exportar",
 		path: "Botão azul Exportar, no canto superior direito",
-		about: "salva o vídeo (formato, resolução, qualidade) e envia ao TikTok; na seção Áudio fica o volume no padrão das redes (-14 LUFS)",
+		about: "salva o vídeo (formato, resolução, qualidade) e envia ao TikTok; em Formato também baixa só o áudio em M4A, MP3 ou WAV; na seção Áudio fica o volume no padrão das redes (-14 LUFS)",
 		target: "header/export",
 	},
 	{

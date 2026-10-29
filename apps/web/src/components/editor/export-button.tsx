@@ -309,6 +309,14 @@ function ExportPopover({
 													<RadioGroupItem value="m4a" id="m4a" />
 													<Label htmlFor="m4a">M4A (AAC) - Somente áudio</Label>
 												</div>
+												<div className="flex items-center space-x-2">
+													<RadioGroupItem value="mp3" id="mp3" />
+													<Label htmlFor="mp3">MP3 - Somente áudio, abre em qualquer lugar</Label>
+												</div>
+												<div className="flex items-center space-x-2">
+													<RadioGroupItem value="wav" id="wav" />
+													<Label htmlFor="wav">WAV - Somente áudio, sem perda de qualidade</Label>
+												</div>
 											</RadioGroup>
 										</SectionContent>
 									</Section>
@@ -352,6 +360,8 @@ function ExportPopover({
 										</Section>
 									)}
 
+									{/* WAV has no quality to pick: it is the sound as it is */}
+									{format !== "wav" && (
 									<Section collapsible defaultOpen={false}>
 										<SectionHeader>
 											<SectionTitle>Qualidade</SectionTitle>
@@ -386,6 +396,7 @@ function ExportPopover({
 											</RadioGroup>
 										</SectionContent>
 									</Section>
+									)}
 
 									<Section collapsible defaultOpen={false}>
 										<SectionHeader>

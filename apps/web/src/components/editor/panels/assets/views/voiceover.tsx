@@ -43,6 +43,8 @@ import {
 } from "./chatterbox-voice";
 import type { ChatterboxSavedVoice, ReferenceAnalysis } from "@/types/ai";
 import { ReferenceFixes } from "./reference-fixes";
+import { type AudioDownloadFormat, encodeForDownload } from "@/lib/media/audio-download";
+import { downloadBlob } from "@/lib/export";
 import {
 	forgetVoice,
 	getLastVoice,
@@ -539,6 +541,24 @@ export function VoiceoverView() {
 
 		toast.success("Narração adicionada à linha do tempo");
 	}, [editor, generatedBlob, insertVoice]);
+
+	const [downloading, setDownloading] = useState<AudioDownloadFormat | null>(null);
+
+	const handleDownload = useCallback(async (format: AudioDownloadFormat) => {
+		if (!generatedBlob) return;
+		setDownloading(format);
+		try {
+			const file = await encodeForDownload(generatedBlob, format);
+			const voice = engine === "chatterbox" && chatterboxVoice ? `_${chatterboxVoice.name}` : "";
+			downloadBlob({ blob: file, filename: `narracao${voice}_${Date.now()}.${format}` });
+		} catch (err) {
+			toast.error(`Não foi possível baixar em ${format.toUpperCase()}`, {
+				description: err instanceof Error ? err.message : undefined,
+			});
+		} finally {
+			setDownloading(null);
+		}
+	}, [generatedBlob, engine, chatterboxVoice]);
 
 	// Upload voice sample for cloning (local engine only)
 	const handleUploadVoice = useCallback(async (file: File) => {
@@ -1061,6 +1081,22 @@ export function VoiceoverView() {
 						>
 							Adicionar à linha do tempo como faixa de voz
 						</Button>
+						<div className="flex items-center gap-1.5">
+							<span className="text-[10px] text-muted-foreground">Baixar:</span>
+							{(["mp3", "wav"] as const).map((format) => (
+								<Button
+									key={format}
+									variant="ghost"
+									size="sm"
+									className="h-6 px-2 text-[10px]"
+									disabled={downloading !== null}
+									onClick={() => handleDownload(format)}
+								>
+									{downloading === format && <Spinner className="mr-1 size-3" />}
+									{format.toUpperCase()}
+								</Button>
+							))}
+						</div>
 					</div>
 				)}
 			</div>

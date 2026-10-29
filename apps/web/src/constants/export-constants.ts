@@ -12,6 +12,8 @@ export const EXPORT_MIME_TYPES = {
 	webm: "video/webm",
 	mp4: "video/mp4",
 	m4a: "audio/mp4",
+	mp3: "audio/mpeg",
+	wav: "audio/wav",
 } as const;
 
 // Shorter side of the exported frame, so portrait and square projects keep

@@ -9,7 +9,7 @@ export function isAudioOnlyExportFormat({
 }: {
 	format: ExportFormat;
 }): boolean {
-	return format === "m4a";
+	return format === "m4a" || format === "mp3" || format === "wav";
 }
 
 // H.264 encodes 4:2:0 chroma, so both sides must be even

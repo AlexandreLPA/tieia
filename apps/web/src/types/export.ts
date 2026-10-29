@@ -5,7 +5,7 @@ export const EXPORT_QUALITY_VALUES = [
 	"very_high",
 ] as const;
 
-export const EXPORT_FORMAT_VALUES = ["mp4", "webm", "m4a"] as const;
+export const EXPORT_FORMAT_VALUES = ["mp4", "webm", "m4a", "mp3", "wav"] as const;
 
 // "original" keeps the canvas size; the others set the shorter side
 export const EXPORT_RESOLUTION_VALUES = [
