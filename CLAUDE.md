@@ -55,6 +55,7 @@ Selection: `OPENCUTAI_AI_LLM_BACKEND=auto|ollama|turboquant`
 | `apps/web/src/app/models/page.tsx` | Public-facing model catalog page |
 | `apps/web/src/components/editor/panels/assets/views/settings.tsx` | Settings panel with AI optimization section |
 | `apps/web/src/components/editor/ai/model-wizard.tsx` | Model setup wizard (4-step: welcome → tier → download → done) |
+| `apps/web/src/lib/editor-ui-map.ts` | Where each feature lives in the UI. The AI chat answers "where is X?" from it and its "Mostrar" button opens the place; add new features here, with a `data-ui-target` on the control |
 | `services/ai-backend/app/config.py` | Pydantic settings, env prefix OPENCUTAI_ |
 | `docker-compose.yml` | Main stack (CPU mode) |
 | `docker-compose.gpu.yml` | GPU override for turboquant-service |
