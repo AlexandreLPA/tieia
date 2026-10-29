@@ -131,6 +131,10 @@ if (Test-NvidiaGpu) {
 } else {
     docker compose up -d
 }
+# The Docker copy of the editor (profile docker-web) would answer on the same
+# port with an old build. Docker restarts it on its own after an unclean
+# shutdown, so it is switched off here; nothing happens when it is already off.
+docker compose --profile docker-web stop web *> $null
 Pop-Location
 
 # 3. The editor
