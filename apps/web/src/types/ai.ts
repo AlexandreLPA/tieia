@@ -114,6 +114,16 @@ export interface ChatterboxTake {
 
 export type ReferenceCheckStatus = "ok" | "warn" | "info";
 
+/** A voice cloned with Chatterbox, as saved by the service. */
+export interface ChatterboxSavedVoice {
+	name: string;
+	/** What /generate takes as speakerWav */
+	path: string;
+	duration: number;
+	/** Unix seconds */
+	created_at: number;
+}
+
 /** What a reference recording is worth for a clone, check by check. */
 export interface ReferenceAnalysis {
 	duration: number;

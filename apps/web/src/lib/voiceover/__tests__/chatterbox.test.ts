@@ -18,7 +18,7 @@ describe("describeSimilarity", () => {
 	test("points at the reference or the exaggeration below it", () => {
 		const verdict = describeSimilarity(0.7);
 		expect(verdict.ok).toBe(false);
-		expect(verdict.text).toContain("troque a referência");
+		expect(verdict.text).toContain("troque a gravação");
 	});
 });
 
@@ -34,9 +34,9 @@ describe("describePace", () => {
 	test("says which control to move when too fast or too slow", () => {
 		expect(describePace(210.4)).toEqual({
 			ok: false,
-			text: "210 palavras por minuto, rápida demais: baixe o cfg",
+			text: "210 palavras por minuto, rápida demais: baixe o Ritmo",
 		});
-		expect(describePace(100).text).toContain("suba o cfg");
+		expect(describePace(100).text).toContain("suba o Ritmo");
 	});
 });
 

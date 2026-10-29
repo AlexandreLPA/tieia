@@ -51,17 +51,17 @@ export function describeSimilarity(similarity: number): TakeVerdict {
 		? { ok: true, text: `${score}/100, parecida com a referência` }
 		: {
 				ok: false,
-				text: `${score}/100, distante: troque a referência ou baixe o exagero`,
+				text: `${score}/100, distante: troque a gravação ou baixe a Emoção`,
 			};
 }
 
 export function describePace(wordsPerMinute: number): TakeVerdict {
 	const pace = `${Math.round(wordsPerMinute)} palavras por minuto`;
 	if (wordsPerMinute > NATURAL_PACE.max) {
-		return { ok: false, text: `${pace}, rápida demais: baixe o cfg` };
+		return { ok: false, text: `${pace}, rápida demais: baixe o Ritmo` };
 	}
 	if (wordsPerMinute < NATURAL_PACE.min) {
-		return { ok: false, text: `${pace}, lenta: suba o cfg ou baixe o exagero` };
+		return { ok: false, text: `${pace}, lenta: suba o Ritmo ou baixe a Emoção` };
 	}
 	return { ok: true, text: `${pace}, ritmo natural` };
 }

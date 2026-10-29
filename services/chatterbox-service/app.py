@@ -365,6 +365,47 @@ async def analyze(request: AnalyzeRequest):
     return analyze_reference(wav, rate)
 
 
+@app.get("/voices")
+async def list_voices():
+    """The saved references, newest first, so a voice cloned once can be picked again."""
+    voices = []
+    for path in VOICES_DIR.glob("*.wav"):
+        if path.name.startswith("_upload_"):
+            continue
+        try:
+            duration = soundfile.info(str(path)).duration
+        except Exception:
+            logger.warning("Unreadable voice reference: %s", path.name)
+            continue
+        stat = path.stat()
+        voices.append(
+            {
+                "name": path.stem,
+                "path": str(path),
+                "duration": round(duration, 2),
+                "created_at": stat.st_mtime,
+            }
+        )
+    voices.sort(key=lambda voice: voice["created_at"], reverse=True)
+    return {"voices": voices}
+
+
+def saved_voice(name: str) -> Path:
+    return voice_path(str(VOICES_DIR / f"{name}.wav"))
+
+
+@app.get("/voices/{name}/audio")
+async def voice_audio(name: str):
+    """The reference recording itself, to listen to what a voice was cloned from."""
+    return FileResponse(path=saved_voice(name), media_type="audio/wav")
+
+
+@app.delete("/voices/{name}")
+async def delete_voice(name: str):
+    saved_voice(name).unlink()
+    return {"status": "deleted", "name": name}
+
+
 @app.post("/load")
 async def load_model():
     """Load Chatterbox now instead of on the first generation."""

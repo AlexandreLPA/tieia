@@ -5,6 +5,7 @@ the model loads on the first generation, so only the service itself has to be up
 """
 
 import logging
+from urllib.parse import quote
 
 import httpx
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
@@ -152,3 +153,44 @@ async def analyze_reference(request: ChatterboxAnalyzeRequest) -> dict:
     except Exception:
         logger.exception("Chatterbox reference analysis proxy failed")
         raise HTTPException(status_code=500, detail="Reference analysis failed.")
+
+
+@router.get("/voices")
+async def list_voices() -> dict:
+    """The voices cloned so far, newest first."""
+    try:
+        async with httpx.AsyncClient(timeout=HEALTH_TIMEOUT) as client:
+            resp = await client.get(f"{settings.CHATTERBOX_SERVICE_URL}/voices")
+            resp.raise_for_status()
+            return resp.json()
+    except httpx.HTTPStatusError as e:
+        raise _service_error(e)
+    except (httpx.ConnectError, httpx.TimeoutException):
+        raise HTTPException(status_code=503, detail=NOT_RUNNING)
+
+
+@router.get("/voices/{name}/audio")
+async def voice_audio(name: str) -> Response:
+    """The reference recording a voice was cloned from."""
+    try:
+        async with httpx.AsyncClient(timeout=30) as client:
+            resp = await client.get(f"{settings.CHATTERBOX_SERVICE_URL}/voices/{quote(name)}/audio")
+            resp.raise_for_status()
+    except httpx.HTTPStatusError as e:
+        raise _service_error(e)
+    except (httpx.ConnectError, httpx.TimeoutException):
+        raise HTTPException(status_code=503, detail=NOT_RUNNING)
+    return Response(content=resp.content, media_type="audio/wav")
+
+
+@router.delete("/voices/{name}")
+async def delete_voice(name: str) -> dict:
+    try:
+        async with httpx.AsyncClient(timeout=HEALTH_TIMEOUT) as client:
+            resp = await client.delete(f"{settings.CHATTERBOX_SERVICE_URL}/voices/{quote(name)}")
+            resp.raise_for_status()
+            return resp.json()
+    except httpx.HTTPStatusError as e:
+        raise _service_error(e)
+    except (httpx.ConnectError, httpx.TimeoutException):
+        raise HTTPException(status_code=503, detail=NOT_RUNNING)

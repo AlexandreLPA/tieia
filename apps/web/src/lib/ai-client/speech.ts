@@ -1,5 +1,6 @@
 import type {
 	ChatterboxRequest,
+	ChatterboxSavedVoice,
 	ChatterboxTake,
 	ReferenceAnalysis,
 	TranscriptionSegment,
@@ -125,6 +126,35 @@ export class SpeechClient extends ImageClient {
 			"/api/chatterbox/clone-voice",
 			formData,
 		);
+	}
+
+	/** The voices cloned so far, newest first. */
+	async listChatterboxVoices(): Promise<ChatterboxSavedVoice[]> {
+		const result = await this.request<{ voices: ChatterboxSavedVoice[] }>(
+			"/api/chatterbox/voices",
+		);
+		return result.voices;
+	}
+
+	/** The recording a voice was cloned from, to listen to it again. */
+	async getChatterboxVoiceAudio(name: string): Promise<Blob> {
+		const response = await fetch(
+			`${this.baseUrl}/api/chatterbox/voices/${encodeURIComponent(name)}/audio`,
+		);
+		if (!response.ok) {
+			throw new AIClientError(
+				`Chatterbox error (${response.status}): ${await response.text().catch(() => "")}`,
+				response.status >= 500 ? "backend_error" : "network_error",
+				response.status,
+			);
+		}
+		return response.blob();
+	}
+
+	async deleteChatterboxVoice(name: string): Promise<void> {
+		await this.request(`/api/chatterbox/voices/${encodeURIComponent(name)}`, {
+			method: "DELETE",
+		});
 	}
 
 	async analyzeChatterboxReference(speakerWav: string): Promise<ReferenceAnalysis> {

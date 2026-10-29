@@ -1,9 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowDown01Icon } from "@hugeicons/core-free-icons";
+import {
+	Collapsible,
+	CollapsibleContent,
+	CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Label } from "@/components/ui/label";
-import { Spinner } from "@/components/ui/spinner";
 import {
 	Select,
 	SelectContent,
@@ -11,7 +16,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import type { ReferenceAnalysis } from "@/types/ai";
 import {
 	bestVariation,
 	CHATTERBOX_CONTROLS,
@@ -20,22 +24,16 @@ import {
 	describeSimilarity,
 	type TakeVerdict,
 } from "@/lib/voiceover/chatterbox";
+import {
+	DEFAULT_VOICE_TUNING,
+	isDefaultTuning,
+	type VoiceTuning,
+	voiceLabel,
+} from "@/lib/voiceover/voice-preferences";
 import { cn } from "@/utils/ui";
 
-export interface ChatterboxSettings {
-	exaggeration: number;
-	cfgWeight: number;
-	temperature: number;
-	/** 0 picks a random seed for each take. */
-	seed: number;
-}
-
-export const DEFAULT_CHATTERBOX_SETTINGS: ChatterboxSettings = {
-	exaggeration: CHATTERBOX_CONTROLS.exaggeration.default,
-	cfgWeight: CHATTERBOX_CONTROLS.cfgWeight.default,
-	temperature: CHATTERBOX_CONTROLS.temperature.default,
-	seed: 0,
-};
+export type ChatterboxSettings = VoiceTuning;
+export const DEFAULT_CHATTERBOX_SETTINGS = DEFAULT_VOICE_TUNING;
 
 export interface ChatterboxTakeMetrics {
 	similarity: number | null;
@@ -49,40 +47,30 @@ interface ChatterboxVoiceProps {
 	needsTranslation: boolean;
 	settings: ChatterboxSettings;
 	onSettingsChange: (settings: ChatterboxSettings) => void;
+	/** The voice the tuning is saved for; null with the default voice */
 	voiceName: string | null;
-	isUploading: boolean;
-	onUploadVoice: (file: File) => void;
-	onRemoveVoice: () => void;
-	analysis: ReferenceAnalysis | null;
-	isAnalyzing: boolean;
 	lastTake: ChatterboxTakeMetrics | null;
 }
 
 const CONTROLS = [
 	{
 		key: "exaggeration",
-		label: "Exagero (emoção)",
-		hint: "Mais alto: mais expressiva e mais rápida.",
+		label: "Emoção",
+		hint: "Mais alta: mais expressiva e um pouco mais rápida.",
 	},
 	{
 		key: "cfgWeight",
-		label: "cfg (ritmo)",
-		hint: "Mais baixo: mais lenta e solta. Com exagero alto, baixe para ~0,3.",
+		label: "Ritmo",
+		hint: "Mais baixo: fala mais lenta e solta. Com emoção alta, deixe em ~0,3.",
 	},
 	{
 		key: "temperature",
-		label: "Temperatura (variação)",
-		hint: "Mais alta: entonação muda mais de uma tentativa para outra.",
+		label: "Variação",
+		hint: "Mais alta: a entonação muda mais de uma tentativa para outra.",
 	},
 ] as const;
 
-const STATUS_DOT = {
-	ok: "bg-green-500",
-	warn: "bg-yellow-500",
-	info: "bg-blue-500",
-} as const;
-
-/** The Chatterbox engine's part of the Voiceover panel: reference, controls, and the last take's reading. */
+/** The Chatterbox engine's part of the Voiceover panel: language, and the tuning tucked away until needed. */
 export function ChatterboxVoice({
 	language,
 	onLanguageChange,
@@ -90,19 +78,14 @@ export function ChatterboxVoice({
 	settings,
 	onSettingsChange,
 	voiceName,
-	isUploading,
-	onUploadVoice,
-	onRemoveVoice,
-	analysis,
-	isAnalyzing,
 	lastTake,
 }: ChatterboxVoiceProps) {
-	const fileInputRef = useRef<HTMLInputElement>(null);
+	const tuned = !isDefaultTuning(settings);
 
 	return (
 		<>
 			<div className="flex flex-col gap-2">
-				<Label className="text-xs">Idioma</Label>
+				<Label className="text-xs">Idioma da fala</Label>
 				<Select value={language} onValueChange={onLanguageChange}>
 					<SelectTrigger>
 						<SelectValue />
@@ -127,190 +110,132 @@ export function ChatterboxVoice({
 				)}
 			</div>
 
-			{/* Reference */}
-			<div className="flex flex-col gap-2">
-				<Label className="text-xs">Voz de referência</Label>
-				{voiceName ? (
-					<div className="flex items-center justify-between rounded-md bg-green-500/10 border border-green-500/20 px-2.5 py-2">
-						<div className="flex items-center gap-2 min-w-0">
-							<span className="size-1.5 shrink-0 rounded-full bg-green-500" />
-							<span className="text-[11px] font-medium truncate">
-								Clonada: {voiceName}
-							</span>
-						</div>
-						<button
-							type="button"
-							className="text-[10px] text-destructive hover:text-destructive/80"
-							onClick={onRemoveVoice}
-						>
-							Remover
-						</button>
-					</div>
-				) : (
-					<div className="flex flex-col gap-1.5">
-						<Button
-							variant="outline"
-							size="sm"
-							className="text-[10px] h-7"
-							disabled={isUploading}
-							onClick={() => fileInputRef.current?.click()}
-						>
-							{isUploading ? (
-								<>
-									<Spinner className="size-3 mr-1" />
-									Enviando...
-								</>
-							) : (
-								"Enviar gravação de referência"
-							)}
-						</Button>
-						<p className="text-[9px] text-muted-foreground">
-							10 a 15 s de fala contínua, só da pessoa, num cômodo quieto. Use
-							só vozes de quem autorizou. Sem referência, sai a voz padrão do
-							Chatterbox.
-						</p>
-						<input
-							ref={fileInputRef}
-							type="file"
-							accept=".wav,.mp3,.flac,.ogg,.m4a"
-							className="hidden"
-							onChange={(e) => {
-								const file = e.target.files?.[0];
-								if (file) onUploadVoice(file);
-								e.target.value = "";
-							}}
-						/>
-					</div>
-				)}
-
-				{isAnalyzing && (
-					<div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-						<Spinner className="size-3" />
-						Analisando a gravação...
-					</div>
-				)}
-				{analysis && voiceName && (
-					<div className="flex flex-col gap-1 rounded-md border bg-muted/30 px-2.5 py-2">
-						<p className="text-[10px] text-muted-foreground">
-							{analysis.duration.toFixed(1)} s
-							{analysis.lufs !== null && ` · ${analysis.lufs.toFixed(0)} LUFS`}
-							{analysis.noise_db !== null &&
-								` · fundo ${analysis.noise_db.toFixed(0)} dB`}
-						</p>
-						{analysis.checks.map((check) => (
-							<div key={check.id} className="flex items-start gap-1.5">
-								<span
-									className={cn(
-										"mt-1 size-1.5 shrink-0 rounded-full",
-										STATUS_DOT[check.status],
-									)}
-								/>
-								<span className="text-[10px] leading-relaxed">
-									{check.advice}
-								</span>
-							</div>
-						))}
-					</div>
-				)}
-			</div>
-
-			{/* Controls */}
-			{CONTROLS.map(({ key, label, hint }) => {
-				const range = CHATTERBOX_CONTROLS[key];
-				return (
-					<div key={key} className="flex flex-col gap-1.5">
-						<div className="flex items-center justify-between">
-							<Label className="text-xs">{label}</Label>
-							<span className="text-[10px] tabular-nums text-muted-foreground">
-								{settings[key].toFixed(2)}
-							</span>
-						</div>
-						<input
-							type="range"
-							min={range.min}
-							max={range.max}
-							step={range.step}
-							value={settings[key]}
-							onChange={(e) =>
-								onSettingsChange({
-									...settings,
-									[key]: Number.parseFloat(e.target.value),
-								})
-							}
-							onDoubleClick={() =>
-								onSettingsChange({ ...settings, [key]: range.default })
-							}
-							className="w-full accent-primary"
-						/>
-						<p className="text-[9px] text-muted-foreground">{hint}</p>
-					</div>
-				);
-			})}
-
-			<div className="flex flex-col gap-1.5">
-				<Label className="text-xs">Semente</Label>
-				<div className="flex items-center gap-1.5">
-					<input
-						type="number"
-						min={0}
-						step={1}
-						value={settings.seed}
-						onChange={(e) => {
-							const seed = Math.max(0, Math.floor(Number(e.target.value) || 0));
-							onSettingsChange({ ...settings, seed });
-						}}
-						className="h-7 w-28 rounded-md border bg-transparent px-2 text-xs outline-none focus:ring-1 focus:ring-ring"
-					/>
-					<span className="text-[9px] text-muted-foreground">
-						{settings.seed === 0
-							? "0 = aleatória"
-							: "mesmos ajustes, mesmo áudio"}
+			<Collapsible className="rounded-md border">
+				<CollapsibleTrigger className="group flex w-full items-center justify-between px-2.5 py-2 text-left">
+					<span className="flex flex-col">
+						<span className="text-xs font-medium">Ajustar a voz</span>
+						<span className="text-[10px] text-muted-foreground">
+							{tuned
+								? voiceName
+									? `Ajustes salvos para ${voiceLabel(voiceName)}`
+									: "Ajustes personalizados"
+								: "Emoção, ritmo e variação"}
+						</span>
 					</span>
-				</div>
-			</div>
-
-			{lastTake &&
-				(lastTake.similarity !== null || lastTake.wordsPerMinute !== null) && (
-					<div className="flex flex-col gap-1 rounded-md border bg-muted/30 px-2.5 py-2">
-						<p className="text-[10px] text-muted-foreground font-medium">
-							Última tentativa
-						</p>
-						{lastTake.similarity !== null && (
-							<Verdict
-								label="Similaridade"
-								verdict={describeSimilarity(lastTake.similarity)}
-							/>
-						)}
-						{lastTake.wordsPerMinute !== null &&
-							lastTake.wordsPerMinute > 0 && (
-								<Verdict
-									label="Ritmo"
-									verdict={describePace(lastTake.wordsPerMinute)}
+					<HugeiconsIcon
+						icon={ArrowDown01Icon}
+						className="size-3.5 text-muted-foreground transition-transform group-data-[state=open]:rotate-180"
+					/>
+				</CollapsibleTrigger>
+				<CollapsibleContent className="flex flex-col gap-3 border-t px-2.5 py-2.5">
+					{CONTROLS.map(({ key, label, hint }) => {
+						const range = CHATTERBOX_CONTROLS[key];
+						return (
+							<div key={key} className="flex flex-col gap-1.5">
+								<div className="flex items-center justify-between">
+									<Label className="text-xs">{label}</Label>
+									<span className="text-[10px] tabular-nums text-muted-foreground">
+										{settings[key].toFixed(2)}
+									</span>
+								</div>
+								<input
+									type="range"
+									min={range.min}
+									max={range.max}
+									step={range.step}
+									value={settings[key]}
+									onChange={(e) =>
+										onSettingsChange({
+											...settings,
+											[key]: Number.parseFloat(e.target.value),
+										})
+									}
+									onDoubleClick={() =>
+										onSettingsChange({ ...settings, [key]: range.default })
+									}
+									className="w-full accent-primary"
 								/>
-							)}
-						{lastTake.seed !== null && (
-							<div className="flex items-center justify-between gap-2">
-								<span className="text-[10px] text-muted-foreground">
-									Semente usada: {lastTake.seed}
-								</span>
-								{settings.seed !== lastTake.seed && (
-									<button
-										type="button"
-										className="text-[10px] text-primary hover:underline"
-										onClick={() =>
-											onSettingsChange({
-												...settings,
-												seed: lastTake.seed ?? 0,
-											})
-										}
-									>
-										Fixar
-									</button>
+								<p className="text-[9px] text-muted-foreground">{hint}</p>
+							</div>
+						);
+					})}
+
+					<div className="flex flex-col gap-1.5">
+						<Label className="text-xs">Semente</Label>
+						<div className="flex items-center gap-1.5">
+							<input
+								type="number"
+								min={0}
+								step={1}
+								value={settings.seed}
+								onChange={(e) => {
+									const seed = Math.max(0, Math.floor(Number(e.target.value) || 0));
+									onSettingsChange({ ...settings, seed });
+								}}
+								className="h-7 w-28 rounded-md border bg-transparent px-2 text-xs outline-none focus:ring-1 focus:ring-ring"
+							/>
+							<span className="text-[9px] text-muted-foreground">
+								{settings.seed === 0
+									? "0 = aleatória"
+									: "mesmos ajustes, mesmo áudio"}
+							</span>
+						</div>
+					</div>
+
+					{lastTake &&
+						(lastTake.similarity !== null || lastTake.wordsPerMinute !== null) && (
+							<div className="flex flex-col gap-1 rounded-md border bg-muted/30 px-2.5 py-2">
+								<p className="text-[10px] text-muted-foreground font-medium">
+									Última tentativa
+								</p>
+								{lastTake.similarity !== null && (
+									<Verdict
+										label="Semelhança"
+										verdict={describeSimilarity(lastTake.similarity)}
+									/>
+								)}
+								{lastTake.wordsPerMinute !== null &&
+									lastTake.wordsPerMinute > 0 && (
+										<Verdict
+											label="Ritmo"
+											verdict={describePace(lastTake.wordsPerMinute)}
+										/>
+									)}
+								{lastTake.seed !== null && (
+									<div className="flex items-center justify-between gap-2">
+										<span className="text-[10px] text-muted-foreground">
+											Semente usada: {lastTake.seed}
+										</span>
+										{settings.seed !== lastTake.seed && (
+											<button
+												type="button"
+												className="text-[10px] text-primary hover:underline"
+												onClick={() =>
+													onSettingsChange({
+														...settings,
+														seed: lastTake.seed ?? 0,
+													})
+												}
+											>
+												Fixar
+											</button>
+										)}
+									</div>
 								)}
 							</div>
 						)}
-					</div>
-				)}
+
+					{tuned && (
+						<button
+							type="button"
+							className="self-start text-[10px] text-muted-foreground hover:text-foreground hover:underline"
+							onClick={() => onSettingsChange(DEFAULT_VOICE_TUNING)}
+						>
+							Restaurar o padrão
+						</button>
+					)}
+				</CollapsibleContent>
+			</Collapsible>
 		</>
 	);
 }
@@ -399,7 +324,7 @@ export function ChatterboxVariations({
 					</div>
 					{take.similarity !== null && (
 						<Verdict
-							label="Similaridade"
+							label="Semelhança"
 							verdict={describeSimilarity(take.similarity)}
 						/>
 					)}

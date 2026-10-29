@@ -41,7 +41,16 @@ import {
 	type ChatterboxTakeMetrics,
 	type ChatterboxVariation,
 } from "./chatterbox-voice";
-import type { ReferenceAnalysis } from "@/types/ai";
+import type { ChatterboxSavedVoice } from "@/types/ai";
+import {
+	forgetVoice,
+	getLastVoice,
+	getVoiceTuning,
+	setLastVoice,
+	setVoiceTuning,
+} from "@/lib/voiceover/voice-preferences";
+import { VoiceLibrary } from "./voice-library";
+import { CloneVoiceDialog, type ClonedVoice } from "./clone-voice-dialog";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -82,6 +91,9 @@ const ALL_TTS_LANGUAGES = [
 	),
 ];
 
+/** The cloned voices last listed, so the panel shows them at once when it opens again */
+let cachedVoices: ChatterboxSavedVoice[] = [];
+
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
@@ -92,10 +104,11 @@ export function VoiceoverView() {
 	const hasTranscript = segments.length > 0;
 
 	// Engine selection — top-level toggle
-	const [engine, setEngine] = useState<TTSEngine>("local");
+	// The cloned voice comes first: it is what the panel is used for most
+	const [engine, setEngine] = useState<TTSEngine>("chatterbox");
 
 	// Shared state
-	const [language, setLanguage] = useState("en");
+	const [language, setLanguage] = useState("pt");
 	const [customText, setCustomText] = useState("");
 	const [isGenerating, setIsGenerating] = useState(false);
 	const [generationProgress, setGenerationProgress] = useState("");
@@ -113,11 +126,21 @@ export function VoiceoverView() {
 	const [isUploading, setIsUploading] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
-	// Chatterbox engine state (its reference lives in chatterbox-service, apart from Coqui's)
-	const [chatterboxSettings, setChatterboxSettings] = useState<ChatterboxSettings>(DEFAULT_CHATTERBOX_SETTINGS);
-	const [chatterboxVoice, setChatterboxVoice] = useState<{ name: string; path: string } | null>(null);
-	const [referenceAnalysis, setReferenceAnalysis] = useState<ReferenceAnalysis | null>(null);
-	const [isAnalyzing, setIsAnalyzing] = useState(false);
+	// Chatterbox engine state (its references live in chatterbox-service, apart from Coqui's)
+	const [chatterboxSettings, setChatterboxSettings] = useState<ChatterboxSettings>(() => {
+		const last = getLastVoice();
+		return last && cachedVoices.some((voice) => voice.name === last)
+			? getVoiceTuning(last)
+			: DEFAULT_CHATTERBOX_SETTINGS;
+	});
+	const [savedVoices, setSavedVoices] = useState<ChatterboxSavedVoice[]>(cachedVoices);
+	const [voicesLoading, setVoicesLoading] = useState(false);
+	const [voicesUnavailable, setVoicesUnavailable] = useState<string | null>(null);
+	const [selectedVoiceName, setSelectedVoiceName] = useState<string | null>(() => {
+		const last = getLastVoice();
+		return cachedVoices.find((voice) => voice.name === last)?.name ?? cachedVoices[0]?.name ?? null;
+	});
+	const [cloneDialogOpen, setCloneDialogOpen] = useState(false);
 	const [lastTake, setLastTake] = useState<ChatterboxTakeMetrics | null>(null);
 	const [variations, setVariations] = useState<ChatterboxVariation[]>([]);
 	const [chosenVariation, setChosenVariation] = useState<number | null>(null);
@@ -136,6 +159,64 @@ export function VoiceoverView() {
 		() => getSmallestVoicesForLanguage(language),
 		[language],
 	);
+
+	const chatterboxVoice = useMemo(
+		() => savedVoices.find((voice) => voice.name === selectedVoiceName) ?? null,
+		[savedVoices, selectedVoiceName],
+	);
+
+	// Picking a voice brings back the tuning settled on for it
+	const selectVoice = useCallback((name: string | null) => {
+		setSelectedVoiceName(name);
+		setLastVoice(name);
+		setChatterboxSettings(name ? getVoiceTuning(name) : DEFAULT_CHATTERBOX_SETTINGS);
+		setLastTake(null);
+	}, []);
+
+	const handleChatterboxSettingsChange = useCallback((settings: ChatterboxSettings) => {
+		setChatterboxSettings(settings);
+		if (selectedVoiceName) setVoiceTuning(selectedVoiceName, settings);
+	}, [selectedVoiceName]);
+
+	const loadVoices = useCallback(async (select?: string) => {
+		setVoicesLoading(true);
+		try {
+			const voices = await aiClient.listChatterboxVoices();
+			cachedVoices = voices;
+			setSavedVoices(voices);
+			setVoicesUnavailable(null);
+			const wanted = select ?? getLastVoice();
+			const pick = voices.find((voice) => voice.name === wanted) ?? voices[0];
+			selectVoice(pick?.name ?? null);
+		} catch {
+			setVoicesUnavailable(
+				"O serviço de voz (Chatterbox) não respondeu. Ele liga junto com o OpenCut pelo atalho; se continuar assim, rode no terminal: docker compose up -d chatterbox-service",
+			);
+		} finally {
+			setVoicesLoading(false);
+		}
+	}, [selectVoice]);
+
+	useEffect(() => {
+		if (engine === "chatterbox") void loadVoices();
+	}, [engine, loadVoices]);
+
+	const handleVoiceCloned = useCallback((voice: ClonedVoice) => {
+		toast.success(`Voz "${voice.name.replaceAll("_", " ")}" pronta`, {
+			description: "Agora é só digitar o texto e gerar.",
+		});
+		void loadVoices(voice.name);
+	}, [loadVoices]);
+
+	const handleVoiceDeleted = useCallback((name: string) => {
+		forgetVoice(name);
+		setSavedVoices((voices) => {
+			const rest = voices.filter((voice) => voice.name !== name);
+			cachedVoices = rest;
+			if (selectedVoiceName === name) selectVoice(rest[0]?.name ?? null);
+			return rest;
+		});
+	}, [selectedVoiceName, selectVoice]);
 
 	// Reset language when switching engine
 	const handleEngineChange = (value: string) => {
@@ -446,49 +527,49 @@ export function VoiceoverView() {
 		}
 	}, []);
 
-	// Upload a reference for Chatterbox, then check what it is worth for a clone
-	const handleUploadChatterboxVoice = useCallback(async (file: File) => {
-		setIsUploading(true);
-		setError(null);
-		setReferenceAnalysis(null);
-		setLastTake(null);
-		try {
-			const result = await aiClient.cloneChatterboxVoice(file, file.name.replace(/\.[^.]+$/, ""));
-			setChatterboxVoice({ name: result.name, path: result.path });
-			toast.success(`Voz "${result.name}" pronta para clonagem`);
-		} catch (err) {
-			setError(err instanceof Error ? err.message : "Falha ao enviar a voz");
-		} finally {
-			setIsUploading(false);
-		}
-	}, []);
-
-	useEffect(() => {
-		if (!chatterboxVoice) return;
-		let cancelled = false;
-		setIsAnalyzing(true);
-		aiClient
-			.analyzeChatterboxReference(chatterboxVoice.path)
-			.then((analysis) => {
-				if (!cancelled) setReferenceAnalysis(analysis);
-			})
-			.catch((err) => {
-				if (!cancelled) toast.error(err instanceof Error ? err.message : "Falha ao analisar a gravação");
-			})
-			.finally(() => {
-				if (!cancelled) setIsAnalyzing(false);
-			});
-		return () => {
-			cancelled = true;
-		};
-	}, [chatterboxVoice]);
-
 	// Can generate?
 	const canGenerate = engine !== "local" || currentModel.installed;
 
 	return (
 		<PanelView title="Narração">
 			<div className="flex flex-col gap-4">
+
+				{/* ── Voice ── */}
+				<div className="flex flex-col gap-2">
+					<Label className="text-xs">Voz</Label>
+					<Select value={engine} onValueChange={handleEngineChange}>
+						<SelectTrigger>
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="chatterbox">Minha voz (clonada, no PC)</SelectItem>
+							<SelectItem value="local">Vozes prontas (Coqui, no PC)</SelectItem>
+							<SelectItem value="sarvam">Sarvam AI (idiomas indianos)</SelectItem>
+							<SelectItem value="smallest">Smallest AI (Lightning TTS)</SelectItem>
+						</SelectContent>
+					</Select>
+					{engine !== "chatterbox" && (
+						<p className="text-[10px] text-muted-foreground">
+							{engine === "sarvam"
+								? "Nuvem — 10 idiomas indianos, mais de 37 vozes naturais"
+								: engine === "smallest"
+									? "Nuvem — 15 idiomas, mais de 80 vozes, ~100ms de latência"
+									: "No dispositivo — 12 idiomas globais, voz masculina ou feminina"}
+						</p>
+					)}
+				</div>
+
+				{engine === "chatterbox" && (
+					<VoiceLibrary
+						voices={savedVoices}
+						loading={voicesLoading}
+						unavailable={voicesUnavailable}
+						selected={selectedVoiceName}
+						onSelect={selectVoice}
+						onClone={() => setCloneDialogOpen(true)}
+						onDeleted={handleVoiceDeleted}
+					/>
+				)}
 
 				{/* ── Source text ── */}
 				{hasTranscript && (
@@ -529,12 +610,16 @@ export function VoiceoverView() {
 				)}
 
 				{(!hasTranscript || !useTranscript) && (
-					<div className="flex flex-col gap-2">
+					<div className="flex flex-col gap-2" data-ui-target="voice/text">
 						<Label className="text-xs">Texto</Label>
 						<textarea
 							value={customText}
 							onChange={(e) => setCustomText(e.target.value)}
-							placeholder="Digite ou cole o texto para converter em fala..."
+							placeholder={
+								engine === "chatterbox" && chatterboxVoice
+									? `O que a voz "${chatterboxVoice.name.replaceAll("_", " ")}" vai falar...`
+									: "Digite ou cole o texto para converter em fala..."
+							}
 							rows={4}
 							maxLength={5000}
 							className={cn(
@@ -545,31 +630,6 @@ export function VoiceoverView() {
 					</div>
 				)}
 
-				{/* ── Engine selector ── */}
-				<div className="flex flex-col gap-2">
-					<Label className="text-xs">Mecanismo de voz</Label>
-					<Select value={engine} onValueChange={handleEngineChange}>
-						<SelectTrigger>
-							<SelectValue />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="local">Local (Coqui XTTS)</SelectItem>
-							<SelectItem value="chatterbox">Local (Chatterbox, clonagem)</SelectItem>
-							<SelectItem value="sarvam">Sarvam AI (idiomas indianos)</SelectItem>
-							<SelectItem value="smallest">Smallest AI (Lightning TTS)</SelectItem>
-						</SelectContent>
-					</Select>
-					<p className="text-[10px] text-muted-foreground">
-						{engine === "sarvam"
-							? "Nuvem — 10 idiomas indianos, mais de 37 vozes naturais"
-							: engine === "smallest"
-								? "Nuvem — 15 idiomas, mais de 80 vozes, ~100ms de latência"
-								: engine === "chatterbox"
-									? "No dispositivo (GPU) — 23 idiomas, clonagem a partir de 10 s de fala, com nota de semelhança"
-									: "No dispositivo — 12 idiomas globais, clonagem de voz"}
-					</p>
-				</div>
-
 				{/* ── Engine-specific UI ── */}
 				{engine === "chatterbox" ? (
 					<ChatterboxVoice
@@ -577,18 +637,8 @@ export function VoiceoverView() {
 						onLanguageChange={setLanguage}
 						needsTranslation={needsTranslation}
 						settings={chatterboxSettings}
-						onSettingsChange={setChatterboxSettings}
+						onSettingsChange={handleChatterboxSettingsChange}
 						voiceName={chatterboxVoice?.name ?? null}
-						isUploading={isUploading}
-						onUploadVoice={handleUploadChatterboxVoice}
-						onRemoveVoice={() => {
-							setChatterboxVoice(null);
-							setReferenceAnalysis(null);
-							setLastTake(null);
-							replaceVariations([]);
-						}}
-						analysis={referenceAnalysis}
-						isAnalyzing={isAnalyzing}
 						lastTake={lastTake}
 					/>
 				) : engine === "sarvam" ? (
@@ -892,7 +942,7 @@ export function VoiceoverView() {
 						disabled={isGenerating || !textToGenerate || !canGenerate}
 					>
 						{isGenerating && !generationProgress.includes("segment") && <Spinner className="mr-1" />}
-						Gerar narração completa
+						{engine === "chatterbox" ? "Gerar narração" : "Gerar narração completa"}
 					</Button>
 
 					{engine === "chatterbox" && (
@@ -903,10 +953,12 @@ export function VoiceoverView() {
 								onClick={handleGenerateVariations}
 								disabled={isGenerating || !textToGenerate}
 							>
-								Gerar {VARIATION_COUNT} variações
+								Gerar {VARIATION_COUNT} versões para escolher
 							</Button>
 							<p className="text-[9px] text-muted-foreground text-center">
-								O mesmo texto com sementes diferentes, para escolher a melhor. Rende mais com uma frase por vez.
+								{chatterboxVoice
+									? "O mesmo texto falado de jeitos diferentes. Rende mais com uma frase por vez."
+									: "Sem voz clonada, sai a voz padrão do Chatterbox. Clone a sua acima."}
 							</p>
 						</>
 					)}
@@ -949,6 +1001,12 @@ export function VoiceoverView() {
 					</div>
 				)}
 			</div>
+			<CloneVoiceDialog
+				open={cloneDialogOpen}
+				onOpenChange={setCloneDialogOpen}
+				existingNames={savedVoices.map((voice) => voice.name)}
+				onCloned={handleVoiceCloned}
+			/>
 		</PanelView>
 	);
 }
