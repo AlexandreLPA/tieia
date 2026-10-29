@@ -8,6 +8,7 @@ import { TikTokKitView } from "./tiktok-kit";
 export function ElementsCombinedView() {
 	return (
 		<SubTabView
+			tab="elements"
 			tabs={[
 				{ key: "tiktok-kit", label: "Kit TikTok Shop", content: <TikTokKitView /> },
 				{ key: "stickers", label: "Figurinhas", content: <StickersView /> },

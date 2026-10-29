@@ -49,6 +49,7 @@ import {
 	shiftActionAfterRemoval,
 	stripActionBlock,
 } from "@/lib/ai-editor-actions";
+import { buildUiMapPrompt } from "@/lib/editor-ui-map";
 import { formatClock } from "@/lib/ai-studio-context";
 import { TranscribeNotice } from "@/components/editor/transcribe-notice";
 import { EditorCore } from "@/core";
@@ -236,6 +237,7 @@ export function AIStudioView() {
 					: "QUADROS DO VÍDEO: NÃO foram enviados (o modelo atual não aceita imagens).";
 			return [
 				{ type: "text", text: STUDIO_ACTIONS_PROMPT },
+				{ type: "text", text: buildUiMapPrompt() },
 				...buildContextParts({
 					timeline: buildTimelineSummary(editor),
 					transcript: buildTranscriptBlock(transcriptSegments),
@@ -513,7 +515,10 @@ export function AIStudioView() {
 			try {
 				const detail = await applyStudioAction(editor, state.action);
 				next = { ...state, status: "aplicada", detail };
-				toast.success(detail, { description: "Ctrl+Z desfaz." });
+				// Opening a panel shows itself; edits get the undo hint
+				if (state.action.type !== "abrir") {
+					toast.success(detail, { description: "Ctrl+Z desfaz." });
+				}
 			} catch (error) {
 				const detail = error instanceof Error ? error.message : "Erro ao aplicar";
 				next = { ...state, status: "falhou", detail };
@@ -539,10 +544,11 @@ export function AIStudioView() {
 
 	const applyAllActions = useCallback(
 		async (messageId: string) => {
-			const count =
+			const actions =
 				useAIStore.getState().studioMessages.find((m) => m.id === messageId)
-					?.actions?.length ?? 0;
-			for (let index = 0; index < count; index++) {
+					?.actions ?? [];
+			for (let index = 0; index < actions.length; index++) {
+				if (actions[index].action.type === "abrir") continue;
 				await applyAction(messageId, index);
 			}
 		},

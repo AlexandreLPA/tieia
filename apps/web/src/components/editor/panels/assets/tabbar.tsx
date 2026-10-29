@@ -88,6 +88,7 @@ export function TabBar() {
 								<Button
 									variant={activeTab === tabKey ? "secondary" : "text"}
 									aria-label={tab.label}
+									data-ui-target={`tab/${tabKey}`}
 									className={cn(
 										"w-[52px] flex-col gap-1 !px-0.5 !py-1 !rounded-sm !h-auto [&_svg]:size-4 shrink-0",
 										activeTab !== tabKey &&

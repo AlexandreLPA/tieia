@@ -14,6 +14,7 @@ import {
 	TranscriptSnapshotCommand,
 } from "@/lib/commands/transcript";
 import { formatClock } from "@/lib/ai-studio-context";
+import { openUiDestination, UI_DESTINATIONS } from "@/lib/editor-ui-map";
 import { useTranscriptStore } from "@/stores/transcript-store";
 import type { TimelineTrack } from "@/types/timeline";
 
@@ -34,7 +35,8 @@ export type StudioAction =
 	  }
 	| { type: "silenciar" }
 	| { type: "formato"; ratio: AspectRatio }
-	| { type: "legendar" };
+	| { type: "legendar" }
+	| { type: "abrir"; destination: string };
 
 type AspectRatio = "9:16" | "16:9" | "1:1" | "4:5";
 
@@ -59,6 +61,7 @@ Tipos (tempos em segundos da timeline):
 - silenciar {}: tira o som dos clipes de vídeo e áudio.
 - formato {"proporcao": "9:16" | "16:9" | "1:1" | "4:5"}: muda o formato da tela.
 - legendar {}: cria legendas a partir da transcrição.
+- abrir {"destino"}: quando o usuário perguntar onde fica ou como chegar a um recurso, dê o caminho no texto e use isto com o id do MAPA DA INTERFACE; o botão abre o lugar e aponta o controle.
 - ver_quadros {"tempos": [..]}: quando precisar ver um momento com mais detalhe (até ${MAX_FRAME_REQUESTS} tempos). O editor envia esses quadros e você continua a análise; use só isso no bloco nesse caso.
 Regras: explique no texto o que cada ação faz e por quê; nunca diga que já aplicou (quem aplica é o usuário); não inclua o bloco se não houver ação.`;
 
@@ -132,6 +135,12 @@ function normalizeAction(raw: unknown): StudioAction | null {
 		}
 		case "legendar":
 			return { type: "legendar" };
+		case "abrir": {
+			const id = String(item.destino ?? item.destination ?? "").trim();
+			return UI_DESTINATIONS.some((d) => d.id === id && (d.tab || d.target))
+				? { type: "abrir", destination: id }
+				: null;
+		}
 		default:
 			return null;
 	}
@@ -191,6 +200,10 @@ export function describeAction(action: StudioAction): string {
 			return `Mudar o formato da tela para ${action.ratio}`;
 		case "legendar":
 			return "Criar legendas a partir da transcrição";
+		case "abrir": {
+			const destination = UI_DESTINATIONS.find((d) => d.id === action.destination);
+			return `Mostrar onde fica: ${destination?.name ?? action.destination}`;
+		}
 	}
 }
 
@@ -323,6 +336,9 @@ export async function applyStudioAction(
 	action: StudioAction,
 ): Promise<string> {
 	switch (action.type) {
+		case "abrir":
+			// Only opens a panel: nothing to undo
+			return `Aberto: ${openUiDestination(action.destination).path}`;
 		case "cortar": {
 			assertWithinTimeline(editor, action.time);
 			const elements = elementsCrossing(editor, action.time);

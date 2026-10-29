@@ -18,11 +18,15 @@ export function ActionCards({
 	onApply: (index: number) => void;
 	onApplyAll: () => void;
 }) {
-	const pending = states.filter((s) => s.status === "pendente").length;
+	// "Mostrar" only opens a panel, so it stays out of "Aplicar todas"
+	const pending = states.filter(
+		(s) => s.status === "pendente" && s.action.type !== "abrir",
+	).length;
+	const onlyNavigation = states.every((s) => s.action.type === "abrir");
 	return (
 		<div className="mt-2 space-y-1.5">
 			<p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-				Mudanças sugeridas
+				{onlyNavigation ? "Onde fica" : "Mudanças sugeridas"}
 			</p>
 			{states.map((state, index) => (
 				<div
@@ -47,7 +51,7 @@ export function ActionCards({
 					</div>
 					{state.status === "pendente" ? (
 						<Button size="sm" className="h-6 shrink-0 px-2 text-[10px]" onClick={() => onApply(index)}>
-							Aplicar
+							{state.action.type === "abrir" ? "Mostrar" : "Aplicar"}
 						</Button>
 					) : (
 						<span
@@ -56,7 +60,11 @@ export function ActionCards({
 								state.status === "aplicada" ? "text-green-500" : "text-red-400",
 							)}
 						>
-							{state.status === "aplicada" ? "✓ Aplicada" : "Falhou"}
+							{state.status === "falhou"
+								? "Falhou"
+								: state.action.type === "abrir"
+									? "✓ Aberto"
+									: "✓ Aplicada"}
 						</span>
 					)}
 				</div>
@@ -66,9 +74,11 @@ export function ActionCards({
 					Aplicar todas ({pending})
 				</Button>
 			)}
-			<p className="text-[10px] text-muted-foreground">
-				Nada muda até você clicar em Aplicar. Ctrl+Z desfaz cada ação.
-			</p>
+			{!onlyNavigation && (
+				<p className="text-[10px] text-muted-foreground">
+					Nada muda até você clicar em Aplicar. Ctrl+Z desfaz cada ação.
+				</p>
+			)}
 		</div>
 	);
 }

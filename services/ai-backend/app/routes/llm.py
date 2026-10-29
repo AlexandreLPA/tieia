@@ -33,7 +33,9 @@ STUDIO_CONTEXT_PROMPT = (
     "amostras: não descreva o que acontece entre eles como se tivesse visto. A transcrição é "
     "automática e pode ter erros. Se o contexto disser que os quadros NÃO foram enviados, deixe "
     "claro que você está se baseando só na transcrição e na timeline. Imagens anexadas pelo "
-    "usuário vêm na própria mensagem dele."
+    "usuário vêm na própria mensagem dele. O contexto também traz o MAPA DA INTERFACE: quando "
+    "perguntarem onde fica um botão ou recurso, responda com o caminho do mapa e ofereça a ação "
+    "abrir; se não estiver no mapa, diga que não sabe em vez de inventar."
 )
 
 MAX_CHAT_IMAGES = 40

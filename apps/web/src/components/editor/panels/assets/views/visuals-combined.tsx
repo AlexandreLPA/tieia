@@ -9,6 +9,7 @@ import { TransitionsView } from "./transitions";
 export function VisualsCombinedView() {
 	return (
 		<SubTabView
+			tab="visuals"
 			tabs={[
 				{
 					key: "transitions",

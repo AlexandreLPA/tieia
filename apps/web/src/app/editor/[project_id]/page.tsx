@@ -10,6 +10,7 @@ import { AssetsPanel } from "@/components/editor/panels/assets";
 import { Timeline } from "@/components/editor/panels/timeline";
 import { PreviewPanel } from "@/components/editor/panels/preview";
 import { EditorHeader } from "@/components/editor/editor-header";
+import { UiSpotlight } from "@/components/editor/ui-spotlight";
 import { EditorProvider } from "@/components/providers/editor-provider";
 import { Onboarding } from "@/components/editor/onboarding";
 import { MigrationDialog } from "@/components/editor/dialogs/migration-dialog";
@@ -42,6 +43,7 @@ export default function Editor() {
 					</div>
 					<AIPanelWrapper />
 					<Onboarding />
+					<UiSpotlight />
 					<MigrationDialog />
 					<BackgroundTasksWidget />
 					<CommandPalette />

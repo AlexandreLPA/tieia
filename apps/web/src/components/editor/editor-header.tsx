@@ -104,12 +104,13 @@ export function EditorHeader() {
 					variant="outline"
 					size="sm"
 					className="h-8 gap-1.5 text-xs"
+					data-ui-target="header/viral-score"
 					onClick={() => setViralityOpen(true)}
 				>
 					<HugeiconsIcon icon={SparklesIcon} className="size-3.5" />
 					Pontuação Viral
 				</Button>
-				<Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs" onClick={() => setAutopilotOpen(true)}>
+				<Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs" data-ui-target="header/autopilot" onClick={() => setAutopilotOpen(true)}>
 						<HugeiconsIcon icon={SparklesIcon} className="size-3.5" />
 						Criar vídeo com IA
 					</Button>

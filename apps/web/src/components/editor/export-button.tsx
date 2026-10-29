@@ -77,6 +77,7 @@ export function ExportButton() {
 			<PopoverTrigger asChild>
 				<button
 					type="button"
+					data-ui-target="header/export"
 					className={cn(
 						"flex items-center gap-1.5 rounded-md bg-[#38BDF8] px-[0.12rem] py-[0.12rem] text-white",
 						hasProject ? "cursor-pointer" : "cursor-not-allowed opacity-50",

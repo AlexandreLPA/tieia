@@ -8,6 +8,7 @@ import { PodcastClipsView } from "./podcast-clips";
 export function AudioCombinedView() {
 	return (
 		<SubTabView
+			tab="audio"
 			tabs={[
 				{ key: "sounds", label: "Sons", content: <SoundsView /> },
 				{ key: "voiceover", label: "Narração", content: <VoiceoverView /> },

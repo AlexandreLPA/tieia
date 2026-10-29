@@ -126,6 +126,12 @@ interface AssetsPanelStore {
 	gifSearchRequest: string | null;
 	requestGifSearch: (query: string) => void;
 	clearGifSearchRequest: () => void;
+	/** Sub-tab open in each tab that has them (Áudio: Sons, Narração, Podcast) */
+	subTabs: Partial<Record<Tab, string>>;
+	setSubTab: (tab: Tab, subTab: string) => void;
+	/** A control to point at on screen (its data-ui-target); the nonce repeats a request */
+	uiTarget: { id: string; nonce: number } | null;
+	showUiTarget: (id: string) => void;
 
 	/* Media */
 	mediaViewMode: MediaViewMode;
@@ -150,6 +156,11 @@ export const useAssetsPanelStore = create<AssetsPanelStore>()(
 			requestGifSearch: (query) =>
 				set({ activeTab: "gifs", gifSearchRequest: query }),
 			clearGifSearchRequest: () => set({ gifSearchRequest: null }),
+			subTabs: {},
+			setSubTab: (tab, subTab) =>
+				set((state) => ({ subTabs: { ...state.subTabs, [tab]: subTab } })),
+			uiTarget: null,
+			showUiTarget: (id) => set({ uiTarget: { id, nonce: Date.now() } }),
 			mediaViewMode: "grid",
 			setMediaViewMode: (mode) => set({ mediaViewMode: mode }),
 			mediaSortBy: "name",

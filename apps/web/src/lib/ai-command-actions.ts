@@ -1,4 +1,4 @@
-import type { StudioAction } from "@/lib/ai-editor-actions";
+import { describeAction, type StudioAction } from "@/lib/ai-editor-actions";
 
 /** Action as returned by /api/llm/command: `{ type, params, target? }` (snake_case type). */
 export interface RawCommandAction {
@@ -115,5 +115,7 @@ export function describeCommandAction(action: RawCommandAction): string {
 			return `Mudar o formato da tela para ${studio.ratio}`;
 		case "legendar":
 			return "Criar legendas a partir da transcrição";
+		case "abrir":
+			return describeAction(studio);
 	}
 }
