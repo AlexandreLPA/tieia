@@ -1,6 +1,23 @@
-import type { TranscriptionSegment, TTSRequest, TTSResult } from "@/types/ai";
+import type {
+	ChatterboxRequest,
+	ChatterboxTake,
+	ReferenceAnalysis,
+	TranscriptionSegment,
+	TTSRequest,
+	TTSResult,
+} from "@/types/ai";
 import { ImageClient } from "./image";
 import { AIClientError, classifyError, REQUEST_TIMEOUT_MS } from "./core";
+
+// The first Chatterbox take also loads the model, and downloads it (~3 GB) the first time.
+const CHATTERBOX_TIMEOUT_MS = 900_000;
+
+function numberHeader(headers: Headers, name: string): number | null {
+	const value = headers.get(name);
+	if (value === null || value === "") return null;
+	const parsed = Number(value);
+	return Number.isFinite(parsed) ? parsed : null;
+}
 
 /** Local text-to-speech, voice cloning and subtitles. */
 export class SpeechClient extends ImageClient {
@@ -55,6 +72,66 @@ export class SpeechClient extends ImageClient {
 			"/api/tts/clone-voice",
 			formData,
 		);
+	}
+
+	/** One Chatterbox take: the WAV plus how close it came to the reference and its pace. */
+	async generateChatterbox(request: ChatterboxRequest): Promise<ChatterboxTake> {
+		const url = `${this.baseUrl}/api/chatterbox/generate`;
+		const controller = new AbortController();
+		const timeoutId = setTimeout(() => controller.abort(), CHATTERBOX_TIMEOUT_MS);
+
+		try {
+			const response = await fetch(url, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(request),
+				signal: controller.signal,
+			});
+
+			if (!response.ok) {
+				const errorBody = await response.text().catch(() => "Unknown error");
+				throw new AIClientError(
+					`Chatterbox error (${response.status}): ${errorBody}`,
+					response.status >= 500 ? "backend_error" : "network_error",
+					response.status,
+				);
+			}
+
+			return {
+				blob: await response.blob(),
+				similarity: numberHeader(response.headers, "X-Voice-Similarity"),
+				wordsPerMinute: numberHeader(response.headers, "X-Words-Per-Minute"),
+				seed: numberHeader(response.headers, "X-Seed"),
+				duration: numberHeader(response.headers, "X-Audio-Duration"),
+			};
+		} catch (error) {
+			if (error instanceof AIClientError) throw error;
+			const classified = classifyError(error);
+			throw new AIClientError(classified.message, classified.errorType);
+		} finally {
+			clearTimeout(timeoutId);
+		}
+	}
+
+	async cloneChatterboxVoice(
+		file: File,
+		name: string,
+	): Promise<{ status: string; name: string; path: string }> {
+		const formData = new FormData();
+		formData.append("file", file);
+		formData.append("name", name);
+
+		return this.requestFormData<{ status: string; name: string; path: string }>(
+			"/api/chatterbox/clone-voice",
+			formData,
+		);
+	}
+
+	async analyzeChatterboxReference(speakerWav: string): Promise<ReferenceAnalysis> {
+		return this.request<ReferenceAnalysis>("/api/chatterbox/analyze-reference", {
+			method: "POST",
+			body: JSON.stringify({ speakerWav }),
+		});
 	}
 
 	async generateSubtitles(

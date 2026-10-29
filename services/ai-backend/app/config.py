@@ -38,9 +38,12 @@ class Settings(BaseSettings):
     # unrelated codebases never call this). Only active when AI_LLM_BACKEND="openrouter"
     # AND a key is set below; empty key = silently behaves exactly like before (Ollama).
     OPENROUTER_API_KEY: str = ""
-    OPENROUTER_MODEL: str = "nvidia/nemotron-3-ultra-550b-a55b:free"
-    # Tried in order when the active model is gone (404), rate-limited (429), overloaded or empty
-    OPENROUTER_FALLBACK_MODELS: str = "recursive/flint-v1.0:free,dots-studio/dots-3-note-preview:free"
+    OPENROUTER_MODEL: str = "nvidia/nemotron-3.5-super-vl:free"
+    # Tried in order when the active model is gone (404), rate-limited (429), overloaded or empty.
+    # Empty: the next models of the free list read from the OpenRouter catalog.
+    OPENROUTER_FALLBACK_MODELS: str = ""
+    # Only ":free" models run unless this is turned on, so no credits get spent
+    OPENROUTER_ALLOW_PAID: bool = False
     OPENROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
     KV_CACHE_BITS: int = 2  # 2, 3, or 4 — TurboQuant KV cache quantization bits (2 = most memory efficient, default)
     # Compute mode for the TurboQuant inference service.
@@ -59,6 +62,8 @@ class Settings(BaseSettings):
     CLIP_SERVICE_URL: str = "http://127.0.0.1:8426"
     # NLLB-200 translation service — fully-local, privacy-first. Powers AI dubbing.
     TRANSLATE_SERVICE_URL: str = "http://127.0.0.1:8427"
+    # Chatterbox voice cloning — its own service: it needs a newer torch than tts-service.
+    CHATTERBOX_SERVICE_URL: str = "http://127.0.0.1:8428"
 
     # Sarvam AI (Indian language APIs)
     SARVAM_API_KEY: str = ""

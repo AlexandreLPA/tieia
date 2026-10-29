@@ -114,6 +114,7 @@ const PUBLIC_METHODS = [
 	"smallestStatus",
 	"factCheck",
 	"llmStatus",
+	"listCloudModels",
 	"setCloudModel",
 	"setLocalBackend",
 	"pullModel",

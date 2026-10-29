@@ -53,6 +53,8 @@ export function AIStatusIndicator({
 	const { services } = useServiceHealth(isOpen);
 	// The cloud model is failing and answers come from the local fallback
 	const cloudIssue = status.connected ? status.llm?.cloudIssue : undefined;
+	// The picked cloud model stopped being free and the best free one answers instead
+	const replaced = status.connected ? status.llm?.replaced : undefined;
 
 	// Track uptime when connected
 	useEffect(() => {
@@ -108,7 +110,9 @@ export function AIStatusIndicator({
 					title={
 						cloudIssue
 							? `${shortModelName(cloudIssue.model)} indisponível: usando o modelo local de reserva`
-							: undefined
+							: replaced && status.llm
+								? `${shortModelName(replaced.model)} não está mais grátis: usando ${shortModelName(status.llm.model)}`
+								: undefined
 					}
 				>
 					<span className="relative flex size-2">

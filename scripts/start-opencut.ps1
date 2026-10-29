@@ -39,6 +39,12 @@ function Test-Docker {
     return $LASTEXITCODE -eq 0
 }
 
+function Test-NvidiaGpu {
+    if (-not (Get-Command nvidia-smi -ErrorAction SilentlyContinue)) { return $false }
+    nvidia-smi -L *> $null
+    return $LASTEXITCODE -eq 0
+}
+
 function Read-State {
     if (-not (Test-Path $stateFile)) { return $null }
     try { return Get-Content $stateFile -Raw | ConvertFrom-Json } catch { return $null }
@@ -114,7 +120,21 @@ if (-not (Test-Docker)) {
 # 2. AI services, database and Redis (the "web" container has its own profile and stays off)
 Write-Host 'Ligando os serviços de IA no Docker...'
 Push-Location $repo
-docker compose up -d
+if (Test-NvidiaGpu) {
+    # Chatterbox gets the GPU from docker-compose.gpu.yml (on the CPU a sentence
+    # takes minutes). Only Chatterbox: that file also sets turboquant and
+    # translate to CUDA, which this launcher leaves as they are. Starting the
+    # others without it keeps Chatterbox from being recreated twice per launch.
+    $others = docker compose config --services | Where-Object { $_ -ne 'chatterbox-service' }
+    docker compose up -d @others
+    docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d --no-deps chatterbox-service
+} else {
+    docker compose up -d
+}
+# The Docker copy of the editor (profile docker-web) would answer on the same
+# port with an old build. Docker restarts it on its own after an unclean
+# shutdown, so it is switched off here; nothing happens when it is already off.
+docker compose --profile docker-web stop web *> $null
 Pop-Location
 
 # 3. The editor

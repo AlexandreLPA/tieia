@@ -1,6 +1,6 @@
 import { ProvidersClient } from "./providers";
 import { HEALTH_TIMEOUT_MS } from "./core";
-import type { AIActiveLLM } from "@/types/ai";
+import type { AIActiveLLM, CloudModels } from "@/types/ai";
 import type { MemoryStatus, ServicesStatus } from "./types";
 
 /** Model selection, downloads and service preparation. */
@@ -20,6 +20,11 @@ export class SetupClient extends ProvidersClient {
 		}[];
 	}> {
 		return this.request("/api/llm/status");
+	}
+
+	/** The OpenRouter models that are free right now, best first, read from its catalog. */
+	async listCloudModels(): Promise<CloudModels> {
+		return this.request<CloudModels>("/api/llm/cloud-models", {}, HEALTH_TIMEOUT_MS * 6);
 	}
 
 	async setCloudModel(modelId: string): Promise<{

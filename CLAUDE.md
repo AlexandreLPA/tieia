@@ -11,6 +11,7 @@ OpenCut AI is a privacy-first, open-source AI video editor. All AI models run lo
 - **TurboQuant Service:** `services/turboquant-service/` — FastAPI, port 8430, HuggingFace LLM inference with KV cache compression
 - **Whisper Service:** `services/whisper-service/` — port 8421, faster-whisper
 - **TTS Service:** `services/tts-service/` — port 8422, Coqui TTS
+- **Chatterbox Service:** `services/chatterbox-service/` — port 8428, Chatterbox Multilingual voice cloning (torch 2.8 / CUDA 12.8, apart from tts-service; GPU via `docker-compose.gpu.yml`)
 - **Image Service:** `services/image-service/` — port 8423, diffusers
 - **Speaker Service:** `services/speaker-service/` — port 8424, pyannote
 - **Face Service:** `services/face-service/` — port 8425, MediaPipe

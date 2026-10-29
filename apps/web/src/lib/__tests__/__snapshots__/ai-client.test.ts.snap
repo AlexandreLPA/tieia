@@ -735,6 +735,22 @@ exports[`aiClient request contract llmStatus 1`] = `
 }
 `;
 
+exports[`aiClient request contract listCloudModels 1`] = `
+{
+  "calls": [
+    {
+      "body": null,
+      "headers": {
+        "content-type": "application/json",
+      },
+      "method": "GET",
+      "url": "/api/llm/cloud-models",
+    },
+  ],
+  "outcome": "resolved",
+}
+`;
+
 exports[`aiClient request contract setCloudModel 1`] = `
 {
   "calls": [

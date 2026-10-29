@@ -87,6 +87,47 @@ export interface TTSResult {
 	duration: number;
 }
 
+/** Voice cloning with Chatterbox (chatterbox-service). */
+export interface ChatterboxRequest {
+	text: string;
+	language: string;
+	/** Path returned by cloneChatterboxVoice; without it, Chatterbox's own voice. */
+	speakerWav?: string;
+	/** Emotion intensity, 0.25 to 2. */
+	exaggeration: number;
+	/** Pacing and adherence to the text, 0 to 1. */
+	cfgWeight: number;
+	/** Variation between takes, 0.05 to 2. */
+	temperature: number;
+	/** 0 picks a random seed; the one used comes back in the take. */
+	seed: number;
+}
+
+export interface ChatterboxTake {
+	blob: Blob;
+	/** Cosine similarity of the take's voice to the reference, 0 to 1; null without a reference. */
+	similarity: number | null;
+	wordsPerMinute: number | null;
+	seed: number | null;
+	duration: number | null;
+}
+
+export type ReferenceCheckStatus = "ok" | "warn" | "info";
+
+/** What a reference recording is worth for a clone, check by check. */
+export interface ReferenceAnalysis {
+	duration: number;
+	/** Chatterbox only reads this many seconds from the start. */
+	reference_seconds: number;
+	leading_silence: number | null;
+	speech_seconds: number | null;
+	peak: number | null;
+	clipped_percent: number | null;
+	lufs: number | null;
+	noise_db: number | null;
+	checks: { id: string; status: ReferenceCheckStatus; advice: string }[];
+}
+
 // Audio types
 export interface DenoiseRequest {
 	strength: number;
@@ -165,6 +206,31 @@ export interface AIActiveLLM {
 	served?: { backend: string; model: string; cloud: boolean; at: number };
 	/** Set while the cloud model fails and requests fall back to a local model */
 	cloudIssue?: { model: string; message: string; at: number };
+	/** Set when the picked cloud model stopped being free and `model` stands in for it */
+	replaced?: { model: string; message: string };
+}
+
+/** A chat model OpenRouter serves for free right now. */
+export interface CloudModel {
+	id: string;
+	name: string;
+	/** Context window, in tokens */
+	context: number;
+	/** Input kinds: "text", "image", "video", ... */
+	inputs: string[];
+	vision: boolean;
+}
+
+export interface CloudModels {
+	/** Free right now, best first */
+	models: CloudModel[];
+	/** False when the OpenRouter catalog could not be read */
+	catalogAvailable: boolean;
+	/** The model that answers */
+	active: string;
+	/** The model picked; differs from `active` when it stopped being free */
+	configured: string;
+	allowPaid: boolean;
 }
 
 export interface AIBackendStatus {

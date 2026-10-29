@@ -62,6 +62,7 @@ async def services_status():
     results = await asyncio.gather(
         _check_service("whisper", settings.WHISPER_SERVICE_URL),
         _check_service("tts", settings.TTS_SERVICE_URL),
+        _check_service("chatterbox", settings.CHATTERBOX_SERVICE_URL),
         _check_service("image", settings.IMAGE_SERVICE_URL),
         _check_service("turboquant", settings.TURBOQUANT_SERVICE_URL),
         _check_ollama(settings.OLLAMA_URL),
@@ -196,6 +197,7 @@ async def load_service_model(service: str) -> dict:
     service_urls = {
         "whisper": settings.WHISPER_SERVICE_URL,
         "tts": settings.TTS_SERVICE_URL,
+        "chatterbox": settings.CHATTERBOX_SERVICE_URL,
         "image": settings.IMAGE_SERVICE_URL,
         "turboquant": settings.TURBOQUANT_SERVICE_URL,
     }
@@ -203,7 +205,7 @@ async def load_service_model(service: str) -> dict:
     if service not in service_urls:
         raise HTTPException(
             status_code=400,
-            detail=f"Unknown service: {service}. Use: whisper, tts, image",
+            detail=f"Unknown service: {service}. Use: {', '.join(service_urls)}",
         )
 
     url = service_urls[service]
