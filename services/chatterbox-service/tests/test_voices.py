@@ -84,3 +84,16 @@ def test_improves_as_a_preview_then_saves_and_restores_the_original() -> None:
 def test_unknown_fixes_are_refused() -> None:
     save("Qualquer", 2)
     assert client.post("/voices/Qualquer/improve", json={"fixes": ["apagar_tudo"]}).status_code == 400
+
+
+def test_clones_a_whatsapp_voice_note_saved_as_opus() -> None:
+    import subprocess
+
+    note = Path(os.environ["GENERATED_DIR"]) / "nota.opus"
+    subprocess.run(
+        ["ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", "sine=f=220:d=2", "-c:a", "libopus", "-f", "ogg", str(note)],
+        check=True,
+    )
+    resp = client.post("/clone-voice", data={"name": "Nota WhatsApp"}, files={"file": ("nota.opus", note.read_bytes(), "audio/ogg")})
+    assert resp.status_code == 200
+    assert abs(soundfile.info(resp.json()["path"]).duration - 2) < 0.05

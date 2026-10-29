@@ -222,7 +222,7 @@ export function CloneVoiceDialog({
 								<input
 									ref={fileInputRef}
 									type="file"
-									accept=".wav,.mp3,.flac,.ogg,.m4a,audio/*"
+									accept=".wav,.mp3,.flac,.ogg,.opus,.m4a,audio/*"
 									className="hidden"
 									onChange={(event) => {
 										const picked = event.target.files?.[0];

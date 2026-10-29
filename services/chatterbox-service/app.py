@@ -69,7 +69,7 @@ SUPPORTED_LANGUAGES = [
     "ar", "da", "de", "el", "en", "es", "fi", "fr", "he", "hi", "it", "ja",
     "ko", "ms", "nl", "no", "pl", "pt", "ru", "sv", "sw", "tr", "zh",
 ]
-UPLOAD_EXTENSIONS = {".wav", ".mp3", ".flac", ".ogg", ".m4a"}
+UPLOAD_EXTENSIONS = {".wav", ".mp3", ".flac", ".ogg", ".opus", ".m4a"}
 # Silence put between the pieces of a long text.
 PIECE_GAP_SECONDS = 0.2
 
@@ -344,7 +344,7 @@ async def clone_voice(name: str = Form(...), file: UploadFile = File(...)):
     ext = Path(file.filename).suffix.lower()
     if ext not in UPLOAD_EXTENSIONS:
         raise HTTPException(
-            status_code=400, detail="Unsupported audio format. Use WAV, MP3, FLAC, OGG or M4A."
+            status_code=400, detail="Unsupported audio format. Use WAV, MP3, FLAC, OGG, OPUS or M4A."
         )
 
     safe_name = "".join(c if c.isalnum() or c in "-_" else "_" for c in name)[:80] or "voice"
