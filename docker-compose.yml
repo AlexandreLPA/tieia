@@ -347,7 +347,9 @@ services:
         - NEXT_PUBLIC_WHISPER_SERVICE_URL=${NEXT_PUBLIC_WHISPER_SERVICE_URL:-http://localhost:8421}
         - NEXT_PUBLIC_TTS_SERVICE_URL=${NEXT_PUBLIC_TTS_SERVICE_URL:-http://localhost:8422}
         - NEXT_PUBLIC_IMAGE_SERVICE_URL=${NEXT_PUBLIC_IMAGE_SERVICE_URL:-http://localhost:8423}
-    restart: unless-stopped
+    # Never back on its own: when Docker restarts, an old build would take port
+    # 3100 from the editor the launcher serves (only started by hand, see above)
+    restart: "no"
     ports:
       - "127.0.0.1:3100:3000"
     environment:
