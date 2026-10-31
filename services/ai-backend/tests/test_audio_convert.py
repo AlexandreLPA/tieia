@@ -1,7 +1,10 @@
 import io
 import math
+import shutil
 import struct
 import wave
+
+import pytest
 
 
 def tone_wav(seconds: float = 1.0, rate: int = 44100) -> bytes:
@@ -19,6 +22,7 @@ def tone_wav(seconds: float = 1.0, rate: int = 44100) -> bytes:
     return buffer.getvalue()
 
 
+@pytest.mark.skipif(shutil.which("ffmpeg") is None, reason="needs ffmpeg, which the Docker image has")
 def test_converts_wav_to_mp3(client) -> None:
     resp = client.post(
         "/api/audio/convert",

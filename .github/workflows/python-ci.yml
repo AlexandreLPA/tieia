@@ -53,6 +53,10 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements-dev.txt
 
+      # The audio routes run ffmpeg, which the Docker image provides; the runner has none
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
+
       - name: Import the app
         run: python -c "from app.main import app; print(len(app.routes), 'routes')"
 
