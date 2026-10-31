@@ -1,6 +1,6 @@
-# OpenCut AI Project Status
+# Passarola Project Status
 
-Check the current implementation status of the OpenCut AI project.
+Check the current implementation status of the Passarola project.
 
 ## Instructions
 

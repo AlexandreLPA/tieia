@@ -117,7 +117,7 @@ async function commandTags(opts: CLIOptions): Promise<void> {
 
 function printHelp(): void {
 	console.log(`
-opencut-vcs — CLI for OpenCut-AI version control
+opencut-vcs — CLI for Passarola version control
 
 Commands:
   log       Show commit history        --repo <id> [--limit N] [--format json]

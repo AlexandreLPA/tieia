@@ -13,7 +13,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import { cn } from "@/utils/ui";
 import { SOCIAL_LINKS } from "@/constants/site-constants";
-import { OpenCutAILogo } from "./footer";
+import { PassarolaLogo } from "./footer";
 
 export function Header() {
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -35,9 +35,9 @@ export function Header() {
 			<div className="relative flex w-full items-center justify-between px-6 pt-4">
 				<div className="relative z-10 flex items-center gap-6">
 					<Link href="/" className="flex items-center gap-3">
-						<OpenCutAILogo size={36} />
+						<PassarolaLogo size={36} />
 						<span className="text-base font-bold tracking-tight hidden sm:inline">
-							OpenCut AI
+							Passarola
 						</span>
 					</Link>
 

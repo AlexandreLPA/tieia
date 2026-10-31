@@ -1,10 +1,10 @@
 <table width="100%">
   <tr>
     <td align="left" width="120">
-      <img src="apps/web/public/favicon.png" alt="OpenCut AI Logo" width="80" />
+      <img src="apps/web/public/favicon.png" alt="Passarola Logo" width="80" />
     </td>
     <td align="right">
-      <h1>OpenCut AI</h1>
+      <h1>Passarola</h1>
       <h3 style="margin-top: -10px;">The privacy-first, open-source AI video editor.</h3>
       <p>Self-host. Edit by text. Clone voices. Remove fillers. No cloud, no subscriptions, no data leaving your machine.</p>
     </td>
@@ -84,11 +84,11 @@ Esta versão foi adaptada e traduzida para **Português (PT-BR)** com foco em **
 
 ---
 
-## Why OpenCut AI?
+## Why Passarola?
 
-Every major video editor sends your footage to the cloud. OpenCut AI doesn't.
+Every major video editor sends your footage to the cloud. Passarola doesn't.
 
-| | OpenCut AI | Descript | CapCut | DaVinci Resolve |
+| | Passarola | Descript | CapCut | DaVinci Resolve |
 |---|---|---|---|---|
 | **Self-hosted** | Yes | No | No | No |
 | **Open source** | Yes | No | No | No |
@@ -100,7 +100,7 @@ Every major video editor sends your footage to the cloud. OpenCut AI doesn't.
 | **Cost** | Free (your server) | $24–65/mo | Free with watermark | $295 one-time |
 | **Per-seat pricing** | No | Yes | No | No |
 
-**OpenCut AI is the only self-hosted, open-source video editor with AI built in.** Run it on a $20/mo server or your laptop. Your footage, your models, your rules.
+**Passarola is the only self-hosted, open-source video editor with AI built in.** Run it on a $20/mo server or your laptop. Your footage, your models, your rules.
 
 ## Features
 
@@ -460,7 +460,7 @@ The app will be available at [http://localhost:3100](http://localhost:3100).
 
 ## Self-Hosting Costs
 
-OpenCut AI runs entirely on your own infrastructure — no per-seat fees, no API metering, no usage limits. The only cost is the server itself.
+Passarola runs entirely on your own infrastructure — no per-seat fees, no API metering, no usage limits. The only cost is the server itself.
 
 ### Recommended Configurations
 
@@ -506,7 +506,7 @@ OpenCut AI runs entirely on your own infrastructure — no per-seat fees, no API
 
 ### Cost Comparison
 
-|                  | OpenCut AI (self-hosted)   | Descript      | Kapwing       | Runway        |
+|                  | Passarola (self-hosted)   | Descript      | Kapwing       | Runway        |
 | ---------------- | -------------------------- | ------------- | ------------- | ------------- |
 | Monthly cost     | **$20–150** (server only)  | $24–33/user   | $24–79/user   | $12–76/user   |
 | Per-seat pricing | **No**                     | Yes           | Yes           | Yes           |
@@ -525,14 +525,14 @@ OpenCut AI runs entirely on your own infrastructure — no per-seat fees, no API
 
 ## Attribution
 
-This project is a fork of [OpenCut](https://github.com/OpenCut-app/OpenCut). We gratefully acknowledge the OpenCut team and all upstream contributors for the core video editor that makes this possible.
+Passarola is a fork of [OpenCut AI](https://github.com/Ekaanth/OpenCut-AI), by [Ekaanth](https://github.com/Ekaanth), which is itself a fork of [OpenCut](https://github.com/OpenCut-app/OpenCut). We gratefully acknowledge both projects and all their contributors: OpenCut for the core video editor, OpenCut AI for the AI suite around it.
 
 ## License
 
 [MIT LICENSE](LICENSE)
 
 
-## ❤️ Support This Project
+## ❤️ Support OpenCut AI
 
 **About the maintainer** — OpenCut AI is built and maintained by [Ekaanth](https://github.com/Ekaanth), an independent developer working on privacy-first, local-first AI tools. This fork extends the excellent [OpenCut](https://github.com/OpenCut-app/OpenCut) editor with a full on-device AI suite.
 

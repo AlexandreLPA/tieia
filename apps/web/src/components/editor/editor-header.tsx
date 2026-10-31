@@ -22,7 +22,7 @@ import { useEditor } from "@/hooks/use-editor";
 import { CommandIcon, Logout05Icon, Search01Icon, SparklesIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ShortcutsDialog } from "./dialogs/shortcuts-dialog";
-import { OpenCutAILogo } from "@/components/footer";
+import { PassarolaLogo } from "@/components/footer";
 import { cn } from "@/utils/ui";
 import { AIStatusIndicator, type AIStatusInfo } from "@/components/editor/ai/ai-status-indicator";
 import { ViralityScoreModal } from "@/components/editor/virality-score-modal";
@@ -193,7 +193,7 @@ function ProjectDropdown() {
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
 					<Button variant="ghost" className="p-0 rounded-sm size-10 [&_svg]:!size-auto">
-						<OpenCutAILogo size={36} />
+						<PassarolaLogo size={36} />
 					</Button>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align="start" className="z-100 w-44">

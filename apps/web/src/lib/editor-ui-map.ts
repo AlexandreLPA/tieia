@@ -207,7 +207,7 @@ export function buildUiMapPrompt(): string {
 		(destination) =>
 			`- ${destination.id}: ${destination.name} — ${destination.path}. ${destination.about}.`,
 	);
-	return `MAPA DA INTERFACE DO OPENCUT (onde fica cada recurso; você conhece a interface por este mapa, não diga que não tem acesso a ela):\n${lines.join("\n")}`;
+	return `MAPA DA INTERFACE DA PASSAROLA (onde fica cada recurso; você conhece a interface por este mapa, não diga que não tem acesso a ela):\n${lines.join("\n")}`;
 }
 
 /** Opens the place (tab and sub-tab) and points at its control. */

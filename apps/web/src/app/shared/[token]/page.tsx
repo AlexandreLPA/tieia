@@ -91,7 +91,7 @@ export default function SharedReviewPage({
 			<header className="border-b">
 				<div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
 					<a href="/" className="text-sm font-semibold">
-						OpenCut AI
+						Passarola
 					</a>
 					<span className="text-xs text-muted-foreground">
 						Read-only review — no account needed

@@ -113,7 +113,7 @@ async def sarvam_transcribe(
     Accepts audio files up to 30 seconds. For longer files, the audio is
     chunked into 30-second segments and transcribed sequentially.
 
-    Returns a transcription result compatible with the existing OpenCut format.
+    Returns a transcription result compatible with the existing Passarola format.
     """
     headers = _sarvam_headers(request)
 
@@ -261,7 +261,7 @@ async def sarvam_transcribe(
             except httpx.ConnectError:
                 raise HTTPException(status_code=503, detail="Cannot connect to Sarvam AI API.")
 
-    # Build OpenCut-compatible response.
+    # Build Passarola-compatible response.
     #
     # Sarvam REST API returns one transcript per 30-second chunk with no
     # internal timing.  We split each chunk into sentence-sized sub-segments

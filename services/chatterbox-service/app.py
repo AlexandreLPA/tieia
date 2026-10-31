@@ -256,7 +256,7 @@ def voice_path(value: str) -> Path:
 # FastAPI app
 # ---------------------------------------------------------------------------
 
-app = FastAPI(title="OpenCutAI Chatterbox Service", version="1.0.0")
+app = FastAPI(title="Passarola Chatterbox Service", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,

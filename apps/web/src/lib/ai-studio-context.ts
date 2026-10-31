@@ -128,7 +128,7 @@ export function buildContextParts({
 	framesNote: string;
 }): ChatContentPart[] {
 	const header = [
-		"CONTEXTO DO PROJETO ABERTO NO OPENCUT (enviado automaticamente pelo editor, não é uma pergunta).",
+		"CONTEXTO DO PROJETO ABERTO NA PASSAROLA (enviado automaticamente pelo editor, não é uma pergunta).",
 		`TIMELINE:\n${timeline}`,
 		transcript,
 		frames.length > 0

@@ -36,7 +36,7 @@ export const auth = betterAuth({
 		},
 	},
 	baseURL: webEnv.NEXT_PUBLIC_SITE_URL,
-	appName: "OpenCut AI",
+	appName: "Passarola",
 	trustedOrigins: [webEnv.NEXT_PUBLIC_SITE_URL],
 });
 

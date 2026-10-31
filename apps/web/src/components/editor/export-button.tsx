@@ -455,7 +455,7 @@ function ExportPopover({
 													/>
 													<div className="flex flex-col gap-0.5">
 														<Label htmlFor="include-watermark">
-															Incluir marca d'água do OpenCut AI
+															Incluir marca d'água da Passarola
 														</Label>
 														<p className="text-[10px] text-muted-foreground leading-relaxed">
 															Este é um software de código aberto. Incluir a marca d'água ajuda a divulgar e apoiar o projeto.

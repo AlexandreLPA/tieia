@@ -10,13 +10,13 @@ import { Separator } from "@/components/ui/separator";
 import { SOCIAL_LINKS } from "@/constants/site-constants";
 
 export const metadata: Metadata = {
-	title: "Terms of Service - OpenCut AI",
+	title: "Terms of Service - Passarola",
 	description:
-		"OpenCut AI's Terms of Service. Fair, transparent terms for our free and open-source video editor.",
+		"Passarola's Terms of Service. Fair, transparent terms for our free and open-source video editor.",
 	openGraph: {
-		title: "Terms of Service - OpenCut AI",
+		title: "Terms of Service - Passarola",
 		description:
-			"OpenCut AI's Terms of Service. Fair, transparent terms for our free and open-source video editor.",
+			"Passarola's Terms of Service. Fair, transparent terms for our free and open-source video editor.",
 		type: "website",
 	},
 };
@@ -66,7 +66,7 @@ export default function TermsPage() {
 			<section className="flex flex-col gap-3">
 				<h2 className="text-2xl font-semibold">Your Content, Your Rights</h2>
 				<p>
-					<strong>You own everything you create.</strong> OpenCut AI runs entirely
+					<strong>You own everything you create.</strong> Passarola runs entirely
 					on your machine. All video editing, AI transcription, voice generation,
 					and image generation happen locally. We have no access to your files,
 					projects, or generated content.
@@ -81,20 +81,20 @@ export default function TermsPage() {
 			</section>
 
 			<section className="flex flex-col gap-3">
-				<h2 className="text-2xl font-semibold">How You Can Use OpenCut AI</h2>
-				<p>OpenCut AI is free for personal and commercial use. You can:</p>
+				<h2 className="text-2xl font-semibold">How You Can Use Passarola</h2>
+				<p>Passarola is free for personal and commercial use. You can:</p>
 				<ul className="list-disc space-y-2 pl-6">
 					<li>
 						Create videos for personal, educational, or commercial purposes
 					</li>
-					<li>Use OpenCut AI for client work and paid projects</li>
-					<li>Share and distribute videos created with OpenCut AI</li>
+					<li>Use Passarola for client work and paid projects</li>
+					<li>Share and distribute videos created with Passarola</li>
 					<li>
-						Modify and distribute the OpenCut AI software (under MIT license)
+						Modify and distribute the Passarola software (under MIT license)
 					</li>
 				</ul>
 				<p>
-					<strong>What we ask:</strong> Don't use OpenCut AI for illegal
+					<strong>What we ask:</strong> Don't use Passarola for illegal
 					activities, harassment, or creating harmful content. Be respectful of
 					others and follow applicable laws.
 				</p>
@@ -136,17 +136,17 @@ export default function TermsPage() {
 					<li>You can delete your account at any time</li>
 				</ul>
 				<p>
-					OpenCut AI is provided "as is" without warranties. While we strive for
+					Passarola is provided "as is" without warranties. While we strive for
 					reliability, we can't guarantee uninterrupted service.
 				</p>
 			</section>
 
 			<section className="flex flex-col gap-3">
 				<h2 className="text-2xl font-semibold">Open Source Benefits</h2>
-				<p>Because OpenCut AI is open source, you have additional rights:</p>
+				<p>Because Passarola is open source, you have additional rights:</p>
 				<ul className="list-disc space-y-2 pl-6">
 					<li>Review our code to see exactly how we handle your data</li>
-					<li>Self-host OpenCut AI on your own servers</li>
+					<li>Self-host Passarola on your own servers</li>
 					<li>Modify the software to suit your needs</li>
 					<li>Contribute improvements back to the community</li>
 				</ul>
@@ -167,7 +167,7 @@ export default function TermsPage() {
 			<section className="flex flex-col gap-3">
 				<h2 className="text-2xl font-semibold">Third-Party Content</h2>
 				<p>
-					When using OpenCut AI, make sure you have the right to use any content
+					When using Passarola, make sure you have the right to use any content
 					you import:
 				</p>
 				<ul className="list-disc space-y-2 pl-6">
@@ -185,7 +185,7 @@ export default function TermsPage() {
 			<section className="flex flex-col gap-3">
 				<h2 className="text-2xl font-semibold">Limitations and Liability</h2>
 				<p>
-					OpenCut AI is provided free of charge. To the extent permitted by law:
+					Passarola is provided free of charge. To the extent permitted by law:
 				</p>
 				<ul className="list-disc space-y-2 pl-6">
 					<li>We're not liable for any loss of data or content</li>
@@ -205,7 +205,7 @@ export default function TermsPage() {
 
 			<section className="flex flex-col gap-3">
 				<h2 className="text-2xl font-semibold">Service Changes</h2>
-				<p>We may update OpenCut AI and these terms:</p>
+				<p>We may update Passarola and these terms:</p>
 				<ul className="list-disc space-y-2 pl-6">
 					<li>We'll notify you of significant changes to these terms</li>
 					<li>Continued use means you accept any updates</li>
@@ -216,11 +216,11 @@ export default function TermsPage() {
 
 			<section className="flex flex-col gap-3">
 				<h2 className="text-2xl font-semibold">Termination</h2>
-				<p>You can stop using OpenCut AI at any time:</p>
+				<p>You can stop using Passarola at any time:</p>
 				<ul className="list-disc space-y-2 pl-6">
 					<li>Delete your account through your profile settings</li>
 					<li>Clear your browser data to remove local projects</li>
-					<li>Your content remains yours even if you stop using OpenCut AI</li>
+					<li>Your content remains yours even if you stop using Passarola</li>
 					<li>We may suspend accounts for violations of these terms</li>
 				</ul>
 			</section>

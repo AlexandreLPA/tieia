@@ -18,7 +18,7 @@ export function OwnershipDialog({ onConfirm, onCancel }: OwnershipDialogProps) {
 	const labels = [
 		"Eu possuo ou tenho os direitos sobre este vídeo",
 		"Estou autorizado a criar obras derivadas",
-		"Entendo que o OpenCutAI não verifica a propriedade",
+		"Entendo que a Passarola não verifica a propriedade",
 	];
 
 	return (

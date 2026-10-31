@@ -11,25 +11,25 @@ import {
 } from "./components/release";
 
 export const metadata: Metadata = {
-	title: "Changelog - OpenCut AI",
-	description: "What's new in OpenCut AI",
+	title: "Changelog - Passarola",
+	description: "What's new in Passarola",
 	openGraph: {
-		title: "Changelog - OpenCut AI",
-		description: "Every update, improvement, and fix to OpenCut AI — documented.",
+		title: "Changelog - Passarola",
+		description: "Every update, improvement, and fix to Passarola — documented.",
 		type: "website",
 		images: [
 			{
 				url: "/open-graph/changlog.jpg",
 				width: 1200,
 				height: 630,
-				alt: "OpenCut AI Changelog",
+				alt: "Passarola Changelog",
 			},
 		],
 	},
 	twitter: {
 		card: "summary_large_image",
-		title: "Changelog - OpenCut AI",
-		description: "What's new in OpenCut AI",
+		title: "Changelog - Passarola",
+		description: "What's new in Passarola",
 		images: ["/open-graph/changlog.jpg"],
 	},
 };
@@ -38,7 +38,7 @@ export default function ChangelogPage() {
 	const releases = getSortedReleases();
 
 	return (
-		<BasePage title="Changelog" description="See what's new in OpenCut AI">
+		<BasePage title="Changelog" description="See what's new in Passarola">
 			<div className="mx-auto w-full max-w-3xl">
 				<div className="relative">
 					<div

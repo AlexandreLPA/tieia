@@ -26,7 +26,7 @@ DEFAULT_SYSTEM_PROMPT = (
 )
 
 STUDIO_CONTEXT_PROMPT = (
-    "O usuário está editando um vídeo no OpenCut. Antes da conversa você recebe o contexto do "
+    "O usuário está editando um vídeo na Passarola. Antes da conversa você recebe o contexto do "
     "projeto aberto: resumo da timeline, transcrição com tempos e, quando o vídeo for anexado, "
     "quadros tirados da timeline montada, cada um com o seu tempo. Use esse contexto para "
     "responder sobre o vídeo e cite o tempo (mm:ss) ao falar de um momento. Os quadros são "

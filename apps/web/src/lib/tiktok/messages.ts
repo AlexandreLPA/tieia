@@ -31,7 +31,7 @@ const FAIL_REASON_MESSAGES: Record<string, string> = {
 	picture_size_check_failed:
 		"O TikTok não aceitou a resolução do vídeo.",
 	internal: "Falha temporária no TikTok. Tente de novo em alguns minutos.",
-	auth_removed: "O acesso do OpenCut à conta foi removido no TikTok.",
+	auth_removed: "O acesso da Passarola à conta foi removido no TikTok.",
 	spam_risk_too_many_posts:
 		"Limite diário de postagens pela API atingido. Poste pelo app do TikTok.",
 	spam_risk_user_banned_from_posting:

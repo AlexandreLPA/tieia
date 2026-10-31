@@ -230,7 +230,7 @@ async def smallest_transcribe(
     Accepts audio/video files. For video files, audio is extracted first.
     For files longer than 60 seconds, audio is chunked.
 
-    Returns a transcription result compatible with the OpenCut format.
+    Returns a transcription result compatible with the Passarola format.
     """
     headers = _smallest_headers(request)
 
@@ -384,7 +384,7 @@ async def smallest_transcribe(
             except httpx.ConnectError:
                 raise HTTPException(status_code=503, detail="Cannot connect to Smallest AI API.")
 
-    # Build OpenCut-compatible response
+    # Build Passarola-compatible response
     import re
 
     segments = []

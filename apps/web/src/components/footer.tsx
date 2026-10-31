@@ -28,8 +28,8 @@ export function Footer() {
 					{/* Brand */}
 					<div className="max-w-xs">
 						<div className="mb-4 flex items-center gap-2.5">
-							<OpenCutAILogo />
-							<span className="text-base font-bold tracking-tight">OpenCut AI</span>
+							<PassarolaLogo />
+							<span className="text-base font-bold tracking-tight">Passarola</span>
 						</div>
 						<p className="text-muted-foreground text-sm leading-relaxed">
 							Open-source AI video editor. Transcribe, edit by text,
@@ -114,7 +114,7 @@ export function Footer() {
 				{/* Bottom bar */}
 				<div className="mt-10 flex flex-col items-start justify-between gap-3 border-t pt-6 md:flex-row md:items-center">
 					<span className="text-sm text-muted-foreground">
-						&copy; {new Date().getFullYear()} OpenCut AI
+						&copy; {new Date().getFullYear()} Passarola
 					</span>
 					<span className="text-xs text-muted-foreground/60">
 						Forked from{" "}
@@ -134,7 +134,7 @@ export function Footer() {
 	);
 }
 
-export function OpenCutAILogo({ size = 26 }: { size?: number }) {
+export function PassarolaLogo({ size = 26 }: { size?: number }) {
 	return (
 		<svg aria-hidden="true"
 			width={size}

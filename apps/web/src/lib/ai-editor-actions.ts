@@ -50,7 +50,7 @@ const RATIO_SIZES: Record<AspectRatio, { width: number; height: number }> = {
 const MAX_FRAME_REQUESTS = 4;
 const EPSILON = 0.01;
 
-export const STUDIO_ACTIONS_PROMPT = `AÇÕES NO EDITOR: você pode propor mudanças que o usuário aplica com um clique no OpenCut. Quando o usuário pedir uma edição, ou quando uma ação resolver um problema que você apontou, termine a resposta com UM bloco assim:
+export const STUDIO_ACTIONS_PROMPT = `AÇÕES NO EDITOR: você pode propor mudanças que o usuário aplica com um clique na Passarola. Quando o usuário pedir uma edição, ou quando uma ação resolver um problema que você apontou, termine a resposta com UM bloco assim:
 \`\`\`acoes
 [{"tipo": "remover_trecho", "inicio": 14.8, "fim": 23.9}]
 \`\`\`

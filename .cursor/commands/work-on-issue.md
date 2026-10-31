@@ -1,6 +1,6 @@
-# Work on OpenCut AI Issue
+# Work on Passarola Issue
 
-Work on the specified issue from the OpenCut AI issue tracker.
+Work on the specified issue from the Passarola issue tracker.
 
 ## Instructions
 

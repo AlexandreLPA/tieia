@@ -19,7 +19,7 @@ router = APIRouter(prefix="/api/autopilot", tags=["autopilot"])
 
 PEXELS_VIDEO_SEARCH = "https://api.pexels.com/videos/search"
 COMMONS_API = "https://commons.wikimedia.org/w/api.php"
-COMMONS_USER_AGENT = "OpenCutAI/0.4 (https://github.com/AlexandreLPA/OpenCut-AI; local video editor)"
+COMMONS_USER_AGENT = "Passarola/0.4 (https://github.com/AlexandreLPA/OpenCut-AI; local video editor)"
 ALLOWED_DOWNLOAD_HOSTS = (
     "videos.pexels.com",
     "images.pexels.com",

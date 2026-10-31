@@ -293,7 +293,7 @@ def _check_rembg_available() -> bool:
 # FastAPI app
 # ---------------------------------------------------------------------------
 
-app = FastAPI(title="OpenCutAI Image Service", version="1.0.0")
+app = FastAPI(title="Passarola Image Service", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
