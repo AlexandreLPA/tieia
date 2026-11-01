@@ -91,7 +91,7 @@
     "@content-collections/next": "^0.2.11",
     "@napi-rs/canvas": "^0.1.92",
     "@tailwindcss/postcss": "^4.2.1",
-    "@tailwindcss/typography": "^0.5.19",
+    "@tailwindcss/typography": "^0.5.20",
     "@types/bun": "latest",
     "@types/node": "^24.2.1",
     "@types/pg": "^8.15.4",
