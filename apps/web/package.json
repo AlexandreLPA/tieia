@@ -49,7 +49,7 @@
     "dayjs": "^1.11.13",
     "drizzle-orm": "^0.44.2",
     "embla-carousel-react": "^8.5.1",
-    "eventemitter3": "^5.0.1",
+    "eventemitter3": "^5.0.4",
     "feed": "^5.1.0",
     "input-otp": "^1.4.1",
     "lucide-react": "^0.562.0",
