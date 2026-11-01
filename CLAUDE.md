@@ -1,8 +1,8 @@
-# Passarola — Claude Code Context
+# TiêIA — Claude Code Context
 
 ## Project Overview
 
-Passarola is a privacy-first, open-source AI video editor. All AI models run locally. It is a monorepo using Bun/Turborepo with a Next.js frontend and 7 Python (FastAPI) microservices.
+TiêIA is a privacy-first, open-source AI video editor. All AI models run locally. It is a monorepo using Bun/Turborepo with a Next.js frontend and 7 Python (FastAPI) microservices.
 
 ## Architecture
 
@@ -93,12 +93,12 @@ All Python services use `uv` (Astral). Install with `uv pip install --system --n
 
 ## Frontend Dev
 
-Hybrid mode (default): Docker runs the AI services, the database and Redis, and the editor runs on Windows. The "Passarola" desktop shortcut runs the same script.
+Hybrid mode (default): Docker runs the AI services, the database and Redis, and the editor runs on Windows. The "TiêIA" desktop shortcut runs the same script.
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/start-opencut.ps1        # daily use: production build
 powershell -ExecutionPolicy Bypass -File scripts/start-opencut.ps1 -Dev   # development: next dev, hot reload
-powershell -ExecutionPolicy Bypass -File scripts/start-opencut.ps1 -Stop  # editor + Docker services off ("Fechar Passarola" shortcut)
+powershell -ExecutionPolicy Bypass -File scripts/start-opencut.ps1 -Stop  # editor + Docker services off ("Fechar TiêIA" shortcut)
 ```
 
 - **Dependencies:** when `bun.lock` or a `package.json` changes, the launcher runs `bun install --frozen-lockfile` first.

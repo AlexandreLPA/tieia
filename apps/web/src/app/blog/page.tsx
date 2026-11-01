@@ -6,13 +6,13 @@ import { getPosts } from "@/lib/blog/query";
 import type { Post } from "@/types/blog";
 
 export const metadata: Metadata = {
-	title: "Blog - Passarola",
+	title: "Blog - TiêIA",
 	description:
-		"Read the latest news and updates about Passarola, the free and open-source video editor.",
+		"Read the latest news and updates about TiêIA, the free and open-source video editor.",
 	openGraph: {
-		title: "Blog - Passarola",
+		title: "Blog - TiêIA",
 		description:
-			"Read the latest news and updates about Passarola, the free and open-source video editor.",
+			"Read the latest news and updates about TiêIA, the free and open-source video editor.",
 		type: "website",
 	},
 };
@@ -24,7 +24,7 @@ export default async function BlogPage() {
 	return (
 		<BasePage
 			title="Blog"
-			description="Read the latest news and updates about Passarola, the free and open-source video editor."
+			description="Read the latest news and updates about TiêIA, the free and open-source video editor."
 		>
 			<div className="flex flex-col">
 				{data.posts.map((post) => (

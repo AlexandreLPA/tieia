@@ -1,9 +1,9 @@
 ---
 name: theme-system
-description: Create cohesive color and typography themes for Passarola components — infographic templates, subtitle presets, UI panels, and overlays. Ensures visual consistency across all generated content.
+description: Create cohesive color and typography themes for TiêIA components — infographic templates, subtitle presets, UI panels, and overlays. Ensures visual consistency across all generated content.
 ---
 
-This skill guides creation of cohesive visual themes that can be applied across infographic templates, subtitle styles, and UI panels in Passarola.
+This skill guides creation of cohesive visual themes that can be applied across infographic templates, subtitle styles, and UI panels in TiêIA.
 
 ## What is a Theme
 

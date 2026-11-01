@@ -1,6 +1,6 @@
 # Create Zustand Store
 
-Create a new Zustand store for the Passarola editor.
+Create a new Zustand store for the TiêIA editor.
 
 ## Instructions
 

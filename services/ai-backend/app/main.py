@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan: startup and shutdown."""
-    logger.info("Passarola Backend starting on %s:%d", settings.HOST, settings.PORT)
+    logger.info("TiêIA Backend starting on %s:%d", settings.HOST, settings.PORT)
     asyncio.get_running_loop().create_task(services_health())  # warm the health cache
     logger.info(
         "Microservice URLs: whisper=%s  tts=%s  image=%s  ollama=%s",
@@ -66,8 +66,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Passarola Backend",
-    description="AI-powered backend for the Passarola video editor",
+    title="TiêIA Backend",
+    description="AI-powered backend for the TiêIA video editor",
     version="0.1.0",
     lifespan=lifespan,
 )

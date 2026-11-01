@@ -188,7 +188,7 @@ export function VisualSearchView() {
 				{!hasIndex && inflightCount === 0 && (
 					<EmptyState
 						title="Nenhuma mídia indexada ainda"
-						body="Importe um vídeo ou imagem para ativar a busca semântica. A Passarola extrai quadros e os processa localmente — seu material nunca sai da sua máquina."
+						body="Importe um vídeo ou imagem para ativar a busca semântica. A TiêIA extrai quadros e os processa localmente — seu material nunca sai da sua máquina."
 					/>
 				)}
 

@@ -246,7 +246,7 @@ translate_service = TranslateService()
 # FastAPI app
 # ---------------------------------------------------------------------------
 
-app = FastAPI(title="Passarola Translate Service", version="1.0.0")
+app = FastAPI(title="TiêIA Translate Service", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,

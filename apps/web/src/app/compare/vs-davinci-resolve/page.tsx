@@ -4,22 +4,22 @@ import { BasePage } from "@/app/base-page";
 import { SITE_URL } from "@/constants/site-constants";
 
 export const metadata: Metadata = {
-	title: "Passarola vs DaVinci Resolve — Free Open Source Video Editor with AI (No $295 Lock-in)",
+	title: "TiêIA vs DaVinci Resolve — Free Open Source Video Editor with AI (No $295 Lock-in)",
 	description:
-		"Passarola is the browser-based, open-source alternative to DaVinci Resolve. Compare: AI transcription, text-based editing, filler word removal, AI dubbing in 37 languages, B-roll generation, karaoke subtitles. Free, self-hosted, no hardware requirements.",
+		"TiêIA is the browser-based, open-source alternative to DaVinci Resolve. Compare: AI transcription, text-based editing, filler word removal, AI dubbing in 37 languages, B-roll generation, karaoke subtitles. Free, self-hosted, no hardware requirements.",
 	alternates: {
 		canonical: `${SITE_URL}/compare/vs-davinci-resolve`,
 	},
 	openGraph: {
-		title: "Passarola vs DaVinci Resolve — Free Browser-Based AI Video Editor",
+		title: "TiêIA vs DaVinci Resolve — Free Browser-Based AI Video Editor",
 		description:
-			"DaVinci Resolve costs $295 and needs a powerful GPU. Passarola runs in your browser, is free, open source, and has AI transcription, dubbing, and B-roll generation.",
+			"DaVinci Resolve costs $295 and needs a powerful GPU. TiêIA runs in your browser, is free, open source, and has AI transcription, dubbing, and B-roll generation.",
 		url: `${SITE_URL}/compare/vs-davinci-resolve`,
 		type: "website",
 	},
 	twitter: {
 		card: "summary_large_image",
-		title: "Passarola vs DaVinci Resolve",
+		title: "TiêIA vs DaVinci Resolve",
 		description:
 			"Free, browser-based, AI-powered video editor. No $295 price tag. No GPU requirements.",
 	},
@@ -91,11 +91,11 @@ export default function VsDaVinciResolvePage() {
 			<div className="flex flex-col gap-12">
 				<header className="text-center flex flex-col gap-6">
 					<h1 className="text-4xl md:text-5xl font-bold tracking-tight">
-						Passarola vs DaVinci Resolve
+						TiêIA vs DaVinci Resolve
 					</h1>
 					<p className="text-lg text-muted-foreground max-w-2xl mx-auto">
 						DaVinci Resolve is the king of color grading and professional post-production. 
-						Passarola is the king of <strong>AI-powered, browser-based editing</strong> — 
+						TiêIA is the king of <strong>AI-powered, browser-based editing</strong> — 
 						text-based editing, one-click filler removal, AI dubbing in 37 languages, 
 						and B-roll generation. Free and open source.
 					</p>
@@ -104,10 +104,10 @@ export default function VsDaVinciResolvePage() {
 							href="/editor"
 							className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90"
 						>
-							Try Passarola Free
+							Try TiêIA Free
 						</Link>
 						<Link
-							href="https://github.com/Ekaanth/OpenCut-AI"
+							href="https://github.com/AlexandreLPA/tieia"
 							target="_blank"
 							rel="noopener noreferrer"
 							className="inline-flex items-center justify-center rounded-md border px-6 py-3 text-sm font-medium hover:bg-accent"
@@ -127,7 +127,7 @@ export default function VsDaVinciResolvePage() {
 										<tr className="bg-muted/50">
 											<th className="text-left px-4 py-2.5 font-medium">Feature</th>
 											<th className="text-center px-4 py-2.5 font-medium text-primary">
-												Passarola
+												TiêIA
 											</th>
 											<th className="text-center px-4 py-2.5 font-medium text-muted-foreground">
 												DaVinci Resolve
@@ -158,7 +158,7 @@ export default function VsDaVinciResolvePage() {
 					<h2 className="text-2xl font-bold">When to use each</h2>
 					<div className="grid md:grid-cols-2 gap-6">
 						<div className="rounded-lg border p-4 space-y-2">
-							<h3 className="font-semibold text-primary">Choose Passarola when:</h3>
+							<h3 className="font-semibold text-primary">Choose TiêIA when:</h3>
 							<ul className="text-sm text-muted-foreground space-y-1 list-disc pl-4">
 								<li>You need AI transcription and text-based editing</li>
 								<li>You want one-click filler/silence removal (Smart Cut)</li>
@@ -188,24 +188,24 @@ export default function VsDaVinciResolvePage() {
 					<h2 className="text-2xl font-bold">Frequently Asked Questions</h2>
 					<div className="max-w-2xl mx-auto space-y-4 text-left">
 						<FAQ
-							question="Ca Passarola replace DaVinci Resolve for professional work?"
-							answer="It depends on the work. For podcast editing, social media content, talking-head videos, and AI-powered workflows, Passarola is often better. For color grading, VFX, and film production, DaVinci Resolve is the industry standard."
+							question="Ca TiêIA replace DaVinci Resolve for professional work?"
+							answer="It depends on the work. For podcast editing, social media content, talking-head videos, and AI-powered workflows, TiêIA is often better. For color grading, VFX, and film production, DaVinci Resolve is the industry standard."
 						/>
 						<FAQ
 							question="Why would I use a browser editor instead of a native app?"
-							answer="Zero installation, instant access from any device, no hardware requirements, and automatic updates. Passarola runs on Chromebooks, tablets, and low-end laptops where DaVinci Resolve won't even launch."
+							answer="Zero installation, instant access from any device, no hardware requirements, and automatic updates. TiêIA runs on Chromebooks, tablets, and low-end laptops where DaVinci Resolve won't even launch."
 						/>
 						<FAQ
-							question="Does Passarola support color grading?"
-							answer="Passarola has basic color adjustments. It's not designed to compete with DaVinci Resolve's industry-leading color science. The focus is on AI-powered editing workflows."
+							question="Does TiêIA support color grading?"
+							answer="TiêIA has basic color adjustments. It's not designed to compete with DaVinci Resolve's industry-leading color science. The focus is on AI-powered editing workflows."
 						/>
 						<FAQ
 							question="Is DaVinci Resolve free?"
-							answer="DaVinci Resolve has a free version, but it's not open source. The Studio version costs $295 and is needed for features like neural engine, HDR grading, and some codecs. Passarola is fully free and open source (MIT license)."
+							answer="DaVinci Resolve has a free version, but it's not open source. The Studio version costs $295 and is needed for features like neural engine, HDR grading, and some codecs. TiêIA is fully free and open source (MIT license)."
 						/>
 						<FAQ
 							question="Can I use both together?"
-							answer="Absolutely. Many creators use Passarola for AI transcription, filler removal, and subtitle generation, then export to DaVinci Resolve for color grading and final polish."
+							answer="Absolutely. Many creators use TiêIA for AI transcription, filler removal, and subtitle generation, then export to DaVinci Resolve for color grading and final polish."
 						/>
 					</div>
 				</section>

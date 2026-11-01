@@ -273,7 +273,7 @@ whisper_service = WhisperService()
 # FastAPI app
 # ---------------------------------------------------------------------------
 
-app = FastAPI(title="Passarola Whisper Service", version="1.0.0")
+app = FastAPI(title="TiêIA Whisper Service", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,

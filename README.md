@@ -1,566 +1,234 @@
-<table width="100%">
-  <tr>
-    <td align="left" width="120">
-      <img src="apps/web/public/favicon.png" alt="Passarola Logo" width="80" />
-    </td>
-    <td align="right">
-      <h1>Passarola</h1>
-      <h3 style="margin-top: -10px;">The privacy-first, open-source AI video editor.</h3>
-      <p>Self-host. Edit by text. Clone voices. Remove fillers. No cloud, no subscriptions, no data leaving your machine.</p>
-    </td>
-  </tr>
-</table>
-
 <p align="center">
-  <a href="https://github.com/Ekaanth/OpenCut-AI/releases"><img src="https://img.shields.io/badge/release-v0.4.0-blue" alt="release v0.4.0" /></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="license MIT" /></a>
-  <img src="https://img.shields.io/badge/platforms-macOS%20%7C%20Linux%20%7C%20Windows-lightgrey" alt="platforms" />
-  <img src="https://img.shields.io/badge/AI-100%25%20local-8b5cf6" alt="AI 100% local" />
+  <img src="apps/web/public/icons/icon-192x192.png" alt="TiêIA logo" width="96" />
 </p>
 
-## 🚀 Latest Release — v0.4.0
+<h1 align="center">TiêIA</h1>
 
-The biggest release yet: **six new AI features**, all running on-device.
+<p align="center">
+  An open-source, AI-native, local-first video editor. A fork of OpenCut.
+</p>
 
-| Feature | What it does |
-|---|---|
-| **AI Dubbing (local)** | NLLB-200 translation + voice cloning, fully offline — no API key, no cloud |
-| **Video Background Removal** | Per-frame matting, inserted non-destructively as an alpha layer |
-| **Auto B-roll** | Matches transcript segments to your own footage via on-device CLIP search |
-| **Multilingual Captions** | NLLB-first translation with per-track SRT/VTT export |
-| **Edit by Speaker** | Scope remove / tighten / isolate operations to a single speaker |
-| **Auto Multicam Sync** | Audio cross-correlation aligns angles with no timecode, one undoable apply |
-
-Also in this release: hardened upload endpoints, stabilized VPS deployment, a repaired build/CI pipeline, and community fixes. See the full [changelog](apps/web/content/changelog/0.4.0.md).
+<p align="center">
+  <a href="README.pt-BR.md">Leia em português</a>
+</p>
 
 ---
 
-## 🇧🇷 Guia Rápido (Versão Customizada PT-BR + OpenRouter + Cortes Virais)
+TiêIA is a browser-based video editor with an AI suite built in. The editor
+runs on your own computer, the AI models run in Docker containers on your own
+computer, and your projects stay in your browser's storage. The only parts
+that reach the internet are the ones you turn on, such as a cloud LLM through
+[OpenRouter](https://openrouter.ai/) or the GIF search from
+[KLIPY](https://klipy.com/) (see [Privacy](#privacy)).
 
-Esta versão foi adaptada e traduzida para **Português (PT-BR)** com foco em **criação de vídeos curtos virais (YouTube Shorts, TikTok, Reels)** e **vendas com comissão (TikTok Shop)**, além de permitir o uso de **LLMs na nuvem via OpenRouter** para quem possui placas de vídeo com VRAM limitada (ex: 8 GB – 12 GB) e quer usar modelos gigantes sem pesar no PC.
+The interface is in Brazilian Portuguese. It is aimed at short-form video:
+YouTube Shorts, Reels, TikTok and TikTok Shop sales videos.
 
-### ✨ Principais Adaptações desta Versão
-
-1. **Integração com OpenRouter (LLMs na Nuvem):**
-   - Permite rodar todas as análises de IA (detecção de cortes virais, pontuação de engajamento/retenção, gerador de ganchos/hooks, Chat do AI Studio e verificação de diretrizes) usando modelos potentes na nuvem via [OpenRouter](https://openrouter.ai/), mantendo apenas tarefas leves ou de mídia (como Whisper/FFmpeg) localmente.
-   - Seleção de modelo e monitoramento do backend ativo diretamente na interface do editor (**Monitor de IA**).
-2. **Cortes Automáticos de Vídeos Longos para YouTube Shorts / Reels (`YouTube para Reels`):**
-   - Cole a URL de um vídeo longo do YouTube (ou use o **Auto-Compositor de Shorts** na timeline):
-     1. **Ingestão e Transcrição:** Baixa legendas existentes do YouTube instantaneamente (ou transcreve com Whisper com timestamps por palavra).
-     2. **Localização de Momentos Virais por IA (`clip_detector.py`):** O LLM analisa toda a transcrição buscando picos de engajamento, fatos surpreendentes, intensidade emocional, valor isolado (faz sentido sozinho) e força do gancho nos primeiros 2–3 segundos.
-     3. **Pontuação Multi-Sinal (`Virality Score`):** Avalia cada corte de 0 a 100 em 7 sinais (Gancho/Hook, Lacuna de Curiosidade, Energia/Áudio, Sincronia de Batida, Presença de Rosto, Arco Emocional e Potencial Viral).
-     4. **Reframe 9:16 + Legendas Estilo CapCut:** Corta os trechos aprovados com FFmpeg, centraliza o rosto automaticamente no formato vertical `9:16` e aplica legendas dinâmicas.
-3. **Kit TikTok Shop & Verificador de Conformidade (Compliance):**
-   - **Kit TikTok Shop:** Setas animadas, efeitos sonoros (SFX), zooms dinâmicos e simulação da interface do feed do TikTok.
-   - **Compliance Check:** Analisa frames do vídeo e transcrição via IA para evitar bloqueios ou perda de comissão no TikTok Shop.
-4. **Editor Turbinado em Português:**
-   - Legendas estilo CapCut com contorno/sombra, textos recortados (*ransom-note cutout*) e gradientes, busca integrada de GIFs e Stickers animados via **KLIPY**, *time-stretch* mantendo o tom original da voz, trilha principal magnética e miniaturas reais (*filmstrip*) na timeline.
-
-### ⚙️ Como Configurar e Rodar (Passo a Passo)
-
-1. **Configure as variáveis de ambiente na raiz (`.env`) e no frontend (`apps/web/.env.local`):**
-   ```bash
-   cp .env.example .env
-   cp apps/web/.env.example apps/web/.env.local
-   ```
-2. **Adicione sua chave do OpenRouter no arquivo `.env` da raiz:**
-   ```env
-   AI_LLM_BACKEND=openrouter
-   OPENROUTER_API_KEY=sk-or-v1-sua-chave-aqui
-   OPENROUTER_MODEL=nvidia/nemotron-3.5-super-vl:free
-   ```
-   *(Dica: modelos gratuitos do OpenRouter terminam em `:free`, como `nvidia/nemotron-3.5-super-vl:free` ou `nvidia/nemotron-3-ultra-550b-a55b:free`. Modelos pagos ficam bloqueados até você definir `OPENROUTER_ALLOW_PAID=true`).*
-3. **Suba os serviços de backend com Docker Compose:**
-   ```bash
-   docker compose up -d --build
-   ```
-   *(Se quiser usar sua GPU NVIDIA para acelerar a transcrição do Whisper, veja a Opção B mais abaixo).*
-4. **Instale as dependências e inicie o editor Web:**
-   ```bash
-   bun install
-   bun dev:web
-   ```
-5. Acesse **[http://localhost:3000](http://localhost:3000)**.
-
----
-
-## Why Passarola?
-
-Every major video editor sends your footage to the cloud. Passarola doesn't.
-
-| | Passarola | Descript | CapCut | DaVinci Resolve |
-|---|---|---|---|---|
-| **Self-hosted** | Yes | No | No | No |
-| **Open source** | Yes | No | No | No |
-| **Data stays local** | Always | Cloud | Cloud (ByteDance) | Local |
-| **AI editing** | Yes | Yes | Yes | Limited |
-| **AI video generation** | 9 models, 5 providers | No | No | No |
-| **A/B testing** | Thumbnails + Hooks | No | No | No |
-| **Engagement analytics** | Yes (7 signals) | No | No | No |
-| **Cost** | Free (your server) | $24–65/mo | Free with watermark | $295 one-time |
-| **Per-seat pricing** | No | Yes | No | No |
-
-**Passarola is the only self-hosted, open-source video editor with AI built in.** Run it on a $20/mo server or your laptop. Your footage, your models, your rules.
+TiêIA is a fork of [OpenCut AI](https://github.com/Ekaanth/OpenCut-AI), which
+is itself a fork of [OpenCut](https://github.com/OpenCut-app/OpenCut).
 
 ## Features
 
-### AI-Powered Editing
+Editing (from OpenCut, extended):
 
-- **Edit by text** — Transcribe, then edit video like a document. Delete a sentence and the timeline cuts itself.
-- **Smart Cut** — One-click filler word removal ("um", "uh", "like") and silence detection. Runs locally via FFmpeg.
-- **AI transcription** — Whisper-powered speech-to-text with word-level timestamps. GPU or CPU.
-- **AI Dubbing** — Translate and re-voice your video into 17 languages. The **Local engine** runs entirely on-device: NLLB-200 for translation, XTTS v2 for voice-cloned speech — no API key, no cloud, nothing leaves your machine. Cloud engines (Sarvam, Smallest) also available.
-- **Video Background Removal** — Remove the background from any clip with no green screen. Per-frame rembg matting produces a transparent WebM, inserted non-destructively above your source. Runs fully locally.
-- **Auto B-roll from your footage** — Matches each transcript segment to your own media library by CLIP visual similarity and auto-inserts the best clip as an overlay. Reuses the on-device CLIP embedding index — your footage never leaves your machine.
-- **Voice cloning & TTS** — Clone any voice from a 6-second sample. Supports [Sarvam AI](https://www.sarvam.ai/) for 22 Indian languages and [Smallest AI](https://www.smallest.ai/) for 15 languages with 80+ voices.
-- **AI Auto-Duck** — Automatically lowers background music during speech segments with configurable duck amount and fade.
-- **AI Music Generation** — Generate royalty-free background music with 15 genres, 12 moods, and 3 tempo settings. Preview and insert directly to the timeline.
-- **AI Thumbnail Generator** — Create eye-catching thumbnails from prompts or transcript analysis. 5 styles, 4 size presets, 5 color schemes, up to 4 variations at once.
-- **AI Script-to-Video** — Write a script, AI generates voiceover, visuals, and builds the timeline automatically.
-- **AI Co-Pilot Agent** — Describe your goal in plain English ("make this a 60-second reel with captions and music"). AI creates a multi-step plan, you review, then it executes. 19 action types, cancel anytime. Runs through your local LLM.
-- **AI Scene Detection** — Client-side visual scene change detection using color histogram analysis. Finds camera cuts and angle changes with before/after thumbnails. No data leaves your machine.
-- **AI Auto-Color Correction** — 8 color correction profiles (Vibrant Pop, Film Look, Warm Sunset, etc.) with batch apply to all video clips.
-- **AI Video-to-Shorts Auto-Composer** — One-click: AI selects best clip, trims to target duration, sets canvas size (9:16, 1:1, 4:5), adds subtitles.
-- **Speaker-Labeled Captions** — Auto-assign color-coded speaker labels, rename speakers, apply captions to timeline.
-- **Edit by Speaker** — Scope operations to a single speaker at a time. Remove a speaker's every segment (cuts the timeline too), tighten the gaps between their lines, or mute everything else to isolate them. Reuses diarization + Smart Cut's cut/compact helpers. Fully local.
-- **Multilingual Captions** — Translate captions into multiple languages at once via the local NLLB-200 service (privacy-first; falls back to Sarvam or the LLM per language). One subtitle track per language, each exportable to SRT/VTT separately.
-- **YouTube Chapters Export** — Auto-detect chapter boundaries, export in YouTube `MM:SS Title` format. One-click copy chapters or full description with title, tags, and timestamps.
-- **Virality Score** — Score your video's engagement potential across 7 signals (hook, curiosity gap, energy, beat sync, face, emotion, viral) before publishing.
-- **A/B Thumbnail Testing** — Generate up to 4 thumbnail variants, auto-score each on contrast, text readability, face presence, color vibrancy, and composition. Winner gets a "Recommended" badge. TubeBuddy charges $15/mo for this.
-- **A/B Hook Testing** — Generate 5 hook variants from your transcript, each scored for engagement potential. Compare side-by-side and pick the best opening.
-- **Engagement Analytics Dashboard** — Track score history over time. Avg composite, grade distribution, per-signal breakdown, strongest/weakest signals, trend chart.
-- **AI Video Generation Hub** — Generate video from text, image, or video using 9 models across 5 providers (Runway Gen-3 Alpha, Pika 1.0, Kling v1.6 Pro, MiniMax, Stable Video Diffusion, Seedance 2.0, Luma Dream Machine, CogVideoX). 3 modes, 6 aspect ratios, prompt enhancement, one-click add to timeline.
-- **Smart Reframe** — AI-powered face detection generates position/scale keyframes to keep subjects centered when converting landscape to vertical. 4 presets: TikTok 9:16, Square, Instagram 4:5, YouTube 16:9.
-- **Chroma Key / Green Screen** — WebGL shader-based color keying with 5 presets, tolerance, softness, and spill suppression controls.
-- **Motion Tracking** — Client-side template matching (normalized cross-correlation) that generates transform keyframes. Runs entirely in the browser.
-- **Drag-to-Reorder Tracks** — Drag-and-drop track labels to reorder timeline tracks. Full undo/redo support.
-- **YouTube to Reels** — Paste a URL, auto-detect clips, reframe to 9:16 with face tracking, add captions, export reels.
-- **AI image generation** — Generate images from text via Stable Diffusion and place on the timeline.
-- **Smart subtitles** — One-click generation with karaoke, pill, and classic styles.
-- **Natural language commands** — "remove the intro", "speed up the middle" — the editor listens.
-- **Audio denoising** — Clean up background noise from any track.
+- Multi-track timeline with video, audio, text and sticker tracks, a
+  real-time canvas preview, transitions, effects, color filters and
+  brightness/contrast/saturation adjustments.
+- Text styles, including ransom-note cutouts and gradients.
+- Right-click clip menu: split, copy, mute, detach audio, remove silences,
+  hide, duplicate, delete.
+- Export with format, resolution and quality settings, audio-only export
+  (M4A, MP3, WAV) and loudness normalization to the social-media target
+  (-14 LUFS).
+- Brand kit: colors, fonts, logos and overlays.
 
-### Professional Editing
+AI features:
 
-- **20 built-in transitions** — Cross-dissolve, dip-black, slide, wipe, zoom, iris, clock wipe, morph, glitch, film burn, page peel, spin, push, fade-white, checkerboard, dissolve-zoom, band-slide, cube-spin, and more. All WebGL dual-texture shaders.
-- **22 filter presets + 12 effects** — Sunset Glow, Moonlight, Cyberpunk, Film Noir, Dreamy, Retro VHS, Teal & Orange, Bleach Bypass, Cross Process, Faded Film. Effects include Sharpen, Chromatic Aberration, Vignette, Film Grain, Glitch, RGB Split, Lens Distortion, Motion Blur, Posterize, Duotone.
-- **Speed ramping** — Variable speed curves with click-to-add keyframes and 5 presets (linear, ease-in, ease-out, smooth, bounce). Per-clip playback rate animation.
-- **Crop & Mask tool** — Rectangle, ellipse, polygon masks with feather control and inversion. Pixel-based crop values in properties panel.
-- **Multicam editing** — Sync angles by timecode, multicam viewer panel, one-click angle switching, auto-detect video tracks as angles.
-- **Auto multicam sync** — Align cameras that weren't timecode-locked by cross-correlating their audio waveforms entirely on-device. Pick a reference angle, set a ±search window, preview per-angle offsets with confidence scores, then apply. No cloud, no timecode needed.
-- **Marker system** — Press `M` to drop colored markers (red, yellow, green, blue, purple). Markers panel, jump to next/previous, notes on markers.
-- **J/K/L shuttle playback** — `J` reverse, `K` stop, `L` forward. Press multiple times for 2x, 4x, 8x speed. Full reverse playback support.
-- **Ripple trim** — Delete clips and close gaps automatically. `computeRippleTrim()` shifts downstream elements.
-- **Nesting / compound clips** — Select multiple clips and nest into a single compound clip. Un-nest to explode back to individual clips.
-- **Proxy editing** — Auto-generate lower-resolution copies of 4K+ footage for smooth preview. Export always uses originals.
-- **Audio mixer** — Per-track volume, stereo pan, solo/mute with real-time level meters.
-- **Audio effects chain** — Per-track insert chain: EQ (3-band/parametric), Compressor, Noise Gate, Reverb (room/hall/plate), De-esser, Limiter. Real-time Web Audio API processing.
-- **Direct audio recording** — Record audio directly to timeline from your microphone. Live level metering, pause/resume, auto-insert at playhead position.
-- **LUFS loudness normalization** — Measure integrated, short-term, momentary, true peak loudness. Normalize to platform targets (YouTube -14, Spotify -14, Apple Podcasts -16, EBU R128 -23, ATSC A/85 -24). Custom target slider.
-- **Beat detection** — Detect beats in music tracks, display BPM, visualize beat strength, toggle beat grid overlay and snap-to-beats.
-- **Batch export** — Queue multiple export jobs. 8 platform presets: YouTube 1080p/4K, TikTok/Reels 9:16, Instagram Square/Portrait, Twitter/X, Podcast Audio, Web/Email.
-- **Keyboard shortcut editor** — Full shortcut management UI with search, category filter, click-to-rebind, conflict detection, and reset to defaults.
-- **Undo history panel** — Visual history list with jump-to-any-point. See redo stack, click to navigate command history.
-- **Color-coded tracks** — Assign 8 colors to tracks. Lock/unlock tracks to prevent accidental edits.
-- **Filmstrip thumbnails** — Canvas-based frame extraction with LRU cache. Thumbnails rendered on timeline clips.
-- **Template gallery** — 8 built-in project templates (YouTube Intro, TikTok Vlog, Podcast Highlight, Product Review, Classroom Lesson, Instagram Reel, Travel Vlog, Tutorial). Search, filter by category, one-click apply.
-- **Share project via link** — Generate share links with expiration, password protection, and permission controls (download/edit). Auto-copy to clipboard, revoke support.
-- **Multi-track timeline** — Video, audio, text, sticker, and effect tracks with drag-and-drop.
-- **Freeze frame** — Capture any frame at the playhead and insert as a still image.
-- **Frame size presets** — Toggle 16:9, 9:16, 1:1, 4:3 above the preview.
-- **Real-time preview** — Live canvas rendering with transforms, effects, and transitions.
-- **No watermarks or subscriptions** — Free and open-source, forever.
+- **Transcription and captions**: speech to text with
+  [faster-whisper](https://github.com/SYSTRAN/faster-whisper), automatic
+  captions.
+- **Voice cloning and narration**: record or upload 10 to 15 seconds of
+  speech and clone the voice with Chatterbox Multilingual, running on your
+  GPU. Type a text and get it spoken by a cloned or stock voice, then add it
+  to the timeline or download it as MP3 or WAV.
+- **AI Studio**: a chat that knows the open project, plus tools for scripts,
+  ideas, B-roll, dubbing, background removal, chapters and reframing. The
+  chat can answer "where is X?" and open that place in the interface.
+- **Create video with AI**: builds a whole video from a topic, with stock
+  footage from Pexels and Wikimedia Commons.
+- **Podcast clips**: finds the best moments of a long video to turn into
+  short clips.
+- **Virality score and TikTok Shop compliance check**: scores the video and
+  checks frames plus transcript against TikTok Shop rules, through the active
+  vision model.
+- **Search in the video**: finds moments by what is shown, using CLIP
+  embeddings computed locally.
+- **AI video generation**: clips from text or an image, through Replicate or
+  PiAPI with your own key.
+- **GIFs and stickers**: animated arrows, "click here" buttons and reactions
+  from KLIPY, plus a TikTok Shop element kit, stickers and emojis.
+- **Speaker diarization**, **face tracking** for 9:16 reframing, **local
+  translation** and **local image generation**, each in its own service.
 
-### Infrastructure
+In development:
 
-- **TurboQuant inference** — KV cache compression down to 2-bit on GPU, 3-bit on CPU, with a compute mode toggle (Auto / CPU / GPU).
-- **Kimi K2 & Kimi VL** — MoonshotAI's open-source Kimi models are fully supported: Kimi K2 (1T/32B active MoE) via Ollama GGUF (Q3/Q4/Q5) for every tier, and Kimi VL A3B (vision-language, 3B active) via TurboQuant for multimodal scene analysis.
-- **NLLB-200 translation service** — Meta's No-Language-Left-Behind models (200 languages) running fully locally as a dedicated microservice. Powers privacy-first AI Dubbing — no translation text ever leaves the host.
-- **All data local** — Files stored in OPFS (Origin Private File System). Nothing leaves the browser or your server.
-- **Docker-ready** — One command to start the full stack. BuildKit cache mounts, CPU-only PyTorch wheels, and parallel builds keep rebuilds fast.
+- **Hybrid scene search** over transcripts (lexical + semantic). It is not
+  part of this branch yet.
 
-## Project Structure
+## Architecture
 
 ```
-apps/web/             — Next.js web application
-  src/components/     — UI and editor components
-  src/hooks/          — Custom React hooks
-  src/lib/            — Utility, command, and API logic
-  src/core/           — Editor core (singleton managers)
-  src/services/       — Renderer, storage, video cache, proxy generator
-  src/types/          — TypeScript type definitions
-services/ai-backend/  — FastAPI AI backend
-  app/routes/         — API endpoints (transcribe, tts, youtube, engagement, etc.)
-  app/services/       — AI services (clip detection, engagement scoring, face reframe, etc.)
-packages/             — Shared packages (env, UI)
+Browser (Edge app window, http://localhost:3100)
+  └─ Next.js editor (apps/web), runs natively on Windows, 127.0.0.1 only
+       ├─ projects and media: browser storage (IndexedDB / OPFS)
+       ├─ KLIPY GIF search ─────────────────────────────► api.klipy.com
+       └─ AI calls ──► ai-backend (FastAPI, :8420), the gateway
+                          ├─ whisper-service    :8421  faster-whisper (GPU)
+                          ├─ tts-service        :8422  Coqui TTS
+                          ├─ image-service      :8423  diffusers
+                          ├─ speaker-service    :8424  pyannote
+                          ├─ face-service       :8425  MediaPipe
+                          ├─ clip-service       :8426  CLIP embeddings
+                          ├─ translate-service  :8427  NLLB-200
+                          ├─ chatterbox-service :8428  voice cloning (GPU)
+                          ├─ turboquant-service :8430  local HF LLMs
+                          ├─ ollama             :11434 local GGUF LLMs
+                          └─ OpenRouter (optional) ──► openrouter.ai
+Docker also runs PostgreSQL and Redis.
 ```
 
-## Getting Started
+Everything in Docker publishes its ports on `127.0.0.1` only.
 
-### Prerequisites
+The LLM backend is chosen with `AI_LLM_BACKEND` in `.env`:
 
-**All setups:**
+| Value | What runs |
+|---|---|
+| `auto` (default) | TurboQuant locally, falling back to Ollama |
+| `ollama` | Ollama locally (GGUF models) |
+| `turboquant` | TurboQuant service locally (Hugging Face models, 4-bit, compressed KV cache) |
+| `openrouter` | A cloud model through OpenRouter, with your own API key |
 
-- [Bun](https://bun.sh/docs/installation)
-- [Docker](https://docs.docker.com/get-docker/) with BuildKit support and [Docker Compose](https://docs.docker.com/compose/install/) v2.3+
+With OpenRouter, paid models are blocked unless `OPENROUTER_ALLOW_PAID=true`.
+If a model fails, the backend tries the next free models.
 
-**GPU setup (optional, NVIDIA only):**
+## Running it
 
-- NVIDIA driver installed on the host (`nvidia-smi` must work on the host first)
-- [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html) so Docker can expose the GPU to containers
-- Recommended: CUDA 13+ driver for the `cuTile` kernel path used by TurboQuant (older drivers still work — they just fall back to the PyTorch KV-compression path)
+### Requirements
 
-> Docker is optional but recommended for running the database, Redis, and AI backend. Frontend-only development works without it.
+- Windows 11 with [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+  (WSL 2 backend).
+- [Bun](https://bun.sh/).
+- An NVIDIA GPU with the NVIDIA container support enabled in Docker Desktop.
+  `docker-compose.yml` reserves the GPU for the Whisper service
+  (`WHISPER_DEVICE=cuda`), and Chatterbox uses it through
+  `docker-compose.gpu.yml`.
 
-### Install and Run Locally
-
-1. Clone the repository:
-
-   ```bash
-   git clone https://github.com/Ekaanth/OpenCut-AI.git
-   cd OpenCut-AI
-   ```
-
-2. Copy the environment file:
-
-   ```bash
-   cp apps/web/.env.example apps/web/.env.local
-   ```
-
-3. Start the database, Redis, and AI backend. **Pick one of the two startup modes below.**
-
-   **Option A — CPU (default, works on any machine):**
-
-   ```bash
-   # Enable BuildKit for faster builds with cache mounts
-   export DOCKER_BUILDKIT=1
-
-   # Build shared base images first, then all services in parallel
-   docker compose build --parallel
-   docker compose up -d
-   ```
-
-   **Option B — NVIDIA GPU (turboquant-service runs on CUDA with cuTile kernels):**
-
-   ```bash
-   # Verify the host can see the GPU first
-   nvidia-smi
-
-   # Enable BuildKit for faster builds with cache mounts
-   export DOCKER_BUILDKIT=1
-
-   # Build + start everything with the GPU override file layered on top
-   docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d --build
-
-   # Confirm the turboquant-service container actually sees the GPU
-   docker compose exec turboquant-service nvidia-smi
-
-   # Confirm the service reports GPU mode
-   curl http://localhost:8430/health | jq '{compute_mode, backend, turboquant_engine_available}'
-   # Expected: {"compute_mode": "cuda", "backend": "gpu", "turboquant_engine_available": true}
-   ```
-
-   If `nvidia-smi` fails on the host, install the NVIDIA driver first. If it works on the host but fails inside the container, install the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html) and restart the Docker daemon (`sudo systemctl restart docker`).
-
-4. Install dependencies and start the dev server:
-
-   ```bash
-   bun install
-   bun dev:web
-   ```
-
-The editor will be available at [http://localhost:3000](http://localhost:3000).
-
-> **Switching between CPU and GPU later?** You can toggle at runtime from the editor's **Settings → AI Optimization → Compute Mode** panel — no need to tear down Docker. If you started with Option A (CPU) and later want GPU, stop the stack (`docker compose down`) and restart with Option B.
-
-### Docker Build Optimizations
-
-All services are self-contained Dockerfiles that build in parallel without dependency ordering issues. BuildKit cache mounts share downloaded packages across services automatically.
-
-**Key optimizations:**
-
-| Technique | Benefit |
-|-----------|---------|
-| **CPU-only PyTorch** | ~8GB less to download across 4 services (~200MB vs ~2GB CUDA each) |
-| **BuildKit cache mounts** | uv/pip download cache survives across rebuilds — code-only changes skip dep installs entirely |
-| **Parallel builds** | `docker compose build --parallel` builds all services concurrently |
-| **Per-service .dockerignore** | Smaller build contexts, faster COPY operations |
-| **Layer-ordered Dockerfiles** | `requirements.txt` copied before source code — dep layer stays cached when only code changes |
-
-**Rebuilding after code changes:**
+### First time
 
 ```bash
-export DOCKER_BUILDKIT=1
-docker compose build --parallel
-docker compose up -d
+git clone https://github.com/AlexandreLPA/tieia.git
+cd tieia
+cp .env.example .env
+cp apps/web/.env.example apps/web/.env.local
 ```
 
-On subsequent builds, only the `COPY . .` layer and below is rebuilt. The dependency install layers are served from the BuildKit cache unless `requirements.txt` or `requirements.lock` changes.
+To use a cloud LLM, create a key at
+[openrouter.ai/keys](https://openrouter.ai/keys) and set it in `.env`
+(never commit this file):
 
-### AI Backend
-
-The AI backend runs as a FastAPI service on port 8420. It powers transcription, image generation, voice cloning, TTS, audio analysis, LLM commands, YouTube-to-Reels processing, and engagement scoring.
-
-```bash
-# Start with Docker (recommended)
-docker compose up -d
-
-# Or run standalone
-cd services/ai-backend
-python run.py
+```env
+AI_LLM_BACKEND=openrouter
+OPENROUTER_API_KEY=<your key>
 ```
 
-Configure AI models in the **Settings > AI Models** panel inside the editor.
-
-#### Optional dependencies
-
-| Dependency               | Purpose                                 | Required?                          |
-| ------------------------ | --------------------------------------- | ---------------------------------- |
-| Redis                    | Job queue for YouTube-to-Reels pipeline | Optional (falls back to in-memory) |
-| yt-dlp                   | YouTube video downloading               | Required for YouTube-to-Reels      |
-| Google OAuth credentials | YouTube channel ownership verification  | Optional                           |
-
-#### Python package management (uv)
-
-All seven Python services (ai-backend, turboquant-service, whisper-service, tts-service, image-service, speaker-service, face-service) use [**uv**](https://docs.astral.sh/uv/) — Astral's Rust-based Python package manager — instead of pip. uv resolves and installs 10–100× faster than pip, so cold-cache Docker builds of the heavy services (torch, transformers, bitsandbytes) finish in seconds instead of minutes.
-
-Each service has two files that define its dependencies:
-
-- **`requirements.txt`** — the editable source of truth. Add / remove / pin packages here.
-- **`requirements.lock`** — the full transitive closure, autogenerated from `requirements.txt` via `uv pip compile --universal`. Commit this file; the Dockerfile installs from it for reproducible builds.
-
-After editing a `requirements.txt`, regenerate the matching lockfile:
+Then build the AI services once:
 
 ```bash
-# Install uv once on your host (or `brew install uv`)
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# Regenerate the lockfile for the service you edited
-uv pip compile services/<service-name>/requirements.txt \
-  -o services/<service-name>/requirements.lock \
-  --python-version 3.11 \
-  --universal
+docker compose build
 ```
 
-`--universal` is important — it produces a platform-independent lockfile that preserves PEP 508 markers (e.g. `bitsandbytes>=0.43.0 ; platform_system != "Darwin"` in the turboquant-service) so the same lockfile works whether you generate it on macOS or run it inside a Linux container. Without `--universal`, packages gated off your current platform are dropped from the lockfile entirely.
+### Daily use (hybrid mode)
 
-Inside Dockerfiles, uv runs with `--system --no-cache`: system-site-packages (safe because each container is already isolated) and no install cache (the Docker layer cache handles that). The GPU extras for TurboQuant are **not** in the lockfile — they're layered on top via the `TURBOQUANT_EXTRAS=gpu` build arg from [`docker-compose.gpu.yml`](docker-compose.gpu.yml).
+The launcher starts Docker Desktop if needed, brings up the AI services, the
+database and Redis, builds the editor when its code changed (about 30 s), and
+serves it hidden on `127.0.0.1:3100`. Then it opens an Edge app window.
 
-**Platform note — face-service runs on linux/amd64.** Six of the seven services build natively for whatever arch your Docker daemon defaults to (arm64 on Apple Silicon, amd64 on Intel/AMD Linux). The exception is **face-service**, which pins `FROM --platform=linux/amd64` because `mediapipe` does not publish aarch64 Linux wheels — only `manylinux_2_28_x86_64`, `macosx_arm64`, and `win_amd64`. On Apple Silicon hosts Docker runs face-service through Rosetta emulation (slower startup, fine at steady state). If mediapipe eventually ships aarch64 Linux wheels, drop the `--platform=linux/amd64` line from `services/face-service/Dockerfile` and the container will run natively.
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/start-opencut.ps1        # production build
+powershell -ExecutionPolicy Bypass -File scripts/start-opencut.ps1 -Dev   # next dev, hot reload
+powershell -ExecutionPolicy Bypass -File scripts/start-opencut.ps1 -Stop  # editor and Docker services off
+```
 
-> **Reverting to pip** is a one-line change per Dockerfile: replace `uv pip install --system --no-cache` with `pip install --no-cache-dir` and delete the `COPY --from=ghcr.io/astral-sh/uv:0.9.28 ...` line. Lockfiles can stay committed — pip ignores them.
+- The editor's log goes to `%LOCALAPPDATA%\OpenCut-AI\editor.log`.
+- `-NoBrowser` starts it without opening a window.
+- Keep port **3100**: projects live in the browser's storage per address, so
+  another port shows an empty project list.
+- A desktop shortcut can run the same command; `-Stop` makes a "close"
+  shortcut.
 
-### TurboQuant: Compute Mode (CPU / GPU)
-
-The TurboQuant inference service supports both CPU and NVIDIA GPU execution, with **two completely separate backend implementations** tuned for each device.
-
-| Backend            | Compression path                                          | Decode path                                                    | "Turbo boost" strategy                                        |
-| ------------------ | --------------------------------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------- |
-| `GPUTurboBackend`  | `turboquant-gpu` cuTile fused kernels, **2-bit** or 3-bit | Full `engine.generate()` through the compressed KV cache       | TF32 matmul, cuDNN benchmark, `auto_tune()` warm-up           |
-| `CPUTurboBackend`  | PyTorch fallback, **3-bit** only (2-bit decode is lossy)  | Plain HF `model.generate` (greedy fallback too slow on CPU)   | Physical-core thread pinning, MKLDNN, single warm-up probe   |
-
-The backends live in [`services/turboquant-service/compute_backends.py`](services/turboquant-service/compute_backends.py) behind a common `BaseTurboBackend` interface, so application code never branches on device type. The factory `create_turbo_backend(device=...)` picks the right one automatically — and if a GPU backend fails to initialize (e.g. `cuda-tile` not installed, CUDA driver too old), it falls back to the CPU backend with a warning rather than crashing.
-
-#### Choosing Compute Mode in the UI
-
-Open the editor → **Settings → AI Optimization → Compute Mode** and pick one of:
-
-- **Auto** — detect the fastest device (CUDA → MPS → CPU). Default for every existing user.
-- **CPU** — force CPU inference. Works on any host; `CPUTurboBackend` kicks in.
-- **GPU (CUDA)** — force NVIDIA GPU. Button is greyed out (with a tooltip) when no GPU is detected.
-
-The selector shows a live "Running on: `<device>`" status line and a badge with the **actual** KV compression ratio from the most recent inference request. Selecting a new mode writes `OPENCUTAI_AI_COMPUTE_MODE` to `.env`, reloads the in-memory backend config, and reloads the model on the new device.
-
-#### Running with a GPU (Docker) — reference
-
-See **Getting Started → Install and Run Locally → Option B** above for the quickstart. This section is the deeper reference.
-
-**What the GPU override file does**
-
-[`docker-compose.gpu.yml`](docker-compose.gpu.yml) is a standard Compose override layered on top of the base file. It changes three things for the `turboquant-service`:
-
-1. **Reserves a GPU device** via `deploy.resources.reservations.devices` with `driver: nvidia`, `count: 1`, `capabilities: [gpu]`. This is the modern Compose v2.3+ syntax; older `runtime: nvidia` setups need to be updated.
-2. **Passes `TURBOQUANT_EXTRAS=gpu`** as a build arg, which makes the turboquant-service Dockerfile run `uv pip install --system "turboquant-gpu[gpu]" --extra-index-url https://pypi.nvidia.com`. This pulls in the cuTile kernel extras from NVIDIA's PyPI mirror.
-3. **Pins `DEVICE=cuda`** (instead of `auto`) so the container always comes up in GPU mode. Remove that override line if you want the UI Compute Mode toggle to drive the device.
-
-**First-time startup**
+### Other ways to run
 
 ```bash
-# 1. Make sure the host + Docker can see the GPU
-nvidia-smi
-docker run --rm --gpus all nvidia/cuda:12.4.1-base-ubuntu22.04 nvidia-smi
+# Everything in Docker, editor included
+docker compose --profile docker-web up -d --build web
 
-# 2. Bring up the stack with the GPU override
+# Rebuild the backend after changing it
+docker compose up -d --build ai-backend
+
+# Turboquant and Chatterbox on the GPU
 docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d --build
-
-# 3. Verify the turboquant-service picked up the GPU
-docker compose exec turboquant-service nvidia-smi
-docker compose logs turboquant-service | grep -E "Compute mode|TurboQuantEngine|GPUTurboBackend"
-
-# 4. Verify via the HTTP health endpoint
-curl -s http://localhost:8430/health | jq
-#   "compute_mode": "cuda",
-#   "backend": "gpu",
-#   "backend_effective_bits": 2,
-#   "turboquant_engine_available": true,
-#   "gpu_available": true
 ```
 
-**Managing the stack**
+### Tests
 
 ```bash
-# Tail logs for just the turboquant-service
-docker compose -f docker-compose.yml -f docker-compose.gpu.yml logs -f turboquant-service
-
-# Restart just the turboquant-service (e.g. after changing env vars)
-docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d --force-recreate turboquant-service
-
-# Stop everything
-docker compose -f docker-compose.yml -f docker-compose.gpu.yml down
+bun test
+cd services/ai-backend && python -m pytest   # needs requirements.txt and requirements-dev.txt installed
 ```
 
-> Tip: export `COMPOSE_FILE=docker-compose.yml:docker-compose.gpu.yml` in your shell so you don't have to repeat `-f` on every command.
+## Privacy
 
-**Troubleshooting**
+What stays on your computer:
 
-| Symptom                                                                              | Cause                                                                   | Fix                                                                                                                                                        |
-| ------------------------------------------------------------------------------------ | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `could not select device driver "nvidia"`                                            | NVIDIA Container Toolkit not installed                                  | Install the toolkit and restart Docker: `sudo systemctl restart docker`                                                                                    |
-| `nvidia-smi` works on host but not in container                                      | Docker daemon hasn't picked up the toolkit                              | Restart the daemon, or add `"default-runtime": "nvidia"` to `/etc/docker/daemon.json`                                                                      |
-| Build fails on `uv pip install turboquant-gpu[gpu]`                                  | Host's CUDA driver is older than 13.0, so `cuda-tile` isn't available   | Either upgrade the driver, or drop the `TURBOQUANT_EXTRAS: gpu` build arg (the engine still works via the PyTorch fallback — you just lose cuTile kernels) |
-| `/health` shows `"compute_mode": "cpu"` even with the override file                  | Container couldn't see the GPU at startup                               | Check `docker compose exec turboquant-service nvidia-smi`; if that fails, the toolkit/driver isn't wired up                                                |
-| Generation works but `compression_ratio` is always `null`                            | `temperature > 0` requests use the sampling fallback path               | Set `temperature=0` in the request to route through `engine.generate()` and get real compression metrics                                                   |
-| `RuntimeError: GPUTurboBackend requires CUDA` in turboquant-service logs at startup  | Someone pinned `DEVICE=cuda` on a host without CUDA                     | Unset `DEVICE` or set it to `auto` — the CPU backend will take over                                                                                        |
+- Your videos, images, audio and projects (browser storage).
+- Transcription, voice cloning, speech synthesis, diarization, face tracking,
+  translation, image generation, CLIP search and the local LLMs (Ollama,
+  TurboQuant).
 
-**Graceful degradation**
+What leaves it, and only when you use it:
 
-The factory in `compute_backends.py` is defensive: if `GPUTurboBackend.__init__` throws (e.g. `turboquant-gpu` not installed, CUDA driver missing, `cuda-tile` extras incompatible), it logs a warning and falls back to `CPUTurboBackend`. The service comes up either way — you'll just see `"backend": "cpu"` in `/health` and the CPU turbo-boost path (thread pinning + MKLDNN + 3-bit metrics probe) kicks in instead.
+| Feature | Destination | What is sent |
+|---|---|---|
+| Cloud LLM (`AI_LLM_BACKEND=openrouter`) | OpenRouter and the model's provider | Prompts, transcripts, the open project's context and, for the virality score and the TikTok Shop check, video frames |
+| GIFs and stickers panel | KLIPY, called from the browser with your key | Search terms. Results are shown, not stored |
+| Stickers, icons and fonts | Iconify, Google Fonts, called from the browser | Icon searches and font requests |
+| Create video with AI | Pexels (your key), Wikimedia Commons | Search terms for stock media |
+| YouTube links you paste | YouTube | A download request (yt-dlp) |
+| AI video generation | Replicate or PiAPI (your key) | Prompt and source image |
+| Sarvam AI / Smallest AI voices and transcription | Sarvam, Smallest (your key) | Text or audio |
+| Sound search | Freesound (your key) | Search terms |
+| Publishing to TikTok | TikTok, after you sign in | The exported video |
 
-### Security Notes (turboquant-service)
+With the default `AI_LLM_BACKEND=auto` and no keys set, no text, audio or
+video goes to an AI provider.
 
-The turboquant-service is designed to run on a private Docker network behind the ai-backend proxy — it does not expose its own auth layer. A few hardening knobs are still worth knowing:
+## Why the name
 
-| Environment variable | Default | Effect                                                                                                                                                                |
-| -------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `TRUST_REMOTE_CODE`  | `false` | When `true`, HuggingFace model repos can execute arbitrary Python on load (`AutoTokenizer` / `AutoModelForCausalLM` with `trust_remote_code=True`). Only opt in for models you fully trust. |
-| `CORS_ORIGINS`       | `*`     | Comma-separated list of allowed origins. Wildcard mode intentionally runs with `allow_credentials=False` (forbidden-by-spec combo otherwise); set an explicit list to enable credentialed CORS. |
-| `DEVICE`             | `auto`  | Pinned by docker-compose to `${OPENCUTAI_AI_COMPUTE_MODE:-auto}` so the UI toggle drives it. `auto`/`cpu`/`cuda`/`mps` all accepted.                                  |
+The tiê-sangue (*Ramphocelus bresilius*) is a bright red bird of the
+Brazilian Atlantic Forest, a common sight in Rio de Janeiro. TiêIA is the
+tiê plus *IA*, Portuguese for AI. The icon is the bird drawn in a single
+white line on red, with a play button in its beak. Where accents are not
+allowed (code, URLs, package names), the name is written `tieia`.
 
-The service also validates all `model_id` inputs against the strict HuggingFace `org/name` pattern (rejects path traversal and control characters) and caps every request body field (`content`, `prompt`, `messages`) at a reasonable length to prevent memory-exhaustion DOS. The ai-backend's `POST /api/config/update` endpoint rejects any value containing newlines, carriage returns, or NUL bytes before writing to `.env`, so the compute-mode toggle can't be abused to smuggle arbitrary env vars.
+## License and credits
 
-### Self-Hosting
+MIT. See [LICENSE](LICENSE), which keeps the copyright notices of the
+projects TiêIA comes from.
 
-```bash
-export DOCKER_BUILDKIT=1
-docker compose build --parallel
-docker compose up -d
-```
+- [OpenCut](https://github.com/OpenCut-app/OpenCut), by the OpenCut
+  contributors: the video editor at the core of TiêIA.
+- [OpenCut AI](https://github.com/Ekaanth/OpenCut-AI), by
+  [Ekaanth](https://github.com/Ekaanth): the AI services and features built
+  around OpenCut.
 
-The app will be available at [http://localhost:3100](http://localhost:3100).
-
-## Self-Hosting Costs
-
-Passarola runs entirely on your own infrastructure — no per-seat fees, no API metering, no usage limits. The only cost is the server itself.
-
-### Recommended Configurations
-
-| Setup           | Spec                               | Monthly Cost    | Best For                                            |
-| --------------- | ---------------------------------- | --------------- | --------------------------------------------------- |
-| **Starter**     | 4 vCPU, 8 GB RAM, CPU-only         | **$20–40/mo**   | Light editing, transcription, text commands         |
-| **Standard**    | 4 vCPU, 16 GB RAM, CPU-only        | **$40–80/mo**   | Full editing workflow with TTS and transcription    |
-| **Performance** | 8 vCPU, 32 GB RAM, NVIDIA T4 GPU   | **$150–250/mo** | Fast transcription, image generation, voice cloning |
-| **Production**  | 8 vCPU, 64 GB RAM, NVIDIA A10G GPU | **$300–500/mo** | Teams, concurrent users, all AI features at speed   |
-
-### Where to Host
-
-| Provider         | Starter                | With GPU              | Notes                                   |
-| ---------------- | ---------------------- | --------------------- | --------------------------------------- |
-| **Hetzner**      | $15/mo                 | $120/mo (A100 hourly) | Best value for CPU instances in EU      |
-| **DigitalOcean** | $24/mo                 | N/A                   | Simple setup, no GPU options            |
-| **Vultr**        | $24/mo                 | $180/mo (A100 hourly) | GPU cloud available                     |
-| **AWS EC2**      | $35/mo (t3.xlarge)     | $150/mo (g4dn.xlarge) | Widest GPU selection                    |
-| **GCP**          | $35/mo (e2-standard-4) | $200/mo (T4 GPU)      | Good for teams on Google Cloud          |
-| **Lambda Cloud** | N/A                    | $130/mo (A10 GPU)     | GPU-first cloud, best GPU value         |
-| **RunPod**       | N/A                    | $80/mo (A4000 GPU)    | Cheapest GPU cloud, community templates |
-
-### What Uses Resources
-
-| Service                 | RAM Usage | CPU Usage                 | GPU Benefit          | Notes                                    |
-| ----------------------- | --------- | ------------------------- | -------------------- | ---------------------------------------- |
-| Web app (Next.js)       | ~200 MB   | Low                       | None                 | Serves the UI                            |
-| PostgreSQL + Redis      | ~300 MB   | Low                       | None                 | Project storage + job queue              |
-| AI Backend (FastAPI)    | ~200 MB   | Low                       | None                 | API gateway                              |
-| Ollama (LLM)            | 1–5 GB    | Medium                    | 2–5x faster          | Depends on model size                    |
-| TurboQuant (LLM)        | 1–3 GB    | Medium                    | 2–5x faster          | 2-bit KV cache, lower memory than Ollama |
-| Whisper (transcription) | ~1 GB     | High during transcription | 10x faster           | `base` model uses ~1 GB                  |
-| TTS (voice generation)  | ~2 GB     | High during generation    | 5x faster            | XTTS v2, Sarvam AI, Smallest AI          |
-| Image generation        | ~3 GB     | Very high                 | Required practically | Stable Diffusion needs GPU               |
-| YouTube-to-Reels        | ~500 MB   | High during processing    | Moderate             | yt-dlp + clip detection + face reframe   |
-| Engagement scoring      | ~100 MB   | Medium during analysis    | None                 | Hook, energy, face, emotion analysis     |
-
-### Minimum Requirements
-
-- **CPU-only (all features except image gen):** 4 vCPU, 8 GB RAM, 20 GB disk — ~$20/mo
-- **With GPU (all features):** 4 vCPU, 16 GB RAM, NVIDIA T4 (16 GB VRAM), 40 GB disk — ~$150/mo
-- **Local machine:** Any modern laptop with 16 GB RAM runs everything except image generation comfortably
-
-### Cost Comparison
-
-|                  | Passarola (self-hosted)   | Descript      | Kapwing       | Runway        |
-| ---------------- | -------------------------- | ------------- | ------------- | ------------- |
-| Monthly cost     | **$20–150** (server only)  | $24–33/user   | $24–79/user   | $12–76/user   |
-| Per-seat pricing | **No**                     | Yes           | Yes           | Yes           |
-| Usage limits     | **None**                   | Minutes-based | Credits-based | Credits-based |
-| Data privacy     | **100% on your server**    | Cloud         | Cloud         | Cloud         |
-| AI models        | **Open-source, swappable** | Proprietary   | Proprietary   | Proprietary   |
-
-## Who is this for?
-
-- **Privacy-conscious creators and journalists** — your footage never leaves your machine
-- **Enterprises with data sovereignty requirements** — self-host on your own infrastructure
-- **Education** — install once in a lab, no per-seat licenses
-- **Developers** — fully open source, extend and contribute
-- **Subscription-fatigued creators** — pay for a server, not a subscription
-- **Indian market** — 22 Indian languages via Sarvam AI is unmatched by any competitor
-
-## Attribution
-
-Passarola is a fork of [OpenCut AI](https://github.com/Ekaanth/OpenCut-AI), by [Ekaanth](https://github.com/Ekaanth), which is itself a fork of [OpenCut](https://github.com/OpenCut-app/OpenCut). We gratefully acknowledge both projects and all their contributors: OpenCut for the core video editor, OpenCut AI for the AI suite around it.
-
-## License
-
-[MIT LICENSE](LICENSE)
-
-
-## ❤️ Support OpenCut AI
-
-**About the maintainer** — OpenCut AI is built and maintained by [Ekaanth](https://github.com/Ekaanth), an independent developer working on privacy-first, local-first AI tools. This fork extends the excellent [OpenCut](https://github.com/OpenCut-app/OpenCut) editor with a full on-device AI suite.
-
-OpenCut-AI is an independent, open-source project maintained in my free time.  
-If it has helped you or saved you time, your support keeps development active and new features coming!
-
-### Ways to Support
-
-<a href="https://buymeacoffee.com/humblefool">
-  <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" style="height: 60px !important;width: 217px !important;" />
-</a>
-
-<br>
-
-- 💰 [Donate via PayPal](https://paypal.me/humblefool06)
-
-You can also click the **Sponsor** button on the top-right of this repository page (thanks to the `.github/FUNDING.yml` file).
-
-
-## Star History
-
-<a href="https://www.star-history.com/?repos=Ekaanth%2FOpenCut-AI&type=date&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=Ekaanth/OpenCut-AI&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=Ekaanth/OpenCut-AI&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=Ekaanth/OpenCut-AI&type=date&legend=top-left" />
- </picture>
-</a>
-
-Every contribution — big or small — is deeply appreciated! 🙏  
-Thank you for supporting independent open source!
+TiêIA is maintained by [Alexandre](https://github.com/AlexandreLPA).

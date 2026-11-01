@@ -1,9 +1,9 @@
 ---
 name: editor-ui-patterns
-description: Design patterns and conventions for building polished editor panels, dialogs, toolbars, and status bars in the Passarola video editor. Covers shadcn/ui usage, Hugeicons, dark theme, layout, and interaction patterns specific to this project.
+description: Design patterns and conventions for building polished editor panels, dialogs, toolbars, and status bars in the TiêIA video editor. Covers shadcn/ui usage, Hugeicons, dark theme, layout, and interaction patterns specific to this project.
 ---
 
-This skill guides the creation of editor UI — panels, dialogs, toolbars, and status bars — that match the existing Passarola editor's look and feel while maintaining high design quality.
+This skill guides the creation of editor UI — panels, dialogs, toolbars, and status bars — that match the existing TiêIA editor's look and feel while maintaining high design quality.
 
 ## Tech Stack
 

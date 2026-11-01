@@ -16,7 +16,7 @@ if ! command -v docker &>/dev/null; then
     exit 1
 fi
 
-log_info "Stopping all Passarola services..."
+log_info "Stopping all TiêIA services..."
 cd "$PROJECT_ROOT"
 
 docker compose down

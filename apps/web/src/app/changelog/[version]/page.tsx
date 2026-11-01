@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 	const release = allChangelogs.find((r) => r.version === version);
 	if (!release) return {};
 	return {
-		title: `${release.title} (${release.version}) - Passarola Changelog`,
+		title: `${release.title} (${release.version}) - TiêIA Changelog`,
 		description: release.description,
 	};
 }

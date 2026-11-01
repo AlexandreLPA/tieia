@@ -10,7 +10,7 @@ export function JsonLd() {
 		"@type": "Organization",
 		name: SITE_INFO.title,
 		url: SITE_URL,
-		logo: `${SITE_URL}/favicon.svg`,
+		logo: `${SITE_URL}/icons/icon-512x512.png`,
 		description: SITE_INFO.description,
 		sameAs: [
 			SOCIAL_LINKS.github,

@@ -337,7 +337,7 @@ tts_service = TTSService()
 # FastAPI app
 # ---------------------------------------------------------------------------
 
-app = FastAPI(title="Passarola TTS Service", version="1.0.0")
+app = FastAPI(title="TiêIA TTS Service", version="1.0.0")
 
 AUTOLOAD = os.getenv("TTS_AUTOLOAD", "true").lower() in ("true", "1", "yes")
 

@@ -196,7 +196,7 @@ export function ModelWizard({
 					{step === "welcome" && (
 						<div className="flex flex-col gap-4">
 							<p className="text-sm text-muted-foreground">
-								A Passarola executa os modelos localmente na sua máquina
+								A TiêIA executa os modelos localmente na sua máquina
 								para máxima privacidade e velocidade. Vamos detectar seu
 								hardware para encontrar a melhor configuração.
 							</p>

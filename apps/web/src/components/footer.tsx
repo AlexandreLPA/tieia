@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { RiTwitterXLine } from "react-icons/ri";
 import { FaGithub } from "react-icons/fa6";
@@ -28,8 +29,8 @@ export function Footer() {
 					{/* Brand */}
 					<div className="max-w-xs">
 						<div className="mb-4 flex items-center gap-2.5">
-							<PassarolaLogo />
-							<span className="text-base font-bold tracking-tight">Passarola</span>
+							<TieiaLogo />
+							<span className="text-base font-bold tracking-tight">TiêIA</span>
 						</div>
 						<p className="text-muted-foreground text-sm leading-relaxed">
 							Open-source AI video editor. Transcribe, edit by text,
@@ -114,7 +115,7 @@ export function Footer() {
 				{/* Bottom bar */}
 				<div className="mt-10 flex flex-col items-start justify-between gap-3 border-t pt-6 md:flex-row md:items-center">
 					<span className="text-sm text-muted-foreground">
-						&copy; {new Date().getFullYear()} Passarola
+						&copy; {new Date().getFullYear()} TiêIA
 					</span>
 					<span className="text-xs text-muted-foreground/60">
 						Forked from{" "}
@@ -134,43 +135,15 @@ export function Footer() {
 	);
 }
 
-export function PassarolaLogo({ size = 26 }: { size?: number }) {
+export function TieiaLogo({ size = 26 }: { size?: number }) {
 	return (
-		<svg aria-hidden="true"
+		<Image
+			src="/icons/icon-192x192.png"
+			alt=""
+			aria-hidden="true"
 			width={size}
 			height={size}
-			viewBox="0 0 48 48"
-			fill="none"
 			className="shrink-0"
-		>
-			<defs>
-				<linearGradient id="oc-bg" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
-					<stop offset="0%" stopColor="#2567EC" />
-					<stop offset="100%" stopColor="#37B6F7" />
-				</linearGradient>
-				<linearGradient id="oc-spark" x1="32" y1="4" x2="44" y2="18" gradientUnits="userSpaceOnUse">
-					<stop offset="0%" stopColor="#FFF" />
-					<stop offset="100%" stopColor="#FFD96A" />
-				</linearGradient>
-			</defs>
-
-			{/* Rounded square bg */}
-			<rect x="2" y="2" width="44" height="44" rx="13" fill="url(#oc-bg)" />
-
-			{/* Top highlight */}
-			<rect x="2" y="2" width="44" height="22" rx="13" fill="white" opacity="0.07" />
-
-			{/* Play triangle */}
-			<path d="M19 14L19 34L35 24L19 14Z" fill="white" />
-
-			{/* AI sparkle */}
-			<path
-				d="M38.5 7L40 11.5L44 13L40 14.5L38.5 19L37 14.5L33 13L37 11.5L38.5 7Z"
-				fill="url(#oc-spark)"
-			/>
-
-			{/* Small sparkle */}
-			<circle cx="9" cy="8" r="1.5" fill="white" opacity="0.4" />
-		</svg>
+		/>
 	);
 }

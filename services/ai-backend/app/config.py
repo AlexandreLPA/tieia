@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     AI_MODEL_TIER: str = "auto"  # "lite", "standard", "pro", "auto"
     AI_LLM_BACKEND: str = "auto"  # "ollama", "turboquant", "openrouter", "auto" (TQ with KV-cache optimization when available, else Ollama)
 
-    # OpenRouter (cloud LLM, used only for this Passarola instance's own chat/scoring —
+    # OpenRouter (cloud LLM, used only for this TiêIA instance's own chat/scoring —
     # unrelated codebases never call this). Only active when AI_LLM_BACKEND="openrouter"
     # AND a key is set below; empty key = silently behaves exactly like before (Ollama).
     OPENROUTER_API_KEY: str = ""

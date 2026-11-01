@@ -221,7 +221,7 @@ export function VoiceoverView() {
 			selectVoice(pick?.name ?? null);
 		} catch {
 			setVoicesUnavailable(
-				"O serviço de voz (Chatterbox) não respondeu. Ele liga junto com a Passarola pelo atalho; se continuar assim, rode no terminal: docker compose up -d chatterbox-service",
+				"O serviço de voz (Chatterbox) não respondeu. Ele liga junto com a TiêIA pelo atalho; se continuar assim, rode no terminal: docker compose up -d chatterbox-service",
 			);
 		} finally {
 			setVoicesLoading(false);

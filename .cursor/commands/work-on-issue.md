@@ -1,6 +1,6 @@
-# Work on Passarola Issue
+# Work on TiêIA Issue
 
-Work on the specified issue from the Passarola issue tracker.
+Work on the specified issue from the TiêIA issue tracker.
 
 ## Instructions
 

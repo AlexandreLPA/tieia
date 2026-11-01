@@ -1,6 +1,6 @@
-# Passarola Project Status
+# TiêIA Project Status
 
-Check the current implementation status of the Passarola project.
+Check the current implementation status of the TiêIA project.
 
 ## Instructions
 

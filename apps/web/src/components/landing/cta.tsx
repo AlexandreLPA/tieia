@@ -7,7 +7,7 @@ import { ArrowRight, Check, Copy } from "lucide-react";
 import Link from "next/link";
 import { SOCIAL_LINKS } from "@/constants/site-constants";
 
-const INSTALL_COMMAND = `git clone https://github.com/Ekaanth/OpenCut-AI.git && cd OpenCut-AI && docker compose up -d`;
+const INSTALL_COMMAND = `git clone https://github.com/AlexandreLPA/tieia.git && cd tieia && docker compose up -d`;
 
 export function CTA() {
 	const ref = useRef<HTMLDivElement>(null);
@@ -140,12 +140,12 @@ function TerminalBlock() {
 					<div className="whitespace-nowrap">
 						<span className="text-[#8b949e]">$ </span>
 						<span className="text-[#7ee787]">git clone </span>
-						<span className="text-[#79c0ff]">https://github.com/Ekaanth/OpenCut-AI.git</span>
+						<span className="text-[#79c0ff]">https://github.com/AlexandreLPA/tieia.git</span>
 					</div>
 					<div className="whitespace-nowrap">
 						<span className="text-[#8b949e]">$ </span>
 						<span className="text-[#7ee787]">cd </span>
-						<span className="text-[#e6edf3]">OpenCut-AI</span>
+						<span className="text-[#e6edf3]">tieia</span>
 					</div>
 					<div className="whitespace-nowrap">
 						<span className="text-[#8b949e]">$ </span>

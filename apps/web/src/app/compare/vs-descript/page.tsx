@@ -4,22 +4,22 @@ import { BasePage } from "@/app/base-page";
 import { SITE_URL } from "@/constants/site-constants";
 
 export const metadata: Metadata = {
-	title: "Passarola vs Descript — Privacy-First Open Source Alternative",
+	title: "TiêIA vs Descript — Privacy-First Open Source Alternative",
 	description:
-		"Passarola is the free, open-source, self-hosted alternative to Descript. Compare features: AI transcription, text-based editing, filler word removal, voice cloning, multi-speaker detection, and 22 Indian languages. No cloud. No subscription. No data leaves your machine.",
+		"TiêIA is the free, open-source, self-hosted alternative to Descript. Compare features: AI transcription, text-based editing, filler word removal, voice cloning, multi-speaker detection, and 22 Indian languages. No cloud. No subscription. No data leaves your machine.",
 	alternates: {
 		canonical: `${SITE_URL}/compare/vs-descript`,
 	},
 	openGraph: {
-		title: "Passarola vs Descript — Privacy-First Open Source Alternative",
+		title: "TiêIA vs Descript — Privacy-First Open Source Alternative",
 		description:
-			"Descript charges $24–65/mo and sends your media to the cloud. Passarola is free, self-hosted, open source, and runs 100% locally.",
+			"Descript charges $24–65/mo and sends your media to the cloud. TiêIA is free, self-hosted, open source, and runs 100% locally.",
 		url: `${SITE_URL}/compare/vs-descript`,
 		type: "website",
 	},
 	twitter: {
 		card: "summary_large_image",
-		title: "Passarola vs Descript",
+		title: "TiêIA vs Descript",
 		description:
 			"Free, open-source, self-hosted alternative to Descript. 100% local. No subscription.",
 	},
@@ -105,10 +105,10 @@ export default function VsDescriptPage() {
 			<div className="flex flex-col gap-12">
 				<header className="text-center flex flex-col gap-6">
 					<h1 className="text-4xl md:text-5xl font-bold tracking-tight">
-						Passarola vs Descript
+						TiêIA vs Descript
 					</h1>
 					<p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-						Descript pioneered text-based video editing. Passarola takes it further — 
+						Descript pioneered text-based video editing. TiêIA takes it further — 
 						with <strong>AI dubbing in 37 languages</strong>, <strong>B-roll generation</strong>, 
 						and <strong>100% local processing</strong>. Free, open-source, and self-hosted.
 					</p>
@@ -117,10 +117,10 @@ export default function VsDescriptPage() {
 							href="/editor"
 							className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90"
 						>
-							Try Passarola Free
+							Try TiêIA Free
 						</Link>
 						<Link
-							href="https://github.com/Ekaanth/OpenCut-AI"
+							href="https://github.com/AlexandreLPA/tieia"
 							target="_blank"
 							rel="noopener noreferrer"
 							className="inline-flex items-center justify-center rounded-md border px-6 py-3 text-sm font-medium hover:bg-accent"
@@ -140,7 +140,7 @@ export default function VsDescriptPage() {
 										<tr className="bg-muted/50">
 											<th className="text-left px-4 py-2.5 font-medium">Feature</th>
 											<th className="text-center px-4 py-2.5 font-medium text-primary">
-												Passarola
+												TiêIA
 											</th>
 											<th className="text-center px-4 py-2.5 font-medium text-muted-foreground">
 												Descript
@@ -173,7 +173,7 @@ export default function VsDescriptPage() {
 						<div>
 							<h3 className="font-semibold mb-1">Privacy by default</h3>
 							<p className="text-sm text-muted-foreground">
-								Descript uploads every recording to their cloud. Passarola processes everything 
+								Descript uploads every recording to their cloud. TiêIA processes everything 
 								on your machine. No server, no API calls, no data leaves your device. Ideal for 
 								journalists, enterprises, and privacy-conscious creators.
 							</p>
@@ -181,14 +181,14 @@ export default function VsDescriptPage() {
 						<div>
 							<h3 className="font-semibold mb-1">Save $288–780/year</h3>
 							<p className="text-sm text-muted-foreground">
-								Descript&apos;s Hobby plan is $24/mo and Pro is $65/mo. Passarola is free forever 
+								Descript&apos;s Hobby plan is $24/mo and Pro is $65/mo. TiêIA is free forever 
 								with all features unlocked. No watermarks, no time limits, no credit system.
 							</p>
 						</div>
 						<div>
 							<h3 className="font-semibold mb-1">37 languages, 22 Indian</h3>
 							<p className="text-sm text-muted-foreground">
-								Via Sarvam AI and Smallest AI, Passarola supports transcription, translation, 
+								Via Sarvam AI and Smallest AI, TiêIA supports transcription, translation, 
 								and AI dubbing in 22 Indian languages + 15 international languages. Descript 
 								offers none of this.
 							</p>
@@ -200,20 +200,20 @@ export default function VsDescriptPage() {
 					<h2 className="text-2xl font-bold">Frequently Asked Questions</h2>
 					<div className="max-w-2xl mx-auto space-y-4 text-left">
 						<FAQ
-							question="Can I import my Descript projects into Passarola?"
-							answer="Not directly, but you can import the same source media files. Passarola supports all common video, audio, and image formats."
+							question="Can I import my Descript projects into TiêIA?"
+							answer="Not directly, but you can import the same source media files. TiêIA supports all common video, audio, and image formats."
 						/>
 						<FAQ
-							question="Does Passarola have screen recording like Descript?"
-							answer="Passarola focuses on editing rather than recording. You can bring in screen recordings from OBS or any other tool and edit them with all AI features."
+							question="Does TiêIA have screen recording like Descript?"
+							answer="TiêIA focuses on editing rather than recording. You can bring in screen recordings from OBS or any other tool and edit them with all AI features."
 						/>
 						<FAQ
 							question="Is the AI transcription as accurate as Descript?"
-							answer="Passarola uses Faster Whisper (CTranslate2), which provides state-of-the-art accuracy matching or exceeding cloud-based services. It runs locally on your hardware."
+							answer="TiêIA uses Faster Whisper (CTranslate2), which provides state-of-the-art accuracy matching or exceeding cloud-based services. It runs locally on your hardware."
 						/>
 						<FAQ
 							question="Can my team collaborate like we do in Descript?"
-							answer="Passarola is designed for individual use right now. For team workflows, you can self-host and share projects via file sync. Multi-user collaboration is on the roadmap."
+							answer="TiêIA is designed for individual use right now. For team workflows, you can self-host and share projects via file sync. Multi-user collaboration is on the roadmap."
 						/>
 					</div>
 				</section>

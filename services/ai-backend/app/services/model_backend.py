@@ -1,6 +1,6 @@
 """Unified LLM backend abstraction — routes requests to Ollama or TurboQuant.
 
-This module provides a single interface for all LLM inference in Passarola.
+This module provides a single interface for all LLM inference in TiêIA.
 When TurboQuant is enabled (and its service is reachable), requests are routed
 through the TurboQuant inference service for KV cache compression. Otherwise,
 they fall back to Ollama.
@@ -534,7 +534,7 @@ class LLMBackend:
     def _or_headers(self) -> dict[str, str]:
         return {
             "Authorization": f"Bearer {settings.OPENROUTER_API_KEY}",
-            "X-Title": "Passarola",
+            "X-Title": "TieIA",
         }
 
     @staticmethod

@@ -10,13 +10,13 @@ import { Separator } from "@/components/ui/separator";
 import { SOCIAL_LINKS } from "@/constants/site-constants";
 
 export const metadata: Metadata = {
-	title: "Privacy Policy - Passarola",
+	title: "Privacy Policy - TiêIA",
 	description:
-		"Learn how Passarola handles your data and privacy. Our commitment to protecting your information while you edit videos.",
+		"Learn how TiêIA handles your data and privacy. Our commitment to protecting your information while you edit videos.",
 	openGraph: {
-		title: "Privacy Policy - Passarola",
+		title: "Privacy Policy - TiêIA",
 		description:
-			"Learn how Passarola handles your data and privacy. Our commitment to protecting your information while you edit videos.",
+			"Learn how TiêIA handles your data and privacy. Our commitment to protecting your information while you edit videos.",
 		type: "website",
 	},
 };
@@ -62,7 +62,7 @@ export default function PrivacyPage() {
 				<h2 className="text-2xl font-semibold">How We Handle Your Content</h2>
 				<p>
 					<strong>Everything runs locally.</strong>{" "}
-					Passarola is a self-hosted application. All video editing, AI transcription,
+					TiêIA is a self-hosted application. All video editing, AI transcription,
 					voice generation, image generation, and other AI features run on your
 					machine or your self-hosted server. No data is sent to any external cloud service.
 				</p>
@@ -117,7 +117,7 @@ export default function PrivacyPage() {
 			<section className="flex flex-col gap-3">
 				<h2 className="text-2xl font-semibold">Analytics & Tracking</h2>
 				<p>
-					Passarola does not include any analytics, telemetry, or tracking.
+					TiêIA does not include any analytics, telemetry, or tracking.
 					No data is sent to any external service. The application operates
 					entirely offline once loaded.
 				</p>
@@ -139,7 +139,7 @@ export default function PrivacyPage() {
 
 			<section className="flex flex-col gap-3">
 				<h2 className="text-2xl font-semibold">Third-Party Services</h2>
-				<p>By default, Passarola does not connect to any third-party services. Optional integrations:</p>
+				<p>By default, TiêIA does not connect to any third-party services. Optional integrations:</p>
 				<ul className="list-disc space-y-2 pl-6">
 					<li>
 						<strong>Freesound:</strong> Sound library search (requires API key in Settings)
@@ -168,7 +168,7 @@ export default function PrivacyPage() {
 			<section className="flex flex-col gap-3">
 				<h2 className="text-2xl font-semibold">Open Source Transparency</h2>
 				<p>
-					Passarola is completely open source. You can review our code, see
+					TiêIA is completely open source. You can review our code, see
 					exactly how we handle data, and even self-host the application if you
 					prefer.
 				</p>

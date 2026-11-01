@@ -10,7 +10,7 @@ Sem `TIKTOK_CLIENT_KEY` e `TIKTOK_CLIENT_SECRET`, a camada 2 fica escondida.
 ## Endereço de retorno (redirect URI)
 
 O Login Kit **Web** exige redirect URI em `https` ([doc](https://developers.tiktok.com/doc/login-kit-web)), então não serve para `http://localhost:3100`.
-O Login Kit **Desktop** aceita `http://localhost` e `http://127.0.0.1` com porta, usando PKCE ([doc](https://developers.tiktok.com/doc/login-kit-desktop)). A Passarola usa esse fluxo.
+O Login Kit **Desktop** aceita `http://localhost` e `http://127.0.0.1` com porta, usando PKCE ([doc](https://developers.tiktok.com/doc/login-kit-desktop)). A TiêIA usa esse fluxo.
 
 Cadastre exatamente (sem barra no fim):
 
@@ -40,7 +40,7 @@ Se o portal do TikTok recusar o endereço local, a alternativa documentada é o 
    ```
 
    No Docker (`--profile docker-web`), passe as mesmas variáveis no ambiente.
-10. Reinicie o editor: atalho "Fechar Passarola" e abra de novo (ou `scripts/start-opencut.ps1 -Stop` e depois sem `-Stop`).
+10. Reinicie o editor: atalho "Fechar TiêIA" e abra de novo (ou `scripts/start-opencut.ps1 -Stop` e depois sem `-Stop`).
 11. Para uso fora do sandbox, envie o app para revisão (**Submit for review**). O TikTok pede política de privacidade, termos e um vídeo mostrando o fluxo.
 
 ## Detalhes

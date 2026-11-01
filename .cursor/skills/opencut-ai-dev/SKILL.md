@@ -1,9 +1,9 @@
 ---
 name: opencut-ai-dev
-description: Full project context for Passarola — architecture, conventions, store shapes, API patterns, and coding standards. Use when working on any Passarola feature to get instant project context.
+description: Full project context for TiêIA — architecture, conventions, store shapes, API patterns, and coding standards. Use when working on any TiêIA feature to get instant project context.
 ---
 
-This skill provides complete context for the Passarola project — an AI-enhanced fork of the OpenCut video editor that adds text-based editing, transcription, image generation, voiceover, and natural language commands.
+This skill provides complete context for the TiêIA project — an AI-enhanced fork of the OpenCut video editor that adds text-based editing, transcription, image generation, voiceover, and natural language commands.
 
 ## Tech Stack
 

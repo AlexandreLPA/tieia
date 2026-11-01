@@ -2,13 +2,13 @@
 export const SITE_URL = "http://localhost:3000";
 
 export const SITE_INFO = {
-	title: "Passarola",
+	title: "TiêIA",
 	description:
 		"Editor de vídeo com IA que conta com gerador de clipes de podcast, detecção de múltiplos locutores, legendas estilo karaokê com efeito word-pop, reenquadramento automático para TikTok/Shorts, kits de marca, clonagem de voz e suporte a 22 idiomas indianos via Sarvam AI. 100% local, código aberto, sem nuvem.",
 	url: SITE_URL,
 	openGraphImage: "/open-graph/default.jpg",
 	twitterImage: "/open-graph/default.jpg",
-	favicon: "/favicon.svg",
+	favicon: "/favicon.ico",
 };
 
 export type ExternalTool = {
@@ -21,13 +21,13 @@ export type ExternalTool = {
 export const EXTERNAL_TOOLS: ExternalTool[] = [
 	{
 		name: "Claude (Opus 4.6)",
-		description: "O modelo mais capaz da Anthropic. Usado para construir toda a camada de IA da Passarola.",
+		description: "O modelo mais capaz da Anthropic. Usado para construir toda a camada de IA da TiêIA.",
 		url: "https://claude.ai",
 		logo: "/logos/tools/claude.png",
 	},
 	{
 		name: "Cursor",
-		description: "Editor de código com IA. O IDE usado para desenvolver a Passarola com integração ao Claude.",
+		description: "Editor de código com IA. O IDE usado para desenvolver a TiêIA com integração ao Claude.",
 		url: "https://cursor.com",
 		logo: "/logos/tools/cursor.png",
 	},
@@ -67,7 +67,7 @@ export const DEFAULT_LOGO_URL = "/logos/opencut/svg/logo.svg";
 
 export const SOCIAL_LINKS = {
 	x: "https://x.com/humblefool",
-	github: "https://github.com/Ekaanth/OpenCut-AI",
+	github: "https://github.com/AlexandreLPA/tieia",
 };
 
 /** Link back to the upstream project we forked from */

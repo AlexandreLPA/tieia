@@ -48,7 +48,7 @@ const ASSET_SECTIONS: AssetSection[] = [
 	{
 		title: "Symbol",
 		description:
-			"Use the symbol on its own when the Passarola name is already present nearby or space is limited.",
+			"Use the symbol on its own when the TiêIA name is already present nearby or space is limited.",
 		cols: "2",
 		assets: [
 			{
@@ -112,7 +112,7 @@ export default function BrandPage() {
 			title="Brand"
 			description={
 				<>
-					Download Passarola brand assets for use in your projects.{" "}
+					Download TiêIA brand assets for use in your projects.{" "}
 					<Link
 						href="#guidelines"
 						className="underline underline-offset-4"
@@ -173,10 +173,10 @@ export default function BrandPage() {
 				<div className="flex flex-col gap-3">
 					<h2 className="font-semibold text-lg">Usage</h2>
 					<p className="text-muted-foreground text-base leading-relaxed">
-						Passarola is open source — the code is free to use under its license.
+						TiêIA is open source — the code is free to use under its license.
 						That license does not cover the name or logo. You can say you use
-						Passarola, that your project integrates with Passarola, or that it was
-						built on top of Passarola. You cannot name your product Passarola, imply
+						TiêIA, that your project integrates with TiêIA, or that it was
+						built on top of TiêIA. You cannot name your product TiêIA, imply
 						we made or endorse your product, or use the marks commercially
 						without asking first. For anything unclear, reach out at{" "}
 						<Link
@@ -193,8 +193,8 @@ export default function BrandPage() {
 					<h2 className="font-semibold text-lg">What's not allowed</h2>
 					<ul className="text-muted-foreground text-base flex flex-col gap-2 leading-relaxed">
 						{[
-							"Using Passarola in the name of your product, service, or domain.",
-							"Implying that Passarola made, sponsors, or endorses your work.",
+							"Using TiêIA in the name of your product, service, or domain.",
+							"Implying that TiêIA made, sponsors, or endorses your work.",
 							"Using the logo or name on merchandise or commercial marketing.",
 							"Modifying the marks.",
 						].map((item) => (

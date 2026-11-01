@@ -1,4 +1,4 @@
-"""Entry point for the Passarola Backend service."""
+"""Entry point for the TiêIA Backend service."""
 
 import uvicorn
 

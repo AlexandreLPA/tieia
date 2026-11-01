@@ -45,9 +45,9 @@ export const baseMetaData: Metadata = {
 		"multilingual Indian video editing",
 		"22 Indian languages",
 	],
-	authors: [{ name: "Passarola" }],
-	creator: "Passarola",
-	publisher: "Passarola",
+	authors: [{ name: "TiêIA" }],
+	creator: "TiêIA",
+	publisher: "TiêIA",
 	applicationName: SITE_INFO.title,
 	category: "Technology",
 	classification: "Video Editing Software",
@@ -66,7 +66,7 @@ export const baseMetaData: Metadata = {
 				url: SITE_INFO.openGraphImage,
 				width: 1200,
 				height: 630,
-				alt: "Passarola — AI-powered open source video editor with podcast clip generator, multi-speaker detection, and word-pop subtitles",
+				alt: "TiêIA — AI-powered open source video editor with podcast clip generator, multi-speaker detection, and word-pop subtitles",
 			},
 		],
 	},
@@ -94,7 +94,6 @@ export const baseMetaData: Metadata = {
 	},
 	icons: {
 		icon: [
-			{ url: "/favicon.svg", type: "image/svg+xml" },
 			{ url: "/icons/favicon-16x16.png", sizes: "16x16", type: "image/png" },
 			{ url: "/icons/favicon-32x32.png", sizes: "32x32", type: "image/png" },
 			{ url: "/icons/favicon-96x96.png", sizes: "96x96", type: "image/png" },
@@ -112,7 +111,7 @@ export const baseMetaData: Metadata = {
 			{ url: "/icons/apple-icon-152x152.png", sizes: "152x152", type: "image/png" },
 			{ url: "/icons/apple-icon-180x180.png", sizes: "180x180", type: "image/png" },
 		],
-		shortcut: ["/favicon.svg"],
+		shortcut: ["/favicon.ico"],
 	},
 	appleWebApp: {
 		capable: true,

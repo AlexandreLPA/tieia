@@ -1,4 +1,4 @@
-﻿# Starts Passarola and opens the editor window.
+﻿# Starts TiêIA and opens the editor window.
 #
 # - Docker runs the AI services, the database and Redis (heavy Python/GPU
 #   dependencies that don't install well on Windows).
@@ -161,8 +161,8 @@ if (-not $running) {
     # New or changed dependencies: install them before building or serving
     $currentDeps = Get-DepsStamp
     if ($depsStamp -ne $currentDeps -or -not (Test-Path (Join-Path $repo 'node_modules'))) {
-        $installCommand = "`$host.UI.RawUI.WindowTitle = 'Passarola - instalando'; " +
-            "Write-Host 'Instalando as dependências novas da Passarola...'; " +
+        $installCommand = "`$host.UI.RawUI.WindowTitle = 'TiêIA - instalando'; " +
+            "Write-Host 'Instalando as dependências novas da TiêIA...'; " +
             "Set-Location '$repo'; " +
             "& '$bun' install --frozen-lockfile; " +
             "if (`$LASTEXITCODE -ne 0) { Write-Host ''; Write-Host 'A instalação falhou.'; Start-Sleep -Seconds 8 }; " +
@@ -173,14 +173,14 @@ if (-not $running) {
     $hasBuild = Test-Path (Join-Path $webDir '.next\BUILD_ID')
 
     if ($mode -eq 'prod' -and ($buildStamp -ne $stamp -or -not $hasBuild)) {
-        $buildCommand = "`$host.UI.RawUI.WindowTitle = 'Passarola - preparando'; " +
-            "Write-Host 'Preparando a Passarola com as últimas mudanças (cerca de 30 s)...'; " +
+        $buildCommand = "`$host.UI.RawUI.WindowTitle = 'TiêIA - preparando'; " +
+            "Write-Host 'Preparando a TiêIA com as últimas mudanças (cerca de 30 s)...'; " +
             "`$env:OPENCUT_LOCAL_BUILD = '1'; " +
             "`$env:NEXT_PUBLIC_SITE_URL = '$url'; " +
             "`$env:NEXT_TELEMETRY_DISABLED = '1'; " +
             "Set-Location '$webDir'; " +
             "& '$bun' x next build; " +
-            "if (`$LASTEXITCODE -ne 0) { Write-Host ''; Write-Host 'A preparação falhou. A Passarola vai abrir no modo de desenvolvimento.'; Start-Sleep -Seconds 8 }; " +
+            "if (`$LASTEXITCODE -ne 0) { Write-Host ''; Write-Host 'A preparação falhou. A TiêIA vai abrir no modo de desenvolvimento.'; Start-Sleep -Seconds 8 }; " +
             "exit `$LASTEXITCODE"
         $build = Start-Process powershell -ArgumentList '-NoProfile', '-Command', $buildCommand -PassThru -Wait
         if ($build.ExitCode -eq 0) {
@@ -199,7 +199,7 @@ if (-not $running) {
             "& '$bun' x next dev --turbopack --hostname 127.0.0.1 --port $port"
     }
     New-Item -ItemType Directory -Force -Path $stateDir | Out-Null
-    # Hidden: nothing to close by accident. The "Fechar Passarola" shortcut (-Stop) ends it
+    # Hidden: nothing to close by accident. The "Fechar TiêIA" shortcut (-Stop) ends it
     $command = "Set-Location '$webDir'; $serve *> '$logFile'"
     $server = Start-Process powershell -ArgumentList '-NoProfile', '-Command', $command -WindowStyle Hidden -PassThru
     Write-State ([pscustomobject]@{ pid = $server.Id; mode = $mode; stamp = $stamp; buildStamp = $buildStamp; depsStamp = $depsStamp })

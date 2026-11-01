@@ -52,7 +52,7 @@ export function MobileGate({ children }: MobileGateProps) {
 						Somente no computador (por enquanto)
 					</h1>
 					<p className="text-muted-foreground text-sm leading-relaxed">
-						A Passarola precisa de um computador para rodar modelos de IA
+						A TiêIA precisa de um computador para rodar modelos de IA
 						localmente e renderizar o editor de linha do tempo completo. Volte
 						em um computador para ter a experiência completa.
 					</p>

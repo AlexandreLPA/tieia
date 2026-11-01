@@ -2,7 +2,7 @@
 
 ## Overview
 
-Privacy-first video editor, with a focus on simplicity and ease of use.
+TiêIA (technical name `tieia`) is a privacy-first, AI-native video editor, with a focus on simplicity and ease of use. It is a fork of OpenCut.
 
 ## Lib vs Utils
 

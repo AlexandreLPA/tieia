@@ -11,25 +11,25 @@ import {
 } from "./components/release";
 
 export const metadata: Metadata = {
-	title: "Changelog - Passarola",
-	description: "What's new in Passarola",
+	title: "Changelog - TiêIA",
+	description: "What's new in TiêIA",
 	openGraph: {
-		title: "Changelog - Passarola",
-		description: "Every update, improvement, and fix to Passarola — documented.",
+		title: "Changelog - TiêIA",
+		description: "Every update, improvement, and fix to TiêIA — documented.",
 		type: "website",
 		images: [
 			{
 				url: "/open-graph/changlog.jpg",
 				width: 1200,
 				height: 630,
-				alt: "Passarola Changelog",
+				alt: "TiêIA Changelog",
 			},
 		],
 	},
 	twitter: {
 		card: "summary_large_image",
-		title: "Changelog - Passarola",
-		description: "What's new in Passarola",
+		title: "Changelog - TiêIA",
+		description: "What's new in TiêIA",
 		images: ["/open-graph/changlog.jpg"],
 	},
 };
@@ -38,7 +38,7 @@ export default function ChangelogPage() {
 	const releases = getSortedReleases();
 
 	return (
-		<BasePage title="Changelog" description="See what's new in Passarola">
+		<BasePage title="Changelog" description="See what's new in TiêIA">
 			<div className="mx-auto w-full max-w-3xl">
 				<div className="relative">
 					<div

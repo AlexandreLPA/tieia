@@ -35,7 +35,7 @@ import { ReferenceFixes } from "./reference-fixes";
 const READING_SCRIPT =
 	"Oi! Estou gravando a minha voz para usar nos meus vídeos. Vou falar com calma, do meu jeito natural, como se estivesse contando uma novidade para um amigo. Hoje eu quero mostrar uma coisa que vale muito a pena conferir.";
 const GOOD_SECONDS = 12;
-const TEST_SENTENCE = "Oi! Esta é a minha voz clonada na Passarola. Ficou parecida?";
+const TEST_SENTENCE = "Oi! Esta é a minha voz clonada na TiêIA. Ficou parecida?";
 
 const STATUS_DOT = {
 	ok: "bg-green-500",

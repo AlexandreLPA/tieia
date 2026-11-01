@@ -37,7 +37,7 @@ if ! docker info &>/dev/null; then
 fi
 
 # --- Start services ---
-log_info "Starting all Passarola services (db, redis, ollama, ai-backend, web)..."
+log_info "Starting all TiêIA services (db, redis, ollama, ai-backend, web)..."
 cd "$PROJECT_ROOT"
 
 docker compose up -d --build
@@ -69,7 +69,7 @@ fi
 
 # --- Print service status ---
 echo ""
-log_info "===== Passarola Service Status ====="
+log_info "===== TiêIA Service Status ====="
 docker compose ps --format "table {{.Name}}\t{{.Status}}\t{{.Ports}}"
 echo ""
 

@@ -32,13 +32,13 @@ export function Onboarding() {
 		<Dialog open={isOpen} onOpenChange={handleClose}>
 			<DialogContent className="sm:max-w-md">
 				<DialogTitle>
-					<span className="sr-only">Bem-vindo à Passarola</span>
+					<span className="sr-only">Bem-vindo à TiêIA</span>
 				</DialogTitle>
 				<DialogBody>
 					{step === 0 && (
 						<div className="flex flex-col gap-5">
 							<div className="flex flex-col gap-2">
-								<h2 className="text-lg font-bold">Bem-vindo à Passarola</h2>
+								<h2 className="text-lg font-bold">Bem-vindo à TiêIA</h2>
 								<p className="text-sm text-muted-foreground leading-relaxed">
 									Este é um fork do OpenCut com IA adicionada. Edite vídeo
 									por texto, gere imagens, clone vozes e comande a linha do
