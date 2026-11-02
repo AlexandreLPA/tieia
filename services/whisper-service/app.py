@@ -24,6 +24,8 @@ WHISPER_MODEL_SIZE = os.getenv("WHISPER_MODEL_SIZE", "base")
 WHISPER_DEVICE = os.getenv("WHISPER_DEVICE", "cpu")
 WHISPER_COMPUTE_TYPE = os.getenv("WHISPER_COMPUTE_TYPE", "int8")
 UPLOAD_DIR = os.getenv("UPLOAD_DIR", "uploads")
+# Silences shorter than this stay inside a segment; speech keeps this margin
+VAD_PARAMETERS = {"min_silence_duration_ms": 500, "speech_pad_ms": 200}
 
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
@@ -211,18 +213,34 @@ class WhisperService:
     def _transcribe_once(
         self, audio_path: str, language: str | None
     ) -> TranscriptionResult:
+        from faster_whisper.audio import decode_audio
+        from faster_whisper.vad import VadOptions, get_speech_timestamps
+
         logger.info("Transcribing '%s' (language=%s)...", audio_path, language or "auto")
 
+        sampling_rate = self._model.feature_extractor.sampling_rate
+        audio = decode_audio(audio_path, sampling_rate=sampling_rate)
+
+        # With no speech the VAD leaves nothing, and faster-whisper 1.0.3's
+        # language detection then fails on max() of an empty dict. Nothing to
+        # transcribe is a valid result, not an error.
+        if not get_speech_timestamps(audio, VadOptions(**VAD_PARAMETERS)):
+            duration = len(audio) / sampling_rate
+            logger.info("No speech in '%s' (%.1fs); nothing to transcribe", audio_path, duration)
+            return TranscriptionResult(
+                text="",
+                segments=[],
+                language=language or "",
+                duration=round(duration, 3),
+            )
+
         segments_iter, info = self._model.transcribe(
-            audio_path,
+            audio,
             language=language,
             beam_size=5,
             word_timestamps=True,
             vad_filter=True,
-            vad_parameters={
-                "min_silence_duration_ms": 500,
-                "speech_pad_ms": 200,
-            },
+            vad_parameters=VAD_PARAMETERS,
         )
 
         segments: list[TranscriptionSegment] = []
