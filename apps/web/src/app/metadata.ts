@@ -4,7 +4,7 @@ import { SITE_INFO, SITE_URL } from "@/constants/site-constants";
 export const baseMetaData: Metadata = {
 	metadataBase: new URL(SITE_URL),
 	title: {
-		default: `${SITE_INFO.title} — AI-Powered Video Editor for Podcast Clips`,
+		default: `${SITE_INFO.title} — editor de vídeo com IA, local-first`,
 		template: `%s | ${SITE_INFO.title}`,
 	},
 	description: SITE_INFO.description,
@@ -27,7 +27,7 @@ export const baseMetaData: Metadata = {
 		"AI transcription",
 		"Whisper transcription",
 		"local AI video editing",
-		"no cloud video editor",
+		"local-first video editor",
 		"brand kit video editor",
 		"face detection auto crop",
 		"emotion detection audio",
@@ -55,7 +55,7 @@ export const baseMetaData: Metadata = {
 		canonical: SITE_URL,
 	},
 	openGraph: {
-		title: `${SITE_INFO.title} — AI-Powered Video Editor`,
+		title: `${SITE_INFO.title} — editor de vídeo com IA, local-first`,
 		description: SITE_INFO.description,
 		url: SITE_URL,
 		siteName: SITE_INFO.title,
@@ -66,14 +66,14 @@ export const baseMetaData: Metadata = {
 				url: SITE_INFO.openGraphImage,
 				width: 1200,
 				height: 630,
-				alt: "TiêIA — AI-powered open source video editor with podcast clip generator, multi-speaker detection, and word-pop subtitles",
+				alt: "TiêIA, editor de vídeo open source com IA",
 			},
 		],
 	},
 	twitter: {
 		card: "summary_large_image",
 		title: `${SITE_INFO.title} — AI Video Editor`,
-		description: "Turn long podcasts into viral clips. Multi-speaker detection, word-pop subtitles, auto-reframe for Shorts. 22 Indian languages via Sarvam AI. 100% local, open source.",
+		description: SITE_INFO.description,
 		creator: "@humblefool",
 		site: "@humblefool",
 		images: [SITE_INFO.twitterImage],

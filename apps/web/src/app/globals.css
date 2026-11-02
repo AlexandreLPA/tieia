@@ -111,6 +111,30 @@
 	--ring: hsl(0, 0%, 52%);
 }
 
+/* TiêIA brand: the landing page and the header/footer it wraps. The editor
+   keeps its own tokens. Values are documented in DESIGN.md. */
+.tieia-brand {
+	--tie-red: #d2021b; /* the icon's red: fills and the bird line */
+	--tie-red-ink: #b10018; /* red text on the light canvas */
+	--background: #ffffff;
+	--surface: #f8f6f7;
+	--foreground: #191516;
+	--muted-foreground: #5f5859;
+	--border: #e5e1e2;
+	--primary: var(--tie-red);
+	--primary-foreground: #ffffff;
+	--ring: var(--tie-red);
+}
+
+.dark .tieia-brand {
+	--tie-red-ink: #ff6b78;
+	--background: #131111;
+	--surface: #1b1819;
+	--foreground: #e9e7e7;
+	--muted-foreground: #a7a0a1;
+	--border: #2e292a;
+}
+
 @layer base {
 	/*
     The default border color has changed to `currentcolor` in Tailwind CSS v4,
@@ -147,6 +171,7 @@
 
 	/* Typography */
 	--font-sans: var(--font-inter), sans-serif;
+	--font-display: var(--font-archivo, sans-serif), sans-serif;
 
 	/* Font sizes */
 	--text-xs: 0.72rem;
@@ -173,6 +198,10 @@
 
 	--color-primary: var(--primary);
 	--color-primary-foreground: var(--primary-foreground);
+
+	--color-tie: var(--tie-red);
+	--color-tie-ink: var(--tie-red-ink);
+	--color-surface: var(--surface);
 	--color-secondary: var(--secondary);
 	--color-secondary-border: var(--secondary-border);
 	--color-secondary-foreground: var(--secondary-foreground);

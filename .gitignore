@@ -44,4 +44,5 @@ ai-generated/
 *.md
 !README.md
 !README.pt-BR.md
+!DESIGN.md
 !apps/web/content/changelog/**/*.md

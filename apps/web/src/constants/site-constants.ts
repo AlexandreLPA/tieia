@@ -4,7 +4,7 @@ export const SITE_URL = "http://localhost:3000";
 export const SITE_INFO = {
 	title: "TiêIA",
 	description:
-		"Editor de vídeo com IA que conta com gerador de clipes de podcast, detecção de múltiplos locutores, legendas estilo karaokê com efeito word-pop, reenquadramento automático para TikTok/Shorts, kits de marca, clonagem de voz e suporte a 22 idiomas indianos via Sarvam AI. 100% local, código aberto, sem nuvem.",
+		"Editor de vídeo open source com IA, local-first: a edição e os modelos de IA rodam na sua máquina. Legendas automáticas, voz clonada, cortes para Shorts e Reels e um chat que conhece o seu projeto.",
 	url: SITE_URL,
 	openGraphImage: "/open-graph/default.jpg",
 	twitterImage: "/open-graph/default.jpg",
