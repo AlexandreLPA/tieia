@@ -9,256 +9,169 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { SOCIAL_LINKS } from "@/constants/site-constants";
 
+const DESCRIPTION =
+	"Termos de uso da TiêIA, um editor de vídeo de código aberto (licença MIT) que você roda no seu computador.";
+
 export const metadata: Metadata = {
-	title: "Terms of Service - TiêIA",
-	description:
-		"TiêIA's Terms of Service. Fair, transparent terms for our free and open-source video editor.",
+	title: "Termos de uso - TiêIA",
+	description: DESCRIPTION,
 	openGraph: {
-		title: "Terms of Service - TiêIA",
-		description:
-			"TiêIA's Terms of Service. Fair, transparent terms for our free and open-source video editor.",
+		title: "Termos de uso - TiêIA",
+		description: DESCRIPTION,
 		type: "website",
 	},
 };
 
+const linkClass = "text-primary hover:underline";
+
 export default function TermsPage() {
+	// pt-BR inside an <html lang="en"> root; the brand palette as on the landing
 	return (
-		<BasePage
-			title="Terms of service"
-			description="Fair and transparent terms for our free, open-source video editor. Contact us if you have any questions."
-		>
-			<Accordion type="single" collapsible className="w-full">
-				<AccordionItem
-					value="quick-summary"
-					className="rounded-2xl border px-5"
-				>
-					<AccordionTrigger className="no-underline!">
-						Quick summary
-					</AccordionTrigger>
-					<AccordionContent>
-						<h3 className="mb-3 text-lg font-medium">
-							You own your content. Everything runs on your machine.
-						</h3>
-						<ol className="list-decimal space-y-2 pl-6">
-							<li>
-								All processing is local — your content never leaves your machine
-							</li>
-							<li>
-								We make no claims to your content, projects, or generated media
-							</li>
-							<li>
-								Free for personal and commercial use, no watermarks
-							</li>
-							<li>
-								Open source under MIT — review, modify, self-host freely
-							</li>
-							<li>
-								Software provided as-is with no warranties
-							</li>
-							<li>
-								No account required — works fully offline
-							</li>
-						</ol>
-					</AccordionContent>
-				</AccordionItem>
-			</Accordion>
-
-			<section className="flex flex-col gap-3">
-				<h2 className="text-2xl font-semibold">Your Content, Your Rights</h2>
-				<p>
-					<strong>You own everything you create.</strong> TiêIA runs entirely
-					on your machine. All video editing, AI transcription, voice generation,
-					and image generation happen locally. We have no access to your files,
-					projects, or generated content.
-				</p>
-				<ul className="list-disc space-y-2 pl-6">
-					<li>All processing happens on your hardware — nothing is uploaded</li>
-					<li>You retain all intellectual property rights to your content</li>
-					<li>AI-generated voiceovers, images, and subtitles belong to you</li>
-					<li>No watermarks, no licensing restrictions</li>
-					<li>Export and use your content however you choose</li>
-				</ul>
-			</section>
-
-			<section className="flex flex-col gap-3">
-				<h2 className="text-2xl font-semibold">How You Can Use TiêIA</h2>
-				<p>TiêIA is free for personal and commercial use. You can:</p>
-				<ul className="list-disc space-y-2 pl-6">
-					<li>
-						Create videos for personal, educational, or commercial purposes
-					</li>
-					<li>Use TiêIA for client work and paid projects</li>
-					<li>Share and distribute videos created with TiêIA</li>
-					<li>
-						Modify and distribute the TiêIA software (under MIT license)
-					</li>
-				</ul>
-				<p>
-					<strong>What we ask:</strong> Don't use TiêIA for illegal
-					activities, harassment, or creating harmful content. Be respectful of
-					others and follow applicable laws.
-				</p>
-			</section>
-
-			<section className="flex flex-col gap-3">
-				<h2 className="text-2xl font-semibold">
-					AI Features and Processing
-				</h2>
-				<p>
-					All AI features run locally on your machine via Docker containers:
-				</p>
-				<ul className="list-disc space-y-2 pl-6">
-					<li>
-						Transcription (Whisper), TTS (Coqui XTTS), LLM (Ollama), and image generation
-						(Stable Diffusion) run on your hardware
-					</li>
-					<li>No AI processing is done on external servers unless you explicitly configure API keys</li>
-					<li>
-						Open-source AI models can be swapped, updated, or removed at your discretion
-					</li>
-					<li>
-						Voice cloning uses only the audio samples you provide locally
-					</li>
-				</ul>
-				<p>
-					If you add optional external API keys (OpenAI, ElevenLabs, etc.),
-					those services process data per their own terms. This is your choice.
-				</p>
-			</section>
-
-			<section className="flex flex-col gap-3">
-				<h2 className="text-2xl font-semibold">Account and Service</h2>
-				<p>To use certain features, you may create an account:</p>
-				<ul className="list-disc space-y-2 pl-6">
-					<li>Provide accurate information when signing up</li>
-					<li>Keep your account secure and don't share credentials</li>
-					<li>You're responsible for activity under your account</li>
-					<li>You can delete your account at any time</li>
-				</ul>
-				<p>
-					TiêIA is provided "as is" without warranties. While we strive for
-					reliability, we can't guarantee uninterrupted service.
-				</p>
-			</section>
-
-			<section className="flex flex-col gap-3">
-				<h2 className="text-2xl font-semibold">Open Source Benefits</h2>
-				<p>Because TiêIA is open source, you have additional rights:</p>
-				<ul className="list-disc space-y-2 pl-6">
-					<li>Review our code to see exactly how we handle your data</li>
-					<li>Self-host TiêIA on your own servers</li>
-					<li>Modify the software to suit your needs</li>
-					<li>Contribute improvements back to the community</li>
-				</ul>
-				<p>
-					View our source code and license on{" "}
-					<a
-						href={SOCIAL_LINKS.github}
-						target="_blank"
-						rel="noopener"
-						className="text-primary hover:underline"
+		<div lang="pt-BR" className="tieia-brand">
+			<BasePage
+				title="Termos de uso"
+				description="As regras para usar a TiêIA. Última atualização: 1º de novembro de 2026."
+			>
+				<Accordion type="single" collapsible className="w-full">
+					<AccordionItem
+						value="quick-summary"
+						className="rounded-2xl border px-5"
 					>
-						GitHub
-					</a>
-					.
-				</p>
-			</section>
+						<AccordionTrigger className="no-underline!">
+							Resumo
+						</AccordionTrigger>
+						<AccordionContent>
+							<h3 className="mb-3 text-lg font-medium">
+								Software livre, sem conta e sem garantia.
+							</h3>
+							<ol className="list-decimal space-y-2 pl-6">
+								<li>
+									A TiêIA é gratuita e de código aberto, sob a licença MIT.
+								</li>
+								<li>
+									Ela roda no seu computador. Não há conta, assinatura nem
+									serviço on-line.
+								</li>
+								<li>
+									O seu conteúdo é seu. Você responde pelo que cria e publica.
+								</li>
+								<li>Só clone a voz de quem autorizou.</li>
+								<li>
+									O programa vem como está, sem garantia. Revise o que a IA
+									produz antes de publicar.
+								</li>
+							</ol>
+						</AccordionContent>
+					</AccordionItem>
+				</Accordion>
 
-			<section className="flex flex-col gap-3">
-				<h2 className="text-2xl font-semibold">Third-Party Content</h2>
-				<p>
-					When using TiêIA, make sure you have the right to use any content
-					you import:
-				</p>
-				<ul className="list-disc space-y-2 pl-6">
-					<li>Only upload content you own or have permission to use</li>
-					<li>
-						Respect copyright, trademarks, and other intellectual property
-					</li>
-					<li>
-						Don't use copyrighted music, images, or videos without permission
-					</li>
-					<li>You're responsible for any claims related to your content</li>
-				</ul>
-			</section>
+				<section className="flex flex-col gap-3">
+					<h2 className="text-2xl font-semibold">Licença</h2>
+					<p>
+						A TiêIA é distribuída sob a{" "}
+						<a
+							href={`${SOCIAL_LINKS.github}/blob/main/LICENSE`}
+							target="_blank"
+							rel="noopener"
+							className={linkClass}
+						>
+							licença MIT
+						</a>
+						. Você pode usar, copiar, modificar e distribuir o código, inclusive
+						para fins comerciais, desde que mantenha o aviso de copyright e a
+						licença. A TiêIA é um fork do OpenCut AI, que por sua vez é um fork
+						do OpenCut, ambos também sob a licença MIT.
+					</p>
+				</section>
 
-			<section className="flex flex-col gap-3">
-				<h2 className="text-2xl font-semibold">Limitations and Liability</h2>
-				<p>
-					TiêIA is provided free of charge. To the extent permitted by law:
-				</p>
-				<ul className="list-disc space-y-2 pl-6">
-					<li>We're not liable for any loss of data or content</li>
-					<li>
-						Projects are stored in your browser and may be lost if you clear
-						browser data
-					</li>
-					<li>We're not responsible for how you use the service</li>
-					<li>Our liability is limited to the maximum extent allowed by law</li>
-				</ul>
-				<p>
-					Since your content stays on your device, we have no way to recover
-					lost projects. Consider exporting important videos when finished
-					editing.
-				</p>
-			</section>
+				<section className="flex flex-col gap-3">
+					<h2 className="text-2xl font-semibold">Sem garantia</h2>
+					<p>
+						Como diz a licença, o programa é fornecido no estado em que se
+						encontra, sem garantia de nenhum tipo. Quem mantém o projeto não
+						responde por perda de dados, falhas ou prejuízos que venham do uso.
+						Os projetos ficam no armazenamento do navegador: limpar os dados do
+						site apaga os projetos, então guarde cópias do que for importante.
+					</p>
+					<p>
+						A IA pode errar. Transcrições, legendas, traduções, vozes geradas,
+						respostas do chat e a nota da Pontuação Viral são sugestões. A
+						Pontuação Viral confere o vídeo contra regras do TikTok Shop, mas
+						não garante que ele será aprovado nem que vai performar bem.
+					</p>
+				</section>
 
-			<section className="flex flex-col gap-3">
-				<h2 className="text-2xl font-semibold">Service Changes</h2>
-				<p>We may update TiêIA and these terms:</p>
-				<ul className="list-disc space-y-2 pl-6">
-					<li>We'll notify you of significant changes to these terms</li>
-					<li>Continued use means you accept any updates</li>
-					<li>You can always self-host an older version if you prefer</li>
-					<li>Major changes will be discussed with the community on GitHub</li>
-				</ul>
-			</section>
+				<section className="flex flex-col gap-3">
+					<h2 className="text-2xl font-semibold">O seu conteúdo</h2>
+					<p>
+						Os vídeos, áudios, imagens e textos que você usa e cria são seus. A
+						TiêIA não reivindica nenhum direito sobre eles. Você é responsável
+						por ter permissão para usar o material que importa, como músicas,
+						imagens e vídeos de terceiros, e pelo que publica.
+					</p>
+				</section>
 
-			<section className="flex flex-col gap-3">
-				<h2 className="text-2xl font-semibold">Termination</h2>
-				<p>You can stop using TiêIA at any time:</p>
-				<ul className="list-disc space-y-2 pl-6">
-					<li>Delete your account through your profile settings</li>
-					<li>Clear your browser data to remove local projects</li>
-					<li>Your content remains yours even if you stop using TiêIA</li>
-					<li>We may suspend accounts for violations of these terms</li>
-				</ul>
-			</section>
+				<section className="flex flex-col gap-3">
+					<h2 className="text-2xl font-semibold">Clonagem de voz</h2>
+					<p>
+						Clone só a sua voz ou a de quem autorizou, e o editor pede essa
+						confirmação antes de clonar. Não use vozes clonadas para enganar
+						pessoas, se passar por alguém, aplicar golpes ou desrespeitar a lei.
+						Se o conteúdo puder confundir quem assiste, avise que a voz foi
+						gerada por IA.
+					</p>
+				</section>
 
-			<section className="flex flex-col gap-3">
-				<h2 className="text-2xl font-semibold">Contact Us</h2>
-				<p>Questions about these terms or need to report an issue?</p>
-				<p>
-					Contact us through our{" "}
-					<a
-						href={`${SOCIAL_LINKS.github}/issues`}
-						target="_blank"
-						rel="noopener"
-						className="text-primary hover:underline"
-					>
-						GitHub repository
-					</a>
-					, or reach out on{" "}
-					<a
-						href={SOCIAL_LINKS.x}
-						target="_blank"
-						rel="noopener"
-						className="text-primary hover:underline"
-					>
-						X (Twitter)
-					</a>
-					.
+				<section className="flex flex-col gap-3">
+					<h2 className="text-2xl font-semibold">Serviços de terceiros</h2>
+					<p>
+						Alguns recursos usam serviços externos, como OpenRouter, KLIPY,
+						Freesound, Sarvam AI, Smallest AI, provedores de geração de vídeo e
+						o TikTok. Eles só entram quando você os usa e, na maioria das vezes,
+						com a sua própria chave. Ao usá-los, valem os termos e as políticas
+						de cada um, e os custos ficam na conta de quem é dono da chave. A
+						geração de vídeo é paga, e modelos pagos da OpenRouter ficam
+						bloqueados a menos que OPENROUTER_ALLOW_PAID=true no .env. O que é
+						enviado a cada serviço está na{" "}
+						<a href="/privacy" className={linkClass}>
+							política de privacidade
+						</a>
+						.
+					</p>
+				</section>
+
+				<section className="flex flex-col gap-3">
+					<h2 className="text-2xl font-semibold">Modelos de IA</h2>
+					<p>
+						Os modelos de IA que a TiêIA baixa não fazem parte do código e têm
+						licenças próprias. Alguns limitam o uso comercial, como o Coqui XTTS
+						v2. Antes de usar o resultado de um modelo para fins comerciais,
+						confira a licença dele.
+					</p>
+				</section>
+
+				<section className="flex flex-col gap-3">
+					<h2 className="text-2xl font-semibold">Contato</h2>
+					<p>
+						Dúvidas, problemas e sugestões podem ser abertos como issue no{" "}
+						<a
+							href={SOCIAL_LINKS.github}
+							target="_blank"
+							rel="noopener"
+							className={linkClass}
+						>
+							repositório no GitHub
+						</a>
+						.
+					</p>
+				</section>
+
+				<Separator />
+				<p className="text-muted-foreground text-sm">
+					Estes termos podem mudar junto com o programa. As versões anteriores
+					ficam no histórico do repositório.
 				</p>
-				<p>
-					These terms are governed by applicable law in your jurisdiction. We
-					prefer to resolve disputes through friendly discussion in our
-					open-source community.
-				</p>
-			</section>
-			<Separator />
-			<p className="text-muted-foreground text-sm">
-				Last updated: March 22, 2026
-			</p>
-		</BasePage>
+			</BasePage>
+		</div>
 	);
 }
