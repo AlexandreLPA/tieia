@@ -6,7 +6,7 @@ import { SITE_URL } from "@/constants/site-constants";
 export const metadata: Metadata = {
 	title: "TiêIA vs DaVinci Resolve — Free Open Source Video Editor with AI (No $295 Lock-in)",
 	description:
-		"TiêIA is the browser-based, open-source alternative to DaVinci Resolve. Compare: AI transcription, text-based editing, filler word removal, AI dubbing in 37 languages, B-roll generation, karaoke subtitles. Free, self-hosted, no hardware requirements.",
+		"TiêIA is the browser-based, open-source alternative to DaVinci Resolve. Compare: AI transcription, text-based editing, filler word removal, AI dubbing in 21 languages, B-roll generation, karaoke subtitles. Free, self-hosted, no hardware requirements.",
 	alternates: {
 		canonical: `${SITE_URL}/compare/vs-davinci-resolve`,
 	},
@@ -46,7 +46,7 @@ const FEATURES = [
 			{ feature: "Filler word removal", opencut: "One-click Smart Cut", resolve: "No" },
 			{ feature: "Silence detection", opencut: "Yes", resolve: "No" },
 			{ feature: "AI voice cloning", opencut: "XTTS v2 (local)", resolve: "No" },
-			{ feature: "AI dubbing / translation", opencut: "37 languages", resolve: "No" },
+			{ feature: "AI dubbing / translation", opencut: "21 languages", resolve: "No" },
 			{ feature: "B-roll generation (AI)", opencut: "Image + Video", resolve: "No" },
 			{ feature: "Auto-chapters", opencut: "Yes", resolve: "No" },
 			{ feature: "Auto-reframe (9:16)", opencut: "Yes", resolve: "No (manual)" },
@@ -96,12 +96,12 @@ export default function VsDaVinciResolvePage() {
 					<p className="text-lg text-muted-foreground max-w-2xl mx-auto">
 						DaVinci Resolve is the king of color grading and professional post-production. 
 						TiêIA is the king of <strong>AI-powered, browser-based editing</strong> — 
-						text-based editing, one-click filler removal, AI dubbing in 37 languages, 
+						text-based editing, one-click filler removal, AI dubbing in 21 languages, 
 						and B-roll generation. Free and open source.
 					</p>
 					<div className="flex gap-3 justify-center">
 						<Link
-							href="/editor"
+							href="/projects"
 							className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90"
 						>
 							Try TiêIA Free
@@ -188,7 +188,7 @@ export default function VsDaVinciResolvePage() {
 					<h2 className="text-2xl font-bold">Frequently Asked Questions</h2>
 					<div className="max-w-2xl mx-auto space-y-4 text-left">
 						<FAQ
-							question="Ca TiêIA replace DaVinci Resolve for professional work?"
+							question="Can TiêIA replace DaVinci Resolve for professional work?"
 							answer="It depends on the work. For podcast editing, social media content, talking-head videos, and AI-powered workflows, TiêIA is often better. For color grading, VFX, and film production, DaVinci Resolve is the industry standard."
 						/>
 						<FAQ
@@ -218,7 +218,7 @@ export default function VsDaVinciResolvePage() {
 						Open your browser and start editing with AI. Free and open source.
 					</p>
 					<Link
-						href="/editor"
+						href="/projects"
 						className="inline-flex items-center justify-center rounded-md bg-primary px-8 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90"
 					>
 						Open Editor — It&apos;s Free

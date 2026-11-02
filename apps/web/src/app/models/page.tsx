@@ -55,7 +55,7 @@ const models: AIModel[] = [
 		provider: "OpenAI",
 		category: "Speech-to-Text",
 		description:
-			"Automatic speech recognition with word-level timestamps. Powers transcription, subtitles, and text-based editing. Available from tiny (39M) to large-v3 (1.5B). TurboQuant compression lets Whisper Medium fit where only Base could before.",
+			"Automatic speech recognition with word-level timestamps. Powers transcription, subtitles, and text-based editing. Available from tiny (39M) to large-v3 (1.5B).",
 		size: "39M - 1.5B params",
 		license: "MIT",
 		link: "https://github.com/openai/whisper",
@@ -121,7 +121,7 @@ const models: AIModel[] = [
 		provider: "Coqui",
 		category: "Text-to-Speech",
 		description:
-			"Local voice synthesis with voice cloning from a 6-second sample. Supports 17 languages. TurboQuant at 3-bit shrinks it from 1.8 GB to 0.6 GB while preserving voice quality.",
+			"Local voice synthesis with voice cloning from a 6-second sample. Supports 16 languages.",
 		size: "467M params",
 		license: "MPL 2.0",
 		link: "https://github.com/coqui-ai/TTS",

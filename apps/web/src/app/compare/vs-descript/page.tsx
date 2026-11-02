@@ -46,7 +46,7 @@ const FEATURES = [
 			{ feature: "Silence detection", opencut: "Yes", descript: "Yes" },
 			{ feature: "Smart Cut (one-click)", opencut: "Yes", descript: "No" },
 			{ feature: "AI voice cloning", opencut: "XTTS v2 (local)", descript: "Overdub (cloud)" },
-			{ feature: "AI dubbing / translation", opencut: "22 Indian langs + 15 more", descript: "Limited" },
+			{ feature: "AI dubbing / translation", opencut: "21 languages", descript: "Limited" },
 			{ feature: "Auto-chapters", opencut: "Yes", descript: "Yes" },
 			{ feature: "B-roll generation", opencut: "Image + Video AI", descript: "No" },
 			{ feature: "AI text-to-speech", opencut: "Local + cloud options", descript: "Cloud only" },
@@ -109,12 +109,12 @@ export default function VsDescriptPage() {
 					</h1>
 					<p className="text-lg text-muted-foreground max-w-2xl mx-auto">
 						Descript pioneered text-based video editing. TiêIA takes it further — 
-						with <strong>AI dubbing in 37 languages</strong>, <strong>B-roll generation</strong>, 
+						with <strong>AI dubbing in 21 languages</strong>, <strong>B-roll generation</strong>, 
 						and <strong>100% local processing</strong>. Free, open-source, and self-hosted.
 					</p>
 					<div className="flex gap-3 justify-center">
 						<Link
-							href="/editor"
+							href="/projects"
 							className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90"
 						>
 							Try TiêIA Free
@@ -186,11 +186,10 @@ export default function VsDescriptPage() {
 							</p>
 						</div>
 						<div>
-							<h3 className="font-semibold mb-1">37 languages, 22 Indian</h3>
+							<h3 className="font-semibold mb-1">21 dubbing languages</h3>
 							<p className="text-sm text-muted-foreground">
-								Via Sarvam AI and Smallest AI, TiêIA supports transcription, translation, 
-								and AI dubbing in 22 Indian languages + 15 international languages. Descript 
-								offers none of this.
+								TiêIA dubs into 21 languages, translating locally with NLLB-200 or, with your
+								key, through Sarvam AI or Smallest AI. Descript offers none of this.
 							</p>
 						</div>
 					</div>
@@ -224,7 +223,7 @@ export default function VsDescriptPage() {
 						No sign-up. No credit card. No cloud. Just open your browser and start editing.
 					</p>
 					<Link
-						href="/editor"
+						href="/projects"
 						className="inline-flex items-center justify-center rounded-md bg-primary px-8 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90"
 					>
 						Open Editor — It&apos;s Free

@@ -27,7 +27,7 @@ const COMPARISONS = [
 		ourAngle: "Same text-based editing, plus AI dubbing, B-roll gen, and 100% local. Free.",
 		keyDiffs: [
 			"Runs 100% locally (Descript is cloud-only)",
-			"AI dubbing in 37 languages vs Descript's limited support",
+			"AI dubbing in 21 languages vs Descript's limited support",
 			"$0 forever vs $288–780/year",
 			"Open source (MIT) vs proprietary",
 		],
@@ -121,7 +121,7 @@ export default function ComparePage() {
 						<div>
 							<h3 className="font-semibold mb-1">AI-powered</h3>
 							<p className="text-muted-foreground">
-								Transcription, filler removal, AI dubbing (37 languages), B-roll generation, 
+								Transcription, filler removal, AI dubbing (21 languages), B-roll generation, 
 								auto-chapters, voice cloning — all running locally.
 							</p>
 						</div>
@@ -143,7 +143,7 @@ export default function ComparePage() {
 						Open your browser and start editing with AI.
 					</p>
 					<Link
-						href="/editor"
+						href="/projects"
 						className="inline-flex items-center justify-center rounded-md bg-primary px-8 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90"
 					>
 						Open Editor — It&apos;s Free

@@ -6,7 +6,7 @@ import { SITE_URL } from "@/constants/site-constants";
 export const metadata: Metadata = {
 	title: "TiêIA vs CapCut — Privacy-First Open Source Alternative (No ByteDance)",
 	description:
-		"TiêIA is the free, open-source alternative to CapCut with no ByteDance data collection. Compare features: AI transcription, filler word removal, karaoke subtitles, voice cloning, B-roll generation, AI dubbing in 37 languages. Self-hosted and 100% local.",
+		"TiêIA is the free, open-source alternative to CapCut with no ByteDance data collection. Compare features: AI transcription, filler word removal, karaoke subtitles, voice cloning, B-roll generation, AI dubbing in 21 languages. Self-hosted and 100% local.",
 	alternates: {
 		canonical: `${SITE_URL}/compare/vs-capcut`,
 	},
@@ -45,7 +45,7 @@ const FEATURES = [
 			{ feature: "Filler word removal", opencut: "One-click Smart Cut", capcut: "No" },
 			{ feature: "Silence detection & removal", opencut: "Yes", capcut: "No" },
 			{ feature: "AI voice cloning", opencut: "XTTS v2 (local)", capcut: "No" },
-			{ feature: "AI dubbing / translation", opencut: "37 languages", capcut: "Limited auto-captions" },
+			{ feature: "AI dubbing / translation", opencut: "21 languages", capcut: "Limited auto-captions" },
 			{ feature: "B-roll generation (AI)", opencut: "Image + Video", capcut: "No" },
 			{ feature: "Auto-chapters", opencut: "Yes", capcut: "No" },
 			{ feature: "Auto-reframe (9:16)", opencut: "Yes", capcut: "Yes" },
@@ -99,7 +99,7 @@ export default function VsCapCutPage() {
 					</p>
 					<div className="flex gap-3 justify-center">
 						<Link
-							href="/editor"
+							href="/projects"
 							className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90"
 						>
 							Try TiêIA Free
@@ -168,7 +168,7 @@ export default function VsCapCutPage() {
 							<p className="text-sm text-muted-foreground">
 								CapCut is designed for quick social media edits. TiêIA adds professional 
 								tools: text-based editing, Smart Cut (filler + silence removal), AI dubbing 
-								in 37 languages, and AI B-roll generation.
+								in 21 languages, and AI B-roll generation.
 							</p>
 						</div>
 						<div>
@@ -211,7 +211,7 @@ export default function VsCapCutPage() {
 						Edit videos locally with AI. No account. No tracking. No data leaves your machine.
 					</p>
 					<Link
-						href="/editor"
+						href="/projects"
 						className="inline-flex items-center justify-center rounded-md bg-primary px-8 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90"
 					>
 						Open Editor — It&apos;s Free

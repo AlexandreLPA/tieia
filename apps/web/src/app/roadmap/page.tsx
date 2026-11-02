@@ -161,14 +161,14 @@ const roadmapItems: RoadmapItem[] = [
 		description:
 			"Align camera angles that weren't timecode-locked by cross-correlating their audio waveforms — entirely on-device via the Web Audio API. Pick a reference angle, preview per-angle offsets with confidence scores, then apply with one undoable transaction.",
 		status: {
-			text: "Completed",
-			type: "complete",
+			text: "Not in the editor yet",
+			type: "pending",
 		},
 	},
 	{
 		title: "AI Dubbing (local NLLB + XTTS)",
 		description:
-			"Translate and re-voice video into 17 languages. A dedicated NLLB-200 translate-service runs fully on-device for the 'Local' engine — translation text never leaves the host. Combined with voice-cloned XTTS v2 for the privacy-first dubbing path. Cloud engines (Sarvam, Smallest) remain available as alternatives.",
+			"Translate and re-voice video into 21 languages. A dedicated NLLB-200 translate-service runs fully on-device for the 'Local' engine — translation text never leaves the host. Combined with voice-cloned XTTS v2 for the privacy-first dubbing path. Cloud engines (Sarvam, Smallest) remain available as alternatives.",
 		status: {
 			text: "Completed",
 			type: "complete",
