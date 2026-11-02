@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-TiêIA is a privacy-first, open-source AI video editor. All AI models run locally. It is a monorepo using Bun/Turborepo with a Next.js frontend and 7 Python (FastAPI) microservices.
+TiêIA is a local-first, open-source AI video editor. Editing and the AI models (Whisper, Chatterbox, Coqui XTTS, diffusers, pyannote, MediaPipe, the local LLMs) run on the machine; cloud services are opt-in: LLMs through OpenRouter with the user's own key, the KLIPY GIF search, and the cloud TTS and video-generation providers. It is a monorepo using Bun/Turborepo with a Next.js frontend and 7 Python (FastAPI) microservices.
 
 ## Architecture
 
@@ -18,11 +18,12 @@ TiêIA is a privacy-first, open-source AI video editor. All AI models run locall
 
 ## LLM Backend System
 
-Two backends for LLM inference:
-1. **Ollama** (default) — GGUF models, port 11434, any quantization
-2. **TurboQuant** — HuggingFace models, port 8430, 4-bit NF4 + KV cache compression (2-bit GPU, 3-bit CPU)
+Three backends for LLM inference (`services/ai-backend/app/services/model_backend.py`):
+1. **Ollama** — local GGUF models, port 11434, any quantization
+2. **TurboQuant** — local HuggingFace models, port 8430, 4-bit NF4 + KV cache compression (2-bit GPU, 3-bit CPU)
+3. **OpenRouter** — cloud LLMs with the user's `OPENROUTER_API_KEY`. Only `:free` models run unless `OPENROUTER_ALLOW_PAID=true`; when a text request to the cloud fails it falls back to the local model (requests with images do not)
 
-Selection: `OPENCUTAI_AI_LLM_BACKEND=auto|ollama|turboquant`
+Selection: `OPENCUTAI_AI_LLM_BACKEND=auto|ollama|turboquant|openrouter` (`.env`: `AI_LLM_BACKEND`). The default is `auto`: TurboQuant when it has a model loaded, otherwise Ollama. OpenRouter is used when `AI_LLM_BACKEND=openrouter` or when a cloud model is picked in the editor ("Gerenciar serviços de IA"); that choice is saved in `/app/generated/llm-runtime.json` and overrides `.env`.
 
 ## Supported Model Families
 
