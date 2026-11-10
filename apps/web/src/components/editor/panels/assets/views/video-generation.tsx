@@ -43,6 +43,7 @@ import {
 	type VideoProvider,
 } from "@/lib/video-gen/video-gen-types";
 import { getApiKey } from "@/lib/api-keys";
+import { ModelOriginBadge } from "@/components/editor/ai/model-origin-badge";
 
 const MODE_LABELS: Record<VideoGenMode, { label: string; icon: typeof VideoReplayIcon; desc: string }> = {
 	"text-to-video": { label: "Texto → Vídeo", icon: VideoReplayIcon, desc: "Gere um vídeo a partir de um prompt de texto" },
@@ -197,6 +198,15 @@ export function VideoGenerationPanel({ className }: { className?: string }) {
 											<SelectItem key={m.id} value={m.id}>
 												<span className="flex w-full items-center gap-2 text-[10px]">
 													{m.name}
+													<ModelOriginBadge
+														origin={
+															m.provider === "local"
+																? "local"
+																: m.costPerSecondUsd === 0
+																	? "cloud-free"
+																	: "cloud-paid"
+														}
+													/>
 													<span className="text-muted-foreground">
 														({getProviderLabel(m.provider)})
 													</span>

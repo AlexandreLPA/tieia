@@ -89,6 +89,13 @@ import {
 	type StudioMode,
 } from "./ai-studio/workflows";
 import { ActionCards } from "./ai-studio/action-cards";
+import {
+	CreateMenu,
+	CreateShortcuts,
+	ModeChip,
+} from "./ai-studio/create-modes";
+import { ImageModelPicker, TieImagePanel } from "./ai-studio/tie-image";
+import { TieVideoPanel } from "./ai-studio/tie-video";
 
 // ----- Component -----
 
@@ -588,8 +595,17 @@ export function AIStudioView() {
 			<div className="bg-background h-11 shrink-0 px-4 pr-2 flex items-center justify-between gap-2 border-b">
 				{/* The model name gives way (ellipsis) before the tabs do */}
 				<div className="flex min-w-0 items-center gap-2">
-					{/* The model that answers, and where it is changed */}
-					<ChatModelPicker side="bottom" className="-ml-1.5 max-w-48" />
+					{/* What is open, and the model that does it: each creation has its own models */}
+					{mode === "tie-image" ? (
+						<>
+							<ModeChip mode="tie-image" onExit={() => setMode("chat")} />
+							<ImageModelPicker className="max-w-40" />
+						</>
+					) : mode === "tie-video" ? (
+						<ModeChip mode="tie-video" onExit={() => setMode("chat")} />
+					) : (
+						<ChatModelPicker side="bottom" className="-ml-1.5 max-w-48" />
+					)}
 					{!isConnected && (
 						<Badge variant="outline" className="shrink-0 text-[8px] px-1.5 py-0 text-yellow-500 border-yellow-500/30">
 							Offline
@@ -1050,9 +1066,13 @@ export function AIStudioView() {
 									Quadros, imagens e transcrição vão para o modelo em nuvem ({vision.model}).
 								</p>
 							)}
+						{mode === "chat" && messages.length === 0 && (
+							<CreateShortcuts onSelect={setMode} />
+						)}
 						<div className="flex items-end gap-1.5">
 							{mode === "chat" && (
 								<>
+									<CreateMenu onSelect={setMode} disabled={isThinking} />
 									<input
 										ref={fileInputRef}
 										type="file"
@@ -1153,6 +1173,18 @@ export function AIStudioView() {
 			)}
 
 			{/* ── Templates Mode ── */}
+			{mode === "tie-image" && <TieImagePanel />}
+
+			{/* Stays mounted while hidden: a clip being generated (and paid for) must not be lost on a visit to the chat */}
+			<div
+				className={cn(
+					"flex min-h-0 flex-1 flex-col",
+					mode !== "tie-video" && "hidden",
+				)}
+			>
+				<TieVideoPanel />
+			</div>
+
 			{mode === "templates" && (
 				<TemplatePanel className="flex-1 min-h-0" />
 			)}

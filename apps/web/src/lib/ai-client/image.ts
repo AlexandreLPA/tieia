@@ -16,6 +16,30 @@ export class ImageClient extends AnalysisClient {
 		});
 	}
 
+	/**
+	 * Generates the image and returns the PNG itself, which is what the image
+	 * service answers with. Without a graphics card this takes minutes.
+	 */
+	async generateImageBlob(params: ImageGenParams): Promise<Blob> {
+		const response = await fetch(`${this.baseUrl}/api/generate/image`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(params),
+			signal: AbortSignal.timeout(30 * 60 * 1000),
+		});
+		if (!response.ok) {
+			const body = (await response.json().catch(() => null)) as {
+				detail?: unknown;
+			} | null;
+			throw new Error(
+				typeof body?.detail === "string"
+					? body.detail
+					: `O serviço de imagens respondeu com erro (${response.status}).`,
+			);
+		}
+		return response.blob();
+	}
+
 	async enhancePrompt(
 		prompt: string,
 		style?: string,

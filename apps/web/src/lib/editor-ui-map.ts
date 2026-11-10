@@ -72,6 +72,22 @@ export const UI_DESTINATIONS: UiDestination[] = [
 		target: "tab/ai",
 	},
 	{
+		id: "criar-imagem",
+		name: "Criar imagem (Tiê Image)",
+		path: "Barra lateral esquerda → Estúdio → + ao lado do campo de mensagem → Criar imagem",
+		about: "gera uma imagem a partir de uma descrição, com um modelo que roda no PC, e manda para as mídias do projeto",
+		tab: "ai",
+		target: "ai/create",
+	},
+	{
+		id: "criar-video",
+		name: "Criar vídeo (Tiê Video)",
+		path: "Barra lateral esquerda → Estúdio → + ao lado do campo de mensagem → Criar vídeo",
+		about: "gera um clipe a partir de texto ou imagem, sem sair do Estúdio; o modelo, a proporção e a duração ficam no botão de configurações ao lado do campo",
+		tab: "ai",
+		target: "ai/create",
+	},
+	{
 		id: "modelo-do-chat",
 		name: "Modelo do chat",
 		path: "Chat de IA (Ctrl+K) → nome do modelo, abaixo do campo de mensagem",

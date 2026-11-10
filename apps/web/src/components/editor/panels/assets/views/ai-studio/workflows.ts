@@ -14,7 +14,7 @@ export interface WorkflowStep {
 	isCompleted?: boolean;
 }
 
-export type StudioMode = "chat" | "workflow" | "transcript" | "templates" | "ideas" | "broll" | "auto-broll" | "youtube-reels" | "dubbing" | "chapters" | "reframe" | "tracking" | "ab-testing" | "video-bg" | "edit-speaker";
+export type StudioMode = "chat" | "workflow" | "transcript" | "templates" | "ideas" | "broll" | "auto-broll" | "youtube-reels" | "dubbing" | "chapters" | "reframe" | "tracking" | "ab-testing" | "video-bg" | "edit-speaker" | "tie-image" | "tie-video";
 
 export const VIDEO_WORKFLOWS: {
 	id: string;

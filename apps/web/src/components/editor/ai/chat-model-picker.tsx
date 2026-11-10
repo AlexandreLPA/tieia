@@ -21,6 +21,7 @@ import { aiClient } from "@/lib/ai-client";
 import { cloudModelSummary, shortModelName } from "@/lib/ai-model-name";
 import { notifyLlmChanged, onLlmChanged } from "@/lib/llm-change";
 import { cn } from "@/utils/ui";
+import { ModelOriginBadge } from "./model-origin-badge";
 import { OpenRouterKeyForm } from "./openrouter-key-form";
 
 type Provider = "cloud" | "local";
@@ -141,7 +142,8 @@ export function ChatModelPicker({
 						provider: "cloud",
 						id: model.id,
 						name: model.name,
-						detail: cloudModelSummary(model),
+						// The badge beside the name already says it is free
+						detail: cloudModelSummary(model).replace(", grátis", ""),
 						efforts: model.efforts ?? [],
 					}));
 					cloudActive = catalog.active || cloudActive;
@@ -317,7 +319,7 @@ export function ChatModelPicker({
 			<PopoverContent
 				side={side}
 				align="start"
-				className="flex w-[22rem] max-w-[calc(100vw-1rem)] overflow-hidden p-0"
+				className="flex w-[30rem] max-w-[calc(100vw-1rem)] overflow-hidden p-0"
 			>
 				{/* Provider rail */}
 				<div className="bg-accent/50 flex w-11 shrink-0 flex-col items-center gap-1 border-r py-2">
@@ -366,7 +368,7 @@ export function ChatModelPicker({
 						</p>
 					)}
 
-					<div className="max-h-72 min-h-24 overflow-y-auto p-1">
+					<div className="max-h-96 min-h-24 overflow-y-auto p-1">
 						{needsKey && !isSearching ? (
 							<div className="flex flex-col gap-3 p-2">
 								<p className="text-muted-foreground text-xs leading-relaxed">
@@ -420,6 +422,15 @@ export function ChatModelPicker({
 														<span className="min-w-0 flex-1">
 															<span className="flex items-center gap-1.5 text-sm">
 																<span className="truncate">{option.name}</span>
+																<ModelOriginBadge
+																	origin={
+																		option.provider === "local"
+																			? "local"
+																			: option.id.endsWith(":free")
+																				? "cloud-free"
+																				: "cloud-paid"
+																	}
+																/>
 																{switching === key ? (
 																	<Spinner className="size-3 shrink-0" />
 																) : (
@@ -431,7 +442,7 @@ export function ChatModelPicker({
 																	)
 																)}
 															</span>
-															<span className="text-muted-foreground block truncate text-[11px]">
+															<span className="text-muted-foreground block text-xs leading-snug">
 																{option.detail}
 															</span>
 														</span>
