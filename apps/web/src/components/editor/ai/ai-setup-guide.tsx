@@ -28,6 +28,7 @@ import { toast } from "sonner";
 import { useAIStatus } from "@/hooks/use-ai-status";
 import { aiClient, type ServicesStatus, type ServiceInfo } from "@/lib/ai-client";
 import { OpenRouterKeyForm } from "./openrouter-key-form";
+import { notifyLlmChanged } from "@/lib/llm-change";
 import {
 	useServiceHealth,
 	SERVICE_URLS,
@@ -136,6 +137,7 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 		try {
 			const result = await aiClient.setLLMModel(modelName);
 			setActiveModel(result.current_model);
+			notifyLlmChanged();
 			toast.success(`Modelo alterado para ${modelName}`);
 		} catch (err) {
 			toast.error(err instanceof Error ? err.message : "Falha ao trocar o modelo");
@@ -151,6 +153,7 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 			setActiveBackend(result.current_backend);
 			setOpenRouterModel(modelId);
 			setCloudModels((prev) => prev && { ...prev, active: modelId, configured: modelId });
+			notifyLlmChanged();
 			toast.success(`Agora usando ${modelId} (nuvem)`);
 		} catch (err) {
 			toast.error(err instanceof Error ? err.message : "Falha ao trocar para o modelo em nuvem");
@@ -164,6 +167,7 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 		try {
 			await aiClient.setLocalBackend();
 			setActiveBackend("ollama");
+			notifyLlmChanged();
 			toast.success("Voltou a usar o modelo local");
 		} catch (err) {
 			toast.error(err instanceof Error ? err.message : "Falha ao voltar para o modelo local");
@@ -650,6 +654,7 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 												setOpenRouterConfigured(true);
 												setActiveBackend("openrouter");
 												setOpenRouterModel(model);
+												notifyLlmChanged();
 												aiClient
 													.listCloudModels()
 													.then(setCloudModels)

@@ -239,6 +239,8 @@ export interface CloudModel {
 	/** Input kinds: "text", "image", "video", ... */
 	inputs: string[];
 	vision: boolean;
+	/** Reasoning efforts the caller may pick, weakest first; empty when the model offers no choice */
+	efforts?: string[];
 }
 
 export interface CloudModels {
@@ -251,6 +253,8 @@ export interface CloudModels {
 	/** The model picked; differs from `active` when it stopped being free */
 	configured: string;
 	allowPaid: boolean;
+	/** The reasoning effort picked for the chat */
+	effort?: string;
 }
 
 export interface AIBackendStatus {

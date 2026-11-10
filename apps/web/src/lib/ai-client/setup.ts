@@ -52,6 +52,16 @@ export class SetupClient extends ProvidersClient {
 		);
 	}
 
+	/** How long a cloud model that offers the choice may think before answering the chat. */
+	async setReasoningEffort(
+		effort: string,
+	): Promise<{ status: string; effort: string }> {
+		return this.request("/api/llm/set-effort", {
+			method: "POST",
+			body: JSON.stringify({ effort }),
+		});
+	}
+
 	async setLocalBackend(): Promise<{
 		status: string;
 		previous_backend: string;

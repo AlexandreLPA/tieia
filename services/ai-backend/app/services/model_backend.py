@@ -81,6 +81,25 @@ def _display_name(name: Any, model_id: str) -> str:
     return re.sub(r"\s*\(free\)\s*$", "", name, flags=re.IGNORECASE).strip()
 
 
+# Reasoning efforts the app lets the user pick, weakest first
+REASONING_EFFORTS = ("minimal", "low", "medium", "high", "max")
+# Sent when nothing was picked, or the model has no effort to pick: default
+# reasoning could run for minutes and still leave the answer empty
+DEFAULT_REASONING_EFFORT = "low"
+
+
+def _supported_efforts(reasoning: Any) -> list[str]:
+    """The efforts a catalog entry says the model lets the caller choose, weakest first.
+
+    Empty for models without reasoning and for those that reason but expose no
+    choice (the catalog then leaves `supported_efforts` out).
+    """
+    listed = reasoning.get("supported_efforts") if isinstance(reasoning, dict) else None
+    if not isinstance(listed, list):
+        return []
+    return [effort for effort in REASONING_EFFORTS if effort in listed]
+
+
 def free_chat_models(entries: list[Any]) -> list[dict[str, Any]]:
     """Chat models OpenRouter serves for free right now, best first.
 
@@ -109,6 +128,7 @@ def free_chat_models(entries: list[Any]) -> list[dict[str, Any]]:
             "inputs": inputs,
             "vision": "image" in inputs,
             "created": int(entry.get("created") or 0),
+            "efforts": _supported_efforts(entry.get("reasoning")),
         })
     models.sort(
         key=lambda m: (
@@ -153,6 +173,8 @@ class LLMBackend:
         # container restart. None means "use the .env-configured default".
         self._backend_mode_override: str | None = None
         self._openrouter_model_override: str | None = None
+        # Reasoning effort picked in the chat; None keeps DEFAULT_REASONING_EFFORT
+        self._reasoning_effort_override: str | None = None
         # What really answered last, and why the cloud model last failed, so the
         # AI monitor can show a fallback instead of the configured model
         self._last_served: dict[str, Any] | None = None
@@ -193,6 +215,29 @@ class LLMBackend:
             if candidate in free_ids:
                 return candidate
         return free_ids[0]
+
+    @property
+    def reasoning_effort(self) -> str:
+        """The reasoning effort picked in the chat, or the default."""
+        return self._reasoning_effort_override or DEFAULT_REASONING_EFFORT
+
+    def set_reasoning_effort(self, effort: str) -> None:
+        """Keep the effort picked in the chat; survives restarts."""
+        self._reasoning_effort_override = effort
+        self._save_runtime_settings()
+
+    def chat_reasoning_effort(self, model: str) -> str:
+        """The effort the chat sends to `model`.
+
+        The picked one when the catalog says this model lets the caller choose
+        it; the default otherwise, as an effort a model does not offer can be
+        rejected by its provider.
+        """
+        picked = self.reasoning_effort
+        for entry in self._or_free or []:
+            if entry["id"] == model:
+                return picked if picked in entry.get("efforts", []) else DEFAULT_REASONING_EFFORT
+        return DEFAULT_REASONING_EFFORT
 
     async def refresh_openrouter_models(self, force: bool = False) -> list[dict[str, Any]] | None:
         """Read the OpenRouter catalog again if it is over an hour old (or `force`).
@@ -254,6 +299,8 @@ class LLMBackend:
         if isinstance(data, dict):
             self._backend_mode_override = data.get("backend_mode") or None
             self._openrouter_model_override = data.get("openrouter_model") or None
+            effort = data.get("reasoning_effort")
+            self._reasoning_effort_override = effort if effort in REASONING_EFFORTS else None
 
     def _save_runtime_settings(self) -> None:
         try:
@@ -262,6 +309,7 @@ class LLMBackend:
                     {
                         "backend_mode": self._backend_mode_override,
                         "openrouter_model": self._openrouter_model_override,
+                        "reasoning_effort": self._reasoning_effort_override,
                     },
                     file,
                 )
@@ -1151,8 +1199,9 @@ class LLMBackend:
             payload: dict[str, Any] = {"messages": messages, "temperature": temperature}
             if backend == "openrouter":
                 model = self.openrouter_model
-                # Short reasoning keeps the studio chat responsive; ignored by models without it
-                payload.update(model=model, reasoning={"effort": "low"})
+                # Short reasoning keeps the studio chat responsive, unless the user
+                # picked more for a model that offers it; ignored by models without it
+                payload.update(model=model, reasoning={"effort": self.chat_reasoning_effort(model)})
                 url, headers = f"{settings.OPENROUTER_BASE_URL}/chat/completions", self._or_headers()
             elif backend == "turboquant":
                 model = self._tq_model or ""

@@ -10,7 +10,7 @@ import {
 } from "react";
 import ReactMarkdown from "react-markdown";
 import { cn } from "@/utils/ui";
-import { shortModelName } from "@/lib/ai-model-name";
+import { ChatModelPicker } from "@/components/editor/ai/chat-model-picker";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
@@ -248,26 +248,6 @@ export function AIStudioView() {
 		},
 		[editor, hasVisual, attachVideo, transcriptSegments, planFrameCount],
 	);
-
-	// ── Model name display ──
-	const [activeModel, setActiveModel] = useState("");
-	const [modelIssue, setModelIssue] = useState<string | null>(null);
-
-	useEffect(() => {
-		aiClient.llmStatus().then((data) => {
-			if (!data.available) return;
-			const issue = data.llm?.cloudIssue;
-			if (issue) {
-				// The configured cloud model is failing; say what really answers
-				const fallback = data.llm?.served && !data.llm.served.cloud ? data.llm.served.model : "modelo local";
-				setActiveModel(`${fallback} (reserva)`);
-				setModelIssue(`${shortModelName(issue.model)} indisponível: ${issue.message}`);
-			} else {
-				setActiveModel(data.default_model ? shortModelName(data.default_model) : "");
-				setModelIssue(null);
-			}
-		}).catch(() => {});
-	}, []);
 
 	// Auto-scroll on new messages
 	useEffect(() => {
@@ -608,18 +588,8 @@ export function AIStudioView() {
 			<div className="bg-background h-11 shrink-0 px-4 pr-2 flex items-center justify-between gap-2 border-b">
 				{/* The model name gives way (ellipsis) before the tabs do */}
 				<div className="flex min-w-0 items-center gap-2">
-					{activeModel && (
-						<Badge
-							variant="secondary"
-							title={modelIssue ?? activeModel}
-							className={cn(
-								"block max-w-44 truncate text-[10px] px-1.5 py-0 font-mono",
-								modelIssue && "text-yellow-500",
-							)}
-						>
-							{activeModel}
-						</Badge>
-					)}
+					{/* The model that answers, and where it is changed */}
+					<ChatModelPicker side="bottom" className="-ml-1.5 max-w-48" />
 					{!isConnected && (
 						<Badge variant="outline" className="shrink-0 text-[8px] px-1.5 py-0 text-yellow-500 border-yellow-500/30">
 							Offline

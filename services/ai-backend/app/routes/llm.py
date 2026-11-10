@@ -292,7 +292,24 @@ async def cloud_models() -> dict:
         "active": llm_backend.openrouter_model,
         "configured": llm_backend.configured_openrouter_model,
         "allowPaid": settings.OPENROUTER_ALLOW_PAID,
+        # Each model lists the efforts it offers in `efforts`
+        "effort": llm_backend.reasoning_effort,
     }
+
+
+class SetEffortRequest(BaseModel):
+    effort: Literal["minimal", "low", "medium", "high", "max"]
+
+
+@router.post("/set-effort")
+async def set_reasoning_effort(request: SetEffortRequest) -> dict:
+    """How long the cloud model may think before answering in the studio chat.
+
+    Used with models whose catalog entry offers this effort; the others keep
+    the short default.
+    """
+    llm_backend.set_reasoning_effort(request.effort)
+    return {"status": "saved", "effort": llm_backend.reasoning_effort}
 
 
 class OpenRouterKeyRequest(BaseModel):
