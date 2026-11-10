@@ -77,10 +77,11 @@ export function Footer() {
 	);
 }
 
+/** The icon with a thicker line: at header and footer sizes the original line disappears. */
 export function TieiaLogo({ size = 26 }: { size?: number }) {
 	return (
 		<Image
-			src="/icons/icon-192x192.png"
+			src="/brand/icon-bold.png"
 			alt=""
 			aria-hidden="true"
 			width={size}

@@ -62,7 +62,7 @@ const pt = {
 		lead: "Legendas automáticas, voz clonada, cortes para Shorts e Reels e um chat que conhece o seu projeto. Os modelos de IA rodam no Docker da sua máquina, e os vídeos ficam no seu navegador.",
 		openProjects: "Abrir meus projetos",
 		viewCode: "Ver o código no GitHub",
-		license: "Código aberto, licença MIT. Um fork do OpenCut.",
+		license: "Código aberto.",
 	},
 	features: {
 		title: "Sua voz, narrando o seu vídeo.",
@@ -145,16 +145,22 @@ const pt = {
 		title: "Por que tiê",
 		beforeSpecies: "O tiê-sangue (",
 		afterSpecies:
-			") é um pássaro vermelho da Mata Atlântica, fácil de ver no Rio de Janeiro. TiêIA é o tiê mais IA. No ícone, o pássaro aparece num traço branco só, com um botão de play no bico.",
+			") só existe no Brasil. Vive na Mata Atlântica, do Nordeste ao Sul, e aparece até nos parques do Rio de Janeiro. O macho é vermelho-sangue, com asas e cauda pretas, e o nome científico, bresilius, vem do próprio Brasil.",
+		why: "A TiêIA é feita para quem cria vídeos no Brasil, e o tiê é um símbolo brasileiro fácil de reconhecer: um pássaro pequeno, comum e muito vermelho. O nome junta os dois: tiê mais IA.",
+		iconTitle: "O ícone",
+		icon: [
+			"Um quadrado de cantos arredondados, com raio de 20% do lado, no vermelho #D2011A, tirado do tiê. Sobre ele, o pássaro em um traço branco só, de espessura constante: um círculo forma a cabeça e o corpo, curvas por dentro dele desenham a asa e o peito, e o bico é um triângulo vazado apontado para a direita.",
+			"Dentro do bico fica o único elemento cheio do desenho, um triângulo branco: o botão de play. No cabeçalho e no rodapé, onde o ícone fica pequeno, o traço é mais grosso para não sumir, e no favicon de 16 px o desenho se reduz à cabeça e ao play.",
+		],
 	},
 	cta: {
 		title: "Rodar na sua máquina",
 		requirements:
-			"Precisa de Windows 11, Docker Desktop, Bun e uma placa de vídeo NVIDIA.",
+			"Roda no Windows 11 com Docker Desktop e Bun. Uma placa de vídeo NVIDIA não é obrigatória, mas sem ela a voz clonada leva minutos por frase.",
 		cost: "É grátis e não tem assinatura. O custo é o seu computador e, se você quiser LLMs na nuvem, a sua chave da OpenRouter, onde os modelos grátis não cobram nada.",
 		steps: [
 			"Baixe o código e crie o seu .env. A chave da OpenRouter é opcional e fica só nele.",
-			"Construa os serviços de IA uma vez.",
+			"Instale os serviços de IA. É só na primeira vez: o Docker baixa e monta as bibliotecas de cada serviço, o que pode levar bastante tempo. Os modelos de IA são baixados depois, na primeira vez que cada recurso é usado.",
 			"Ligue tudo. O launcher sobe o Docker, prepara o editor e abre a janela.",
 		],
 		copyCommand: "Copiar comando",
@@ -189,7 +195,7 @@ const en: LandingCopy = {
 		lead: "Automatic captions, a cloned voice, cuts for Shorts and Reels, and a chat that knows your project. The AI models run in Docker on your machine, and your videos stay in your browser.",
 		openProjects: "Open my projects",
 		viewCode: "View the code on GitHub",
-		license: "Open source, MIT license. A fork of OpenCut.",
+		license: "Open source.",
 	},
 	features: {
 		title: "Your voice, narrating your video.",
@@ -270,16 +276,22 @@ const en: LandingCopy = {
 		title: "Why tiê",
 		beforeSpecies: "The tiê-sangue (",
 		afterSpecies:
-			") is a red bird of the Atlantic Forest, easy to spot in Rio de Janeiro. TiêIA is tiê plus IA, Portuguese for AI. In the icon, the bird is drawn in a single white line, with a play button in its beak.",
+			") lives only in Brazil. It is found in the Atlantic Forest, from the Northeast to the South, and even in Rio de Janeiro's parks. The male is blood red, with black wings and tail, and its scientific name, bresilius, comes from Brazil itself.",
+		why: "TiêIA is made for people who create videos in Brazil, and the tiê is a Brazilian symbol that is easy to recognize: a small, common and very red bird. The name puts the two together: tiê plus IA, Portuguese for AI.",
+		iconTitle: "The icon",
+		icon: [
+			"A square with rounded corners, the radius 20% of the side, in red #D2011A, taken from the tiê. On it, the bird in a single white line of even weight: a circle makes the head and body, curves inside it draw the wing and chest, and the beak is an open triangle pointing right.",
+			"Inside the beak sits the only filled shape in the drawing, a white triangle: the play button. In the header and footer, where the icon is small, the line is thicker so it does not disappear, and in the 16 px favicon the drawing comes down to the head and the play.",
+		],
 	},
 	cta: {
 		title: "Run it on your machine",
 		requirements:
-			"It needs Windows 11, Docker Desktop, Bun and an NVIDIA graphics card.",
+			"Runs on Windows 11 with Docker Desktop and Bun. An NVIDIA graphics card is not required, but without one the cloned voice takes minutes per sentence.",
 		cost: "It's free and there is no subscription. The cost is your computer and, if you want cloud LLMs, your OpenRouter key, where the free models cost nothing.",
 		steps: [
 			"Download the code and create your .env. The OpenRouter key is optional and stays only there.",
-			"Build the AI services once.",
+			"Install the AI services. Only the first time: Docker downloads and builds each service's libraries, which can take a while. The AI models are downloaded later, the first time each feature is used.",
 			"Start everything. The launcher brings up Docker, prepares the editor and opens the window.",
 		],
 		copyCommand: "Copy command",
@@ -312,7 +324,7 @@ const es: LandingCopy = {
 		lead: "Subtítulos automáticos, voz clonada, cortes para Shorts y Reels y un chat que conoce tu proyecto. Los modelos de IA se ejecutan en el Docker de tu máquina, y los videos se quedan en tu navegador.",
 		openProjects: "Abrir mis proyectos",
 		viewCode: "Ver el código en GitHub",
-		license: "Código abierto, licencia MIT. Un fork de OpenCut.",
+		license: "Código abierto.",
 	},
 	features: {
 		title: "Tu voz, narrando tu video.",
@@ -393,16 +405,22 @@ const es: LandingCopy = {
 		title: "Por qué tiê",
 		beforeSpecies: "El tiê-sangue (",
 		afterSpecies:
-			") es un pájaro rojo de la Mata Atlántica, fácil de ver en Río de Janeiro. TiêIA es tiê más IA. En el ícono, el pájaro aparece en un solo trazo blanco, con un botón de play en el pico.",
+			") solo existe en Brasil. Vive en la Mata Atlántica, del Nordeste al Sur, y aparece incluso en los parques de Río de Janeiro. El macho es rojo sangre, con alas y cola negras, y su nombre científico, bresilius, viene del propio Brasil.",
+		why: "TiêIA está hecha para quienes crean videos en Brasil, y el tiê es un símbolo brasileño fácil de reconocer: un pájaro pequeño, común y muy rojo. El nombre une los dos: tiê más IA.",
+		iconTitle: "El ícono",
+		icon: [
+			"Un cuadrado de esquinas redondeadas, con un radio del 20% del lado, en el rojo #D2011A, tomado del tiê. Sobre él, el pájaro en un solo trazo blanco de grosor constante: un círculo forma la cabeza y el cuerpo, curvas por dentro dibujan el ala y el pecho, y el pico es un triángulo vacío que apunta a la derecha.",
+			"Dentro del pico está el único elemento relleno del dibujo, un triángulo blanco: el botón de play. En el encabezado y el pie, donde el ícono es pequeño, el trazo es más grueso para no desaparecer, y en el favicon de 16 px el dibujo se reduce a la cabeza y el play.",
+		],
 	},
 	cta: {
 		title: "Ejecútalo en tu máquina",
 		requirements:
-			"Necesita Windows 11, Docker Desktop, Bun y una tarjeta gráfica NVIDIA.",
+			"Funciona en Windows 11 con Docker Desktop y Bun. Una tarjeta gráfica NVIDIA no es obligatoria, pero sin ella la voz clonada tarda minutos por frase.",
 		cost: "Es gratis y no tiene suscripción. El costo es tu computadora y, si quieres LLMs en la nube, tu clave de OpenRouter, donde los modelos gratuitos no cobran nada.",
 		steps: [
 			"Descarga el código y crea tu .env. La clave de OpenRouter es opcional y queda solo ahí.",
-			"Construye los servicios de IA una vez.",
+			"Instala los servicios de IA. Solo la primera vez: Docker descarga y prepara las bibliotecas de cada servicio, lo que puede tardar bastante. Los modelos de IA se descargan después, la primera vez que se usa cada función.",
 			"Enciende todo. El launcher levanta Docker, prepara el editor y abre la ventana.",
 		],
 		copyCommand: "Copiar comando",
