@@ -66,7 +66,7 @@ const pt = {
 	},
 	features: {
 		title: "Sua voz, narrando o seu vídeo.",
-		lead: "Grave de 10 a 15 segundos de fala e a TiêIA clona a voz com o Chatterbox, na sua placa de vídeo. Escreva o texto, ouça, ponha na linha do tempo ou baixe em MP3 ou WAV.",
+		lead: "Grave de 10 a 15 segundos de fala e a Tiê AI clona a voz com o Chatterbox, na sua placa de vídeo. Escreva o texto, ouça, ponha na linha do tempo ou baixe em MP3 ou WAV.",
 		alsoHeading: "E também",
 		// What the editor does today. Each entry matches a place in the editor
 		// (see lib/editor-ui-map.ts); keep it to features that exist.
@@ -141,12 +141,12 @@ const pt = {
 	},
 	nameStory: {
 		iconAlt:
-			"Ícone da TiêIA: o tiê-sangue em traço branco sobre vermelho, com um play no bico",
+			"Ícone da Tiê AI: o tiê-sangue em traço branco sobre vermelho, com um play no bico",
 		title: "Por que tiê",
 		beforeSpecies: "O tiê-sangue (",
 		afterSpecies:
 			") só existe no Brasil. Vive na Mata Atlântica, do Nordeste ao Sul, e aparece até nos parques do Rio de Janeiro. O macho é vermelho-sangue, com asas e cauda pretas, e o nome científico, bresilius, vem do próprio Brasil.",
-		why: "A TiêIA é feita para quem cria vídeos no Brasil, e o tiê é um símbolo brasileiro fácil de reconhecer: um pássaro pequeno, comum e muito vermelho. O nome junta os dois: tiê mais IA.",
+		why: "A Tiê AI é feita para quem cria vídeos no Brasil, e o tiê é um símbolo brasileiro fácil de reconhecer: um pássaro pequeno, comum e muito vermelho. O nome junta os dois: tiê mais AI, a sigla em inglês de inteligência artificial.",
 		iconTitle: "O ícone",
 		icon: [
 			"Um quadrado de cantos arredondados, com raio de 20% do lado, no vermelho #D2011A, tirado do tiê. Sobre ele, o pássaro em um traço branco só, de espessura constante: um círculo forma a cabeça e o corpo, curvas por dentro dele desenham a asa e o peito, e o bico é um triângulo vazado apontado para a direita.",
@@ -199,7 +199,7 @@ const en: LandingCopy = {
 	},
 	features: {
 		title: "Your voice, narrating your video.",
-		lead: "Record 10 to 15 seconds of speech and TiêIA clones the voice with Chatterbox, on your graphics card. Write the text, listen, put it on the timeline or download it as MP3 or WAV.",
+		lead: "Record 10 to 15 seconds of speech and Tiê AI clones the voice with Chatterbox, on your graphics card. Write the text, listen, put it on the timeline or download it as MP3 or WAV.",
 		alsoHeading: "And also",
 		items: [
 			{
@@ -272,12 +272,12 @@ const en: LandingCopy = {
 	},
 	nameStory: {
 		iconAlt:
-			"TiêIA icon: the tiê-sangue in a white line on red, with a play button in its beak",
+			"Tiê AI icon: the tiê-sangue in a white line on red, with a play button in its beak",
 		title: "Why tiê",
 		beforeSpecies: "The tiê-sangue (",
 		afterSpecies:
 			") lives only in Brazil. It is found in the Atlantic Forest, from the Northeast to the South, and even in Rio de Janeiro's parks. The male is blood red, with black wings and tail, and its scientific name, bresilius, comes from Brazil itself.",
-		why: "TiêIA is made for people who create videos in Brazil, and the tiê is a Brazilian symbol that is easy to recognize: a small, common and very red bird. The name puts the two together: tiê plus IA, Portuguese for AI.",
+		why: "Tiê AI is made for people who create videos in Brazil, and the tiê is a Brazilian symbol that is easy to recognize: a small, common and very red bird. The name puts the two together: tiê plus AI.",
 		iconTitle: "The icon",
 		icon: [
 			"A square with rounded corners, the radius 20% of the side, in red #D2011A, taken from the tiê. On it, the bird in a single white line of even weight: a circle makes the head and body, curves inside it draw the wing and chest, and the beak is an open triangle pointing right.",
@@ -328,7 +328,7 @@ const es: LandingCopy = {
 	},
 	features: {
 		title: "Tu voz, narrando tu video.",
-		lead: "Graba de 10 a 15 segundos de voz y TiêIA la clona con Chatterbox, en tu tarjeta gráfica. Escribe el texto, escúchalo, ponlo en la línea de tiempo o descárgalo en MP3 o WAV.",
+		lead: "Graba de 10 a 15 segundos de voz y Tiê AI la clona con Chatterbox, en tu tarjeta gráfica. Escribe el texto, escúchalo, ponlo en la línea de tiempo o descárgalo en MP3 o WAV.",
 		alsoHeading: "Y también",
 		items: [
 			{
@@ -401,12 +401,12 @@ const es: LandingCopy = {
 	},
 	nameStory: {
 		iconAlt:
-			"Ícono de TiêIA: el tiê-sangue en trazo blanco sobre rojo, con un botón de play en el pico",
+			"Ícono de Tiê AI: el tiê-sangue en trazo blanco sobre rojo, con un botón de play en el pico",
 		title: "Por qué tiê",
 		beforeSpecies: "El tiê-sangue (",
 		afterSpecies:
 			") solo existe en Brasil. Vive en la Mata Atlántica, del Nordeste al Sur, y aparece incluso en los parques de Río de Janeiro. El macho es rojo sangre, con alas y cola negras, y su nombre científico, bresilius, viene del propio Brasil.",
-		why: "TiêIA está hecha para quienes crean videos en Brasil, y el tiê es un símbolo brasileño fácil de reconocer: un pájaro pequeño, común y muy rojo. El nombre une los dos: tiê más IA.",
+		why: "Tiê AI está hecha para quienes crean videos en Brasil, y el tiê es un símbolo brasileño fácil de reconocer: un pájaro pequeño, común y muy rojo. El nombre une los dos: tiê más AI, la sigla en inglés de inteligencia artificial.",
 		iconTitle: "El ícono",
 		icon: [
 			"Un cuadrado de esquinas redondeadas, con un radio del 20% del lado, en el rojo #D2011A, tomado del tiê. Sobre él, el pájaro en un solo trazo blanco de grosor constante: un círculo forma la cabeza y el cuerpo, curvas por dentro dibujan el ala y el pecho, y el pico es un triángulo vacío que apunta a la derecha.",

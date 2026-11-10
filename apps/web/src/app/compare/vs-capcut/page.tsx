@@ -4,22 +4,22 @@ import { BasePage } from "@/app/base-page";
 import { SITE_URL } from "@/constants/site-constants";
 
 export const metadata: Metadata = {
-	title: "TiêIA vs CapCut — Privacy-First Open Source Alternative (No ByteDance)",
+	title: "Tiê AI vs CapCut — Privacy-First Open Source Alternative (No ByteDance)",
 	description:
-		"TiêIA is the free, open-source alternative to CapCut with no ByteDance data collection. Compare features: AI transcription, filler word removal, karaoke subtitles, voice cloning, B-roll generation, AI dubbing in 21 languages. Self-hosted and 100% local.",
+		"Tiê AI is the free, open-source alternative to CapCut with no ByteDance data collection. Compare features: AI transcription, filler word removal, karaoke subtitles, voice cloning, B-roll generation, AI dubbing in 21 languages. Self-hosted and 100% local.",
 	alternates: {
 		canonical: `${SITE_URL}/compare/vs-capcut`,
 	},
 	openGraph: {
-		title: "TiêIA vs CapCut — Privacy-First Alternative (No ByteDance)",
+		title: "Tiê AI vs CapCut — Privacy-First Alternative (No ByteDance)",
 		description:
-			"CapCut is owned by ByteDance (TikTok) and collects your data. TiêIA is open source, self-hosted, and runs 100% locally. No tracking. No data collection.",
+			"CapCut is owned by ByteDance (TikTok) and collects your data. Tiê AI is open source, self-hosted, and runs 100% locally. No tracking. No data collection.",
 		url: `${SITE_URL}/compare/vs-capcut`,
 		type: "website",
 	},
 	twitter: {
 		card: "summary_large_image",
-		title: "TiêIA vs CapCut",
+		title: "Tiê AI vs CapCut",
 		description:
 			"Free, open-source, no ByteDance. Privacy-first video editing that runs 100% locally.",
 	},
@@ -90,19 +90,19 @@ export default function VsCapCutPage() {
 			<div className="flex flex-col gap-12">
 				<header className="text-center flex flex-col gap-6">
 					<h1 className="text-4xl md:text-5xl font-bold tracking-tight">
-						TiêIA vs CapCut
+						Tiê AI vs CapCut
 					</h1>
 					<p className="text-lg text-muted-foreground max-w-2xl mx-auto">
 						CapCut is great for quick social edits — but it&apos;s owned by ByteDance (TikTok), 
 						collects extensive data, and locks AI features behind credits. 
-						TiêIA is <strong>open-source, self-hosted, and runs 100% locally</strong>.
+						Tiê AI is <strong>open-source, self-hosted, and runs 100% locally</strong>.
 					</p>
 					<div className="flex gap-3 justify-center">
 						<Link
 							href="/projects"
 							className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90"
 						>
-							Try TiêIA Free
+							Try Tiê AI Free
 						</Link>
 						<Link
 							href="https://github.com/AlexandreLPA/tieia"
@@ -125,7 +125,7 @@ export default function VsCapCutPage() {
 										<tr className="bg-muted/50">
 											<th className="text-left px-4 py-2.5 font-medium">Feature</th>
 											<th className="text-center px-4 py-2.5 font-medium text-primary">
-												TiêIA
+												Tiê AI
 											</th>
 											<th className="text-center px-4 py-2.5 font-medium text-muted-foreground">
 												CapCut
@@ -153,20 +153,20 @@ export default function VsCapCutPage() {
 				</section>
 
 				<section className="rounded-lg border bg-muted/30 p-6 md:p-8 space-y-4">
-					<h2 className="text-2xl font-bold">Why choose TiêIA over CapCut?</h2>
+					<h2 className="text-2xl font-bold">Why choose Tiê AI over CapCut?</h2>
 					<div className="grid md:grid-cols-3 gap-6">
 						<div>
 							<h3 className="font-semibold mb-1">No ByteDance data collection</h3>
 							<p className="text-sm text-muted-foreground">
 								CapCut is made by ByteDance (TikTok). It collects usage data, device info, 
-								and uploads content to their servers. TiêIA processes everything on your 
+								and uploads content to their servers. Tiê AI processes everything on your 
 								machine — zero data collection, zero telemetry.
 							</p>
 						</div>
 						<div>
 							<h3 className="font-semibold mb-1">Professional AI editing tools</h3>
 							<p className="text-sm text-muted-foreground">
-								CapCut is designed for quick social media edits. TiêIA adds professional 
+								CapCut is designed for quick social media edits. Tiê AI adds professional 
 								tools: text-based editing, Smart Cut (filler + silence removal), AI dubbing 
 								in 21 languages, and AI B-roll generation.
 							</p>
@@ -175,7 +175,7 @@ export default function VsCapCutPage() {
 							<h3 className="font-semibold mb-1">No credits, no watermarks</h3>
 							<p className="text-sm text-muted-foreground">
 								CapCut&apos;s AI features require credits and the free version adds watermarks. 
-								TiêIA is fully free with zero limitations. All features, all the time.
+								Tiê AI is fully free with zero limitations. All features, all the time.
 							</p>
 						</div>
 					</div>
@@ -189,16 +189,16 @@ export default function VsCapCutPage() {
 							answer="Yes. CapCut's privacy policy states they collect device information, usage data, content you create, and share it with ByteDance group companies. They also upload your media to their servers for processing."
 						/>
 						<FAQ
-							question="Does TiêIA have CapCut-style templates and effects?"
-							answer="TiêIA focuses on professional editing tools rather than social media templates. You get full control over transitions, subtitles, and effects rather than pre-made templates."
+							question="Does Tiê AI have CapCut-style templates and effects?"
+							answer="Tiê AI focuses on professional editing tools rather than social media templates. You get full control over transitions, subtitles, and effects rather than pre-made templates."
 						/>
 						<FAQ
-							question="Can I use TiêIA for TikTok/Reels/Shorts?"
-							answer="Absolutely. TiêIA has auto-reframe for 9:16 vertical format, karaoke subtitles, and all the tools you need for social media content — without the data collection."
+							question="Can I use Tiê AI for TikTok/Reels/Shorts?"
+							answer="Absolutely. Tiê AI has auto-reframe for 9:16 vertical format, karaoke subtitles, and all the tools you need for social media content — without the data collection."
 						/>
 						<FAQ
 							question="What about Indian language content?"
-							answer="TiêIA supports 22 Indian languages via Sarvam AI for transcription, translation, and AI dubbing. CapCut offers basic auto-captions but no Indian language TTS or dubbing."
+							answer="Tiê AI supports 22 Indian languages via Sarvam AI for transcription, translation, and AI dubbing. CapCut offers basic auto-captions but no Indian language TTS or dubbing."
 						/>
 					</div>
 				</section>

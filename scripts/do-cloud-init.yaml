@@ -125,4 +125,4 @@ write_files:
 runcmd:
   - [bash, -lc, "/opt/opencut/deploy.sh"]
 
-final_message: "TiêIA cloud-init finished scheduling deploy.sh"
+final_message: "Tiê AI cloud-init finished scheduling deploy.sh"

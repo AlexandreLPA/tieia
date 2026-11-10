@@ -1,8 +1,8 @@
-# TiêIA — Claude Code Context
+# Tiê AI — Claude Code Context
 
 ## Project Overview
 
-TiêIA is a local-first, open-source AI video editor. Editing and the AI models (Whisper, Chatterbox, Coqui XTTS, diffusers, pyannote, MediaPipe, the local LLMs) run on the machine; cloud services are opt-in: LLMs through OpenRouter with the user's own key, the KLIPY GIF search, and the cloud TTS and video-generation providers. It is a monorepo using Bun/Turborepo with a Next.js frontend and 7 Python (FastAPI) microservices.
+Tiê AI is a local-first, open-source AI video editor. Editing and the AI models (Whisper, Chatterbox, Coqui XTTS, diffusers, pyannote, MediaPipe, the local LLMs) run on the machine; cloud services are opt-in: LLMs through OpenRouter with the user's own key, the KLIPY GIF search, and the cloud TTS and video-generation providers. It is a monorepo using Bun/Turborepo with a Next.js frontend and 7 Python (FastAPI) microservices.
 
 ## Architecture
 
@@ -96,12 +96,12 @@ All Python services use `uv` (Astral). Install with `uv pip install --system --n
 
 ## Frontend Dev
 
-Hybrid mode (default): Docker runs the AI services, the database and Redis, and the editor runs on Windows. The "TiêIA" desktop shortcut runs the same script.
+Hybrid mode (default): Docker runs the AI services, the database and Redis, and the editor runs on Windows. The "Tiê AI" desktop shortcut runs the same script.
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/start-opencut.ps1        # daily use: production build
 powershell -ExecutionPolicy Bypass -File scripts/start-opencut.ps1 -Dev   # development: next dev, hot reload
-powershell -ExecutionPolicy Bypass -File scripts/start-opencut.ps1 -Stop  # editor + Docker services off ("Fechar TiêIA" shortcut)
+powershell -ExecutionPolicy Bypass -File scripts/start-opencut.ps1 -Stop  # editor + Docker services off ("Fechar Tiê AI" shortcut)
 ```
 
 - **Dependencies:** when `bun.lock` or a `package.json` changes, the launcher runs `bun install --frozen-lockfile` first.

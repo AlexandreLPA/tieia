@@ -27,7 +27,7 @@ export function Footer() {
 				<div className="max-w-sm">
 					<div className="flex items-center gap-2.5">
 						<TieiaLogo />
-						<span className="text-base font-bold">TiêIA</span>
+						<span className="text-base font-bold">Tiê AI</span>
 					</div>
 					<p className="text-muted-foreground mt-4 text-sm leading-relaxed">
 						{footer.about}{" "}

@@ -1,7 +1,7 @@
 import { cn } from "@/utils/ui";
 
 /**
- * The bird from the TiêIA icon as a single line (public/brand/tie-line.png,
+ * The bird from the Tiê AI icon as a single line (public/brand/tie-line.png,
  * cut from the icon artwork), painted with the brand red through a mask so
  * it follows the theme.
  */

@@ -2,7 +2,7 @@
 export const SITE_URL = "http://localhost:3000";
 
 export const SITE_INFO = {
-	title: "TiêIA",
+	title: "Tiê AI",
 	description:
 		"Editor de vídeo open source com IA, local-first: a edição e os modelos de IA rodam na sua máquina. Legendas automáticas, voz clonada, cortes para Shorts e Reels e um chat que conhece o seu projeto.",
 	url: SITE_URL,
@@ -21,13 +21,13 @@ export type ExternalTool = {
 export const EXTERNAL_TOOLS: ExternalTool[] = [
 	{
 		name: "Claude (Opus 4.6)",
-		description: "O modelo mais capaz da Anthropic. Usado para construir toda a camada de IA da TiêIA.",
+		description: "O modelo mais capaz da Anthropic. Usado para construir toda a camada de IA da Tiê AI.",
 		url: "https://claude.ai",
 		logo: "/logos/tools/claude.png",
 	},
 	{
 		name: "Cursor",
-		description: "Editor de código com IA. O IDE usado para desenvolver a TiêIA com integração ao Claude.",
+		description: "Editor de código com IA. O IDE usado para desenvolver a Tiê AI com integração ao Claude.",
 		url: "https://cursor.com",
 		logo: "/logos/tools/cursor.png",
 	},

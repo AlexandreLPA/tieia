@@ -1,6 +1,6 @@
-# DESIGN.md: TiêIA
+# DESIGN.md: Tiê AI
 
-Design brief for the TiêIA marketing surfaces (the landing page at `/` and the
+Design brief for the Tiê AI marketing surfaces (the landing page at `/` and the
 header and footer it uses). The editor keeps its own tokens in
 `apps/web/src/app/globals.css` (`:root`, `.dark`, `.panel`).
 
@@ -21,7 +21,7 @@ header and footer it uses). The editor keeps its own tokens in
   `src/lib/editor-ui-map.ts`. No product screenshots yet.
 
 ## 2. Design Read and surface types
-Reading this as: the TiêIA landing for Brazilian short-video creators, a
+Reading this as: the Tiê AI landing for Brazilian short-video creators, a
 sober Brazilian editorial language built on the bird's single red line, on
 Next.js and Tailwind.
 
@@ -96,4 +96,4 @@ White on `--tie-red` is 5.6:1.
   `src/components/landing/i18n.ts`. Other pages and the editor stay pt-BR.
 
 ## 12. References
-- The TiêIA icon. The antiwebslop skill (github.com/cesaroeduardo/antiwebslop).
+- The Tiê AI icon. The antiwebslop skill (github.com/cesaroeduardo/antiwebslop).

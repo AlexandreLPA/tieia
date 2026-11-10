@@ -111,7 +111,7 @@
 	--ring: hsl(0, 0%, 52%);
 }
 
-/* TiêIA brand: the landing page and the header/footer it wraps. The editor
+/* Tiê AI brand: the landing page and the header/footer it wraps. The editor
    keeps its own tokens. Values are documented in DESIGN.md. */
 .tieia-brand {
 	--tie-red: #d2021b; /* the icon's red: fills and the bird line */

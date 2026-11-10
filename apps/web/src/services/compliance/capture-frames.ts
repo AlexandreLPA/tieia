@@ -47,7 +47,7 @@ export function getComplianceFrameTimes({
 /**
  * Render frames of the composed timeline (text overlays and effects included)
  * as small JPEG data URLs for the compliance check and the studio chat.
- * The TiêIA export watermark stays off so it can't be mistaken for a foreign one.
+ * The Tiê AI export watermark stays off so it can't be mistaken for a foreign one.
  */
 export async function captureComplianceFrames(
 	editor: EditorCore,

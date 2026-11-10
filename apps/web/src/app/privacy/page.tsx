@@ -10,13 +10,13 @@ import { Separator } from "@/components/ui/separator";
 import { SOCIAL_LINKS } from "@/constants/site-constants";
 
 const DESCRIPTION =
-	"Como a TiêIA trata os seus dados: o que fica no seu computador e o que só vai para a internet quando você liga um serviço.";
+	"Como a Tiê AI trata os seus dados: o que fica no seu computador e o que só vai para a internet quando você liga um serviço.";
 
 export const metadata: Metadata = {
-	title: "Política de privacidade - TiêIA",
+	title: "Política de privacidade - Tiê AI",
 	description: DESCRIPTION,
 	openGraph: {
-		title: "Política de privacidade - TiêIA",
+		title: "Política de privacidade - Tiê AI",
 		description: DESCRIPTION,
 		type: "website",
 	},
@@ -78,7 +78,7 @@ export default function PrivacyPage() {
 		<div lang="pt-BR" className="tieia-brand">
 			<BasePage
 				title="Política de privacidade"
-				description="Como a TiêIA trata os seus dados. Última atualização: 1º de novembro de 2026."
+				description="Como a Tiê AI trata os seus dados. Última atualização: 1º de novembro de 2026."
 			>
 				<Accordion type="single" collapsible className="w-full">
 					<AccordionItem
@@ -99,7 +99,7 @@ export default function PrivacyPage() {
 									máquina.
 								</li>
 								<li>
-									Não existe servidor da TiêIA: quem mantém o projeto não recebe
+									Não existe servidor da Tiê AI: quem mantém o projeto não recebe
 									os seus vídeos, textos nem dados de uso.
 								</li>
 								<li>
@@ -119,7 +119,7 @@ export default function PrivacyPage() {
 				<section className="flex flex-col gap-3">
 					<h2 className="text-2xl font-semibold">Quem trata os seus dados</h2>
 					<p>
-						A TiêIA é um programa que você roda no seu computador, não um
+						A Tiê AI é um programa que você roda no seu computador, não um
 						serviço on-line. O editor atende só no próprio computador (endereço
 						127.0.0.1), e os serviços de IA rodam no Docker da sua máquina. Por
 						isso, quem controla os dados é você. Quando você liga um serviço de
@@ -208,7 +208,7 @@ export default function PrivacyPage() {
 				<section className="flex flex-col gap-3">
 					<h2 className="text-2xl font-semibold">Analytics</h2>
 					<p>
-						A TiêIA não manda telemetria para quem mantém o projeto. O código
+						A Tiê AI não manda telemetria para quem mantém o projeto. O código
 						traz suporte a Google Analytics e Databuddy, herdado do projeto
 						original, mas os dois ficam desligados: só ligam se alguém definir
 						NEXT_PUBLIC_GA_MEASUREMENT_ID ou NEXT_PUBLIC_DATABUDDY_CLIENT_ID ao

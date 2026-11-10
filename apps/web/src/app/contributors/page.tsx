@@ -8,13 +8,13 @@ import { EXTERNAL_TOOLS, SOCIAL_LINKS, UPSTREAM_URL } from "@/constants/site-con
 import { BasePage } from "../base-page";
 
 export const metadata: Metadata = {
-	title: "Contributors - TiêIA",
+	title: "Contributors - Tiê AI",
 	description:
-		"Meet the amazing people who contribute to TiêIA, the free and open-source video editor.",
+		"Meet the amazing people who contribute to Tiê AI, the free and open-source video editor.",
 	openGraph: {
-		title: "Contributors - TiêIA",
+		title: "Contributors - Tiê AI",
 		description:
-			"Meet the amazing people who contribute to TiêIA, the free and open-source video editor.",
+			"Meet the amazing people who contribute to Tiê AI, the free and open-source video editor.",
 		type: "website",
 	},
 };
@@ -35,7 +35,7 @@ async function getContributors(): Promise<Contributor[]> {
 			{
 				headers: {
 					Accept: "application/vnd.github.v3+json",
-					"User-Agent": "TiêIA-Web-App",
+					"User-Agent": "Tiê AI-Web-App",
 				},
 				next: { revalidate: 600 }, // 10 minutes
 			},
@@ -71,7 +71,7 @@ export default async function ContributorsPage() {
 	return (
 		<BasePage
 			title="How this project came together"
-			description="TiêIA stands on the shoulders of OpenCut, OpenCut AI and the open-source community. This page tells that story."
+			description="Tiê AI stands on the shoulders of OpenCut, OpenCut AI and the open-source community. This page tells that story."
 		>
 			<div className="mx-auto flex max-w-6xl flex-col gap-20">
 
@@ -125,7 +125,7 @@ export default async function ContributorsPage() {
 					<p className="text-muted-foreground leading-relaxed mt-3">
 						That question became OpenCut AI. A fork that wraps a complete AI suite around the
 						OpenCut editor, adding transcription, text-based editing, voice cloning, filters,
-						subtitles, fact-checking, and more. All open source. All local. TiêIA carries that work forward.
+						subtitles, fact-checking, and more. All open source. All local. Tiê AI carries that work forward.
 					</p>
 				</div>
 
@@ -181,7 +181,7 @@ export default async function ContributorsPage() {
 
 				<GitHubContributeSection
 					title="Continue the story"
-					description="TiêIA is open source. If you want to contribute, fix a bug, add a feature, or just try it out, the code is there."
+					description="Tiê AI is open source. If you want to contribute, fix a bug, add a feature, or just try it out, the code is there."
 				/>
 			</div>
 		</BasePage>
@@ -263,7 +263,7 @@ function AllContributorsSection({
 			<div className="flex flex-col gap-2 text-center">
 				<h2 className="text-2xl font-semibold">All contributors</h2>
 				<p className="text-muted-foreground">
-					Everyone who makes TiêIA better
+					Everyone who makes Tiê AI better
 				</p>
 			</div>
 
@@ -305,7 +305,7 @@ function ExternalToolsSection() {
 		<div className="flex flex-col gap-10">
 			<div className="flex flex-col gap-2 text-center">
 				<h2 className="text-2xl font-semibold">Built with</h2>
-				<p className="text-muted-foreground">The tools and models powering TiêIA</p>
+				<p className="text-muted-foreground">The tools and models powering Tiê AI</p>
 			</div>
 
 			<div className="mx-auto grid max-w-4xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

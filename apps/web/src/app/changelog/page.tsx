@@ -11,25 +11,25 @@ import {
 } from "./components/release";
 
 export const metadata: Metadata = {
-	title: "Changelog - TiêIA",
-	description: "What's new in TiêIA",
+	title: "Changelog - Tiê AI",
+	description: "What's new in Tiê AI",
 	openGraph: {
-		title: "Changelog - TiêIA",
-		description: "Every update, improvement, and fix to TiêIA — documented.",
+		title: "Changelog - Tiê AI",
+		description: "Every update, improvement, and fix to Tiê AI — documented.",
 		type: "website",
 		images: [
 			{
 				url: "/open-graph/changlog.jpg",
 				width: 1200,
 				height: 630,
-				alt: "TiêIA Changelog",
+				alt: "Tiê AI Changelog",
 			},
 		],
 	},
 	twitter: {
 		card: "summary_large_image",
-		title: "Changelog - TiêIA",
-		description: "What's new in TiêIA",
+		title: "Changelog - Tiê AI",
+		description: "What's new in Tiê AI",
 		images: ["/open-graph/changlog.jpg"],
 	},
 };
@@ -38,7 +38,7 @@ export default function ChangelogPage() {
 	const releases = getSortedReleases();
 
 	return (
-		<BasePage title="Changelog" description="See what's new in TiêIA">
+		<BasePage title="Changelog" description="See what's new in Tiê AI">
 			<div className="mx-auto w-full max-w-3xl">
 				<div className="relative">
 					<div

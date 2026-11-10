@@ -1,6 +1,6 @@
 # Create AI Editor Component
 
-Create a new AI-related React component for the TiêIA editor.
+Create a new AI-related React component for the Tiê AI editor.
 
 ## Instructions
 

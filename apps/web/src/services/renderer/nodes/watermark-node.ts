@@ -24,7 +24,7 @@ export class WatermarkNode extends BaseNode<WatermarkNodeParams> {
 		time: number;
 	}) {
 		const ctx = renderer.context;
-		const { canvasWidth, canvasHeight, text = "Made with TiêIA" } =
+		const { canvasWidth, canvasHeight, text = "Made with Tiê AI" } =
 			this.params;
 
 		const s = (v: number) => scale(v, canvasHeight);

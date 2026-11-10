@@ -10,13 +10,13 @@ import { Separator } from "@/components/ui/separator";
 import { SOCIAL_LINKS } from "@/constants/site-constants";
 
 const DESCRIPTION =
-	"Termos de uso da TiêIA, um editor de vídeo de código aberto (licença MIT) que você roda no seu computador.";
+	"Termos de uso da Tiê AI, um editor de vídeo de código aberto (licença MIT) que você roda no seu computador.";
 
 export const metadata: Metadata = {
-	title: "Termos de uso - TiêIA",
+	title: "Termos de uso - Tiê AI",
 	description: DESCRIPTION,
 	openGraph: {
-		title: "Termos de uso - TiêIA",
+		title: "Termos de uso - Tiê AI",
 		description: DESCRIPTION,
 		type: "website",
 	},
@@ -30,7 +30,7 @@ export default function TermsPage() {
 		<div lang="pt-BR" className="tieia-brand">
 			<BasePage
 				title="Termos de uso"
-				description="As regras para usar a TiêIA. Última atualização: 1º de novembro de 2026."
+				description="As regras para usar a Tiê AI. Última atualização: 1º de novembro de 2026."
 			>
 				<Accordion type="single" collapsible className="w-full">
 					<AccordionItem
@@ -46,7 +46,7 @@ export default function TermsPage() {
 							</h3>
 							<ol className="list-decimal space-y-2 pl-6">
 								<li>
-									A TiêIA é gratuita e de código aberto, sob a licença MIT.
+									A Tiê AI é gratuita e de código aberto, sob a licença MIT.
 								</li>
 								<li>
 									Ela roda no seu computador. Não há conta, assinatura nem
@@ -68,7 +68,7 @@ export default function TermsPage() {
 				<section className="flex flex-col gap-3">
 					<h2 className="text-2xl font-semibold">Licença</h2>
 					<p>
-						A TiêIA é distribuída sob a{" "}
+						A Tiê AI é distribuída sob a{" "}
 						<a
 							href={`${SOCIAL_LINKS.github}/blob/main/LICENSE`}
 							target="_blank"
@@ -79,7 +79,7 @@ export default function TermsPage() {
 						</a>
 						. Você pode usar, copiar, modificar e distribuir o código, inclusive
 						para fins comerciais, desde que mantenha o aviso de copyright e a
-						licença. A TiêIA é um fork do OpenCut AI, que por sua vez é um fork
+						licença. A Tiê AI é um fork do OpenCut AI, que por sua vez é um fork
 						do OpenCut, ambos também sob a licença MIT.
 					</p>
 				</section>
@@ -105,7 +105,7 @@ export default function TermsPage() {
 					<h2 className="text-2xl font-semibold">O seu conteúdo</h2>
 					<p>
 						Os vídeos, áudios, imagens e textos que você usa e cria são seus. A
-						TiêIA não reivindica nenhum direito sobre eles. Você é responsável
+						Tiê AI não reivindica nenhum direito sobre eles. Você é responsável
 						por ter permissão para usar o material que importa, como músicas,
 						imagens e vídeos de terceiros, e pelo que publica.
 					</p>
@@ -143,7 +143,7 @@ export default function TermsPage() {
 				<section className="flex flex-col gap-3">
 					<h2 className="text-2xl font-semibold">Modelos de IA</h2>
 					<p>
-						Os modelos de IA que a TiêIA baixa não fazem parte do código e têm
+						Os modelos de IA que a Tiê AI baixa não fazem parte do código e têm
 						licenças próprias. Alguns limitam o uso comercial, como o Coqui XTTS
 						v2. Antes de usar o resultado de um modelo para fins comerciais,
 						confira a licença dele.

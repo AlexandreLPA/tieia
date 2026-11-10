@@ -2,11 +2,11 @@
  * Sarvam AI constants — language codes, models, speakers, and feature mappings.
  *
  * Sarvam uses BCP-47-style codes with `-IN` suffix (e.g. "hi-IN").
- * This file maps between TiêIA's short codes and Sarvam's codes.
+ * This file maps between Tiê AI's short codes and Sarvam's codes.
  */
 
 // ---------------------------------------------------------------------------
-// Language code mapping: TiêIA short code → Sarvam BCP-47 code
+// Language code mapping: Tiê AI short code → Sarvam BCP-47 code
 // ---------------------------------------------------------------------------
 
 export const SARVAM_LANGUAGE_MAP: Record<string, string> = {
@@ -35,7 +35,7 @@ export const SARVAM_LANGUAGE_MAP: Record<string, string> = {
 	en: "en-IN",
 };
 
-/** Reverse map: Sarvam code → TiêIA short code */
+/** Reverse map: Sarvam code → Tiê AI short code */
 export const SARVAM_CODE_TO_SHORT: Record<string, string> = Object.fromEntries(
 	Object.entries(SARVAM_LANGUAGE_MAP).map(([k, v]) => [v, k]),
 );
@@ -150,7 +150,7 @@ export const SARVAM_DEFAULT_SPEAKER = "shubh";
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** Convert a TiêIA language code to Sarvam code. Returns undefined if not supported. */
+/** Convert a Tiê AI language code to Sarvam code. Returns undefined if not supported. */
 export function toSarvamCode(code: string): string | undefined {
 	return SARVAM_LANGUAGE_MAP[code];
 }

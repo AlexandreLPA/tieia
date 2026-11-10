@@ -1,6 +1,6 @@
 {
-	"name": "TiêIA",
-	"short_name": "TiêIA",
+	"name": "Tiê AI",
+	"short_name": "Tiê AI",
 	"description": "Open-source AI video editor. Transcribe, edit by text, clone voices, and generate visuals. Runs locally on your machine.",
 	"display": "standalone",
 	"start_url": "/",

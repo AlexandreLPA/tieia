@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="apps/web/public/icons/icon-192x192.png" alt="Logo da TiêIA" width="96" />
+  <img src="apps/web/public/icons/icon-192x192.png" alt="Logo da Tiê AI" width="96" />
 </p>
 
-<h1 align="center">TiêIA</h1>
+<h1 align="center">Tiê AI</h1>
 
 <p align="center">
   Editor de vídeo open source, com IA no centro e tudo rodando na sua máquina. Um fork do OpenCut.
@@ -14,7 +14,7 @@
 
 ---
 
-A TiêIA é um editor de vídeo no navegador com um conjunto de ferramentas de
+A Tiê AI é um editor de vídeo no navegador com um conjunto de ferramentas de
 IA embutido. O editor roda no seu computador, os modelos de IA rodam em
 containers Docker no seu computador, e os projetos ficam guardados no
 navegador. Só vai para a internet o que você ligar, como um LLM na nuvem pela
@@ -24,7 +24,7 @@ navegador. Só vai para a internet o que você ligar, como um LLM na nuvem pela
 A interface é em português do Brasil e o foco é vídeo curto: YouTube Shorts,
 Reels, TikTok e vídeos de venda do TikTok Shop.
 
-A TiêIA é um fork do [OpenCut AI](https://github.com/Ekaanth/OpenCut-AI), que
+A Tiê AI é um fork do [OpenCut AI](https://github.com/Ekaanth/OpenCut-AI), que
 por sua vez é um fork do [OpenCut](https://github.com/OpenCut-app/OpenCut).
 
 ## Funcionalidades
@@ -218,7 +218,7 @@ Com o padrão `AI_LLM_BACKEND=auto` e nenhuma chave configurada, nenhum texto,
 ## Por que o nome
 
 O tiê-sangue (*Ramphocelus bresilius*) é um pássaro vermelho vivo da Mata
-Atlântica, comum no Rio de Janeiro. TiêIA é o tiê mais IA. O ícone é o pássaro
+Atlântica, comum no Rio de Janeiro. Tiê AI é o tiê mais AI (inteligência artificial). O ícone é o pássaro
 desenhado num traço branco único sobre o vermelho, com um botão de play no
 bico. Onde acento não vale (código, URLs, nomes de pacote), o nome se escreve
 `tieia`.
@@ -226,12 +226,12 @@ bico. Onde acento não vale (código, URLs, nomes de pacote), o nome se escreve
 ## Licença e créditos
 
 MIT. Veja o [LICENSE](LICENSE), que mantém os avisos de copyright dos
-projetos de onde a TiêIA veio.
+projetos de onde a Tiê AI veio.
 
 - [OpenCut](https://github.com/OpenCut-app/OpenCut), dos contribuidores do
-  OpenCut: o editor de vídeo no coração da TiêIA.
+  OpenCut: o editor de vídeo no coração da Tiê AI.
 - [OpenCut AI](https://github.com/Ekaanth/OpenCut-AI), de
   [Ekaanth](https://github.com/Ekaanth): os serviços e recursos de IA
   construídos em volta do OpenCut.
 
-A TiêIA é mantida por [Alexandre](https://github.com/AlexandreLPA).
+A Tiê AI é mantida por [Alexandre](https://github.com/AlexandreLPA).

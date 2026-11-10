@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="apps/web/public/icons/icon-192x192.png" alt="TiêIA logo" width="96" />
+  <img src="apps/web/public/icons/icon-192x192.png" alt="Tiê AI logo" width="96" />
 </p>
 
-<h1 align="center">TiêIA</h1>
+<h1 align="center">Tiê AI</h1>
 
 <p align="center">
   An open-source, AI-native, local-first video editor. A fork of OpenCut.
@@ -14,7 +14,7 @@
 
 ---
 
-TiêIA is a browser-based video editor with an AI suite built in. The editor
+Tiê AI is a browser-based video editor with an AI suite built in. The editor
 runs on your own computer, the AI models run in Docker containers on your own
 computer, and your projects stay in your browser's storage. The only parts
 that reach the internet are the ones you turn on, such as a cloud LLM through
@@ -24,7 +24,7 @@ that reach the internet are the ones you turn on, such as a cloud LLM through
 The interface is in Brazilian Portuguese. It is aimed at short-form video:
 YouTube Shorts, Reels, TikTok and TikTok Shop sales videos.
 
-TiêIA is a fork of [OpenCut AI](https://github.com/Ekaanth/OpenCut-AI), which
+Tiê AI is a fork of [OpenCut AI](https://github.com/Ekaanth/OpenCut-AI), which
 is itself a fork of [OpenCut](https://github.com/OpenCut-app/OpenCut).
 
 ## Features
@@ -215,20 +215,20 @@ video goes to an AI provider.
 ## Why the name
 
 The tiê-sangue (*Ramphocelus bresilius*) is a bright red bird of the
-Brazilian Atlantic Forest, a common sight in Rio de Janeiro. TiêIA is the
-tiê plus *IA*, Portuguese for AI. The icon is the bird drawn in a single
+Brazilian Atlantic Forest, a common sight in Rio de Janeiro. Tiê AI is the
+tiê plus AI. The icon is the bird drawn in a single
 white line on red, with a play button in its beak. Where accents are not
 allowed (code, URLs, package names), the name is written `tieia`.
 
 ## License and credits
 
 MIT. See [LICENSE](LICENSE), which keeps the copyright notices of the
-projects TiêIA comes from.
+projects Tiê AI comes from.
 
 - [OpenCut](https://github.com/OpenCut-app/OpenCut), by the OpenCut
-  contributors: the video editor at the core of TiêIA.
+  contributors: the video editor at the core of Tiê AI.
 - [OpenCut AI](https://github.com/Ekaanth/OpenCut-AI), by
   [Ekaanth](https://github.com/Ekaanth): the AI services and features built
   around OpenCut.
 
-TiêIA is maintained by [Alexandre](https://github.com/AlexandreLPA).
+Tiê AI is maintained by [Alexandre](https://github.com/AlexandreLPA).

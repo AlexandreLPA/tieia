@@ -29,7 +29,7 @@ export function Header() {
 					<Link href="/" className="flex items-center gap-3">
 						<TieiaLogo size={36} />
 						<span className="text-base font-bold tracking-tight hidden sm:inline">
-							TiêIA
+							Tiê AI
 						</span>
 					</Link>
 				</div>

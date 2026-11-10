@@ -1,6 +1,6 @@
-# Work on TiêIA Issue
+# Work on Tiê AI Issue
 
-Work on the specified issue from the TiêIA issue tracker.
+Work on the specified issue from the Tiê AI issue tracker.
 
 ## Instructions
 

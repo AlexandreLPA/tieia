@@ -1,6 +1,6 @@
-# TiêIA Project Status
+# Tiê AI Project Status
 
-Check the current implementation status of the TiêIA project.
+Check the current implementation status of the Tiê AI project.
 
 ## Instructions
 

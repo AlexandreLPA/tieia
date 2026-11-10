@@ -1,4 +1,4 @@
-"""Entry point for the TiêIA Backend service."""
+"""Entry point for the Tiê AI Backend service."""
 
 import uvicorn
 
