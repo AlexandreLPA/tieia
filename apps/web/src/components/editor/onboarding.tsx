@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SOCIAL_LINKS } from "@/constants/site-constants";
 import { useLocalStorage } from "@/hooks/storage/use-local-storage";
 import { Button } from "../ui/button";
@@ -8,6 +8,11 @@ import { Dialog, DialogBody, DialogContent, DialogTitle } from "../ui/dialog";
 import { useAIStatus } from "@/hooks/use-ai-status";
 import { useAIStore } from "@/stores/ai-store";
 import { cn } from "@/utils/ui";
+import { aiClient } from "@/lib/ai-client";
+import { OpenRouterKeyForm } from "./ai/openrouter-key-form";
+
+const STEP_KEY = 2;
+const STEP_DONE = 3;
 
 export function Onboarding() {
 	const [step, setStep] = useState(0);
@@ -19,8 +24,22 @@ export function Onboarding() {
 	const toggleSetupGuide = useAIStore((s) => s.toggleSetupGuide);
 
 	const isOpen = !hasSeenOnboarding;
+	// null until the backend says whether a cloud key is already set
+	const [hasCloudKey, setHasCloudKey] = useState<boolean | null>(null);
+	const [cloudModel, setCloudModel] = useState<string | null>(null);
+
+	useEffect(() => {
+		if (!isOpen || !isConnected) return;
+		aiClient
+			.llmStatus()
+			.then((status) => setHasCloudKey(status.openrouter_configured))
+			.catch(() => setHasCloudKey(null));
+	}, [isOpen, isConnected]);
 
 	const handleNext = () => setStep(step + 1);
+	// The key step needs the backend to save the key, and is pointless with one set
+	const handleAfterBackend = () =>
+		setStep(isConnected && hasCloudKey === false ? STEP_KEY : STEP_DONE);
 	const handleClose = () => setHasSeenOnboarding({ value: true });
 
 	const handleOpenSetup = () => {
@@ -113,17 +132,57 @@ export function Onboarding() {
 										Configurar IA
 									</Button>
 								)}
-								<Button onClick={handleNext} className="flex-1">
-									{isConnected ? "Começar" : "Pular por enquanto"}
+								<Button onClick={handleAfterBackend} className="flex-1">
+									{isConnected ? "Próximo" : "Pular por enquanto"}
 								</Button>
 							</div>
 						</div>
 					)}
 
-					{step === 2 && (
+					{step === STEP_KEY && (
+						<div className="flex flex-col gap-5">
+							<div className="flex flex-col gap-2">
+								<h2 className="text-lg font-bold">
+									Modelos de IA na nuvem (opcional)
+								</h2>
+								<p className="text-sm text-muted-foreground leading-relaxed">
+									Insira sua chave da OpenRouter para o chat usar os modelos
+									gratuitos dela, sem baixar nada. Crie a chave em{" "}
+									<a
+										href="https://openrouter.ai/keys"
+										target="_blank"
+										rel="noopener noreferrer"
+										className="text-foreground underline hover:text-foreground/80"
+									>
+										openrouter.ai/keys
+									</a>
+									.
+								</p>
+								<p className="text-xs text-muted-foreground leading-relaxed">
+									A chave fica salva só neste computador. Com um modelo da
+									nuvem, o que você digita no chat vai para o provedor do
+									modelo; seus vídeos continuam aqui.
+								</p>
+							</div>
+							<OpenRouterKeyForm
+								onSaved={(model) => {
+									setCloudModel(model);
+									setStep(STEP_DONE);
+								}}
+								onSkip={() => setStep(STEP_DONE)}
+							/>
+						</div>
+					)}
+
+					{step === STEP_DONE && (
 						<div className="flex flex-col gap-5">
 							<div className="flex flex-col gap-2">
 								<h2 className="text-lg font-bold">Tudo pronto</h2>
+								{cloudModel && (
+									<p className="rounded-lg bg-green-500/10 px-3 py-2 text-sm text-green-400">
+										Chave salva. O chat responde com {cloudModel}.
+									</p>
+								)}
 								<p className="text-sm text-muted-foreground leading-relaxed">
 									Esta é uma beta inicial. Abra uma issue no{" "}
 									<a

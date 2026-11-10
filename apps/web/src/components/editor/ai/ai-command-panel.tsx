@@ -19,6 +19,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useAIStore } from "@/stores/ai-store";
 import type { RawCommandAction } from "@/lib/ai-command-actions";
+import { ChatModelPicker } from "./chat-model-picker";
 
 // ----- Types -----
 
@@ -281,9 +282,15 @@ export function AICommandPanel({
 						)}
 					</Button>
 				</div>
-				<p className="text-[9px] text-muted-foreground mt-1.5 text-center">
-					Pressione Enter para enviar &middot; Salve as respostas como ideias
-				</p>
+				<div className="mt-1.5 flex items-center justify-between gap-2">
+					<ChatModelPicker
+						isPanelOpen={isOpen}
+						className="-ml-1.5 min-w-0"
+					/>
+					<p className="text-[9px] text-muted-foreground shrink-0">
+						Enter para enviar
+					</p>
+				</div>
 			</div>
 		</div>
 	);

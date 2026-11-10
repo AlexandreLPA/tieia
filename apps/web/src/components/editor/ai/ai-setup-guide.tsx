@@ -27,6 +27,7 @@ import {
 import { toast } from "sonner";
 import { useAIStatus } from "@/hooks/use-ai-status";
 import { aiClient, type ServicesStatus, type ServiceInfo } from "@/lib/ai-client";
+import { OpenRouterKeyForm } from "./openrouter-key-form";
 import {
 	useServiceHealth,
 	SERVICE_URLS,
@@ -631,8 +632,33 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 								</p>
 
 								{!openRouterConfigured && (
-									<div className="rounded bg-yellow-500/10 px-2.5 py-2 text-[11px] text-yellow-400 leading-relaxed">
-										Adicione OPENROUTER_API_KEY no arquivo .env do projeto (gere uma chave grátis em openrouter.ai) para habilitar estes modelos.
+									<div className="flex flex-col gap-2">
+										<p className="text-[11px] text-muted-foreground leading-relaxed">
+											Crie uma chave grátis em{" "}
+											<a
+												href="https://openrouter.ai/keys"
+												target="_blank"
+												rel="noopener noreferrer"
+												className="text-foreground underline"
+											>
+												openrouter.ai/keys
+											</a>{" "}
+											e cole aqui. Ela fica salva só neste computador.
+										</p>
+										<OpenRouterKeyForm
+											onSaved={(model) => {
+												setOpenRouterConfigured(true);
+												setActiveBackend("openrouter");
+												setOpenRouterModel(model);
+												aiClient
+													.listCloudModels()
+													.then(setCloudModels)
+													.catch(() => {});
+												toast.success(
+													`Chave salva. Agora usando ${model} (nuvem)`,
+												);
+											}}
+										/>
 									</div>
 								)}
 

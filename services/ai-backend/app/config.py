@@ -110,6 +110,11 @@ class Settings(BaseSettings):
     UPLOAD_DIR: str = str(
         Path(__file__).resolve().parent.parent / "uploads"
     )
+    # API keys typed in the app. Under models/ (a volume, git-ignored) and not
+    # under generated/, which the backend serves over HTTP.
+    SECRETS_FILE: str = str(
+        Path(__file__).resolve().parent.parent / "models" / "secrets.json"
+    )
 
     # Redis (for job queue)
     REDIS_URL: str = "redis://localhost:6379"

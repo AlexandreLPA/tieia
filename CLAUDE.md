@@ -23,6 +23,8 @@ Three backends for LLM inference (`services/ai-backend/app/services/model_backen
 2. **TurboQuant** — local HuggingFace models, port 8430, 4-bit NF4 + KV cache compression (2-bit GPU, 3-bit CPU)
 3. **OpenRouter** — cloud LLMs with the user's `OPENROUTER_API_KEY`. Only `:free` models run unless `OPENROUTER_ALLOW_PAID=true`; when a text request to the cloud fails it falls back to the local model (requests with images do not)
 
+The OpenRouter key comes from `.env` or from the editor (first-run steps and "Gerenciar serviços de IA", `POST /api/llm/openrouter-key`). A key typed in the editor is saved in `/app/models/secrets.json` and overrides `.env`; it must never go under `/app/generated`, which the backend serves over HTTP.
+
 Selection: `OPENCUTAI_AI_LLM_BACKEND=auto|ollama|turboquant|openrouter` (`.env`: `AI_LLM_BACKEND`). The default is `auto`: TurboQuant when it has a model loaded, otherwise Ollama. OpenRouter is used when `AI_LLM_BACKEND=openrouter` or when a cloud model is picked in the editor ("Gerenciar serviços de IA"); that choice is saved in `/app/generated/llm-runtime.json` and overrides `.env`.
 
 ## Supported Model Families

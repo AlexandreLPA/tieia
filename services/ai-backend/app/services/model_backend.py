@@ -158,6 +158,7 @@ class LLMBackend:
         self._last_served: dict[str, Any] | None = None
         self._cloud_issue: dict[str, Any] | None = None
         self._load_runtime_settings()
+        self._load_saved_openrouter_key()
         # OpenRouter model id -> input modalities, fetched lazily by vision_support()
         self._or_catalog: dict[str, list[str]] | None = None
         self._or_catalog_at = 0.0
@@ -217,6 +218,32 @@ class LLMBackend:
             self._openrouter_model_override = openrouter_model
         self._cloud_issue = None
         self._save_runtime_settings()
+
+    def set_openrouter_key(self, key: str) -> None:
+        """Use this OpenRouter key from now on and keep it for the next start.
+
+        A key saved here wins over the one in .env, like the model picked in the app.
+        """
+        settings.OPENROUTER_API_KEY = key
+        self._cloud_issue = None
+        try:
+            os.makedirs(os.path.dirname(settings.SECRETS_FILE), exist_ok=True)
+            # 0o600: readable by the backend's user only
+            descriptor = os.open(settings.SECRETS_FILE, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+            with os.fdopen(descriptor, "w", encoding="utf-8") as file:
+                json.dump({"openrouter_api_key": key}, file)
+        except OSError:
+            logger.warning("Could not save the OpenRouter key; it lasts until the backend restarts", exc_info=True)
+
+    def _load_saved_openrouter_key(self) -> None:
+        try:
+            with open(settings.SECRETS_FILE, encoding="utf-8") as file:
+                data = json.load(file)
+        except (OSError, ValueError):
+            return
+        key = data.get("openrouter_api_key") if isinstance(data, dict) else None
+        if isinstance(key, str) and key:
+            settings.OPENROUTER_API_KEY = key
 
     def _load_runtime_settings(self) -> None:
         try:

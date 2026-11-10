@@ -4,6 +4,7 @@ import json
 import logging
 from typing import Literal
 
+import httpx
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field, model_validator
@@ -294,6 +295,45 @@ async def cloud_models() -> dict:
     }
 
 
+class OpenRouterKeyRequest(BaseModel):
+    key: str = Field(min_length=10, max_length=300)
+
+
+@router.post("/openrouter-key")
+async def set_openrouter_key(request: OpenRouterKeyRequest) -> dict:
+    """Save the user's OpenRouter key and start answering with the best free model.
+
+    The key is checked with OpenRouter first, so a typo is reported here and
+    not on the first chat message. It is never returned by any endpoint.
+    """
+    key = request.key.strip()
+    try:
+        async with httpx.AsyncClient(timeout=15) as client:
+            response = await client.get(
+                f"{settings.OPENROUTER_BASE_URL}/key",
+                headers={"Authorization": f"Bearer {key}"},
+            )
+    except httpx.HTTPError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail="Não foi possível falar com a OpenRouter para conferir a chave. Verifique a internet e tente de novo.",
+        ) from exc
+    if response.status_code in (401, 403):
+        raise HTTPException(status_code=400, detail="A OpenRouter não reconheceu esta chave. Confira se copiou a chave inteira.")
+    if response.status_code != 200:
+        raise HTTPException(
+            status_code=502,
+            detail=f"A OpenRouter respondeu com erro ({response.status_code}) ao conferir a chave. Tente de novo em instantes.",
+        )
+
+    llm_backend.set_openrouter_key(key)
+    await llm_backend.refresh_openrouter_models(force=True)
+    model = llm_backend.openrouter_model
+    llm_backend.set_backend("openrouter", model)
+    logger.info("OpenRouter key saved; answering with %s", model)
+    return {"status": "saved", "current_backend": "openrouter", "current_model": model}
+
+
 class SetCloudModelRequest(BaseModel):
     model: str
 
@@ -302,13 +342,13 @@ class SetCloudModelRequest(BaseModel):
 async def set_cloud_model(request: SetCloudModelRequest) -> dict:
     """Switch to a cloud model via OpenRouter at runtime — no restart needed.
 
-    Requires OPENROUTER_API_KEY to already be set in .env (this endpoint
-    only switches which model/backend is active, it never sets the key).
+    Requires an OpenRouter key, from .env or saved with /openrouter-key (this
+    endpoint only switches which model/backend is active).
     """
     if not settings.OPENROUTER_API_KEY:
         raise HTTPException(
             status_code=400,
-            detail="Nenhuma chave da OpenRouter configurada. Adicione OPENROUTER_API_KEY no .env primeiro.",
+            detail="Nenhuma chave da OpenRouter configurada. Adicione a chave em Gerenciar serviços de IA primeiro.",
         )
 
     if not openrouter_model_allowed(request.model):

@@ -39,6 +39,19 @@ export class SetupClient extends ProvidersClient {
 		});
 	}
 
+	/** Checks the key with OpenRouter, saves it on this computer and switches to the best free model. */
+	async setOpenRouterKey(key: string): Promise<{
+		status: string;
+		current_backend: string;
+		current_model: string;
+	}> {
+		return this.request(
+			"/api/llm/openrouter-key",
+			{ method: "POST", body: JSON.stringify({ key }) },
+			HEALTH_TIMEOUT_MS * 6,
+		);
+	}
+
 	async setLocalBackend(): Promise<{
 		status: string;
 		previous_backend: string;

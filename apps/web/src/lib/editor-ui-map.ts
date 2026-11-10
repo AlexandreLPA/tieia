@@ -72,6 +72,19 @@ export const UI_DESTINATIONS: UiDestination[] = [
 		target: "tab/ai",
 	},
 	{
+		id: "modelo-do-chat",
+		name: "Modelo do chat",
+		path: "Chat de IA (Ctrl+K) → nome do modelo, abaixo do campo de mensagem",
+		about: "troca o modelo que responde o chat: os gratuitos da nuvem (OpenRouter) ou os instalados neste PC (Ollama)",
+		target: "ai/chat-model",
+	},
+	{
+		id: "chave-openrouter",
+		name: "Chave da OpenRouter",
+		path: "Indicador de IA no topo → Gerenciar serviços de IA → Nuvem (OpenRouter)",
+		about: "cola a chave da OpenRouter para o chat usar os modelos gratuitos da nuvem; o campo aparece enquanto não há chave salva",
+	},
+	{
 		id: "video-ia",
 		name: "Geração de vídeo com IA",
 		path: "Barra lateral esquerda → Vídeo IA",
