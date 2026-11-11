@@ -47,6 +47,34 @@ export interface MurmurationWordmarkProps {
 	reeds?: boolean;
 	/** The pointer is a hawk the flock flees. Defaults to true. */
 	interactive?: boolean;
+	/**
+	 * An image whose opaque pixels the flock also forms, taking turns with the
+	 * word (a logo, a symbol).
+	 */
+	image?: string;
+	/**
+	 * How far the free flock wanders from the middle: 1 crosses the whole
+	 * width, less keeps it inside a small box. Defaults to 1.
+	 */
+	roam?: number;
+	/**
+	 * Keeps every bird inside the element: they turn back near the edges
+	 * instead of flying off and being cut. Defaults to false.
+	 */
+	contain?: boolean;
+	/**
+	 * Where the word and the image are formed, and the middle of free flight,
+	 * in pixels from the element's top left. Defaults to the whole element; a
+	 * smaller one lets the flock roam a wide area around a picture.
+	 */
+	focus?: { x: number; y: number; width: number; height: number };
+	/**
+	 * Opens with the birds already holding the image, which then takes turns
+	 * with the word. Needs `image`. Defaults to false.
+	 */
+	startWithImage?: boolean;
+	/** No sky and no reeds: only the birds, over whatever is behind. */
+	transparent?: boolean;
 	/** Face the word is sampled from; `var(--x)` is resolved on the element. */
 	fontFamily?: string;
 	/** Content laid over the sky (a headline, a nav). */
@@ -197,6 +225,12 @@ export default function MurmurationWordmark({
 	holdFor = 3.2,
 	reeds = true,
 	interactive = true,
+	image,
+	transparent = false,
+	roam = 1,
+	contain = false,
+	startWithImage = false,
+	focus,
 	fontFamily = SANS_STACK,
 	children,
 	height = "100svh",
@@ -208,10 +242,20 @@ export default function MurmurationWordmark({
 	};
 	const rootRef = React.useRef<HTMLDivElement | null>(null);
 	const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
-	const opts = React.useRef({ flyFor, holdFor, interactive });
-	opts.current = { flyFor, holdFor, interactive };
+	const opts = React.useRef({ flyFor, holdFor, interactive, roam, contain });
+	opts.current = { flyFor, holdFor, interactive, roam, contain };
 	const { skyTop, skyLow, sun: sunColor, ink } = colors;
 	const reedColor = colors.reed ?? ink;
+	// The birds' colour is read on every frame: a new theme repaints the flock
+	// where it is instead of starting the animation over
+	const inkRef = React.useRef(ink);
+	inkRef.current = ink;
+	// Only the sky's own colours redraw it from scratch
+	const skyReed = transparent || !reeds ? "" : reedColor;
+	const focusX = focus?.x;
+	const focusY = focus?.y;
+	const focusW = focus?.width;
+	const focusH = focus?.height;
 
 	React.useEffect(() => {
 		const root = rootRef.current;
@@ -237,28 +281,47 @@ export default function MurmurationWordmark({
 		let vy = new Float32Array(0);
 		let depth = new Float32Array(0);
 		let phase = new Float32Array(0);
+		// What the flock forms, in turns: the word, then the image when there is one
+		let shapes: {
+			tx: Float32Array<ArrayBuffer>;
+			ty: Float32Array<ArrayBuffer>;
+			target: Int32Array<ArrayBuffer>;
+		}[] = [];
 		let target = new Int32Array(0);
 		let tx = new Float32Array(0);
 		let ty = new Float32Array(0);
+		let picture: HTMLImageElement | null = null;
 		let hx = -1e5;
 		let hy = -1e5;
 		let last = performance.now();
 		let clock = 0;
+		// With startWithImage, nothing is drawn until the image is in place
+		let started = !(startWithImage && image);
 		const rand = mmwRandom(11);
+		let fx = 0;
+		let fy = 0;
+		let fw = 1;
+		let fh = 1;
 
 		const layout = () => {
 			const rect = root.getBoundingClientRect();
 			w = Math.max(1, Math.round(rect.width));
 			h = Math.max(1, Math.round(rect.height));
 			dpr = Math.min(window.devicePixelRatio || 1, 2);
+			fx = Math.max(0, Math.min(w - 1, focusX ?? 0));
+			fy = Math.max(0, Math.min(h - 1, focusY ?? 0));
+			fw = Math.max(1, Math.min(w - fx, focusW ?? w));
+			fh = Math.max(1, Math.min(h - fy, focusH ?? h));
 			canvas.width = Math.round(w * dpr);
 			canvas.height = Math.round(h * dpr);
 
 			// Sky: a vertical gradient, the sun's glow low on the horizon, grain.
-			sky = document.createElement("canvas");
-			sky.width = canvas.width;
-			sky.height = canvas.height;
-			const s = sky.getContext("2d");
+			sky = transparent ? null : document.createElement("canvas");
+			if (sky) {
+				sky.width = canvas.width;
+				sky.height = canvas.height;
+			}
+			const s = sky?.getContext("2d");
 			if (s) {
 				s.setTransform(dpr, 0, 0, dpr, 0, 0);
 				const g = s.createLinearGradient(0, 0, 0, h);
@@ -336,11 +399,11 @@ export default function MurmurationWordmark({
 				const face = resolveFontFamily(root, fontFamily);
 				mc.font = `900 100px ${face}`;
 				const wordW = mc.measureText(word || " ").width || 1;
-				const size = Math.min(((w * 0.74) / wordW) * 100, (h * 0.4) / 0.72);
+				const size = Math.min(((fw * 0.74) / wordW) * 100, (fh * 0.4) / 0.72);
 				mc.font = `900 ${size}px ${face}`;
 				mc.textAlign = "center";
 				mc.textBaseline = "middle";
-				mc.fillText(word || " ", w / 2, h * 0.44);
+				mc.fillText(word || " ", fx + fw / 2, fy + fh * 0.44);
 				const img = mc.getImageData(0, 0, w, h).data;
 				const step = Math.max(2, Math.round(Math.sqrt((w * h) / 90000)));
 				for (let y = 0; y < h; y += step) {
@@ -352,8 +415,36 @@ export default function MurmurationWordmark({
 					}
 				}
 			}
-			tx = new Float32Array(xs);
-			ty = new Float32Array(ys);
+			const sample = (xs: number[], ys: number[]) => {
+				const step = Math.max(2, Math.round(Math.sqrt((w * h) / 90000)));
+				const data = mc?.getImageData(0, 0, w, h).data;
+				if (!data) return;
+				for (let y = 0; y < h; y += step) {
+					for (let x = 0; x < w; x += step) {
+						if (data[(y * w + x) * 4 + 3] > 128) {
+							xs.push(x + (rand() - 0.5) * step);
+							ys.push(y + (rand() - 0.5) * step);
+						}
+					}
+				}
+			};
+			const found = [{ xs, ys }];
+			const imageFirst = startWithImage;
+			if (mc && picture?.complete && picture.naturalWidth > 0) {
+				// The image, contained in the middle of the canvas
+				const scale = Math.min(
+					(fw * 0.86) / picture.naturalWidth,
+					(fh * 0.86) / picture.naturalHeight,
+				);
+				const pw = picture.naturalWidth * scale;
+				const ph = picture.naturalHeight * scale;
+				mc.clearRect(0, 0, w, h);
+				mc.drawImage(picture, fx + (fw - pw) / 2, fy + (fh - ph) / 2, pw, ph);
+				const pxs: number[] = [];
+				const pys: number[] = [];
+				sample(pxs, pys);
+				if (pxs.length > 0) found.push({ xs: pxs, ys: pys });
+			}
 
 			// Scale the flock to the screen, then seed it as a loose cloud.
 			const want = Math.round(
@@ -371,13 +462,35 @@ export default function MurmurationWordmark({
 				for (let i = 0; i < n; i++) {
 					const a = rand() * Math.PI * 2;
 					const r = Math.sqrt(rand());
-					px[i] = w * 0.5 + Math.cos(a) * r * w * 0.22;
-					py[i] = h * 0.4 + Math.sin(a) * r * h * 0.16;
+					px[i] = fx + fw * 0.5 + Math.cos(a) * r * fw * 0.22;
+					py[i] = fy + fh * 0.4 + Math.sin(a) * r * fh * 0.16;
 					depth[i] = 0.55 + rand() * 0.45;
 					phase[i] = rand() * Math.PI * 2;
 				}
 			}
-			target = mmwAssign(n, tx.length, 23);
+			// The image opens the cycle when it should be the first thing seen
+			if (imageFirst && found.length > 1) found.reverse();
+			shapes = found.map((points, index) => ({
+				tx: new Float32Array(points.xs),
+				ty: new Float32Array(points.ys),
+				target: mmwAssign(n, points.xs.length, 23 + index),
+			}));
+			({ tx, ty, target } = shapes[0]);
+
+			// Opening on the image: every bird already on its point, and the
+			// clock at the start of the hold, so it is seen formed before it flies
+			if (!started && found.length > 1) {
+				for (let i = 0; i < n; i++) {
+					const ti = target[i];
+					if (ti < 0) continue;
+					px[i] = tx[ti];
+					py[i] = ty[ti];
+					vx[i] = Math.cos(phase[i]) * 0.01;
+					vy[i] = Math.sin(phase[i]) * 0.01;
+				}
+				clock = Math.max(1, opts.current.flyFor) + 2.4;
+				started = true;
+			}
 
 			// Reduced motion: nothing moves, so the birds rest on the word,
 			// each with a heading of its own so it still reads as a bird.
@@ -395,8 +508,9 @@ export default function MurmurationWordmark({
 
 		const frame = (now: number) => {
 			raf = requestAnimationFrame(frame);
-			if (!visible) {
+			if (!visible || !started) {
 				last = now;
+				if (!started) ctx.clearRect(0, 0, canvas.width, canvas.height);
 				return;
 			}
 			const dt = reduced ? 0 : Math.min(0.05, (now - last) / 1000);
@@ -407,6 +521,9 @@ export default function MurmurationWordmark({
 			const hold = Math.max(0.5, o.holdFor);
 			const cycle = fly + 2.4 + hold + 0.6;
 			const tc = clock % cycle;
+			// Each formation takes the next shape
+			const shape = shapes[Math.floor(clock / cycle) % shapes.length];
+			if (shape) ({ tx, ty, target } = shape);
 			// 0 → 1 while forming, 1 while holding, back to 0 on release.
 			let pull = 0;
 			if (tc > fly && tc <= fly + 2.4) pull = mmwEase((tc - fly) / 2.4);
@@ -416,8 +533,16 @@ export default function MurmurationWordmark({
 
 			const u = Math.min(w, h);
 			const cen = mmwCentre(clock);
-			const cxp = w / 2 + cen[0] * w * 0.5;
-			const cyp = h * 0.42 + cen[1] * h;
+			let cxp = fx + fw / 2 + cen[0] * w * 0.5 * o.roam;
+			let cyp = fy + fh * 0.42 + cen[1] * h * o.roam;
+			if (o.contain) {
+				// The flock gathers around this point: kept well away from the
+				// edges, it never presses the birds against one
+				const mx = Math.min(u * 0.42, w * 0.42);
+				const my = Math.min(u * 0.36, h * 0.38);
+				cxp = Math.min(w - mx, Math.max(mx, cxp));
+				cyp = Math.min(h - my, Math.max(my, cyp));
+			}
 			const t = clock * 0.35;
 			const hawk = o.interactive && hx > -1e4;
 			const hawkR = u * 0.16;
@@ -458,6 +583,24 @@ export default function MurmurationWordmark({
 						ay += (dy / d) * f;
 					}
 				}
+				// Contained: a soft wall inside each edge turns the birds back
+				// before they reach it, so none is ever cut off by the box. Only in
+				// free flight: while forming and holding a shape the wall would
+				// push its edge in and flatten it
+				if (o.contain && free > 0) {
+					// Gentle at first and firmer near the edge, so the birds curve
+					// away instead of lining up against it
+					const wall = u * 0.18;
+					const k = 2600 * free;
+					const near = (d: number) => {
+						const p = (wall - d) / wall;
+						return p * p * k;
+					};
+					if (x < wall) ax += near(x);
+					else if (x > w - wall) ax -= near(w - x);
+					if (y < wall) ay += near(y);
+					else if (y > h - wall) ay -= near(h - y);
+				}
 				let nvx = (vx[i] + ax * dt) * (1 - 1.1 * dt);
 				let nvy = (vy[i] + ay * dt) * (1 - 1.1 * dt);
 				const sp = Math.hypot(nvx, nvy);
@@ -470,11 +613,17 @@ export default function MurmurationWordmark({
 				vy[i] = nvy;
 				px[i] = x + nvx * dt;
 				py[i] = y + nvy * dt;
+				if (o.contain) {
+					// Last resort, rarely reached: a bird is about 8 px across
+					px[i] = Math.min(w - 4, Math.max(4, px[i]));
+					py[i] = Math.min(h - 4, Math.max(4, py[i]));
+				}
 				phase[i] += dt * (9 + sp * 0.02);
 			}
 
 			ctx.setTransform(1, 0, 0, 1, 0, 0);
 			if (sky) ctx.drawImage(sky, 0, 0);
+			else ctx.clearRect(0, 0, canvas.width, canvas.height);
 			ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 			// Two depth passes so near birds read darker and heavier.
 			for (let pass = 0; pass < 2; pass++) {
@@ -498,7 +647,7 @@ export default function MurmurationWordmark({
 					ctx.lineTo(bx, by);
 					ctx.lineTo(bx + wx - nx, by + wy - ny);
 				}
-				ctx.strokeStyle = ink;
+				ctx.strokeStyle = inkRef.current;
 				ctx.globalAlpha = pass === 0 ? 0.55 : 0.92;
 				ctx.lineWidth = pass === 0 ? 0.9 : 1.25;
 				ctx.stroke();
@@ -516,6 +665,18 @@ export default function MurmurationWordmark({
 			hy = -1e5;
 		};
 
+		let alive = true;
+		if (image) {
+			picture = new Image();
+			picture.onload = () => {
+				if (alive) layout();
+			};
+			// Without the image the flock simply starts on the word
+			picture.onerror = () => {
+				started = true;
+			};
+			picture.src = image;
+		}
 		layout();
 		raf = requestAnimationFrame(frame);
 		root.addEventListener("pointermove", onMove);
@@ -526,7 +687,6 @@ export default function MurmurationWordmark({
 			visible = entries[0] ? entries[0].isIntersecting : true;
 		});
 		io.observe(root);
-		let alive = true;
 		if (document.fonts?.ready) {
 			document.fonts.ready.then(() => {
 				if (alive) layout();
@@ -546,17 +706,28 @@ export default function MurmurationWordmark({
 		skyTop,
 		skyLow,
 		sunColor,
-		ink,
-		reedColor,
+		skyReed,
 		reeds,
 		fontFamily,
+		image,
+		transparent,
+		startWithImage,
+		focusX,
+		focusY,
+		focusW,
+		focusH,
 	]);
 
 	return (
 		<div
 			ref={rootRef}
 			className={`mmw-root ${className}`}
-			style={{ height, "--mmw-sky": skyTop } as React.CSSProperties}
+			style={
+				{
+					height,
+					"--mmw-sky": transparent ? "transparent" : skyTop,
+				} as React.CSSProperties
+			}
 		>
 			<style>{MMW_CSS}</style>
 			<canvas ref={canvasRef} role="img" aria-label={word} />

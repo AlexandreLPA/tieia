@@ -1,4 +1,3 @@
-import { FlockBanner } from "@/components/landing/flock-banner";
 import { Hero } from "@/components/landing/hero";
 import { Features } from "@/components/landing/features";
 import { WhereItRuns } from "@/components/landing/where-it-runs";
@@ -26,7 +25,6 @@ export default async function Home() {
 		>
 			<Header />
 			<main>
-				<FlockBanner />
 				<Hero />
 				<Features />
 				<WhereItRuns />

@@ -59,7 +59,7 @@ const pt = {
 	},
 	hero: {
 		title: "Editor de vídeo com IA que roda no seu computador.",
-		lead: "Legendas automáticas, voz clonada, cortes para Shorts e Reels e um chat que conhece o seu projeto. Os modelos de IA rodam no Docker da sua máquina, e os vídeos ficam no seu navegador.",
+		lead: "Legendas automáticas, voz clonada, cortes para Shorts e Reels e um chat com IA que conhece o seu projeto.",
 		openProjects: "Abrir meus projetos",
 		viewCode: "Ver o código no GitHub",
 		license: "Código aberto.",
@@ -192,7 +192,7 @@ const en: LandingCopy = {
 	},
 	hero: {
 		title: "An AI video editor that runs on your computer.",
-		lead: "Automatic captions, a cloned voice, cuts for Shorts and Reels, and a chat that knows your project. The AI models run in Docker on your machine, and your videos stay in your browser.",
+		lead: "Automatic captions, a cloned voice, cuts for Shorts and Reels, and an AI chat that knows your project.",
 		openProjects: "Open my projects",
 		viewCode: "View the code on GitHub",
 		license: "Open source.",
@@ -321,7 +321,7 @@ const es: LandingCopy = {
 	},
 	hero: {
 		title: "Editor de video con IA que funciona en tu computadora.",
-		lead: "Subtítulos automáticos, voz clonada, cortes para Shorts y Reels y un chat que conoce tu proyecto. Los modelos de IA se ejecutan en el Docker de tu máquina, y los videos se quedan en tu navegador.",
+		lead: "Subtítulos automáticos, voz clonada, cortes para Shorts y Reels y un chat con IA que conoce tu proyecto.",
 		openProjects: "Abrir mis proyectos",
 		viewCode: "Ver el código en GitHub",
 		license: "Código abierto.",
