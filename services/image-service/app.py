@@ -16,6 +16,8 @@ import time
 import uuid
 from pathlib import Path
 
+import model_files
+
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
@@ -27,7 +29,8 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Configuration via environment variables
 # ---------------------------------------------------------------------------
-DIFFUSION_MODEL = os.getenv("DIFFUSION_MODEL", "stabilityai/stable-diffusion-2-1")
+# Stable Diffusion 2.1, the old default, was taken off Hugging Face
+DIFFUSION_MODEL = os.getenv("DIFFUSION_MODEL", "stabilityai/sdxl-turbo")
 IMAGE_DEFAULT_WIDTH = int(os.getenv("IMAGE_DEFAULT_WIDTH", "512"))
 IMAGE_DEFAULT_HEIGHT = int(os.getenv("IMAGE_DEFAULT_HEIGHT", "512"))
 IMAGE_DEFAULT_STEPS = int(os.getenv("IMAGE_DEFAULT_STEPS", "20"))
@@ -44,21 +47,14 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 AVAILABLE_IMAGE_MODELS = [
     {
-        "name": "stable-diffusion-2-1",
-        "full_name": "stabilityai/stable-diffusion-2-1",
-        "description": "Good quality — versatile default",
-        "size": "~5 GB",
-        "size_mb": 5000,
-        "device": "gpu",
-        "default_steps": 20,
-    },
-    {
         "name": "sdxl-turbo",
         "full_name": "stabilityai/sdxl-turbo",
         "description": "Fast SDXL — 1-4 step generation",
         "size": "~7 GB",
         "size_mb": 7000,
         "device": "gpu",
+        # Video memory it needs to run on the card (GB)
+        "vram_gb": 8,
         "default_steps": 4,
     },
     {
@@ -68,15 +64,17 @@ AVAILABLE_IMAGE_MODELS = [
         "size": "~7 GB",
         "size_mb": 7000,
         "device": "gpu",
+        "vram_gb": 10,
         "default_steps": 30,
     },
     {
         "name": "sd-1.5",
-        "full_name": "runwayml/stable-diffusion-v1-5",
+        "full_name": "stable-diffusion-v1-5/stable-diffusion-v1-5",
         "description": "Classic SD 1.5 — huge ecosystem",
         "size": "~4 GB",
         "size_mb": 4000,
         "device": "gpu",
+        "vram_gb": 4,
         "default_steps": 20,
     },
     {
@@ -86,6 +84,7 @@ AVAILABLE_IMAGE_MODELS = [
         "size": "~12 GB",
         "size_mb": 12000,
         "device": "gpu",
+        "vram_gb": 24,
         "default_steps": 4,
     },
     {
@@ -95,6 +94,7 @@ AVAILABLE_IMAGE_MODELS = [
         "size": "~1 GB",
         "size_mb": 1000,
         "device": "cpu",
+        "vram_gb": 2,
         "default_steps": 25,
     },
     {
@@ -104,6 +104,7 @@ AVAILABLE_IMAGE_MODELS = [
         "size": "~1.5 GB",
         "size_mb": 1500,
         "device": "cpu",
+        "vram_gb": 2,
         "default_steps": 25,
     },
 ]
@@ -141,7 +142,9 @@ class ImageGenParams(BaseModel):
     width: int = Field(default=IMAGE_DEFAULT_WIDTH, ge=64, le=2048)
     height: int = Field(default=IMAGE_DEFAULT_HEIGHT, ge=64, le=2048)
     steps: int = Field(default=IMAGE_DEFAULT_STEPS, ge=1, le=100)
-    guidance_scale: float = Field(default=IMAGE_DEFAULT_GUIDANCE, ge=1.0, le=30.0)
+    # 0 turns guidance off, which is how the few-step models (SDXL Turbo,
+    # FLUX Schnell) are meant to run
+    guidance_scale: float = Field(default=IMAGE_DEFAULT_GUIDANCE, ge=0.0, le=30.0)
     seed: int | None = Field(default=None, description="Random seed for reproducibility")
 
 
@@ -156,6 +159,8 @@ class DiffusionService:
     _pipeline = None
     _model_name: str = ""
     _device: str = "cpu"
+    # The model being downloaded or loaded right now
+    loading: str | None = None
 
     def __new__(cls) -> "DiffusionService":
         if cls._instance is None:
@@ -199,6 +204,7 @@ class DiffusionService:
         if self._pipeline is not None:
             self.unload()
 
+        self.loading = target
         try:
             import torch
             from diffusers import AutoPipelineForText2Image
@@ -223,6 +229,8 @@ class DiffusionService:
         except Exception as e:
             logger.exception("Failed to load diffusion model '%s'", target)
             return {"status": "error", "error": str(e)}
+        finally:
+            self.loading = None
 
     def unload(self) -> None:
         if self._pipeline is not None:
@@ -332,22 +340,59 @@ async def health():
     }
 
 
+def _recommended(card: dict | None) -> str:
+    """The model that suits this computer: the fast SDXL on a card that holds
+    it, SD 1.5 on a smaller card, the tiny one without a card."""
+    if card is None:
+        return "segmind-tiny"
+    for name in ("sdxl-turbo", "sd-1.5"):
+        if card["vram_gb"] >= _MODEL_MAP[name]["vram_gb"]:
+            return name
+    return "segmind-tiny"
+
+
 @app.get("/models")
-async def list_models():
-    """List available image generation models with metadata."""
+def list_models():
+    """The models, with what each has on disk, and the one suited to this PC."""
     active_full = diffusion_service.model_name if diffusion_service.is_loaded else None
     active_short = _short_name(active_full) if active_full else None
     device = diffusion_service.device if diffusion_service.is_loaded else "cpu"
+    card = model_files.gpu()
 
     models = []
     for m in AVAILABLE_IMAGE_MODELS:
         is_active = m["full_name"] == active_full
         models.append({
             **m,
+            **model_files.disk_state(m["full_name"], m["size_mb"]),
             "active": is_active,
+            "loading": m["full_name"] == diffusion_service.loading,
             "device": device if is_active else m["device"],
         })
-    return {"models": models, "active_model": active_short, "device": device}
+    return {
+        "models": models,
+        "active_model": active_short,
+        "device": device,
+        "gpu": card,
+        "recommended": _recommended(card),
+    }
+
+
+@app.delete("/models/{model_name}")
+def delete_model(model_name: str):
+    """Deletes a downloaded model's files, unloading it first if in use."""
+    target = _resolve_model_name(model_name)
+    if target not in _FULL_NAME_MAP:
+        raise HTTPException(status_code=404, detail="Unknown model.")
+    if target == diffusion_service.loading:
+        raise HTTPException(status_code=409, detail="This model is downloading.")
+    if diffusion_service.is_loaded and diffusion_service.model_name == target:
+        diffusion_service.unload()
+    try:
+        removed = model_files.remove(target)
+    except OSError as e:
+        raise HTTPException(status_code=409, detail=f"Could not delete: {e}")
+    return {"status": "deleted" if removed else "absent", "model": model_name}
 
 
 @app.post("/generate")
@@ -657,7 +702,9 @@ async def remove_bg_video_job(job_id: str):
 
 
 @app.post("/load")
-async def load_model(model_name: str | None = None):
+def load_model(model_name: str | None = None):
+    # A plain def runs in a worker thread: while the first use downloads the
+    # model, /models keeps answering with how far it got
     """Load an image generation model by name. Downloads on first use."""
     result = diffusion_service.load_model(model_name)
 

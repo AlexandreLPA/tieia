@@ -105,6 +105,40 @@ export const PACKS: Pack[] = [
 			},
 		],
 	},
+	{
+		id: "image",
+		name: "Imagem",
+		description:
+			"Gera imagens a partir de uma descrição (Tiê Image) na placa de vídeo, e remove o fundo de imagens e vídeos.",
+		size: "cerca de 5 GB, mais 6,5 GB do modelo e 1 GB da remoção de fundo no primeiro uso",
+		python: "3.11",
+		requirements: ["image-service/requirements.txt"],
+		// PyTorch for CUDA 12.8 and the library versions the Docker image uses;
+		// without them uv takes PyPI's newer, CPU-only torch
+		overrides: ["image-service/overrides-desktop.txt"],
+		indexUrls: ["https://download.pytorch.org/whl/cu128"],
+		services: [
+			{
+				id: "image",
+				dir: "image-service",
+				args: [
+					"-m",
+					"uvicorn",
+					"app:app",
+					"--host",
+					"127.0.0.1",
+					"--port",
+					"8423",
+				],
+				port: 8423,
+				health: "/health",
+				// What loads when a feature generates without picking a model
+				// (B-roll, thumbnails); the service's own default, Stable
+				// Diffusion 2.1, was taken down from Hugging Face
+				env: { DIFFUSION_MODEL: "stabilityai/sdxl-turbo" },
+			},
+		],
+	},
 ];
 
 export type PackState =

@@ -133,6 +133,14 @@ export const UI_DESTINATIONS: UiDestination[] = [
 		target: "tab/captions",
 	},
 	{
+		id: "modelo-de-transcricao",
+		name: "Modelo de transcrição",
+		path: "Barra lateral esquerda → Legendas → Modelo",
+		about: "escolhe entre rapidez e precisão na transcrição; mostra quanto cada modelo pesa, quanta VRAM precisa e qual é o recomendado para este PC, e só baixa o que você escolher",
+		tab: "captions",
+		target: "captions/whisper-model",
+	},
+	{
 		id: "kit-tiktok",
 		name: "Kit TikTok Shop",
 		path: "Barra lateral esquerda → Elementos → Kit TikTok Shop",

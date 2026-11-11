@@ -1,10 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { cn } from "@/utils/ui";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import {
 	Dialog,
@@ -12,7 +11,6 @@ import {
 	DialogHeader,
 	DialogTitle,
 	DialogDescription,
-	DialogBody,
 	DialogFooter,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -26,32 +24,25 @@ import {
 } from "@hugeicons/core-free-icons";
 import { toast } from "sonner";
 import { useAIStatus } from "@/hooks/use-ai-status";
-import { aiClient, type ServicesStatus, type ServiceInfo } from "@/lib/ai-client";
+import { aiClient, } from "@/lib/ai-client";
 import { OpenRouterKeyForm } from "./openrouter-key-form";
 import { DesktopPacksCard } from "./desktop-packs-card";
+import { DownloadedModelsCard } from "./downloaded-models-card";
 import { notifyLlmChanged } from "@/lib/llm-change";
 import {
 	useServiceHealth,
 	SERVICE_URLS,
 	SERVICE_DOCKER_COMMANDS,
-	type ServiceHealth,
-	type ServiceName,
 } from "@/hooks/use-service-health";
 
 import { formatBytes, type OllamaModel } from "./ai-setup-guide/helpers";
 import {
-	SUGGESTED_CLOUD_MODELS,
-	SUGGESTED_IMAGE_MODELS,
 	SUGGESTED_MODELS,
 	SUGGESTED_TTS_MODELS,
-	SUGGESTED_WHISPER_MODELS,
 } from "./ai-setup-guide/suggested-models";
 import { CommandBlock, ServiceCard } from "./ai-setup-guide/service-card";
-import { cloudModelSummary, shortModelName } from "@/lib/ai-model-name";
-import type { CloudModels } from "@/types/ai";
 
 // Free cloud models listed before "Ver todos"
-const CLOUD_MODELS_SHOWN = 5;
 
 // ----- Types -----
 
@@ -76,18 +67,14 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 	const [isSwitchingTTS, setIsSwitchingTTS] = useState<string | null>(null);
 	const [activeWhisperModel, setActiveWhisperModel] = useState<string>("");
 	const [activeWhisperDevice, setActiveWhisperDevice] = useState<string>("cpu");
-	const [isSwitchingWhisper, setIsSwitchingWhisper] = useState<string | null>(null);
 	const [activeImageModel, setActiveImageModel] = useState<string>("");
 	const [activeImageDevice, setActiveImageDevice] = useState<string>("cpu");
-	const [isSwitchingImage, setIsSwitchingImage] = useState<string | null>(null);
 	const [isTestingService, setIsTestingService] = useState<string | null>(null);
 	const [activeBackend, setActiveBackend] = useState<string>("ollama");
 	const [openRouterConfigured, setOpenRouterConfigured] = useState(false);
 	const [openRouterModel, setOpenRouterModel] = useState<string>("");
 	const [isSwitchingCloudModel, setIsSwitchingCloudModel] = useState<string | null>(null);
 	// Free OpenRouter models read from its catalog; null until loaded (or without a key)
-	const [cloudModels, setCloudModels] = useState<CloudModels | null>(null);
-	const [showAllCloudModels, setShowAllCloudModels] = useState(false);
 
 	const isLoading = isChecking;
 
@@ -100,10 +87,6 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 				if (data.active_backend) setActiveBackend(data.active_backend);
 				setOpenRouterConfigured(!!data.openrouter_configured);
 				if (data.openrouter_model) setOpenRouterModel(data.openrouter_model);
-				// Only with a key: without one nothing should leave this machine
-				if (data.openrouter_configured) {
-					aiClient.listCloudModels().then(setCloudModels).catch(() => {});
-				}
 			}).catch(() => {});
 			// Fetch active TTS model + device
 			fetch(`${SERVICE_URLS.tts}/models`, { signal: AbortSignal.timeout(5000) })
@@ -147,22 +130,6 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 		}
 	}, []);
 
-	const handleSwitchCloudModel = useCallback(async (modelId: string) => {
-		setIsSwitchingCloudModel(modelId);
-		try {
-			const result = await aiClient.setCloudModel(modelId);
-			setActiveBackend(result.current_backend);
-			setOpenRouterModel(modelId);
-			setCloudModels((prev) => prev && { ...prev, active: modelId, configured: modelId });
-			notifyLlmChanged();
-			toast.success(`Agora usando ${modelId} (nuvem)`);
-		} catch (err) {
-			toast.error(err instanceof Error ? err.message : "Falha ao trocar para o modelo em nuvem");
-		} finally {
-			setIsSwitchingCloudModel(null);
-		}
-	}, []);
-
 	const handleUseLocalModel = useCallback(async () => {
 		setIsSwitchingCloudModel("local");
 		try {
@@ -176,19 +143,6 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 			setIsSwitchingCloudModel(null);
 		}
 	}, []);
-
-	// The catalog's free models when it could be read; the fixed suggestions otherwise
-	const cloudModelList = useMemo(
-		() =>
-			cloudModels?.models.length
-				? cloudModels.models.map((model) => ({
-						id: model.id,
-						name: model.name,
-						description: cloudModelSummary(model),
-					}))
-				: SUGGESTED_CLOUD_MODELS,
-		[cloudModels],
-	);
 
 	const handleRefresh = useCallback(async () => {
 		await refresh();
@@ -242,50 +196,6 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 			setTtsError(error instanceof Error ? error.message : "Falha ao trocar o modelo de TTS");
 		} finally {
 			setIsSwitchingTTS(null);
-		}
-	}, [loadModel]);
-
-	const handleSwitchWhisperModel = useCallback(async (modelSize: string) => {
-		setIsSwitchingWhisper(modelSize);
-		setWhisperError(null);
-		setActionMessage(null);
-		try {
-			const result = await loadModel("whisper", { model_size: modelSize });
-			if (result.verified) {
-				setActiveWhisperModel(modelSize);
-				setActionMessage(`Whisper alternado para ${modelSize}`);
-				toast.success(`Whisper agora usando ${modelSize}`);
-			} else {
-				setWhisperError("Modelo carregado, mas não foi possível verificá-lo. Clique em \"Verificar\" para checar novamente.");
-			}
-		} catch (error) {
-			setWhisperError(error instanceof Error ? error.message : "Falha ao trocar o modelo do Whisper");
-		} finally {
-			setIsSwitchingWhisper(null);
-		}
-	}, [loadModel]);
-
-	const handleSwitchImageModel = useCallback(async (modelName: string) => {
-		setIsSwitchingImage(modelName);
-		setDiffusionError(null);
-		setActionMessage(null);
-		try {
-			const result = await loadModel("image", { model_name: modelName });
-			if (result.verified) {
-				setActiveImageModel(modelName);
-				setActionMessage(`Modelo de imagem alternado para ${modelName}`);
-				toast.success(`Modelo de imagem agora usando ${modelName}`);
-				fetch(`${SERVICE_URLS.image}/models`, { signal: AbortSignal.timeout(5000) })
-					.then((r) => r.ok ? r.json() : null)
-					.then((d) => { if (d?.device) setActiveImageDevice(d.device); })
-					.catch(() => {});
-			} else {
-				setDiffusionError("Modelo carregado, mas não foi possível verificá-lo. Tente novamente.");
-			}
-		} catch (error) {
-			setDiffusionError(error instanceof Error ? error.message : "Falha ao trocar o modelo de imagem");
-		} finally {
-			setIsSwitchingImage(null);
 		}
 	}, [loadModel]);
 
@@ -355,6 +265,9 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 					<div className="flex flex-col gap-4 px-6 pb-2">
 						{/* ── The desktop app's AI packs (nothing outside the app) ── */}
 						<DesktopPacksCard />
+
+						{/* ── Models on this PC, to free space ── */}
+						<DownloadedModelsCard />
 
 						{/* ── Overall Status ── */}
 						<div
@@ -658,10 +571,6 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 												setActiveBackend("openrouter");
 												setOpenRouterModel(model);
 												notifyLlmChanged();
-												aiClient
-													.listCloudModels()
-													.then(setCloudModels)
-													.catch(() => {});
 												toast.success(
 													`Chave salva. Agora usando ${model} (nuvem)`,
 												);
@@ -682,73 +591,11 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 									</Button>
 								)}
 
-								{cloudModels && cloudModels.configured !== cloudModels.active && (
-									<div className="rounded bg-yellow-500/10 px-2.5 py-2 text-[11px] text-yellow-400 leading-relaxed">
-										{shortModelName(cloudModels.configured)} não está mais grátis na OpenRouter. Em uso no lugar dele: {shortModelName(cloudModels.active)}. Escolha outro abaixo se preferir.
-									</div>
+								{openRouterConfigured && (
+									<p className="text-[11px] text-muted-foreground leading-relaxed">
+										O modelo do chat se escolhe no próprio chat, no nome do modelo abaixo do campo de mensagem.
+									</p>
 								)}
-
-								<div className="flex flex-col gap-1">
-									{cloudModelList.slice(0, showAllCloudModels ? undefined : CLOUD_MODELS_SHOWN).map((model) => {
-										const isActive = activeBackend === "openrouter" && openRouterModel === model.id;
-										const isSwitching = isSwitchingCloudModel === model.id;
-
-										return (
-											<div
-												key={model.id}
-												className={cn(
-													"flex items-center gap-2 rounded px-2.5 py-2 text-[11px]",
-													isActive ? "bg-primary/10 border border-primary/30" : "bg-muted/30",
-												)}
-											>
-												<div className="flex-1 min-w-0">
-													<div className="flex items-center gap-1.5 flex-wrap">
-														<span className="font-medium font-mono">{model.name}</span>
-														{isActive && (
-															<Badge variant="default" className="text-[8px] px-1 py-0 h-3.5">
-																Ativo
-															</Badge>
-														)}
-													</div>
-													<p className="text-muted-foreground mt-0.5">{model.description}</p>
-												</div>
-												<div className="shrink-0">
-													{isActive ? (
-														<Badge variant="default" className="text-[9px] px-1.5 py-0.5">
-															Em uso
-														</Badge>
-													) : (
-														<Button
-															size="sm"
-															variant="outline"
-															className="h-6 text-[10px] px-2"
-															disabled={!openRouterConfigured || isSwitchingCloudModel !== null}
-															onClick={() => handleSwitchCloudModel(model.id)}
-														>
-															{isSwitching ? <Spinner className="size-3" /> : "Usar este"}
-														</Button>
-													)}
-												</div>
-											</div>
-										);
-									})}
-								</div>
-								{cloudModelList.length > CLOUD_MODELS_SHOWN && (
-									<button
-										type="button"
-										className="w-fit text-[10px] text-primary hover:underline"
-										onClick={() => setShowAllCloudModels((all) => !all)}
-									>
-										{showAllCloudModels
-											? "Mostrar menos"
-											: `Ver todos os ${cloudModelList.length} modelos grátis`}
-									</button>
-								)}
-								<p className="text-[10px] text-muted-foreground">
-									{cloudModels?.models.length
-										? "Lista lida da OpenRouter agora: só modelos grátis neste momento, os que aceitam imagem primeiro. Se o modelo em uso deixar de ser grátis, o do .env (ou o primeiro desta lista) entra no lugar sozinho."
-										: "Não deu para ler a lista atual da OpenRouter; estes são modelos sugeridos, que podem ter deixado de ser grátis."}
-								</p>
 							</div>
 						</ServiceCard>
 
@@ -975,75 +822,9 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 										</div>
 									)}
 
-									{/* Model list */}
-									<div className="flex flex-col gap-1">
-										<span className="text-[11px] text-muted-foreground font-medium">
-											{(whisper.model_loaded || activeWhisperModel) ? "Trocar para outro modelo" : "Escolha um modelo para carregar"}
-										</span>
-										{SUGGESTED_WHISPER_MODELS.map((model) => {
-											const isActive = model.name === activeWhisperModel;
-											const isSwitching = isSwitchingWhisper === model.name;
-
-											return (
-												<div
-													key={model.name}
-													className={cn(
-														"flex items-center gap-2 rounded px-2.5 py-2 text-[11px]",
-														isActive
-															? "bg-primary/10 border border-primary/30"
-															: "bg-muted/30",
-													)}
-												>
-													<div className="flex-1 min-w-0">
-														<div className="flex items-center gap-1.5 flex-wrap">
-															<span className="font-medium font-mono">{model.name}</span>
-															<span className="text-muted-foreground">{model.size}</span>
-															<Badge
-																variant="outline"
-																className={cn(
-																	"text-[8px] px-1 py-0",
-																	model.device === "cpu"
-																		? "text-green-400 border-green-500/30"
-																		: "text-purple-400 border-purple-500/30",
-																)}
-															>
-																{model.device === "cpu" ? "CPU" : "GPU"}
-															</Badge>
-															{isActive && (
-																<Badge variant="default" className="text-[8px] px-1 py-0 h-3.5">
-																	Ativo
-																</Badge>
-															)}
-														</div>
-														<p className="text-muted-foreground mt-0.5">{model.description}</p>
-													</div>
-													<div className="shrink-0">
-														{isSwitching ? (
-															<Button size="sm" variant="outline" className="h-6 text-[10px] px-2" disabled>
-																<Spinner className="size-3 mr-1" />
-																Carregando...
-															</Button>
-														) : isActive ? (
-															<Badge variant="default" className="text-[9px] px-1.5 py-0.5">
-																Em uso
-															</Badge>
-														) : (
-															<Button
-																size="sm"
-																variant="secondary"
-																className="h-6 text-[10px] px-2"
-																disabled={isSwitchingWhisper !== null}
-																onClick={() => handleSwitchWhisperModel(model.name)}
-															>
-																<HugeiconsIcon icon={Download04Icon} className="size-3 mr-0.5" />
-																Carregar e usar
-															</Button>
-														)}
-													</div>
-												</div>
-											);
-										})}
-									</div>
+									<p className="text-[11px] text-muted-foreground leading-relaxed">
+										O modelo de transcrição se escolhe em Legendas → Modelo, onde dá para ver o que cada um pesa e baixar só o que for usar.
+									</p>
 
 									{whisperError && (
 										<p className="text-[11px] text-destructive">{whisperError}</p>
@@ -1067,7 +848,7 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 								!isImageRunning
 									? SERVICE_URLS.image
 									: (diffusion.model_loaded || activeImageModel)
-										? `${activeImageModel || diffusion.model_name || "stable-diffusion-2-1"} carregado`
+										? `${activeImageModel || diffusion.model_name} carregado`
 										: diffusion.model_installed === false
 											? "Não instalado"
 											: "Escolha um modelo para carregar"
@@ -1120,75 +901,9 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 										</div>
 									)}
 
-									{/* Model list */}
-									<div className="flex flex-col gap-1">
-										<span className="text-[11px] text-muted-foreground font-medium">
-											{(diffusion.model_loaded || activeImageModel) ? "Trocar para outro modelo" : "Escolha um modelo para carregar"}
-										</span>
-										{SUGGESTED_IMAGE_MODELS.map((model) => {
-											const isActive = model.name === activeImageModel;
-											const isSwitching = isSwitchingImage === model.name;
-
-											return (
-												<div
-													key={model.name}
-													className={cn(
-														"flex items-center gap-2 rounded px-2.5 py-2 text-[11px]",
-														isActive
-															? "bg-primary/10 border border-primary/30"
-															: "bg-muted/30",
-													)}
-												>
-													<div className="flex-1 min-w-0">
-														<div className="flex items-center gap-1.5 flex-wrap">
-															<span className="font-medium font-mono">{model.name}</span>
-															<span className="text-muted-foreground">{model.size}</span>
-															<Badge
-																variant="outline"
-																className={cn(
-																	"text-[8px] px-1 py-0",
-																	model.device === "cpu"
-																		? "text-green-400 border-green-500/30"
-																		: "text-purple-400 border-purple-500/30",
-																)}
-															>
-																{model.device === "cpu" ? "CPU" : "GPU"}
-															</Badge>
-															{isActive && (
-																<Badge variant="default" className="text-[8px] px-1 py-0 h-3.5">
-																	Ativo
-																</Badge>
-															)}
-														</div>
-														<p className="text-muted-foreground mt-0.5">{model.description}</p>
-													</div>
-													<div className="shrink-0">
-														{isSwitching ? (
-															<Button size="sm" variant="outline" className="h-6 text-[10px] px-2" disabled>
-																<Spinner className="size-3 mr-1" />
-																Carregando...
-															</Button>
-														) : isActive ? (
-															<Badge variant="default" className="text-[9px] px-1.5 py-0.5">
-																Em uso
-															</Badge>
-														) : (
-															<Button
-																size="sm"
-																variant="secondary"
-																className="h-6 text-[10px] px-2"
-																disabled={isSwitchingImage !== null}
-																onClick={() => handleSwitchImageModel(model.name)}
-															>
-																<HugeiconsIcon icon={Download04Icon} className="size-3 mr-0.5" />
-																Carregar e usar
-															</Button>
-														)}
-													</div>
-												</div>
-											);
-										})}
-									</div>
+									<p className="text-[11px] text-muted-foreground leading-relaxed">
+										O modelo de imagem se escolhe no Tiê Image (Estúdio → botão de configurações ao lado do campo), onde dá para ver o que cada um pesa e baixar só o que for usar.
+									</p>
 
 									{diffusionError && (
 										<p className="text-[11px] text-destructive">{diffusionError}</p>

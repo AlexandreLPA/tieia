@@ -230,6 +230,11 @@ function serviceEnv(pack: Pack, service: PackService): NodeJS.ProcessEnv {
 		PYTHONUTF8: "1",
 		PYTHONUNBUFFERED: "1",
 		HF_HOME: path.join(AI_DATA_DIR, "models", "huggingface"),
+		// Plain downloads grow the file as they go, so the model pickers can
+		// show the progress; Xet writes each file only at the end
+		HF_HUB_DISABLE_XET: "1",
+		// rembg's background-removal models (default: a .u2net folder in home)
+		U2NET_HOME: path.join(AI_DATA_DIR, "models", "rembg"),
 		// AI backend
 		OPENCUTAI_HOST: "127.0.0.1",
 		OPENCUTAI_PORT: "8420",
@@ -242,7 +247,7 @@ function serviceEnv(pack: Pack, service: PackService): NodeJS.ProcessEnv {
 		// Transcription: the GPU when it works, the CPU otherwise (the service
 		// falls back on its own when CUDA fails)
 		WHISPER_DEVICE: "cuda",
-		UPLOAD_DIR: path.join(uploads, "whisper"),
+		UPLOAD_DIR: path.join(uploads, service.id),
 		// Each service's own files (Chatterbox keeps the cloned voices here)
 		GENERATED_DIR: path.join(AI_DATA_DIR, service.id),
 		...service.env,

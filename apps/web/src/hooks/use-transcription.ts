@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { aiClient, AIClientError } from "@/lib/ai-client";
+import { prepareWhisperModel } from "@/lib/local-models";
 import { useTranscriptStore } from "@/stores/transcript-store";
 
 function formatTranscriptionError(error: unknown): string {
@@ -41,6 +42,7 @@ export function useTranscription() {
 			try {
 				setProgress(10);
 
+				await prepareWhisperModel();
 				const result = await aiClient.transcribe(file, language);
 
 				setSegments(result.segments);

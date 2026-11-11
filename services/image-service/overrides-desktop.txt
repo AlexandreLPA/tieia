@@ -1,0 +1,7 @@
+# Applied by the desktop app's image pack (apps/web/src/lib/desktop-packs),
+# with PyTorch's CUDA 12.8 index next to PyPI. Without these, uv takes PyPI's
+# newer CPU-only torch; this is the newest CUDA 12.8 build for Windows, the
+# same version as the Docker image, and the libraries it was tested with.
+torch==2.11.0+cu128
+diffusers==0.37.1
+transformers==5.5.3

@@ -10,6 +10,8 @@ import os
 import uuid
 from pathlib import Path
 
+import model_files
+
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
@@ -42,6 +44,7 @@ AVAILABLE_WHISPER_MODELS = [
         "languages": 99,
         "relative_speed": 32,
         "device": "cpu",
+        "vram_gb": 1,
     },
     {
         "name": "base",
@@ -51,6 +54,7 @@ AVAILABLE_WHISPER_MODELS = [
         "languages": 99,
         "relative_speed": 16,
         "device": "cpu",
+        "vram_gb": 1,
     },
     {
         "name": "small",
@@ -60,6 +64,7 @@ AVAILABLE_WHISPER_MODELS = [
         "languages": 99,
         "relative_speed": 6,
         "device": "cpu",
+        "vram_gb": 2,
     },
     {
         "name": "medium",
@@ -69,6 +74,7 @@ AVAILABLE_WHISPER_MODELS = [
         "languages": 99,
         "relative_speed": 2,
         "device": "cpu",
+        "vram_gb": 3,
     },
     {
         "name": "large-v3",
@@ -78,10 +84,32 @@ AVAILABLE_WHISPER_MODELS = [
         "languages": 99,
         "relative_speed": 1,
         "device": "gpu",
+        "vram_gb": 5,
     },
 ]
 
 _MODEL_MAP = {m["name"]: m for m in AVAILABLE_WHISPER_MODELS}
+
+
+def _repo_id(name: str) -> str:
+    """The Hugging Face repository faster-whisper downloads a size from."""
+    try:
+        from faster_whisper.utils import _MODELS
+
+        return _MODELS.get(name, f"Systran/faster-whisper-{name}")
+    except Exception:
+        return f"Systran/faster-whisper-{name}"
+
+
+def _recommended(card: dict | None) -> str:
+    """The best accuracy this computer runs at a good pace: large-v3 on a
+    card that holds it, medium on a smaller card, small without a card."""
+    if card is None:
+        return "small"
+    for name in ("large-v3", "medium"):
+        if card["vram_gb"] >= _MODEL_MAP[name]["vram_gb"]:
+            return name
+    return "small"
 
 # ---------------------------------------------------------------------------
 # Pydantic models
@@ -122,6 +150,8 @@ class WhisperService:
     _model = None
     _model_size: str = ""
     _device: str = ""
+    # The size being downloaded or loaded right now
+    loading: str | None = None
     # Set after a CUDA failure was worked around on CPU; the route then
     # restarts the process so the next request gets a fresh GPU context
     restart_pending: bool = False
@@ -154,6 +184,7 @@ class WhisperService:
 
         self.unload_model()
 
+        self.loading = target_size
         try:
             from faster_whisper import WhisperModel
 
@@ -172,6 +203,8 @@ class WhisperService:
         except Exception:
             logger.exception("Failed to load whisper model '%s'", target_size)
             raise
+        finally:
+            self.loading = None
 
     def unload_model(self) -> None:
         if self._model is not None:
@@ -326,16 +359,41 @@ async def health():
 
 
 @app.get("/models")
-async def list_models():
-    """List available Whisper model sizes with metadata."""
+def list_models():
+    """The model sizes, with what each has on disk, and the one suited to this PC."""
     active = whisper_service.model_size if whisper_service.is_loaded else None
+    card = model_files.gpu()
     models = []
     for m in AVAILABLE_WHISPER_MODELS:
         models.append({
             **m,
+            **model_files.disk_state(_repo_id(m["name"]), m["size_mb"]),
             "active": m["name"] == active,
+            "loading": m["name"] == whisper_service.loading,
         })
-    return {"models": models, "active_model": active, "device": WHISPER_DEVICE}
+    return {
+        "models": models,
+        "active_model": active,
+        "device": WHISPER_DEVICE,
+        "gpu": card,
+        "recommended": _recommended(card),
+    }
+
+
+@app.delete("/models/{model_size}")
+def delete_model(model_size: str):
+    """Deletes a downloaded model's files, unloading it first if in use."""
+    if model_size not in _MODEL_MAP:
+        raise HTTPException(status_code=404, detail="Unknown model.")
+    if model_size == whisper_service.loading:
+        raise HTTPException(status_code=409, detail="This model is downloading.")
+    if whisper_service.is_loaded and whisper_service.model_size == model_size:
+        whisper_service.unload_model()
+    try:
+        removed = model_files.remove(_repo_id(model_size))
+    except OSError as e:
+        raise HTTPException(status_code=409, detail=f"Could not delete: {e}")
+    return {"status": "deleted" if removed else "absent", "model": model_size}
 
 
 @app.post("/test")
@@ -454,7 +512,9 @@ async def transcribe(
 
 
 @app.post("/load")
-async def load_model(model_size: str | None = None):
+def load_model(model_size: str | None = None):
+    # A plain def runs in a worker thread: while the first use downloads the
+    # model, /models keeps answering with how far it got
     """Load a whisper model by size. Downloads on first use."""
     try:
         whisper_service.load_model(model_size)

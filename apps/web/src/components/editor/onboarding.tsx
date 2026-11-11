@@ -59,9 +59,9 @@ export function Onboarding() {
 							<div className="flex flex-col gap-2">
 								<h2 className="text-lg font-bold">Bem-vindo à Tiê AI</h2>
 								<p className="text-sm text-muted-foreground leading-relaxed">
-									Este é um fork do OpenCut com IA adicionada. Edite vídeo
-									por texto, gere imagens, clone vozes e comande a linha do
-									tempo — instale localmente e tudo roda na sua máquina.
+									Edite vídeo por texto, gere imagens, clone vozes e comande
+									a linha do tempo, instale localmente e tudo roda na sua
+									máquina.
 								</p>
 							</div>
 

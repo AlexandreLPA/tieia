@@ -8,13 +8,11 @@ import {
 	Image01Icon,
 	SentIcon,
 	SlidersHorizontalIcon,
-	Tick01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import { LocalModelList } from "@/components/editor/ai/local-model-list";
 import { ModelOriginBadge } from "@/components/editor/ai/model-origin-badge";
 import {
-	MODEL_LIST_CLASS,
-	MODEL_ROW_CLASS,
 	SETTINGS_PANEL_CLASS,
 	Segments,
 	Setting,
@@ -28,93 +26,22 @@ import {
 } from "@/components/ui/popover";
 import { Spinner } from "@/components/ui/spinner";
 import { useEditor } from "@/hooks/use-editor";
-import { SERVICE_URLS } from "@/hooks/use-service-health";
 import { aiClient } from "@/lib/ai-client";
+import { formatSize, useImageModels } from "@/lib/local-models";
 import { processMediaAssets } from "@/lib/media/processing";
 import { cn } from "@/utils/ui";
 
 // ----- Image models (the image service's list) -----
 
-interface ImageModel {
-	name: string;
-	description: string;
-	/** "~7 GB": what the first use downloads */
-	size: string;
-	/** "gpu" or "cpu": what the model was made to run on */
-	device: string;
-	default_steps: number;
-	/** Loaded in the image service right now */
-	active: boolean;
-}
-
 // The service describes its models in English
 const DESCRIPTIONS: Record<string, string> = {
 	"sdxl-turbo": "Rápido: a imagem sai em 1 a 4 passos",
 	"sdxl-base": "A maior qualidade (SDXL 1.0)",
-	"stable-diffusion-2-1": "Boa qualidade, para uso geral",
 	"sd-1.5": "O clássico SD 1.5",
 	"flux-schnell": "FLUX.1 Schnell: rápido e de alta qualidade",
 	"segmind-tiny": "Bem leve, para PC sem placa de vídeo",
 	"small-sd": "Leve, com qualidade razoável sem placa de vídeo",
 };
-
-interface ImageModelsState {
-	models: ImageModel[];
-	selected: string | null;
-	/** Why the list could not be read */
-	error: string | null;
-	refresh: () => Promise<void>;
-	select: (name: string) => void;
-}
-
-/** Shared by the picker in the Estúdio's header and the panel that generates. */
-export const useImageModels = create<ImageModelsState>((set, get) => ({
-	models: [],
-	selected: null,
-	error: null,
-	refresh: async () => {
-		try {
-			const response = await fetch(`${SERVICE_URLS.image}/models`, {
-				signal: AbortSignal.timeout(8000),
-			});
-			if (!response.ok) throw new Error(String(response.status));
-			const data = (await response.json()) as {
-				models?: ImageModel[];
-				active_model?: string | null;
-			};
-			const models = data.models ?? [];
-			const current = get().selected;
-			// Keeps the user's pick; otherwise the loaded model, or else the
-			// lightest one, which runs without a graphics card
-			const selected =
-				(current && models.some((model) => model.name === current)
-					? current
-					: null) ??
-				data.active_model ??
-				models.find((model) => model.device === "cpu")?.name ??
-				models[0]?.name ??
-				null;
-			set({ models, selected, error: null });
-		} catch {
-			set({ error: "O serviço de imagens não respondeu." });
-		}
-	},
-	select: (name) => set({ selected: name }),
-}));
-
-async function loadImageModel(name: string): Promise<void> {
-	const response = await fetch(
-		`${SERVICE_URLS.image}/load?model_name=${encodeURIComponent(name)}`,
-		// The first use downloads the model, several GB
-		{ method: "POST", signal: AbortSignal.timeout(60 * 60 * 1000) },
-	);
-	if (!response.ok) {
-		const body = (await response.json().catch(() => null)) as {
-			detail?: string;
-		} | null;
-		throw new Error(body?.detail || "Não foi possível carregar o modelo.");
-	}
-}
 
 // ----- Generation -----
 
@@ -155,7 +82,8 @@ function ImageSettings({
 	ratio: Ratio;
 	onRatio: (ratio: Ratio) => void;
 }) {
-	const { models, selected, error, refresh, select } = useImageModels();
+	const imageModels = useImageModels();
+	const { refresh } = imageModels;
 
 	return (
 		<Popover
@@ -179,46 +107,7 @@ function ImageSettings({
 			</PopoverTrigger>
 			<PopoverContent side="top" align="start" className={SETTINGS_PANEL_CLASS}>
 				<Setting label="Modelo">
-					{error && <p className="text-xs text-yellow-500">{error}</p>}
-					<div className={MODEL_LIST_CLASS}>
-						{models.map((model) => (
-							<button
-								key={model.name}
-								type="button"
-								aria-pressed={model.name === selected}
-								onClick={() => select(model.name)}
-								className={cn(
-									MODEL_ROW_CLASS,
-									model.name === selected && "bg-accent",
-								)}
-							>
-								<span className="min-w-0 flex-1">
-									<span className="flex items-center gap-1.5 text-sm">
-										<span className="truncate">{model.name}</span>
-										<ModelOriginBadge origin="local" />
-										{model.name === selected && (
-											<HugeiconsIcon
-												icon={Tick01Icon}
-												className="size-3.5 shrink-0"
-											/>
-										)}
-									</span>
-									<span className="text-muted-foreground block text-xs leading-snug">
-										{DESCRIPTIONS[model.name] ?? model.description}
-									</span>
-								</span>
-								<span className="text-muted-foreground mt-0.5 shrink-0 text-right text-xs leading-snug">
-									{model.size.replace("~", "")}
-									<br />
-									{model.device === "cpu" ? "sem placa" : "placa de vídeo"}
-								</span>
-							</button>
-						))}
-					</div>
-					<p className="text-muted-foreground text-[11px] leading-relaxed">
-						Os modelos rodam no seu PC, sem custo. O primeiro uso de cada um
-						baixa o modelo.
-					</p>
+					<LocalModelList source={imageModels} descriptions={DESCRIPTIONS} />
 				</Setting>
 
 				<Setting label="Proporção">
@@ -280,7 +169,7 @@ const useGeneratedImages = create<{
  */
 export function TieImagePanel() {
 	const editor = useEditor();
-	const { models, selected, error, refresh } = useImageModels();
+	const { models, selected, error, refresh, download } = useImageModels();
 	const [prompt, setPrompt] = useState("");
 	const [ratio, setRatio] = useState<Ratio>("16:9");
 	const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -324,20 +213,29 @@ export function TieImagePanel() {
 				startedAt: Date.now(),
 				detail: model.active
 					? "Gerando a imagem"
-					: `Carregando ${model.name} (o primeiro uso baixa ${model.size.replace("~", "cerca de ")})`,
+					: model.downloaded
+						? `Carregando ${model.name}`
+						: `Baixando ${model.name} (${formatSize(model.size_mb)}), só desta vez`,
 			});
 			setPrompt("");
 
 			try {
 				if (!model.active) {
-					await loadImageModel(model.name);
-					await refresh();
+					await download(model.name, (progress) => {
+						if (!progress.downloaded) {
+							patch(id, {
+								detail: `Baixando ${model.name}: ${formatSize(progress.downloaded_mb)} de ${formatSize(model.size_mb)}, só desta vez`,
+							});
+						} else {
+							patch(id, { detail: `Carregando ${model.name}` });
+						}
+					});
 					patch(id, { detail: "Gerando a imagem" });
 				}
 				const blob = await aiClient.generateImageBlob({
 					prompt: description,
 					...sizeFor(model.name, ratio),
-					steps: model.default_steps,
+					steps: model.default_steps ?? 20,
 					// The few-step models are trained to run without guidance
 					guidanceScale: /turbo|schnell/i.test(model.name) ? 0 : 7.5,
 				});
@@ -357,7 +255,7 @@ export function TieImagePanel() {
 				});
 			}
 		},
-		[models, selected, isBusy, ratio, refresh, add, patch],
+		[models, selected, isBusy, ratio, download, add, patch],
 	);
 
 	const addToMedia = useCallback(
@@ -384,6 +282,7 @@ export function TieImagePanel() {
 	);
 
 	const canSend = prompt.trim().length > 0 && !isBusy && selected !== null;
+	const selectedModel = models.find((model) => model.name === selected);
 
 	return (
 		<>
@@ -535,6 +434,9 @@ export function TieImagePanel() {
 						<span className="truncate">{selected}</span>
 						<ModelOriginBadge origin="local" />
 						<span>· {ratio}</span>
+						{selectedModel && !selectedModel.downloaded && (
+							<span>· baixa {formatSize(selectedModel.size_mb)} no primeiro uso</span>
+						)}
 					</button>
 				)}
 			</div>

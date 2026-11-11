@@ -59,6 +59,7 @@ Selection: `OPENCUTAI_AI_LLM_BACKEND=auto|ollama|turboquant|openrouter` (`.env`:
 | `apps/web/src/components/editor/panels/assets/views/settings.tsx` | Settings panel with AI optimization section |
 | `apps/web/src/components/editor/ai/model-wizard.tsx` | Model setup wizard (4-step: welcome → tier → download → done) |
 | `apps/web/src/lib/editor-ui-map.ts` | Where each feature lives in the UI. The AI chat answers "where is X?" from it and its "Mostrar" button opens the place; add new features here, with a `data-ui-target` on the control |
+| `apps/web/src/lib/local-models.ts` | Local models (image, transcription) are picked where they are used (Tiê Image, Legendas → Modelo), with size, VRAM, "Baixado" and the one recommended for the PC; nothing downloads unasked. "Configuração de IA" only lists them to free disk space. The services report this in `/models` (`model_files.py`) and delete with `DELETE /models/{name}` |
 | `services/ai-backend/app/config.py` | Pydantic settings, env prefix OPENCUTAI_ |
 | `docker-compose.yml` | Main stack (CPU mode) |
 | `docker-compose.gpu.yml` | GPU override for turboquant-service |
@@ -103,8 +104,8 @@ All Python services use `uv` (Astral). Install with `uv pip install --system --n
 - **Desktop mode** (`OPENCUT_DESKTOP=1`, `src/lib/desktop.ts`): no Postgres or Redis; auth and rate limits use memory. Routes under `/api/desktop/*` only answer there.
 - **Projects from Edge:** the app's browser storage is apart from Edge's. `/migrar` (opened in Edge by the card on the projects list) sends a copy of every IndexedDB database, OPFS file and localStorage entry; the app imports it (`src/lib/desktop-migration`).
 - **AI packs** (`src/lib/desktop-packs`): one uv-made Python environment per pack in `packs/<id>`, installed from a card in "Configuração de IA" and started by the editor's server when it starts (they stop with the app). A pack lists its requirements files and services; services get their folders, ports and the CORS origin through env vars, the OpenRouter key comes from the repo `.env`. Packs can't share one environment: the services pin different torch versions (Chatterbox 2.8, Coqui 2.5, the others 2.11).
-  - **Done:** `base` = ai-backend + whisper-service (cloud chat and GPU transcription); `voice` = chatterbox-service (torch 2.8 cu128 via `overrides.txt` and PyTorch's index; voices in `ai/chatterbox/voices`).
-  - **Still in Docker:** TTS, image, speaker, face, translate, CLIP, Ollama, TurboQuant.
+  - **Done:** `base` = ai-backend + whisper-service (cloud chat and GPU transcription); `voice` = chatterbox-service (torch 2.8 cu128 via `overrides.txt` and PyTorch's index; voices in `ai/chatterbox/voices`); `image` = image-service (diffusers + rembg on torch 2.11 cu128 via `overrides-desktop.txt`; default model SDXL Turbo, since Stable Diffusion 2.1 is gone from Hugging Face; background removal runs on the CPU). Models go to `ai/models` (`HF_HOME`, and `U2NET_HOME` for rembg).
+  - **Still in Docker:** TTS, speaker, face, translate, CLIP, Ollama, TurboQuant.
   - For now the packs use `uv` and `ffmpeg` from the user's PATH; an installer must bundle both.
 
 ## Frontend Dev (Docker launcher)

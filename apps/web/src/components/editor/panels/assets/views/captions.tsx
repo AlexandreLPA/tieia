@@ -31,6 +31,8 @@ import { Label } from "@/components/ui/label";
 import { useTranscriptStore } from "@/stores/transcript-store";
 import { toast } from "sonner";
 import { aiClient } from "@/lib/ai-client";
+import { prepareWhisperModel } from "@/lib/local-models";
+import { WhisperModelField } from "@/components/editor/ai/whisper-model-field";
 import { useBackgroundTasksStore } from "@/stores/background-tasks-store";
 import { downloadBlob } from "@/utils/browser";
 import { NLLB_LANGUAGES } from "@/lib/nllb-languages";
@@ -320,8 +322,14 @@ export function Captions() {
 				const language = selectedLanguage === "auto" ? "en" : selectedLanguage;
 				result = await aiClient.smallestTranscribe(file, language);
 			} else {
-				// Use Whisper (local)
+				// Use Whisper (local), with the model picked below the engine
 				const language = selectedLanguage === "auto" ? undefined : selectedLanguage;
+				await prepareWhisperModel((text) => {
+					setProcessingStep(text);
+					bgTasks.updateTask(taskId, { progress: text });
+				});
+				setProcessingStep(`Transcrevendo via ${engineLabel}...`);
+				bgTasks.updateTask(taskId, { progress: `Transcrevendo via ${engineLabel}...` });
 				result = await aiClient.transcribe(file, language);
 			}
 
@@ -764,6 +772,8 @@ export function Captions() {
 								: "No dispositivo, ideal para idiomas globais (inglês, espanhol, francês etc.)"}
 					</p>
 				</div>
+
+				{selectedEngine === "whisper" && <WhisperModelField />}
 
 				{/* ── Language Selector ── */}
 				<div className="flex flex-col gap-2">
