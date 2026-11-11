@@ -1,0 +1,6 @@
+# Applied by the desktop app's "Falantes" pack (apps/web/src/lib/desktop-packs),
+# with PyTorch's CUDA 12.8 index next to PyPI. Without these, uv takes PyPI's
+# CPU-only torch; this is the CUDA 12.8 build of the version the Docker image
+# locks (requirements.lock).
+torch==2.11.0+cu128
+torchaudio==2.11.0+cu128

@@ -140,6 +140,9 @@ export function installPack(id: string) {
 
 	const job = async () => {
 		const dir = packDir(pack);
+		// A reinstall: Windows won't delete a program that is running
+		set("Desligando o pacote");
+		await stopPack(pack);
 		await fs.rm(dir, { recursive: true, force: true });
 		await fs.mkdir(dir, { recursive: true });
 
@@ -235,6 +238,8 @@ function serviceEnv(pack: Pack, service: PackService): NodeJS.ProcessEnv {
 		HF_HUB_DISABLE_XET: "1",
 		// Coqui's own models (XTTS), next to the Hugging Face ones
 		TTS_HOME: path.join(AI_DATA_DIR, "models", "tts"),
+		// SpeechBrain's models (voice prints for who speaks, emotions)
+		SPEECHBRAIN_DIR: path.join(AI_DATA_DIR, "models", "speechbrain"),
 		// rembg's background-removal models (default: a .u2net folder in home)
 		U2NET_HOME: path.join(AI_DATA_DIR, "models", "rembg"),
 		// AI backend
@@ -292,6 +297,22 @@ export function startPack(id: string): Promise<void> {
 	})().finally(() => runtime.starting.delete(id));
 	runtime.starting.set(id, job);
 	return job;
+}
+
+/** Stops the pack's running services and waits until they are gone. */
+async function stopPack(pack: Pack): Promise<void> {
+	await Promise.all(
+		pack.services.map(async (service) => {
+			const child = runtime.processes.get(service.id);
+			if (!child || child.exitCode !== null) return;
+			const exited = new Promise((resolve) => child.once("exit", resolve));
+			child.kill();
+			await Promise.race([
+				exited,
+				new Promise((resolve) => setTimeout(resolve, 10_000)),
+			]);
+		}),
+	);
 }
 
 /** Starts every installed pack; called when the server starts. */

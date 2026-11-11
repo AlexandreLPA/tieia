@@ -180,6 +180,35 @@ export const PACKS: Pack[] = [
 			},
 		],
 	},
+	{
+		id: "speaker",
+		name: "Falantes",
+		description:
+			"Descobre quem fala em cada trecho (legendas por falante, editar por falante, cortes de podcast) e a emoção da fala.",
+		size: "cerca de 5 GB, mais 0,5 GB dos modelos no primeiro uso",
+		python: "3.11",
+		requirements: ["speaker-service/requirements.txt"],
+		// PyTorch for CUDA 12.8, at the version the Docker image locks
+		overrides: ["speaker-service/overrides-desktop.txt"],
+		indexUrls: ["https://download.pytorch.org/whl/cu128"],
+		services: [
+			{
+				id: "speaker",
+				dir: "speaker-service",
+				args: [
+					"-m",
+					"uvicorn",
+					"app:app",
+					"--host",
+					"127.0.0.1",
+					"--port",
+					"8424",
+				],
+				port: 8424,
+				health: "/health",
+			},
+		],
+	},
 ];
 
 export type PackState =

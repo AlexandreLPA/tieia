@@ -6,3 +6,6 @@ torch>=2.0.0
 torchaudio>=2.0.0
 pyannote.audio>=3.1.0
 speechbrain>=1.0.0
+# The emotion model (wav2vec2) loads through it; without it the service
+# fell back to measuring loudness
+transformers>=4.40.0

@@ -6,6 +6,7 @@ Emotion detection: speechbrain/emotion-recognition (or energy-based fallback).
 Accepts audio/video files and returns speaker segments and/or emotion annotations.
 """
 
+import asyncio
 import logging
 import os
 import uuid
@@ -15,6 +16,8 @@ from typing import Optional
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+
+import ecapa_diarization
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -29,8 +32,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-UPLOAD_DIR = Path("uploads")
-UPLOAD_DIR.mkdir(exist_ok=True)
+UPLOAD_DIR = Path(os.getenv("UPLOAD_DIR", "uploads"))
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+# Where SpeechBrain keeps its models (ECAPA voice prints, emotions)
+SPEECHBRAIN_DIR = os.getenv(
+    "SPEECHBRAIN_DIR", os.path.join(os.path.expanduser("~"), ".cache", "speechbrain")
+)
 
 # Lazy-load the pipeline to avoid loading on import
 _pipeline = None
@@ -45,6 +52,11 @@ def _get_pipeline():
 
     _pipeline_loaded = True
     hf_token = os.environ.get("HF_TOKEN")
+    # The pipeline is gated on Hugging Face: without a token it can't
+    # download, and the open ECAPA diarization runs instead
+    if not hf_token:
+        logger.info("No HF_TOKEN: using the open ECAPA diarization.")
+        return None
 
     try:
         from pyannote.audio import Pipeline
@@ -53,14 +65,14 @@ def _get_pipeline():
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         logger.info("Loading pyannote/speaker-diarization-3.1 on %s...", device)
 
-        if hf_token:
+        try:
+            # pyannote.audio 4 names it token; 3 called it use_auth_token
             _pipeline = Pipeline.from_pretrained(
-                "pyannote/speaker-diarization-3.1",
-                use_auth_token=hf_token,
+                "pyannote/speaker-diarization-3.1", token=hf_token
             )
-        else:
+        except TypeError:
             _pipeline = Pipeline.from_pretrained(
-                "pyannote/speaker-diarization-3.1",
+                "pyannote/speaker-diarization-3.1", use_auth_token=hf_token
             )
 
         _pipeline = _pipeline.to(device)
@@ -176,9 +188,13 @@ async def health():
         "service": "speaker-diarization",
         "status": "running",
         "model": {
-            "loaded": pipeline is not None,
-            "name": "pyannote/speaker-diarization-3.1" if pipeline else "fallback (silence-based)",
-            "installed": pipeline is not None,
+            "loaded": pipeline is not None or ecapa_diarization.is_available(),
+            "name": "pyannote/speaker-diarization-3.1"
+            if pipeline
+            else "speechbrain/spkrec-ecapa-voxceleb"
+            if ecapa_diarization.is_available()
+            else "fallback (silence-based)",
+            "installed": pipeline is not None or ecapa_diarization.is_available(),
         },
         "version": "0.1.0",
     }
@@ -246,6 +262,20 @@ async def diarize(
                 "num_speakers": len(set(s["speaker"] for s in merged)),
                 "method": "pyannote",
             }
+        elif ecapa_diarization.is_available():
+            logger.info("Running ECAPA diarization on %s...", audio_path)
+            segments = await asyncio.to_thread(
+                ecapa_diarization.diarize,
+                audio_path,
+                num_speakers,
+                min_speakers,
+                max_speakers,
+            )
+            return {
+                "segments": segments,
+                "num_speakers": len(set(s["speaker"] for s in segments)),
+                "method": "ecapa",
+            }
         else:
             # Fallback to silence-based diarization
             logger.info("Using fallback diarization on %s...", audio_path)
@@ -273,6 +303,8 @@ async def diarize(
 
 _emotion_model = None
 _emotion_loaded = False
+# The model answers with IEMOCAP's short labels
+IEMOCAP_LABELS = {"hap": "happy", "neu": "neutral", "ang": "angry", "sad": "sad"}
 
 
 def _get_emotion_model():
@@ -284,11 +316,15 @@ def _get_emotion_model():
 
     try:
         from speechbrain.inference.interfaces import foreign_class
+        from speechbrain.utils.fetching import LocalStrategy
+
         _emotion_model = foreign_class(
             source="speechbrain/emotion-recognition-wav2vec2-IEMOCAP",
             pymodule_file="custom_interface.py",
             classname="CustomEncoderWav2vec2Classifier",
-            savedir="/root/.cache/speechbrain_emotion",
+            savedir=os.path.join(SPEECHBRAIN_DIR, "emotion-recognition"),
+            # Copies instead of linking: Windows needs special rights for links
+            local_strategy=LocalStrategy.COPY,
         )
         logger.info("SpeechBrain emotion model loaded successfully.")
     except Exception as e:
@@ -391,13 +427,14 @@ async def analyze_emotion(
         if model is not None:
             # Use speechbrain for real emotion detection
             # Process audio in windows
-            import torchaudio
+            import torch
 
-            waveform, sr = torchaudio.load(audio_path)
-            if sr != 16000:
-                resampler = torchaudio.transforms.Resample(sr, 16000)
-                waveform = resampler(waveform)
-                sr = 16000
+            # Decoded by ffmpeg: torchaudio's own reader (torchcodec) needs
+            # FFmpeg's shared libraries, which Windows rarely has
+            sr = ecapa_diarization.SAMPLE_RATE
+            waveform = torch.from_numpy(
+                ecapa_diarization.load_audio(audio_path).copy()
+            ).unsqueeze(0)
 
             samples_per_window = int(sr * window_seconds)
             total_samples = waveform.shape[1]
@@ -412,7 +449,8 @@ async def analyze_emotion(
                 timestamp = start_idx / sr
                 try:
                     out_prob, score, index, text_lab = model.classify_batch(chunk)
-                    emotion = text_lab[0] if text_lab else "neutral"
+                    label = text_lab[0] if text_lab else "neu"
+                    emotion = IEMOCAP_LABELS.get(label, label)
                     intensity = round(float(score[0].max()), 3)
                 except Exception:
                     emotion = "neutral"

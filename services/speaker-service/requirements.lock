@@ -16,7 +16,7 @@ annotated-types==0.7.0
     # via pydantic
 anyio==4.13.0
     # via
-    #   httpx
+    #   httpx2
     #   starlette
     #   watchfiles
 asteroid-filterbanks==0.4.0
@@ -24,21 +24,18 @@ asteroid-filterbanks==0.4.0
 attrs==26.1.0
     # via aiohttp
 certifi==2026.2.25
-    # via
-    #   httpcore
-    #   httpx
-    #   requests
+    # via requests
 cffi==2.0.0
     # via soundfile
 charset-normalizer==3.4.7
     # via requests
-click==8.3.2
+click==8.5.1
     # via
+    #   huggingface-hub
     #   typer
     #   uvicorn
 colorama==0.4.6 ; sys_platform == 'win32'
     # via
-    #   click
     #   colorlog
     #   tqdm
     #   uvicorn
@@ -85,26 +82,30 @@ grpcio==1.80.0
     # via opentelemetry-exporter-otlp-proto-grpc
 h11==0.16.0
     # via
-    #   httpcore
+    #   httpcore2
     #   uvicorn
-hf-xet==1.4.3 ; platform_machine == 'AMD64' or platform_machine == 'aarch64' or platform_machine == 'amd64' or platform_machine == 'arm64' or platform_machine == 'x86_64'
+hf-xet==1.8.0 ; platform_machine == 'AMD64' or platform_machine == 'ARM64' or platform_machine == 'aarch64' or platform_machine == 'amd64' or platform_machine == 'arm64' or platform_machine == 'x86_64'
     # via huggingface-hub
-httpcore==1.0.9
-    # via httpx
+httpcore2==2.16.0 ; sys_platform != 'emscripten'
+    # via httpx2
 httptools==0.7.1
     # via uvicorn
-httpx==0.28.1
+httpx2==2.16.0
     # via huggingface-hub
-huggingface-hub==1.10.1
+httpx2-jsfetch==1.0 ; python_full_version >= '3.12' and sys_platform == 'emscripten'
+    # via httpx2
+huggingface-hub==2.4.0
     # via
     #   pyannote-audio
     #   speechbrain
+    #   tokenizers
+    #   transformers
 hyperpyyaml==1.2.3
     # via speechbrain
-idna==3.11
+idna==3.20
     # via
     #   anyio
-    #   httpx
+    #   httpx2
     #   requests
     #   yarl
 importlib-metadata==8.7.1
@@ -161,6 +162,7 @@ numpy==2.4.4
     #   soundfile
     #   speechbrain
     #   torchmetrics
+    #   transformers
 nvidia-cublas==13.1.0.3 ; sys_platform == 'linux'
     # via
     #   cuda-toolkit
@@ -242,6 +244,7 @@ packaging==26.0
     #   speechbrain
     #   torch-pitch-shift
     #   torchmetrics
+    #   transformers
 pandas==3.0.2
     # via
     #   pyannote-core
@@ -309,7 +312,10 @@ pyyaml==6.0.3
     #   pyannote-database
     #   pyannote-pipeline
     #   pytorch-lightning
+    #   transformers
     #   uvicorn
+regex==2026.11.9
+    # via transformers
 requests==2.33.1
     # via
     #   opentelemetry-exporter-otlp-proto-http
@@ -323,8 +329,10 @@ ruamel-yaml==0.18.17
     # via hyperpyyaml
 ruamel-yaml-clib==0.2.15 ; python_full_version < '3.15' and platform_python_implementation == 'CPython'
     # via ruamel-yaml
-safetensors==0.7.0
-    # via pyannote-audio
+safetensors==0.8.0
+    # via
+    #   pyannote-audio
+    #   transformers
 scikit-learn==1.8.0
     # via
     #   pyannote-metrics
@@ -358,6 +366,8 @@ sympy==1.14.0
     # via torch
 threadpoolctl==3.6.0
     # via scikit-learn
+tokenizers==0.23.3
+    # via transformers
 torch==2.11.0
     # via
     #   -r services/speaker-service/requirements.txt
@@ -398,10 +408,17 @@ tqdm==4.67.3
     #   pytorch-lightning
     #   pytorch-metric-learning
     #   speechbrain
+    #   transformers
+transformers==5.22.2
+    # via -r services/speaker-service/requirements.txt
 triton==3.6.0 ; sys_platform == 'linux'
     # via torch
+truststore==0.10.5 ; sys_platform != 'emscripten'
+    # via
+    #   httpcore2
+    #   httpx2
 typer==0.24.1
-    # via huggingface-hub
+    # via transformers
 typing-extensions==4.15.0
     # via
     #   aiosignal
@@ -410,6 +427,7 @@ typing-extensions==4.15.0
     #   asteroid-filterbanks
     #   fastapi
     #   grpcio
+    #   httpx2
     #   huggingface-hub
     #   lightning
     #   lightning-utilities
