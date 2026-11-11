@@ -28,6 +28,7 @@ import { toast } from "sonner";
 import { useAIStatus } from "@/hooks/use-ai-status";
 import { aiClient, type ServicesStatus, type ServiceInfo } from "@/lib/ai-client";
 import { OpenRouterKeyForm } from "./openrouter-key-form";
+import { DesktopPacksCard } from "./desktop-packs-card";
 import { notifyLlmChanged } from "@/lib/llm-change";
 import {
 	useServiceHealth,
@@ -352,6 +353,8 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 
 				<ScrollArea className="flex-1">
 					<div className="flex flex-col gap-4 px-6 pb-2">
+						{/* ── The desktop app's AI packs (nothing outside the app) ── */}
+						<DesktopPacksCard />
 
 						{/* ── Overall Status ── */}
 						<div

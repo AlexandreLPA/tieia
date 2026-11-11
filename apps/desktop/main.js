@@ -44,13 +44,39 @@ const DB_DIR = path.join(DATA_DIR, "db");
 const LOG_FILE = path.join(DATA_DIR, "editor.log");
 // A copy of the projects on its way from Edge (see apps/web/src/app/migrar)
 const MIGRATION_DIR = path.join(DATA_DIR, "migration");
-// The launcher of the Docker setup keeps its editor's process here
-const LAUNCHER_STATE = path.join(
-	process.env.LOCALAPPDATA || "",
-	"OpenCut-AI",
-	"launcher.json",
-);
+// The AI packs: a Python environment each, and their data (models, outputs)
+const PACKS_DIR = path.join(DATA_DIR, "packs");
+const AI_DATA_DIR = path.join(DATA_DIR, "ai");
+// The services' code. Packaged, it travels in the app's resources.
+const SERVICES_DIR = app.isPackaged
+	? path.join(process.resourcesPath, "services")
+	: path.resolve(__dirname, "../../services");
 
+/**
+ * The OpenRouter key and model from the repository's .env, which the Docker
+ * setup used, so the cloud chat keeps working in the app. A key typed in the
+ * app is saved apart and wins over these.
+ */
+function repositoryCloudSettings() {
+	if (app.isPackaged) return {};
+	const settings = {};
+	try {
+		const text = fs.readFileSync(path.resolve(__dirname, "../../.env"), "utf8");
+		for (const line of text.split(/\r?\n/)) {
+			const match = /^(OPENROUTER_API_KEY|OPENROUTER_MODEL)=(.*)$/.exec(
+				line.trim(),
+			);
+			if (match?.[2]) {
+				settings[`OPENCUTAI_${match[1]}`] = match[2]
+					.replace(/^["']|["']$/g, "")
+					.trim();
+			}
+		}
+	} catch {
+		// No .env: the key can be typed in the app
+	}
+	return settings;
+}
 let server = null;
 let mainWindow = null;
 
@@ -89,28 +115,56 @@ function portIsFree(port) {
 }
 
 /**
+ * The process listening on a local port, with its command line, read with
+ * PowerShell (Windows has no simpler way to get both).
+ */
+function portOwner(port) {
+	const script = [
+		`$c = Get-NetTCPConnection -LocalPort ${port} -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1`,
+		"if (-not $c) { exit }",
+		'$p = Get-CimInstance Win32_Process -Filter "ProcessId=$($c.OwningProcess)"',
+		"@{ pid = $p.ProcessId; command = $p.CommandLine } | ConvertTo-Json -Compress",
+	].join("; ");
+	return new Promise((resolve) =>
+		execFile(
+			"powershell.exe",
+			["-NoProfile", "-NonInteractive", "-Command", script],
+			{ windowsHide: true },
+			(error, stdout) => {
+				try {
+					resolve(error || !stdout.trim() ? null : JSON.parse(stdout));
+				} catch {
+					resolve(null);
+				}
+			},
+		),
+	);
+}
+
+/**
  * The port is ours by design. When the editor the Docker launcher started is
- * on it, that one is stopped: it serves the same editor in the browser.
+ * on it, that one is stopped: it serves the same editor in the browser. It is
+ * recognised by its command (Next.js serving this repository's editor), not by
+ * the launcher's saved state, which can be out of date.
  */
 async function freePort() {
 	if (await portIsFree(PORT)) return true;
-	try {
-		const state = JSON.parse(
-			fs.readFileSync(LAUNCHER_STATE, "utf8").replace(/^﻿/, ""),
-		);
-		if (state?.pid) {
-			await new Promise((resolve) =>
-				execFile("taskkill", ["/PID", String(state.pid), "/T", "/F"], () =>
-					resolve(),
-				),
-			);
-			for (let i = 0; i < 40; i++) {
-				if (await portIsFree(PORT)) return true;
-				await new Promise((resolve) => setTimeout(resolve, 250));
-			}
-		}
-	} catch {
-		// No launcher state: something else holds the port
+	const owner = await portOwner(PORT);
+	const command = owner?.command ?? "";
+	const isOldEditor =
+		/next[\\/]dist[\\/]bin[\\/]next"?\s+(start|dev)/i.test(command) &&
+		command
+			.toLowerCase()
+			.includes(path.resolve(__dirname, "../web").toLowerCase());
+	if (!owner || !isOldEditor) return false;
+	await new Promise((resolve) =>
+		execFile("taskkill", ["/PID", String(owner.pid), "/T", "/F"], () =>
+			resolve(),
+		),
+	);
+	for (let i = 0; i < 40; i++) {
+		if (await portIsFree(PORT)) return true;
+		await new Promise((resolve) => setTimeout(resolve, 250));
 	}
 	return portIsFree(PORT);
 }
@@ -131,6 +185,10 @@ function startServer() {
 			OPENCUT_DB_DIR: DB_DIR,
 			OPENCUT_MIGRATIONS_DIR: MIGRATIONS_DIR,
 			OPENCUT_MIGRATION_DIR: MIGRATION_DIR,
+			OPENCUT_PACKS_DIR: PACKS_DIR,
+			OPENCUT_AI_DATA_DIR: AI_DATA_DIR,
+			OPENCUT_SERVICES_DIR: SERVICES_DIR,
+			...repositoryCloudSettings(),
 			// Required by the env schema; the embedded database ignores it
 			DATABASE_URL: "postgresql://embedded/tieai",
 			BETTER_AUTH_SECRET: authSecret(),
