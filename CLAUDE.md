@@ -95,9 +95,11 @@ TURBOQUANT_MODEL=moonshotai/Kimi-K2-Instruct docker compose \
 
 All Python services use `uv` (Astral). Install with `uv pip install --system --no-cache -r requirements.lock`. Never use pip directly in Dockerfiles.
 
-## Desktop App (replacing Docker, migration in progress)
+## Desktop App (replaces Docker)
 
-`apps/desktop` is an Electron app; the "Tiê AI" desktop shortcut opens it (`apps/desktop/node_modules/electron/dist/electron.exe apps/desktop`). The goal is to drop Docker: until every AI feature has its pack, the rest still runs in Docker.
+`apps/desktop` is an Electron app; the "Tiê AI" desktop shortcut opens it (`apps/desktop/node_modules/electron/dist/electron.exe apps/desktop`). Every AI feature has its pack, so the app runs without Docker; on this PC Docker's images and volumes were deleted on 2026-11-11 and its shortcuts removed.
+
+**Never launch the app from Claude's shell to install or keep things:** Claude runs in an MSIX sandbox, so whatever the app writes to `%APPDATA%` lands in `AppData\Local\Packages\Claude_*\LocalCache\Roaming\Tiê AI` and the app opened from the shortcut doesn't see it (this happened once; the user moved the folder back). Ask the user to open the app from the shortcut, then test its services over HTTP.
 
 - **Editor:** `node apps/desktop/build-web.js` builds a standalone Next.js server into `apps/web/.next-desktop` (its own folder, apart from the launcher's `.next`). The app runs it with Electron's Node on port **3100** and stops the launcher's editor if it is on that port. Rebuild after changing web code.
 - **Data:** everything in `%APPDATA%\Tiê AI` — `db` (PGlite, an embedded Postgres; Drizzle migrations run at startup in `src/instrumentation.ts`), `packs`, `ai` (generated files, uploads, models, `secrets.json`, service logs), `editor.log`.
@@ -108,14 +110,14 @@ All Python services use `uv` (Astral). Install with `uv pip install --system --n
   - **Not in the app:** Ollama (user decided 2026-11-11): the TurboQuant pack is the local chat, and "Configuração de IA" hides the Ollama card in the desktop app. Ollama's official Windows app would still work on port 11434.
   - For now the packs use `uv` and `ffmpeg` from the user's PATH; an installer must bundle both.
 
-## Frontend Dev (Docker launcher)
+## Frontend Dev (Docker launcher, legacy)
 
-Hybrid mode: Docker runs the AI services, the database and Redis, and the editor runs on Windows. The "Tiê AI (Docker)" desktop shortcut runs the same script.
+Hybrid mode, kept for setups with Docker (no longer used on this PC): Docker runs the AI services, the database and Redis, and the editor runs on Windows.
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/start-opencut.ps1        # daily use: production build
 powershell -ExecutionPolicy Bypass -File scripts/start-opencut.ps1 -Dev   # development: next dev, hot reload
-powershell -ExecutionPolicy Bypass -File scripts/start-opencut.ps1 -Stop  # editor + Docker services off ("Fechar Tiê AI" shortcut)
+powershell -ExecutionPolicy Bypass -File scripts/start-opencut.ps1 -Stop  # editor + Docker services off
 ```
 
 - **Dependencies:** when `bun.lock` or a `package.json` changes, the launcher runs `bun install --frozen-lockfile` first.
