@@ -94,9 +94,22 @@ TURBOQUANT_MODEL=moonshotai/Kimi-K2-Instruct docker compose \
 
 All Python services use `uv` (Astral). Install with `uv pip install --system --no-cache -r requirements.lock`. Never use pip directly in Dockerfiles.
 
-## Frontend Dev
+## Desktop App (replacing Docker, migration in progress)
 
-Hybrid mode (default): Docker runs the AI services, the database and Redis, and the editor runs on Windows. The "Tiê AI" desktop shortcut runs the same script.
+`apps/desktop` is an Electron app; the "Tiê AI" desktop shortcut opens it (`apps/desktop/node_modules/electron/dist/electron.exe apps/desktop`). The goal is to drop Docker: until every AI feature has its pack, the rest still runs in Docker.
+
+- **Editor:** `node apps/desktop/build-web.js` builds a standalone Next.js server into `apps/web/.next-desktop` (its own folder, apart from the launcher's `.next`). The app runs it with Electron's Node on port **3100** and stops the launcher's editor if it is on that port. Rebuild after changing web code.
+- **Data:** everything in `%APPDATA%\Tiê AI` — `db` (PGlite, an embedded Postgres; Drizzle migrations run at startup in `src/instrumentation.ts`), `packs`, `ai` (generated files, uploads, models, `secrets.json`, service logs), `editor.log`.
+- **Desktop mode** (`OPENCUT_DESKTOP=1`, `src/lib/desktop.ts`): no Postgres or Redis; auth and rate limits use memory. Routes under `/api/desktop/*` only answer there.
+- **Projects from Edge:** the app's browser storage is apart from Edge's. `/migrar` (opened in Edge by the card on the projects list) sends a copy of every IndexedDB database, OPFS file and localStorage entry; the app imports it (`src/lib/desktop-migration`).
+- **AI packs** (`src/lib/desktop-packs`): one uv-made Python environment per pack in `packs/<id>`, installed from a card in "Configuração de IA" and started by the editor's server when it starts (they stop with the app). A pack lists its requirements files and services; services get their folders, ports and the CORS origin through env vars, the OpenRouter key comes from the repo `.env`. Packs can't share one environment: the services pin different torch versions (Chatterbox 2.8, Coqui 2.5, the others 2.11).
+  - **Done:** `base` = ai-backend + whisper-service (cloud chat and GPU transcription); `voice` = chatterbox-service (torch 2.8 cu128 via `overrides.txt` and PyTorch's index; voices in `ai/chatterbox/voices`).
+  - **Still in Docker:** TTS, image, speaker, face, translate, CLIP, Ollama, TurboQuant.
+  - For now the packs use `uv` and `ffmpeg` from the user's PATH; an installer must bundle both.
+
+## Frontend Dev (Docker launcher)
+
+Hybrid mode: Docker runs the AI services, the database and Redis, and the editor runs on Windows. The "Tiê AI (Docker)" desktop shortcut runs the same script.
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/start-opencut.ps1        # daily use: production build

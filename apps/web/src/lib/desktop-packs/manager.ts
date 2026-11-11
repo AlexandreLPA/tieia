@@ -2,7 +2,13 @@ import { type ChildProcess, spawn } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, promises as fs, readFileSync } from "node:fs";
 import path from "node:path";
-import { type Pack, type PackInfo, type PackState, PACKS } from "./catalog";
+import {
+	type Pack,
+	type PackInfo,
+	type PackService,
+	type PackState,
+	PACKS,
+} from "./catalog";
 
 /**
  * Installs and runs the desktop app's AI packs. Lives in the editor's server,
@@ -54,6 +60,10 @@ function fingerprint(pack: Pack) {
 		hash.update(readFileSync(path.join(SERVICES_DIR, file)));
 	}
 	for (const extra of pack.extras ?? []) hash.update(extra);
+	for (const file of pack.overrides ?? []) {
+		hash.update(readFileSync(path.join(SERVICES_DIR, file)));
+	}
+	for (const url of pack.indexUrls ?? []) hash.update(url);
 	return hash.digest("hex").slice(0, 16);
 }
 
@@ -153,6 +163,19 @@ export function installPack(id: string) {
 					path.join(SERVICES_DIR, file),
 				]),
 				...(pack.extras ?? []),
+				...(pack.overrides ?? []).flatMap((file) => [
+					"--override",
+					path.join(SERVICES_DIR, file),
+				]),
+				...(pack.indexUrls?.length
+					? [
+							// Take each package from whichever index has the wanted
+							// build (PyTorch's for torch, PyPI for the rest)
+							"--index-strategy",
+							"unsafe-best-match",
+							...pack.indexUrls.flatMap((url) => ["--extra-index-url", url]),
+						]
+					: []),
 			],
 			(line) => set("Baixando as bibliotecas de IA", line),
 		);
@@ -187,7 +210,7 @@ async function answers(url: string) {
 }
 
 /** What the services need to run on this computer instead of in Docker. */
-function serviceEnv(pack: Pack): NodeJS.ProcessEnv {
+function serviceEnv(pack: Pack, service: PackService): NodeJS.ProcessEnv {
 	const sitePackages = path.join(packDir(pack), "venv", "Lib", "site-packages");
 	// ctranslate2 (transcription on the GPU) loads cuBLAS and cuDNN from PATH
 	const cudaDirs = ["cublas", "cudnn"].map((lib) =>
@@ -220,6 +243,9 @@ function serviceEnv(pack: Pack): NodeJS.ProcessEnv {
 		// falls back on its own when CUDA fails)
 		WHISPER_DEVICE: "cuda",
 		UPLOAD_DIR: path.join(uploads, "whisper"),
+		// Each service's own files (Chatterbox keeps the cloned voices here)
+		GENERATED_DIR: path.join(AI_DATA_DIR, service.id),
+		...service.env,
 	};
 }
 
@@ -242,7 +268,7 @@ export function startPack(id: string): Promise<void> {
 			);
 			const child = spawn(pythonOf(pack), service.args, {
 				cwd: path.join(SERVICES_DIR, service.dir),
-				env: serviceEnv(pack),
+				env: serviceEnv(pack, service),
 				stdio: ["ignore", log.fd, log.fd],
 				windowsHide: true,
 			});
