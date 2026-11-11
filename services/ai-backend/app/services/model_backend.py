@@ -149,6 +149,11 @@ _MODALITY_LABELS = {"text": "texto", "image": "imagem", "video": "vídeo", "audi
 _IMAGE_ERROR_RE = re.compile(r"image|modalit|vision|multimodal", re.IGNORECASE)
 
 
+# Health checks of local services: one that is up connects in milliseconds,
+# while a stopped one takes Windows 2 s to refuse (it retries the connection)
+PROBE_TIMEOUT = httpx.Timeout(2.0, connect=0.3)
+
+
 class VisionUnsupportedError(RuntimeError):
     """The active model can't take image input, or that couldn't be confirmed."""
 
@@ -372,7 +377,7 @@ class LLMBackend:
             return self._tq_available
 
         try:
-            async with httpx.AsyncClient(timeout=2) as client:
+            async with httpx.AsyncClient(timeout=PROBE_TIMEOUT) as client:
                 resp = await client.get(f"{self.turboquant_url}/health")
                 if resp.status_code == 200:
                     data = resp.json()
@@ -436,6 +441,11 @@ class LLMBackend:
             base_url=self.ollama_url,
             timeout=httpx.Timeout(settings.OLLAMA_TIMEOUT, connect=10.0),
         )
+
+    def _ollama_probe(self) -> httpx.AsyncClient:
+        """For "is Ollama on?": a stopped service gives up at once instead of
+        after Windows' 2 s of retries on a refused connection."""
+        return httpx.AsyncClient(base_url=self.ollama_url, timeout=PROBE_TIMEOUT)
 
     async def _ollama_generate(
         self,
@@ -1246,7 +1256,7 @@ class LLMBackend:
             return True
         # Fall back to checking Ollama
         try:
-            async with self._ollama_client() as client:
+            async with self._ollama_probe() as client:
                 resp = await client.get("/api/tags")
                 return resp.status_code == 200
         except (httpx.ConnectError, httpx.TimeoutException):
@@ -1259,7 +1269,7 @@ class LLMBackend:
         ollama_available = False
         ollama_models: list[dict] = []
         try:
-            async with self._ollama_client() as client:
+            async with self._ollama_probe() as client:
                 resp = await client.get("/api/tags")
                 if resp.status_code == 200:
                     ollama_available = True
@@ -1270,7 +1280,7 @@ class LLMBackend:
         tq_model = None
         if tq_ready:
             try:
-                async with httpx.AsyncClient(timeout=2) as client:
+                async with httpx.AsyncClient(timeout=PROBE_TIMEOUT) as client:
                     resp = await client.get(f"{self.turboquant_url}/health")
                     if resp.status_code == 200:
                         tq_model = resp.json().get("active_model")

@@ -57,6 +57,8 @@ interface PickerState {
 	issue: { message: string; fallback: string } | null;
 }
 
+let lastState: PickerState | null = null;
+
 const PROVIDERS: {
 	id: Provider;
 	label: string;
@@ -120,7 +122,9 @@ export function ChatModelPicker({
 	className?: string;
 }) {
 	const [isOpen, setIsOpen] = useState(false);
-	const [state, setState] = useState<PickerState | null>(null);
+	// The last list read: the picker shows at once when the chat opens again,
+	// and the read below only refreshes it
+	const [state, setState] = useState<PickerState | null>(lastState);
 	const [provider, setProvider] = useState<Provider>("cloud");
 	const [query, setQuery] = useState("");
 	const [switching, setSwitching] = useState<string | null>(null);
@@ -193,6 +197,10 @@ export function ChatModelPicker({
 			setState(null);
 		}
 	}, []);
+
+	useEffect(() => {
+		lastState = state;
+	}, [state]);
 
 	// Also picks the backend up when it came online after the editor loaded
 	useEffect(() => {
