@@ -235,6 +235,56 @@ export const PACKS: Pack[] = [
 			},
 		],
 	},
+	{
+		id: "search",
+		name: "Tradução e busca",
+		description:
+			"Traduz textos e legendas entre 200 idiomas (NLLB) e acha cenas pelo que aparece nelas (CLIP). Usa a placa de vídeo.",
+		size: "cerca de 6 GB, mais 3 GB dos modelos no primeiro uso",
+		python: "3.11",
+		// One environment for both: they take the same torch
+		requirements: [
+			"translate-service/requirements.txt",
+			"clip-service/requirements.txt",
+		],
+		// PyTorch for CUDA 12.8, the build the other GPU packs use
+		overrides: ["translate-service/overrides-desktop.txt"],
+		indexUrls: ["https://download.pytorch.org/whl/cu128"],
+		services: [
+			{
+				id: "translate",
+				dir: "translate-service",
+				args: [
+					"-m",
+					"uvicorn",
+					"app:app",
+					"--host",
+					"127.0.0.1",
+					"--port",
+					"8427",
+				],
+				port: 8427,
+				health: "/health",
+				env: { DEVICE: "auto" },
+			},
+			{
+				id: "clip",
+				dir: "clip-service",
+				args: [
+					"-m",
+					"uvicorn",
+					"app:app",
+					"--host",
+					"127.0.0.1",
+					"--port",
+					"8426",
+				],
+				port: 8426,
+				health: "/health",
+				env: { DEVICE: "auto" },
+			},
+		],
+	},
 ];
 
 export type PackState =
