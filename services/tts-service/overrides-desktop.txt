@@ -1,0 +1,6 @@
+# Applied by the desktop app's "Vozes prontas" pack (apps/web/src/lib/desktop-packs),
+# with PyTorch's CUDA 12.8 index next to PyPI. requirements.txt keeps torch
+# below 2.6 for the Docker image (CPU); that has no kernels for RTX 50 cards,
+# and 2.8 built for CUDA 12.8 runs them, as in the voice-cloning pack.
+torch==2.8.0
+torchaudio==2.8.0

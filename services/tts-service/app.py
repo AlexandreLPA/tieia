@@ -101,6 +101,14 @@ AVAILABLE_TTS_MODELS = [
 # Quick lookup
 _MODEL_MAP = {m["name"]: m for m in AVAILABLE_TTS_MODELS}
 
+# XTTS's own voices for the editor's "male" / "female" choice: of those tried,
+# the ones that read a Portuguese test sentence whole, word for word
+XTTS_VOICES = {
+    "female": "Claribel Dervla",
+    "male": "Andrew Chipper",
+    "default": "Claribel Dervla",
+}
+
 
 # ---------------------------------------------------------------------------
 # Pydantic models
@@ -263,21 +271,44 @@ class TTSService:
         logger.info("Created speaker reference '%s' at %s", speaker, ref_path)
         return ref_path
 
+    def _builtin_speaker(self, speaker: str | None) -> str | None:
+        """One of the voices XTTS ships with, for a request without a recording.
+
+        "male", "female" and "default" get voices that read Portuguese whole
+        and clearly; a built-in voice's own name is used as is. Without
+        these, the reference would be a made-up tone, and XTTS imitates it:
+        sentences came out cut short or with seconds of noise.
+        """
+        names = getattr(self._model, "speakers", None) or []
+        if not names:
+            return None
+        if speaker in names:
+            return speaker
+        wanted = XTTS_VOICES.get((speaker or "default").lower(), XTTS_VOICES["default"])
+        return wanted if wanted in names else names[0]
+
     def _generate_sync(
         self,
         text: str,
         language: str,
-        speaker_wav: str,
+        speaker_wav: str | None,
         output_path: str,
+        speaker: str | None = None,
     ) -> None:
         """Synchronous TTS generation — runs in a thread pool."""
         import gc
+
+        # XTTS sometimes reads a closing full stop aloud ("ponto", "dot")
+        text = text.rstrip()
+        if text.endswith(".") and not text.endswith(".."):
+            text = text[:-1]
 
         try:
             self._model.tts_to_file(
                 text=text,
                 language=language,
                 speaker_wav=speaker_wav,
+                speaker=speaker,
                 file_path=output_path,
             )
         except (MemoryError, RuntimeError) as exc:
@@ -311,8 +342,11 @@ class TTSService:
         # XTTS v2 is multi-speaker and requires a speaker reference
         model_info = _MODEL_MAP.get(self._model_name, {})
         needs_speaker_ref = model_info.get("voice_cloning", True)
+        builtin = None
         if needs_speaker_ref and not speaker_wav:
-            speaker_wav = self._ensure_speaker_ref(speaker or "default")
+            builtin = self._builtin_speaker(speaker)
+            if builtin is None:
+                speaker_wav = self._ensure_speaker_ref(speaker or "default")
 
         import uuid
         import asyncio
@@ -327,6 +361,7 @@ class TTSService:
             language,
             speaker_wav if needs_speaker_ref else None,
             output_path,
+            builtin,
         )
         return output_path
 

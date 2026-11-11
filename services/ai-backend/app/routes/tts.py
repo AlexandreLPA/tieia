@@ -52,11 +52,19 @@ async def _check_tts_ready() -> None:
         )
 
     if not model_info.get("loaded", False):
-        raise HTTPException(
-            status_code=503,
-            detail="TTS model is not loaded. Go to Settings > AI Models and click "
-            '"Load Model" next to the TTS service, then try again.',
-        )
+        # Loaded on the first use (downloading it the first time), so the
+        # voice works without a trip to the settings
+        try:
+            async with httpx.AsyncClient(timeout=httpx.Timeout(1800, connect=5)) as client:
+                resp = await client.post(f"{settings.TTS_SERVICE_URL}/load")
+                resp.raise_for_status()
+        except Exception as exc:
+            logger.warning("TTS model did not load on demand: %s", exc)
+            raise HTTPException(
+                status_code=503,
+                detail="O modelo de voz não carregou. Confira em Configuração de IA "
+                "se o serviço de vozes prontas está ligado e tente de novo.",
+            ) from exc
 
 
 @router.post("/generate")

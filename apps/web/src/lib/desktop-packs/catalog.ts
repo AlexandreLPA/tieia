@@ -139,6 +139,47 @@ export const PACKS: Pack[] = [
 			},
 		],
 	},
+	{
+		id: "tts",
+		name: "Vozes prontas",
+		description:
+			"Narra o seu texto com vozes prontas, sem gravar a sua (Coqui XTTS, em português e outros 15 idiomas). Usa a placa de vídeo.",
+		size: "cerca de 8 GB, mais 1,8 GB do modelo no primeiro uso",
+		python: "3.11",
+		requirements: ["tts-service/requirements.txt"],
+		// requirements.txt keeps torch below 2.6 (CPU, for Docker), which has
+		// no kernels for RTX 50 cards; 2.8 for CUDA 12.8 runs them
+		overrides: ["tts-service/overrides-desktop.txt"],
+		indexUrls: ["https://download.pytorch.org/whl/cu128"],
+		services: [
+			{
+				id: "tts",
+				dir: "tts-service",
+				args: [
+					"-m",
+					"uvicorn",
+					"app:app",
+					"--host",
+					"127.0.0.1",
+					"--port",
+					"8422",
+				],
+				port: 8422,
+				health: "/health",
+				// The model loads on the first use, not with the app; Coqui
+				// asks to accept its license (CPML) before downloading XTTS.
+				// coqui-tts 0.24 predates torch 2.6, which opens checkpoints
+				// with weights_only and refuses XTTS's config objects; this
+				// service only opens Coqui's own model files, which the Docker
+				// image (torch 2.5) opens the same way
+				env: {
+					TTS_AUTOLOAD: "false",
+					COQUI_TOS_AGREED: "1",
+					TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD: "1",
+				},
+			},
+		],
+	},
 ];
 
 export type PackState =
