@@ -323,6 +323,13 @@ def _get_emotion_model():
             pymodule_file="custom_interface.py",
             classname="CustomEncoderWav2vec2Classifier",
             savedir=os.path.join(SPEECHBRAIN_DIR, "emotion-recognition"),
+            # Its wav2vec2 base model would otherwise download into the
+            # working folder (in the desktop app, the repository)
+            overrides={
+                "wav2vec2": {
+                    "save_path": os.path.join(SPEECHBRAIN_DIR, "wav2vec2_checkpoints")
+                }
+            },
             # Copies instead of linking: Windows needs special rights for links
             local_strategy=LocalStrategy.COPY,
         )

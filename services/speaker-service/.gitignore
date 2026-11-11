@@ -1,0 +1,3 @@
+# Models SpeechBrain downloads into the working folder when no folder is set
+wav2vec2_checkpoints/
+uploads/
