@@ -64,6 +64,7 @@ import { DeleteProjectDialog } from "@/components/editor/dialogs/delete-project-
 import { ProjectInfoDialog } from "@/components/editor/dialogs/project-info-dialog";
 import { RenameProjectDialog } from "@/components/editor/dialogs/rename-project-dialog";
 import { cn } from "@/utils/ui";
+import { DesktopMigrationCard } from "@/components/desktop-migration-card";
 
 const formatProjectDuration = ({
 	duration,
@@ -108,6 +109,9 @@ export default function ProjectsPage() {
 			<ProjectsHeader />
 			<ProjectsToolbar projectIds={projectsToDisplay.map((p) => p.id)} />
 			<main className="mx-auto px-4 pt-2 pb-6 flex flex-col gap-4">
+				{isInitialized && (
+					<DesktopMigrationCard hasProjects={projectsToDisplay.length > 0} />
+				)}
 				{isLoading || !isInitialized ? (
 					<ProjectsSkeleton />
 				) : projectsToDisplay.length === 0 ? (

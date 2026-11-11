@@ -16,6 +16,7 @@
     "db:push:prod": "cross-env NODE_ENV=production drizzle-kit push"
   },
   "dependencies": {
+    "@electric-sql/pglite": "0.3.11",
     "@ffmpeg/core": "^0.12.10",
     "@ffmpeg/ffmpeg": "^0.12.15",
     "@ffmpeg/util": "^0.12.2",

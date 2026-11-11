@@ -1,6 +1,7 @@
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { webEnv } from "@opencut-ai/env/web";
+import { isDesktop } from "@/lib/desktop";
 
 const redis = new Redis({
 	url: webEnv.UPSTASH_REDIS_REST_URL,
@@ -15,6 +16,8 @@ export const baseRateLimit = new Ratelimit({
 });
 
 export async function checkRateLimit({ request }: { request: Request }) {
+	// The desktop app serves only this computer and has no Redis to count with
+	if (isDesktop) return { success: true, limited: false };
 	const ip = request.headers.get("x-forwarded-for") ?? "anonymous";
 	const { success } = await baseRateLimit.limit(ip);
 	return { success, limited: !success };

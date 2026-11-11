@@ -27,6 +27,7 @@
     "typescript": "5.8.3"
   },
   "trustedDependencies": [
-    "@tailwindcss/oxide"
+    "@tailwindcss/oxide",
+    "electron"
   ]
 }

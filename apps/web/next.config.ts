@@ -25,6 +25,12 @@ const nextConfig: NextConfig = {
 	// The Docker image needs a standalone server; the desktop launcher builds
 	// on Windows and serves with `next start`
 	...(process.env.OPENCUT_LOCAL_BUILD !== "1" && { output: "standalone" }),
+	// The desktop app's build goes to its own folder, so building it never
+	// replaces the build the launcher serves
+	...(process.env.OPENCUT_DESKTOP_BUILD === "1" && { distDir: ".next-desktop" }),
+	// PGlite loads its WebAssembly and data files from its own folder at run
+	// time, which the bundler would otherwise leave behind
+	serverExternalPackages: ["@electric-sql/pglite"],
 	images: {
 		remotePatterns: [
 			{

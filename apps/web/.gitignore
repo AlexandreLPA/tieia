@@ -6,6 +6,7 @@
 !.env.example
 
 .next/
+.next-desktop/
 
 .font-cache/
 # BlamePrompt staging (auto-generated)
