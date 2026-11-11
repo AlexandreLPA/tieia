@@ -77,6 +77,11 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 	// Free OpenRouter models read from its catalog; null until loaded (or without a key)
 
 	const isLoading = isChecking;
+	// Set after mounting: the server render can't see the browser
+	const [isDesktopApp, setIsDesktopApp] = useState(false);
+	useEffect(() => {
+		setIsDesktopApp(navigator.userAgent.includes("Electron"));
+	}, []);
 
 	// Re-fetch when dialog opens
 	useEffect(() => {
@@ -237,16 +242,17 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 	const isImageRunning = diffusion.status === "running";
 	const hasModels = ollamaModels.length > 0;
 
-	// Count how many services are ready
-	const readyCount = [
+	// Count how many services are ready. The desktop app has no Ollama (its
+	// local chat is the TurboQuant pack), so it isn't counted or shown there
+	const counted = [
 		isBackendRunning,
-		isOllamaRunning,
-		hasModels,
+		...(isDesktopApp ? [] : [isOllamaRunning && hasModels]),
 		isWhisperRunning,
 		isTTSRunning,
 		isImageRunning,
-	].filter(Boolean).length;
-	const totalServices = 5; // backend, ollama, whisper, tts, image
+	];
+	const readyCount = counted.filter(Boolean).length;
+	const totalServices = counted.length;
 
 	return (
 		<Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -334,199 +340,203 @@ export function AISetupGuide({ isOpen, onOpenChange }: AISetupGuideProps) {
 							)}
 						</ServiceCard>
 
-						{/* ── 2. Ollama LLM Service ── */}
-						<ServiceCard
-							title="Ollama (LLM)"
-							status={isOllamaRunning ? "running" : "stopped"}
-							detail={isOllamaRunning
-								? `${ollamaModels.length} ${ollamaModels.length === 1 ? "modelo instalado" : "modelos instalados"}`
-								: SERVICE_URLS.ollama
-							}
-						>
-							{!isOllamaRunning && (
-								<div className="mt-2">
-									<p className="text-[11px] text-muted-foreground leading-relaxed">
-										O Ollama executa LLMs locais para comandos de IA, detecção de capítulos e análises. Inicie-o:
-									</p>
-									<CommandBlock label="Via Docker" command={SERVICE_DOCKER_COMMANDS.ollama} />
-									<CommandBlock label="Ou instalar localmente" command="brew install ollama && ollama serve" />
-								</div>
-							)}
+						{/* ── 2. Ollama LLM Service (Docker only) ── */}
+						{!isDesktopApp && (
+							<>
+								<ServiceCard
+									title="Ollama (LLM)"
+									status={isOllamaRunning ? "running" : "stopped"}
+									detail={isOllamaRunning
+										? `${ollamaModels.length} ${ollamaModels.length === 1 ? "modelo instalado" : "modelos instalados"}`
+										: SERVICE_URLS.ollama
+									}
+								>
+									{!isOllamaRunning && (
+										<div className="mt-2">
+											<p className="text-[11px] text-muted-foreground leading-relaxed">
+												O Ollama executa LLMs locais para comandos de IA, detecção de capítulos e análises. Inicie-o:
+											</p>
+											<CommandBlock label="Via Docker" command={SERVICE_DOCKER_COMMANDS.ollama} />
+											<CommandBlock label="Ou instalar localmente" command="brew install ollama && ollama serve" />
+										</div>
+									)}
 
-							{isOllamaRunning && (
-								<div className="mt-2 flex flex-col gap-2">
-									{/* Installed models — with explicit Use / Active button */}
-									{ollamaModels.length > 0 && (
-										<div className="flex flex-col gap-1">
-											<span className="text-[11px] text-muted-foreground font-medium">Modelos instalados</span>
-											{ollamaModels.map((model) => {
-												const isActive = model.name === activeModel;
-												// Determine CPU/GPU from size: models > 4GB typically need GPU
-												const modelSizeGB = model.size / 1_073_741_824;
-												const deviceTag = modelSizeGB > 4 ? "gpu" : "cpu";
-												return (
-													<div
-														key={model.name}
-														className={cn(
-															"flex items-center justify-between rounded px-2 py-1.5 text-[11px]",
-															isActive
-																? "bg-primary/10 border border-primary/30"
-																: "bg-muted/50",
-														)}
-													>
-														<div className="flex items-center gap-1.5">
-															<span className={cn("size-1.5 rounded-full", isActive ? "bg-primary" : "bg-green-500")} />
-															<span className="font-medium">{model.name}</span>
-															<Badge
-																variant="outline"
+									{isOllamaRunning && (
+										<div className="mt-2 flex flex-col gap-2">
+											{/* Installed models — with explicit Use / Active button */}
+											{ollamaModels.length > 0 && (
+												<div className="flex flex-col gap-1">
+													<span className="text-[11px] text-muted-foreground font-medium">Modelos instalados</span>
+													{ollamaModels.map((model) => {
+														const isActive = model.name === activeModel;
+														// Determine CPU/GPU from size: models > 4GB typically need GPU
+														const modelSizeGB = model.size / 1_073_741_824;
+														const deviceTag = modelSizeGB > 4 ? "gpu" : "cpu";
+														return (
+															<div
+																key={model.name}
 																className={cn(
-																	"text-[8px] px-1 py-0",
-																	deviceTag === "cpu"
-																		? "text-green-400 border-green-500/30"
-																		: "text-purple-400 border-purple-500/30",
+																	"flex items-center justify-between rounded px-2 py-1.5 text-[11px]",
+																	isActive
+																		? "bg-primary/10 border border-primary/30"
+																		: "bg-muted/50",
 																)}
 															>
-																{deviceTag === "cpu" ? "CPU" : "GPU"}
-															</Badge>
-														</div>
-														<div className="flex items-center gap-2">
-															<span className="text-muted-foreground tabular-nums">
-																{formatBytes(model.size)}
-															</span>
-															{isActive ? (
-																<Badge variant="default" className="text-[8px] px-1.5 py-0 h-4">
-																	Ativo
-																</Badge>
-															) : (
-																<Button
-																	size="sm"
-																	variant="outline"
-																	className="h-5 text-[9px] px-2"
-																	disabled={isSwitchingModel}
-																	onClick={() => handleSwitchModel(model.name)}
-																>
-																	{isSwitchingModel ? <Spinner className="size-2.5" /> : "Usar este"}
-																</Button>
-															)}
-														</div>
-													</div>
-												);
-											})}
-										</div>
-									)}
-
-									{/* Pull a new model */}
-									{!hasModels && (
-										<div className="rounded bg-yellow-500/10 px-2.5 py-2 text-[11px] text-yellow-400">
-											Nenhum modelo instalado ainda. Baixe um para habilitar os comandos de IA.
-										</div>
-									)}
-
-									{ollamaModels.length === 1 && (
-										<div className="rounded bg-blue-500/10 px-2.5 py-2 text-[11px] text-blue-400 leading-relaxed">
-											Para trocar de modelo, baixe um diferente abaixo. Ele será baixado e se tornará automaticamente o modelo ativo.
-										</div>
-									)}
-
-									<div className="flex flex-col gap-1">
-										<span className="text-[11px] text-muted-foreground font-medium">
-											{hasModels ? "Trocar para outro modelo" : "Escolha um modelo para instalar"}
-										</span>
-										{SUGGESTED_MODELS.map((model) => {
-											// Exact match: "llama3.2:1b" must match "llama3.2:1b", not "llama3.2:3b"
-											const isInstalled = ollamaModels.some(
-												(m) => m.name === model.name,
-											);
-											const isActive = model.name === activeModel;
-											const isPulling = isPullingModel === model.name;
-
-											return (
-												<div
-													key={model.name}
-													className={cn(
-														"flex items-center gap-2 rounded px-2.5 py-2 text-[11px]",
-														isActive
-															? "bg-primary/10 border border-primary/30"
-															: isInstalled
-																? "bg-green-500/5 border border-green-500/20"
-																: "bg-muted/30",
-													)}
-												>
-													<div className="flex-1 min-w-0">
-														<div className="flex items-center gap-1.5 flex-wrap">
-															<span className="font-medium font-mono">{model.name}</span>
-															<span className="text-muted-foreground">{model.size}</span>
-															<Badge
-																variant="outline"
-																className={cn(
-																	"text-[8px] px-1 py-0",
-																	model.device === "cpu"
-																		? "text-green-400 border-green-500/30"
-																		: "text-purple-400 border-purple-500/30",
-																)}
-															>
-																{model.device === "cpu" ? "CPU" : "GPU"}
-															</Badge>
-															{model.turboquant && (
-																<Badge
-																	variant="outline"
-																	className="text-[8px] px-1 py-0 text-cyan-400 border-cyan-500/30"
-																>
-																	TurboQuant
-																</Badge>
-															)}
-															{isActive && (
-																<Badge variant="default" className="text-[8px] px-1 py-0 h-3.5">
-																	Ativo
-																</Badge>
-															)}
-														</div>
-														<p className="text-muted-foreground mt-0.5">{model.description}</p>
-													</div>
-													<div className="shrink-0">
-														{isPulling ? (
-															<Button size="sm" variant="outline" className="h-6 text-[10px] px-2" disabled>
-																<Spinner className="size-3 mr-1" />
-																Baixando...
-															</Button>
-														) : isActive ? (
-															<Badge variant="default" className="text-[9px] px-1.5 py-0.5">
-																Em uso
-															</Badge>
-														) : isInstalled ? (
-															<Button
-																size="sm"
-																variant="outline"
-																className="h-6 text-[10px] px-2"
-																disabled={isSwitchingModel || isPullingModel !== null}
-																onClick={() => handleSwitchModel(model.name)}
-															>
-																{isSwitchingModel ? <Spinner className="size-3" /> : "Usar este"}
-															</Button>
-														) : (
-															<Button
-																size="sm"
-																variant="secondary"
-																className="h-6 text-[10px] px-2"
-																disabled={isPullingModel !== null}
-																onClick={() => handlePullModel(model.name)}
-															>
-																<HugeiconsIcon icon={Download04Icon} className="size-3 mr-0.5" />
-																Baixar e usar
-															</Button>
-														)}
-													</div>
+																<div className="flex items-center gap-1.5">
+																	<span className={cn("size-1.5 rounded-full", isActive ? "bg-primary" : "bg-green-500")} />
+																	<span className="font-medium">{model.name}</span>
+																	<Badge
+																		variant="outline"
+																		className={cn(
+																			"text-[8px] px-1 py-0",
+																			deviceTag === "cpu"
+																				? "text-green-400 border-green-500/30"
+																				: "text-purple-400 border-purple-500/30",
+																		)}
+																	>
+																		{deviceTag === "cpu" ? "CPU" : "GPU"}
+																	</Badge>
+																</div>
+																<div className="flex items-center gap-2">
+																	<span className="text-muted-foreground tabular-nums">
+																		{formatBytes(model.size)}
+																	</span>
+																	{isActive ? (
+																		<Badge variant="default" className="text-[8px] px-1.5 py-0 h-4">
+																			Ativo
+																		</Badge>
+																	) : (
+																		<Button
+																			size="sm"
+																			variant="outline"
+																			className="h-5 text-[9px] px-2"
+																			disabled={isSwitchingModel}
+																			onClick={() => handleSwitchModel(model.name)}
+																		>
+																			{isSwitchingModel ? <Spinner className="size-2.5" /> : "Usar este"}
+																		</Button>
+																	)}
+																</div>
+															</div>
+														);
+													})}
 												</div>
-											);
-										})}
-									</div>
+											)}
 
-									{pullError && (
-										<p className="text-[11px] text-destructive">{pullError}</p>
+											{/* Pull a new model */}
+											{!hasModels && (
+												<div className="rounded bg-yellow-500/10 px-2.5 py-2 text-[11px] text-yellow-400">
+													Nenhum modelo instalado ainda. Baixe um para habilitar os comandos de IA.
+												</div>
+											)}
+
+											{ollamaModels.length === 1 && (
+												<div className="rounded bg-blue-500/10 px-2.5 py-2 text-[11px] text-blue-400 leading-relaxed">
+													Para trocar de modelo, baixe um diferente abaixo. Ele será baixado e se tornará automaticamente o modelo ativo.
+												</div>
+											)}
+
+											<div className="flex flex-col gap-1">
+												<span className="text-[11px] text-muted-foreground font-medium">
+													{hasModels ? "Trocar para outro modelo" : "Escolha um modelo para instalar"}
+												</span>
+												{SUGGESTED_MODELS.map((model) => {
+													// Exact match: "llama3.2:1b" must match "llama3.2:1b", not "llama3.2:3b"
+													const isInstalled = ollamaModels.some(
+														(m) => m.name === model.name,
+													);
+													const isActive = model.name === activeModel;
+													const isPulling = isPullingModel === model.name;
+
+													return (
+														<div
+															key={model.name}
+															className={cn(
+																"flex items-center gap-2 rounded px-2.5 py-2 text-[11px]",
+																isActive
+																	? "bg-primary/10 border border-primary/30"
+																	: isInstalled
+																		? "bg-green-500/5 border border-green-500/20"
+																		: "bg-muted/30",
+															)}
+														>
+															<div className="flex-1 min-w-0">
+																<div className="flex items-center gap-1.5 flex-wrap">
+																	<span className="font-medium font-mono">{model.name}</span>
+																	<span className="text-muted-foreground">{model.size}</span>
+																	<Badge
+																		variant="outline"
+																		className={cn(
+																			"text-[8px] px-1 py-0",
+																			model.device === "cpu"
+																				? "text-green-400 border-green-500/30"
+																				: "text-purple-400 border-purple-500/30",
+																		)}
+																	>
+																		{model.device === "cpu" ? "CPU" : "GPU"}
+																	</Badge>
+																	{model.turboquant && (
+																		<Badge
+																			variant="outline"
+																			className="text-[8px] px-1 py-0 text-cyan-400 border-cyan-500/30"
+																		>
+																			TurboQuant
+																		</Badge>
+																	)}
+																	{isActive && (
+																		<Badge variant="default" className="text-[8px] px-1 py-0 h-3.5">
+																			Ativo
+																		</Badge>
+																	)}
+																</div>
+																<p className="text-muted-foreground mt-0.5">{model.description}</p>
+															</div>
+															<div className="shrink-0">
+																{isPulling ? (
+																	<Button size="sm" variant="outline" className="h-6 text-[10px] px-2" disabled>
+																		<Spinner className="size-3 mr-1" />
+																		Baixando...
+																	</Button>
+																) : isActive ? (
+																	<Badge variant="default" className="text-[9px] px-1.5 py-0.5">
+																		Em uso
+																	</Badge>
+																) : isInstalled ? (
+																	<Button
+																		size="sm"
+																		variant="outline"
+																		className="h-6 text-[10px] px-2"
+																		disabled={isSwitchingModel || isPullingModel !== null}
+																		onClick={() => handleSwitchModel(model.name)}
+																	>
+																		{isSwitchingModel ? <Spinner className="size-3" /> : "Usar este"}
+																	</Button>
+																) : (
+																	<Button
+																		size="sm"
+																		variant="secondary"
+																		className="h-6 text-[10px] px-2"
+																		disabled={isPullingModel !== null}
+																		onClick={() => handlePullModel(model.name)}
+																	>
+																		<HugeiconsIcon icon={Download04Icon} className="size-3 mr-0.5" />
+																		Baixar e usar
+																	</Button>
+																)}
+															</div>
+														</div>
+													);
+												})}
+											</div>
+
+											{pullError && (
+												<p className="text-[11px] text-destructive">{pullError}</p>
+											)}
+										</div>
 									)}
-								</div>
-							)}
-						</ServiceCard>
+								</ServiceCard>
+							</>
+						)}
 
 						{/* ── 2.5 Cloud models (OpenRouter) ── */}
 						<ServiceCard
