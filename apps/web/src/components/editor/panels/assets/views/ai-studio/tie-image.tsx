@@ -4,15 +4,22 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { create } from "zustand";
 import { toast } from "sonner";
 import {
-	ArrowDown01Icon,
-	ComputerIcon,
 	Download04Icon,
 	Image01Icon,
 	SentIcon,
+	SlidersHorizontalIcon,
 	Tick01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ModelOriginBadge } from "@/components/editor/ai/model-origin-badge";
+import {
+	MODEL_LIST_CLASS,
+	MODEL_ROW_CLASS,
+	SETTINGS_PANEL_CLASS,
+	Segments,
+	Setting,
+	SUMMARY_LINE_CLASS,
+} from "@/components/editor/ai/model-settings-ui";
 import { Button } from "@/components/ui/button";
 import {
 	Popover,
@@ -109,95 +116,6 @@ async function loadImageModel(name: string): Promise<void> {
 	}
 }
 
-/** The image model, picked in the Estúdio's header while in Tiê Image. */
-export function ImageModelPicker({ className }: { className?: string }) {
-	const { models, selected, error, refresh, select } = useImageModels();
-	const [isOpen, setIsOpen] = useState(false);
-
-	useEffect(() => {
-		refresh();
-	}, [refresh]);
-
-	if (models.length === 0 && !error) return null;
-
-	return (
-		<Popover
-			open={isOpen}
-			onOpenChange={(open) => {
-				setIsOpen(open);
-				if (open) refresh();
-			}}
-		>
-			<PopoverTrigger asChild>
-				<button
-					type="button"
-					data-ui-target="ai/image-model"
-					aria-label={`Modelo de imagem: ${selected ?? "nenhum"}`}
-					className={cn(
-						"text-muted-foreground hover:text-foreground hover:bg-accent flex min-w-0 items-center gap-1.5 rounded-sm px-1.5 py-1 text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-hidden",
-						className,
-					)}
-				>
-					<HugeiconsIcon icon={ComputerIcon} className="size-3.5 shrink-0" />
-					<span className="truncate">{selected ?? "Modelo de imagem"}</span>
-					<HugeiconsIcon icon={ArrowDown01Icon} className="size-3 shrink-0" />
-				</button>
-			</PopoverTrigger>
-			<PopoverContent
-				side="bottom"
-				align="start"
-				className="w-[26rem] max-w-[calc(100vw-1rem)] p-0"
-			>
-				<p className="text-muted-foreground border-b px-3 py-2 text-[11px] leading-relaxed">
-					Modelos de imagem · grátis, rodam no seu PC. O primeiro uso de cada um
-					baixa o modelo.
-				</p>
-				{error && <p className="px-3 py-2 text-xs text-yellow-500">{error}</p>}
-				<div className="max-h-72 overflow-y-auto p-1">
-					{models.map((model) => (
-						<button
-							key={model.name}
-							type="button"
-							aria-pressed={model.name === selected}
-							onClick={() => {
-								select(model.name);
-								setIsOpen(false);
-							}}
-							className={cn(
-								"hover:bg-accent flex w-full items-start gap-2 rounded-md px-2 py-1.5 text-left",
-								model.name === selected && "bg-accent",
-							)}
-						>
-							<span className="min-w-0 flex-1">
-								<span className="flex items-center gap-1.5 text-sm">
-									<span className="truncate">{model.name}</span>
-									<ModelOriginBadge origin="local" />
-									{model.name === selected && (
-										<HugeiconsIcon
-											icon={Tick01Icon}
-											className="size-3.5 shrink-0"
-										/>
-									)}
-								</span>
-								<span className="text-muted-foreground block text-[11px] leading-snug">
-									{DESCRIPTIONS[model.name] ?? model.description}
-								</span>
-								<span className="text-muted-foreground block text-[11px]">
-									{model.size.replace("~", "cerca de ")} ·{" "}
-									{model.device === "cpu"
-										? "roda sem placa de vídeo"
-										: "feito para placa de vídeo"}
-									{model.active ? " · carregado" : ""}
-								</span>
-							</span>
-						</button>
-					))}
-				</div>
-			</PopoverContent>
-		</Popover>
-	);
-}
-
 // ----- Generation -----
 
 type Ratio = "16:9" | "9:16" | "1:1";
@@ -220,6 +138,95 @@ function sizeFor(
 	if (ratio === "16:9") return { width: long, height: short };
 	if (ratio === "9:16") return { width: short, height: long };
 	return { width: square, height: square };
+}
+
+/**
+ * The settings button beside Tiê Image's message field: the model and the
+ * proportion, laid out like Tiê Video's.
+ */
+function ImageSettings({
+	open,
+	onOpenChange,
+	ratio,
+	onRatio,
+}: {
+	open: boolean;
+	onOpenChange: (open: boolean) => void;
+	ratio: Ratio;
+	onRatio: (ratio: Ratio) => void;
+}) {
+	const { models, selected, error, refresh, select } = useImageModels();
+
+	return (
+		<Popover
+			open={open}
+			onOpenChange={(next) => {
+				onOpenChange(next);
+				if (next) refresh();
+			}}
+		>
+			<PopoverTrigger asChild>
+				<Button
+					size="icon"
+					variant="ghost"
+					className="size-[36px] shrink-0"
+					title="Configurações da imagem"
+					aria-label="Configurações da imagem"
+					data-ui-target="ai/image-model"
+				>
+					<HugeiconsIcon icon={SlidersHorizontalIcon} className="size-4" />
+				</Button>
+			</PopoverTrigger>
+			<PopoverContent side="top" align="start" className={SETTINGS_PANEL_CLASS}>
+				<Setting label="Modelo">
+					{error && <p className="text-xs text-yellow-500">{error}</p>}
+					<div className={MODEL_LIST_CLASS}>
+						{models.map((model) => (
+							<button
+								key={model.name}
+								type="button"
+								aria-pressed={model.name === selected}
+								onClick={() => select(model.name)}
+								className={cn(
+									MODEL_ROW_CLASS,
+									model.name === selected && "bg-accent",
+								)}
+							>
+								<span className="min-w-0 flex-1">
+									<span className="flex items-center gap-1.5 text-sm">
+										<span className="truncate">{model.name}</span>
+										<ModelOriginBadge origin="local" />
+										{model.name === selected && (
+											<HugeiconsIcon
+												icon={Tick01Icon}
+												className="size-3.5 shrink-0"
+											/>
+										)}
+									</span>
+									<span className="text-muted-foreground block text-xs leading-snug">
+										{DESCRIPTIONS[model.name] ?? model.description}
+									</span>
+								</span>
+								<span className="text-muted-foreground mt-0.5 shrink-0 text-right text-xs leading-snug">
+									{model.size.replace("~", "")}
+									<br />
+									{model.device === "cpu" ? "sem placa" : "placa de vídeo"}
+								</span>
+							</button>
+						))}
+					</div>
+					<p className="text-muted-foreground text-[11px] leading-relaxed">
+						Os modelos rodam no seu PC, sem custo. O primeiro uso de cada um
+						baixa o modelo.
+					</p>
+				</Setting>
+
+				<Setting label="Proporção">
+					<Segments options={RATIOS} value={ratio} onChange={onRatio} />
+				</Setting>
+			</PopoverContent>
+		</Popover>
+	);
 }
 
 interface GeneratedImage {
@@ -276,6 +283,7 @@ export function TieImagePanel() {
 	const { models, selected, error, refresh } = useImageModels();
 	const [prompt, setPrompt] = useState("");
 	const [ratio, setRatio] = useState<Ratio>("16:9");
+	const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 	const { images, add, patch } = useGeneratedImages();
 	const [now, setNow] = useState(() => Date.now());
 	const scrollRef = useRef<HTMLDivElement>(null);
@@ -479,28 +487,13 @@ export function TieImagePanel() {
 			</div>
 
 			<div className="bg-background shrink-0 border-t px-2 py-2">
-				<div className="mb-1.5 flex flex-wrap items-center gap-1.5">
-					<span className="text-muted-foreground text-[11px]">Proporção</span>
-					<div className="bg-accent/60 flex rounded-full p-0.5">
-						{RATIOS.map((option) => (
-							<button
-								key={option.id}
-								type="button"
-								aria-pressed={ratio === option.id}
-								title={option.id}
-								onClick={() => setRatio(option.id)}
-								className={cn(
-									"text-muted-foreground hover:text-foreground rounded-full px-2 py-0.5 text-[11px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-hidden",
-									ratio === option.id &&
-										"bg-background text-foreground shadow-sm",
-								)}
-							>
-								{option.label}
-							</button>
-						))}
-					</div>
-				</div>
 				<div className="flex items-end gap-1.5">
+					<ImageSettings
+						open={isSettingsOpen}
+						onOpenChange={setIsSettingsOpen}
+						ratio={ratio}
+						onRatio={setRatio}
+					/>
 					<textarea
 						value={prompt}
 						onChange={(event) => setPrompt(event.target.value)}
@@ -531,6 +524,19 @@ export function TieImagePanel() {
 						)}
 					</Button>
 				</div>
+
+				{/* What a click on send will use, without opening the settings */}
+				{selected && (
+					<button
+						type="button"
+						onClick={() => setIsSettingsOpen(true)}
+						className={cn(SUMMARY_LINE_CLASS, "mt-1.5")}
+					>
+						<span className="truncate">{selected}</span>
+						<ModelOriginBadge origin="local" />
+						<span>· {ratio}</span>
+					</button>
+				)}
 			</div>
 		</>
 	);

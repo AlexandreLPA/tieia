@@ -22,6 +22,14 @@ import { cloudModelSummary, shortModelName } from "@/lib/ai-model-name";
 import { notifyLlmChanged, onLlmChanged } from "@/lib/llm-change";
 import { cn } from "@/utils/ui";
 import { ModelOriginBadge } from "./model-origin-badge";
+import {
+	MODEL_LIST_CLASS,
+	MODEL_ROW_CLASS,
+	SETTINGS_PANEL_CLASS,
+	Segments,
+	Setting,
+	SUMMARY_LINE_CLASS,
+} from "./model-settings-ui";
 import { OpenRouterKeyForm } from "./openrouter-key-form";
 
 type Provider = "cloud" | "local";
@@ -275,9 +283,20 @@ export function ChatModelPicker({
 	);
 	const isSearching = query.trim().length > 0;
 	const needsKey = provider === "cloud" && !state.cloudConfigured;
+	const activeOrigin = (option: ModelOption) =>
+		option.provider === "local"
+			? ("local" as const)
+			: option.id.endsWith(":free")
+				? ("cloud-free" as const)
+				: ("cloud-paid" as const);
+	const effortLabel = EFFORTS.find(
+		(effort) => effort.id === state.effort,
+	)?.label;
 	const triggerLabel = state.issue
 		? `${state.issue.fallback} (reserva)`
-		: shortModelName(state.active.id) || "Escolher modelo";
+		: activeOption?.name ||
+			shortModelName(state.active.id) ||
+			"Escolher modelo";
 
 	return (
 		<Popover
@@ -292,6 +311,7 @@ export function ChatModelPicker({
 				}
 			}}
 		>
+			{/* The summary line under the message field, as in Tiê Image and Tiê Video */}
 			<PopoverTrigger asChild>
 				<button
 					type="button"
@@ -299,7 +319,7 @@ export function ChatModelPicker({
 					aria-label={`Modelo do chat: ${triggerLabel}`}
 					title={state.issue?.message}
 					className={cn(
-						"text-muted-foreground hover:text-foreground hover:bg-accent flex min-w-0 items-center gap-1.5 rounded-sm px-1.5 py-1 text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-hidden",
+						SUMMARY_LINE_CLASS,
 						state.issue && "text-yellow-500 hover:text-yellow-500",
 						className,
 					)}
@@ -313,93 +333,86 @@ export function ChatModelPicker({
 						className="size-3.5 shrink-0"
 					/>
 					<span className="truncate">{triggerLabel}</span>
+					{activeOption && !state.issue && (
+						<ModelOriginBadge origin={activeOrigin(activeOption)} />
+					)}
+					{efforts.length > 1 && effortLabel && (
+						<span>· raciocínio {effortLabel.toLowerCase()}</span>
+					)}
 					<HugeiconsIcon icon={ArrowDown01Icon} className="size-3 shrink-0" />
 				</button>
 			</PopoverTrigger>
 			<PopoverContent
 				side={side}
 				align="start"
-				className="flex w-[30rem] max-w-[calc(100vw-1rem)] overflow-hidden p-0"
+				className={SETTINGS_PANEL_CLASS}
 			>
-				{/* Provider rail */}
-				<div className="bg-accent/50 flex w-11 shrink-0 flex-col items-center gap-1 border-r py-2">
-					{PROVIDERS.map((item) => (
-						<button
-							key={item.id}
-							type="button"
-							aria-label={item.label}
-							aria-pressed={provider === item.id && !isSearching}
-							title={item.label}
-							onClick={() => {
-								setProvider(item.id);
-								setQuery("");
-							}}
-							className={cn(
-								"text-muted-foreground hover:text-foreground flex size-8 items-center justify-center rounded-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-hidden",
-								provider === item.id &&
-									!isSearching &&
-									"bg-background text-foreground shadow-sm",
-							)}
-						>
-							<HugeiconsIcon icon={item.icon} className="size-4" />
-						</button>
-					))}
-				</div>
+				{state.issue && (
+					<p className="rounded-md bg-yellow-500/10 px-2.5 py-2 text-xs leading-relaxed text-yellow-500">
+						{state.issue.message}. Quem responde agora é {state.issue.fallback}.
+					</p>
+				)}
 
-				<div className="flex min-w-0 flex-1 flex-col">
-					<div className="relative border-b">
-						<HugeiconsIcon
-							icon={Search01Icon}
-							className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-3.5 -translate-y-1/2"
-						/>
-						<input
-							value={query}
-							onChange={(event) => setQuery(event.target.value)}
-							placeholder="Buscar modelos"
-							aria-label="Buscar modelos"
-							className="placeholder:text-muted-foreground h-9 w-full bg-transparent pr-3 pl-8 text-sm outline-hidden"
-						/>
-					</div>
+				<Setting label="Onde roda">
+					<Segments
+						options={PROVIDERS.map((item) => ({
+							id: item.id,
+							label: item.label,
+						}))}
+						value={isSearching ? "" : provider}
+						onChange={(next) => {
+							setProvider(next);
+							setQuery("");
+						}}
+					/>
+				</Setting>
 
-					{state.issue && (
-						<p className="border-b bg-yellow-500/10 px-3 py-2 text-xs leading-relaxed text-yellow-500">
-							{state.issue.message}. Quem responde agora é{" "}
-							{state.issue.fallback}.
-						</p>
-					)}
-
-					<div className="max-h-96 min-h-24 overflow-y-auto p-1">
-						{needsKey && !isSearching ? (
-							<div className="flex flex-col gap-3 p-2">
-								<p className="text-muted-foreground text-xs leading-relaxed">
-									Cole a sua chave da OpenRouter para usar os modelos gratuitos
-									da nuvem. Crie uma em{" "}
-									<a
-										href="https://openrouter.ai/keys"
-										target="_blank"
-										rel="noopener noreferrer"
-										className="text-foreground underline"
-									>
-										openrouter.ai/keys
-									</a>
-									. Ela fica salva só neste computador.
-								</p>
-								<OpenRouterKeyForm
-									onSaved={() => {
-										load();
-										notifyLlmChanged();
-									}}
+				<Setting label="Modelo">
+					{needsKey && !isSearching ? (
+						<div className="flex flex-col gap-3 rounded-md border p-2.5">
+							<p className="text-muted-foreground text-xs leading-relaxed">
+								Cole a sua chave da OpenRouter para usar os modelos gratuitos da
+								nuvem. Crie uma em{" "}
+								<a
+									href="https://openrouter.ai/keys"
+									target="_blank"
+									rel="noopener noreferrer"
+									className="text-foreground underline"
+								>
+									openrouter.ai/keys
+								</a>
+								. Ela fica salva só neste computador.
+							</p>
+							<OpenRouterKeyForm
+								onSaved={() => {
+									load();
+									notifyLlmChanged();
+								}}
+							/>
+						</div>
+					) : (
+						<>
+							<div className="relative">
+								<HugeiconsIcon
+									icon={Search01Icon}
+									className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2"
+								/>
+								<input
+									value={query}
+									onChange={(event) => setQuery(event.target.value)}
+									placeholder="Buscar modelos"
+									aria-label="Buscar modelos"
+									className="placeholder:text-muted-foreground/60 h-8 w-full rounded-md border bg-transparent pr-2.5 pl-8 text-xs outline-none focus:ring-1 focus:ring-ring"
 								/>
 							</div>
-						) : (
-							<>
+							<div className={MODEL_LIST_CLASS}>
 								{groups.map((group) => {
 									const info = PROVIDERS.find(
 										(item) => item.id === group.provider,
 									);
 									return (
 										<div key={group.provider}>
-											<p className="text-muted-foreground px-2 pt-1.5 pb-1 text-[11px]">
+											<p className="text-muted-foreground px-2 pt-1 pb-1 text-[11px]">
 												{isSearching
 													? `${info?.label} · ${info?.caption}`
 													: info?.caption}
@@ -415,7 +428,7 @@ export function ChatModelPicker({
 														disabled={switching !== null}
 														onClick={() => select(option)}
 														className={cn(
-															"hover:bg-accent flex w-full items-start gap-2 rounded-md px-2 py-1.5 text-left disabled:opacity-60",
+															MODEL_ROW_CLASS,
 															isActive && "bg-accent",
 														)}
 													>
@@ -423,13 +436,7 @@ export function ChatModelPicker({
 															<span className="flex items-center gap-1.5 text-sm">
 																<span className="truncate">{option.name}</span>
 																<ModelOriginBadge
-																	origin={
-																		option.provider === "local"
-																			? "local"
-																			: option.id.endsWith(":free")
-																				? "cloud-free"
-																				: "cloud-paid"
-																	}
+																	origin={activeOrigin(option)}
 																/>
 																{switching === key ? (
 																	<Spinner className="size-3 shrink-0" />
@@ -472,45 +479,32 @@ export function ChatModelPicker({
 												: "A lista da OpenRouter não pôde ser lida agora."}
 									</p>
 								)}
-								{provider === "cloud" &&
-									!isSearching &&
-									state.cloudConfigured &&
-									!state.catalogAvailable &&
-									state.cloud.length > 0 && (
-										<p className="text-muted-foreground px-2 py-2 text-[11px] leading-relaxed">
-											A lista completa da OpenRouter não pôde ser lida agora.
-										</p>
-									)}
-							</>
-						)}
-					</div>
-
-					{efforts.length > 1 && (
-						<div className="flex items-center gap-2 border-t px-3 py-2">
-							<span className="text-muted-foreground flex shrink-0 items-center gap-1.5 text-[11px]">
-								<HugeiconsIcon icon={BrainIcon} className="size-3.5" />
-								Raciocínio
-							</span>
-							<div className="bg-accent/60 ml-auto flex rounded-md p-0.5">
-								{efforts.map((effort) => (
-									<button
-										key={effort.id}
-										type="button"
-										aria-pressed={state.effort === effort.id}
-										onClick={() => selectEffort(effort.id)}
-										className={cn(
-											"text-muted-foreground hover:text-foreground rounded-sm px-2.5 py-1 text-[11px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-hidden",
-											state.effort === effort.id &&
-												"bg-background text-foreground shadow-sm",
-										)}
-									>
-										{effort.label}
-									</button>
-								))}
 							</div>
-						</div>
+							{provider === "cloud" &&
+								!isSearching &&
+								state.cloudConfigured &&
+								!state.catalogAvailable &&
+								state.cloud.length > 0 && (
+									<p className="text-muted-foreground text-[11px] leading-relaxed">
+										A lista completa da OpenRouter não pôde ser lida agora.
+									</p>
+								)}
+						</>
 					)}
-				</div>
+				</Setting>
+
+				{efforts.length > 1 && (
+					<Setting label="Raciocínio">
+						<Segments
+							options={efforts}
+							value={state.effort}
+							onChange={selectEffort}
+						/>
+						<p className="text-muted-foreground text-[11px] leading-relaxed">
+							Mais raciocínio dá respostas mais pensadas, e mais demoradas.
+						</p>
+					</Setting>
+				)}
 			</PopoverContent>
 		</Popover>
 	);

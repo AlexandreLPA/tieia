@@ -94,7 +94,7 @@ import {
 	CreateShortcuts,
 	ModeChip,
 } from "./ai-studio/create-modes";
-import { ImageModelPicker, TieImagePanel } from "./ai-studio/tie-image";
+import { TieImagePanel } from "./ai-studio/tie-image";
 import { TieVideoPanel } from "./ai-studio/tie-video";
 
 // ----- Component -----
@@ -593,18 +593,10 @@ export function AIStudioView() {
 		<div className="relative flex h-full flex-col overflow-hidden">
 			{/* Header */}
 			<div className="bg-background h-11 shrink-0 px-4 pr-2 flex items-center justify-between gap-2 border-b">
-				{/* The model name gives way (ellipsis) before the tabs do */}
 				<div className="flex min-w-0 items-center gap-2">
-					{/* What is open, and the model that does it: each creation has its own models */}
-					{mode === "tie-image" ? (
-						<>
-							<ModeChip mode="tie-image" onExit={() => setMode("chat")} />
-							<ImageModelPicker className="max-w-40" />
-						</>
-					) : mode === "tie-video" ? (
-						<ModeChip mode="tie-video" onExit={() => setMode("chat")} />
-					) : (
-						<ChatModelPicker side="bottom" className="-ml-1.5 max-w-48" />
+					{/* Which creation is open; its models are under its message field */}
+					{(mode === "tie-image" || mode === "tie-video") && (
+						<ModeChip mode={mode} onExit={() => setMode("chat")} />
 					)}
 					{!isConnected && (
 						<Badge variant="outline" className="shrink-0 text-[8px] px-1.5 py-0 text-yellow-500 border-yellow-500/30">
@@ -1165,9 +1157,8 @@ export function AIStudioView() {
 								)}
 							</Button>
 						</div>
-						<p className="text-[9px] text-muted-foreground mt-1 text-center">
-							Enter para enviar &middot; Shift+Enter para nova linha
-						</p>
+						{/* The model that answers, and where it is changed */}
+						<ChatModelPicker className="mt-1.5" />
 					</div>
 				</>
 			)}

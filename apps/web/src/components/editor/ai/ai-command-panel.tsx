@@ -282,15 +282,7 @@ export function AICommandPanel({
 						)}
 					</Button>
 				</div>
-				<div className="mt-1.5 flex items-center justify-between gap-2">
-					<ChatModelPicker
-						isPanelOpen={isOpen}
-						className="-ml-1.5"
-					/>
-					<p className="text-[9px] text-muted-foreground shrink-0">
-						Enter para enviar
-					</p>
-				</div>
+				<ChatModelPicker isPanelOpen={isOpen} className="mt-1.5" />
 			</div>
 		</div>
 	);

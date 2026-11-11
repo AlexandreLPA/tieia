@@ -11,6 +11,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ModelOriginBadge } from "@/components/editor/ai/model-origin-badge";
+import { Segments, Setting } from "@/components/editor/ai/model-settings-ui";
 import { Button } from "@/components/ui/button";
 import {
 	Popover,
@@ -489,51 +490,5 @@ export function TieVideoPanel() {
 				)}
 			</div>
 		</>
-	);
-}
-
-function Setting({
-	label,
-	children,
-}: {
-	label: string;
-	children: React.ReactNode;
-}) {
-	return (
-		<div className="flex flex-col gap-1.5">
-			<span className="text-xs font-medium">{label}</span>
-			{children}
-		</div>
-	);
-}
-
-function Segments<T extends string>({
-	options,
-	value,
-	onChange,
-	className,
-}: {
-	options: { id: T; label: string }[];
-	value: string;
-	onChange: (id: T) => void;
-	className?: string;
-}) {
-	return (
-		<div className={cn("bg-accent/60 flex w-fit rounded-md p-0.5", className)}>
-			{options.map((option) => (
-				<button
-					key={option.id}
-					type="button"
-					aria-pressed={value === option.id}
-					onClick={() => onChange(option.id)}
-					className={cn(
-						"text-muted-foreground hover:text-foreground flex-1 rounded-sm px-2.5 py-1 text-xs whitespace-nowrap focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-hidden",
-						value === option.id && "bg-background text-foreground shadow-sm",
-					)}
-				>
-					{option.label}
-				</button>
-			))}
-		</div>
 	);
 }
