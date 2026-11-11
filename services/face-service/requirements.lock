@@ -10,6 +10,8 @@ anyio==4.13.0
     # via
     #   starlette
     #   watchfiles
+attrs==26.1.0
+    # via mediapipe
 cffi==2.0.0
     # via sounddevice
 click==8.3.2
@@ -34,28 +36,56 @@ httptools==0.7.1
     # via uvicorn
 idna==3.11
     # via anyio
+jax==0.5.3 ; python_full_version >= '3.13'
+    # via mediapipe
+jax==0.7.1 ; python_full_version < '3.13'
+    # via mediapipe
+jaxlib==0.5.3 ; python_full_version >= '3.13'
+    # via
+    #   jax
+    #   mediapipe
+jaxlib==0.7.1 ; python_full_version < '3.13'
+    # via
+    #   jax
+    #   mediapipe
 kiwisolver==1.5.0
     # via matplotlib
 matplotlib==3.10.8
     # via mediapipe
-mediapipe==0.10.33
+mediapipe==0.10.21
     # via -r services/face-service/requirements.txt
-numpy==2.4.4
+ml-dtypes==0.4.1 ; python_full_version >= '3.13'
+    # via
+    #   jax
+    #   jaxlib
+ml-dtypes==0.5.4 ; python_full_version < '3.13'
+    # via
+    #   jax
+    #   jaxlib
+numpy==1.26.4
     # via
     #   -r services/face-service/requirements.txt
     #   contourpy
+    #   jax
+    #   jaxlib
     #   matplotlib
     #   mediapipe
+    #   ml-dtypes
     #   opencv-contrib-python
     #   opencv-python-headless
-opencv-contrib-python==4.13.0.92
+    #   scipy
+opencv-contrib-python==4.11.0.86
     # via mediapipe
-opencv-python-headless==4.13.0.92
+opencv-python-headless==4.11.0.86
     # via -r services/face-service/requirements.txt
+opt-einsum==3.4.0
+    # via jax
 packaging==26.0
     # via matplotlib
 pillow==12.2.0
     # via matplotlib
+protobuf==4.25.9
+    # via mediapipe
 pycparser==3.0 ; implementation_name != 'PyPy'
     # via cffi
 pydantic==2.12.5
@@ -72,6 +102,12 @@ python-multipart==0.0.9
     # via -r services/face-service/requirements.txt
 pyyaml==6.0.3
     # via uvicorn
+scipy==1.17.1
+    # via
+    #   jax
+    #   jaxlib
+sentencepiece==0.2.3
+    # via mediapipe
 six==1.17.0
     # via python-dateutil
 sounddevice==0.5.5

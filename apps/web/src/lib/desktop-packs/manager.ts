@@ -1,4 +1,4 @@
-import { type ChildProcess, spawn } from "node:child_process";
+import { type ChildProcess, spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, promises as fs, readFileSync } from "node:fs";
 import path from "node:path";
@@ -50,6 +50,28 @@ function packDir(pack: Pack) {
 
 function pythonOf(pack: Pack) {
 	return path.join(packDir(pack), "venv", "Scripts", "python.exe");
+}
+
+/**
+ * The path's short (8.3) form when it has letters outside ASCII, like the
+ * "ê" of "Tiê AI". Python finds its packages from where it was started, and
+ * some native libraries (MediaPipe) mangle such paths and then can't open
+ * their own files. Falls back to the path as is.
+ */
+function asciiPath(file: string): string {
+	const ascii = [...file].every((char) => char.charCodeAt(0) < 128);
+	if (process.platform !== "win32" || ascii) return file;
+	try {
+		const short = spawnSync(
+			"cmd.exe",
+			["/d", "/s", "/c", `"for %I in ("${file}") do @echo %~sI"`],
+			// Passed as written: Node's own quoting would escape the quotes
+			{ encoding: "utf8", windowsHide: true, windowsVerbatimArguments: true },
+		).stdout.trim();
+		return short && existsSync(short) ? short : file;
+	} catch {
+		return file;
+	}
 }
 
 /** Changes when the pack's requirements change, so an update reinstalls it. */
@@ -278,7 +300,7 @@ export function startPack(id: string): Promise<void> {
 				path.join(AI_DATA_DIR, "logs", `${service.id}.log`),
 				"w",
 			);
-			const child = spawn(pythonOf(pack), service.args, {
+			const child = spawn(asciiPath(pythonOf(pack)), service.args, {
 				cwd: path.join(SERVICES_DIR, service.dir),
 				env: serviceEnv(pack, service),
 				stdio: ["ignore", log.fd, log.fd],

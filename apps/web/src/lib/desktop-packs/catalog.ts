@@ -209,6 +209,32 @@ export const PACKS: Pack[] = [
 			},
 		],
 	},
+	{
+		id: "face",
+		name: "Rosto",
+		description:
+			"Acha os rostos no vídeo para reenquadrar sozinho (16:9 para 9:16) e manter quem fala no centro. Roda no processador.",
+		size: "cerca de 0,5 GB",
+		python: "3.11",
+		requirements: ["face-service/requirements.txt"],
+		services: [
+			{
+				id: "face",
+				dir: "face-service",
+				args: [
+					"-m",
+					"uvicorn",
+					"app:app",
+					"--host",
+					"127.0.0.1",
+					"--port",
+					"8425",
+				],
+				port: 8425,
+				health: "/health",
+			},
+		],
+	},
 ];
 
 export type PackState =
