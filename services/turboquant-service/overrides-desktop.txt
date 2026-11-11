@@ -1,0 +1,4 @@
+# Applied by the desktop app's "Chat local" pack (apps/web/src/lib/desktop-packs),
+# with PyTorch's CUDA 12.8 index next to PyPI. Without it, uv takes PyPI's
+# CPU-only torch; 2.11 for CUDA 12.8 is the build the other GPU packs use.
+torch==2.11.0+cu128

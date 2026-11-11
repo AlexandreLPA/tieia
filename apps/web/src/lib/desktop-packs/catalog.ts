@@ -285,6 +285,38 @@ export const PACKS: Pack[] = [
 			},
 		],
 	},
+	{
+		id: "turboquant",
+		name: "Chat local (TurboQuant)",
+		description:
+			"Roda modelos de chat no seu PC, sem internet (Qwen, Llama, Gemma e outros do Hugging Face), comprimidos para caber na placa de vídeo. Também responde quando o modelo da nuvem falha.",
+		size: "cerca de 6 GB, mais o modelo escolhido",
+		python: "3.11",
+		requirements: ["turboquant-service/requirements.txt"],
+		// PyTorch for CUDA 12.8, the build the other GPU packs use
+		overrides: ["turboquant-service/overrides-desktop.txt"],
+		indexUrls: ["https://download.pytorch.org/whl/cu128"],
+		services: [
+			{
+				id: "turboquant",
+				dir: "turboquant-service",
+				args: [
+					"-m",
+					"uvicorn",
+					"app:app",
+					"--host",
+					"127.0.0.1",
+					"--port",
+					"8430",
+				],
+				port: 8430,
+				health: "/health",
+				// The smallest model, as in Docker: it loads with the app only
+				// once downloaded
+				env: { MODEL_NAME: "Qwen/Qwen2.5-0.5B-Instruct", DEVICE: "auto" },
+			},
+		],
+	},
 ];
 
 export type PackState =

@@ -260,6 +260,9 @@ function serviceEnv(pack: Pack, service: PackService): NodeJS.ProcessEnv {
 		HF_HUB_DISABLE_XET: "1",
 		// Coqui's own models (XTTS), next to the Hugging Face ones
 		TTS_HOME: path.join(AI_DATA_DIR, "models", "tts"),
+		// TurboQuant's downloaded chat models, and who may call it
+		MODEL_DIR: path.join(AI_DATA_DIR, "models", service.id),
+		CORS_ORIGINS: EDITOR_ORIGIN,
 		// SpeechBrain's models (voice prints for who speaks, emotions)
 		SPEECHBRAIN_DIR: path.join(AI_DATA_DIR, "models", "speechbrain"),
 		// rembg's background-removal models (default: a .u2net folder in home)
