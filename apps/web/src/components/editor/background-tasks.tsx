@@ -11,6 +11,7 @@ import {
 	Cancel01Icon,
 	Tick01Icon,
 	AlertCircleIcon,
+	MinusSignCircleIcon,
 } from "@hugeicons/core-free-icons";
 import {
 	useBackgroundTasksStore,
@@ -21,12 +22,13 @@ function formatElapsed(startedAt: number, completedAt?: number): string {
 	const elapsed = Math.floor(
 		((completedAt ?? Date.now()) - startedAt) / 1000,
 	);
-	if (elapsed < 60) return `${elapsed}s`;
-	return `${Math.floor(elapsed / 60)}m ${elapsed % 60}s`;
+	if (elapsed < 60) return `${elapsed} s`;
+	return `${Math.floor(elapsed / 60)} min ${elapsed % 60} s`;
 }
 
 function TaskRow({ task }: { task: BackgroundTask }) {
 	const removeTask = useBackgroundTasksStore((s) => s.removeTask);
+	const cancelTask = useBackgroundTasksStore((s) => s.cancelTask);
 	const [elapsed, setElapsed] = useState(
 		formatElapsed(task.startedAt, task.completedAt),
 	);
@@ -55,6 +57,12 @@ function TaskRow({ task }: { task: BackgroundTask }) {
 					className="size-3.5 text-red-500 shrink-0"
 				/>
 			)}
+			{task.status === "cancelled" && (
+				<HugeiconsIcon
+					icon={MinusSignCircleIcon}
+					className="size-3.5 text-muted-foreground shrink-0"
+				/>
+			)}
 
 			<div className="flex-1 min-w-0">
 				<div className="flex items-center gap-1.5">
@@ -71,17 +79,41 @@ function TaskRow({ task }: { task: BackgroundTask }) {
 					</p>
 				)}
 				{task.status === "error" && task.error && (
-					<p className="text-[10px] text-red-400 truncate">
+					// The whole message, over as many lines as it needs: it used to
+					// be cut to one line and hid why the task failed
+					<p className="text-[10px] text-red-400 leading-snug">
 						{task.error}
 					</p>
 				)}
+				{task.status === "cancelled" && (
+					<p className="text-[10px] text-muted-foreground">Cancelada</p>
+				)}
 			</div>
 
-			{task.status !== "running" && (
+			{task.status === "running" ? (
+				// With a cancel function the work is stopped; without one the
+				// task can only be hidden, and it keeps running behind
+				<Button
+					variant="outline"
+					size="sm"
+					className="h-6 shrink-0 px-2 text-[10px]"
+					onClick={() =>
+						task.cancel ? cancelTask(task.id) : removeTask(task.id)
+					}
+					title={
+						task.cancel
+							? "Interromper esta tarefa"
+							: "Esta tarefa não pode ser interrompida; isto só a tira da lista"
+					}
+				>
+					{task.cancel ? "Cancelar" : "Ocultar"}
+				</Button>
+			) : (
 				<Button
 					variant="ghost"
 					size="icon"
 					className="size-5 shrink-0"
+					aria-label="Remover da lista"
 					onClick={() => removeTask(task.id)}
 				>
 					<HugeiconsIcon icon={Cancel01Icon} className="size-3" />
@@ -119,8 +151,8 @@ export function BackgroundTasksWidget() {
 					{runningCount > 0 && <Spinner className="size-3" />}
 					<span className="text-xs font-semibold">
 						{runningCount > 0
-							? `${runningCount} task${runningCount > 1 ? "s" : ""} running`
-							: "Tasks completed"}
+							? `${runningCount} ${runningCount > 1 ? "tarefas em andamento" : "tarefa em andamento"}`
+							: "Tarefas concluídas"}
 					</span>
 				</div>
 				<div className="flex items-center gap-1">
@@ -134,7 +166,7 @@ export function BackgroundTasksWidget() {
 								clearCompleted();
 							}}
 						>
-							Clear
+							Limpar
 						</Button>
 					)}
 					<HugeiconsIcon

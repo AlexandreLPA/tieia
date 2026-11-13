@@ -91,6 +91,8 @@ export class YouTubeClient extends VideoClient {
 		audio_path?: string;
 		transcript_text?: string;
 		hook_text?: string;
+		/** What the frames show, from a vision model; stands in for speech */
+		visual_description?: string;
 		start: number;
 		end: number;
 		title?: string;
@@ -105,7 +107,12 @@ export class YouTubeClient extends VideoClient {
 	/** Score a video file's engagement potential (audio and picture included). */
 	async engagementScoreVideo(
 		file: File,
-		text: { transcriptText?: string; hookText?: string; title?: string } = {},
+		text: {
+			transcriptText?: string;
+			hookText?: string;
+			title?: string;
+			visualDescription?: string;
+		} = {},
 	): Promise<EngagementScoreResult> {
 		const formData = new FormData();
 		formData.append("file", file);
@@ -113,6 +120,8 @@ export class YouTubeClient extends VideoClient {
 			formData.append("transcript_text", text.transcriptText);
 		if (text.hookText) formData.append("hook_text", text.hookText);
 		if (text.title) formData.append("title", text.title);
+		if (text.visualDescription)
+			formData.append("visual_description", text.visualDescription);
 		// The backend streams keepalive pings while it scores
 		return this.requestFormDataWithKeepalive(
 			"/api/engagement/score-video",

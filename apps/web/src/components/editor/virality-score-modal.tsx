@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -12,7 +12,13 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { aiClient } from "@/lib/ai-client";
-import type { EngagementScoreResult } from "@/lib/ai-client";
+import type { EngagementScoreResult, VisionSupport } from "@/lib/ai-client";
+import { shortModelName } from "@/lib/ai-model-name";
+import {
+	describeVideoVisuals,
+	HOOK_SECONDS,
+	type VisualReading,
+} from "@/lib/virality/describe-visuals";
 import { useTranscriptStore } from "@/stores/transcript-store";
 import { useEditor } from "@/hooks/use-editor";
 import { cn } from "@/utils/ui";
@@ -26,9 +32,6 @@ import {
 	getTranscriptSourceClips,
 	mapSegmentsToTimeline,
 } from "@/lib/captions/timeline-mapping";
-
-// What counts as the hook: the first seconds of the edited video
-const HOOK_SECONDS = 3;
 
 // Light render for analysis only: 10 fps reads faces and motion fine
 const MEDIA_ANALYSIS_EXPORT = {
@@ -46,7 +49,7 @@ const NOT_EVALUATED_HINT: Record<string, string> = {
 	face_presence: "precisa analisar o vídeo",
 	emotional_arc: "precisa analisar o áudio",
 	virality: "o modelo não respondeu; tente de novo",
-	curiosity: "sem fala transcrita",
+	curiosity: "sem fala transcrita; ligue \"Entender as imagens com IA\"",
 	hook: "sem fala transcrita",
 };
 
@@ -133,10 +136,34 @@ export function ViralityScoreModal({ open, onOpenChange }: ViralityScoreModalPro
 	const [analyzeMedia, setAnalyzeMedia] = useState(true);
 	const [progressLabel, setProgressLabel] = useState("Analisando seu vídeo...");
 	const [scoredWithMedia, setScoredWithMedia] = useState(false);
+	// null until the user picks: a video with nothing to transcribe starts on
+	// reading the pictures, one with a transcript starts without it
+	const [readVisualsChoice, setReadVisualsChoice] = useState<boolean | null>(null);
+	const [vision, setVision] = useState<VisionSupport | null>(null);
+	const [visualReading, setVisualReading] = useState<VisualReading | null>(null);
+	// Each run has a number; Cancelar moves the counter on, so a run that
+	// finishes afterwards is dropped instead of showing up
+	const runRef = useRef(0);
 	const [error, setError] = useState<string | null>(null);
 	const [tab, setTab] = useState("score");
 	const setPendingAutoPrompt = useAIStore((s) => s.setPendingAutoPrompt);
 	const setActiveTab = useAssetsPanelStore((s) => s.setActiveTab);
+
+	const readVisuals = readVisualsChoice ?? segments.length === 0;
+
+	// Whether the chat model can see images, and where it runs, is shown before
+	// anything is sent
+	useEffect(() => {
+		if (!open) return;
+		let alive = true;
+		aiClient
+			.getVisionSupport()
+			.then((support) => alive && setVision(support))
+			.catch(() => alive && setVision(null));
+		return () => {
+			alive = false;
+		};
+	}, [open]);
 
 	const tracks = editor.timeline.getTracks();
 	const hasVideo = tracks.some((t) =>
@@ -144,6 +171,8 @@ export function ViralityScoreModal({ open, onOpenChange }: ViralityScoreModalPro
 	);
 
 	const handleCheck = useCallback(async () => {
+		const run = ++runRef.current;
+		const current = () => runRef.current === run;
 		setIsAnalyzing(true);
 		setError(null);
 
@@ -161,11 +190,30 @@ export function ViralityScoreModal({ open, onOpenChange }: ViralityScoreModalPro
 				.map((w) => w.word.trim())
 				.join(" ");
 
+			// A video with nothing said is read through its pictures: a vision
+			// model describes frames of the edit, and the description stands
+			// where the speech would be
+			// Kept until the score is ready, so the result and what it was read
+			// from always belong together (a cancelled run leaves the old pair)
+			let reading: VisualReading | null = null;
+			let visualDescription = "";
+			if (readVisuals) {
+				reading = await describeVideoVisuals({
+					editor,
+					onProgress: setProgressLabel,
+				});
+				if (!current()) return;
+				visualDescription = reading.description;
+			}
+
 			const scoreTextOnly = () => {
-				setProgressLabel("Analisando o texto falado...");
+				setProgressLabel(
+					transcriptText ? "Analisando o texto falado..." : "Analisando a descrição das imagens...",
+				);
 				return aiClient.engagementScore({
 					transcript_text: transcriptText,
 					hook_text: hookText,
+					visual_description: visualDescription,
 					start: 0,
 					end: editor.timeline.getTotalDuration() || 30,
 					title: "Projeto atual",
@@ -189,7 +237,7 @@ export function ViralityScoreModal({ open, onOpenChange }: ViralityScoreModalPro
 					setProgressLabel("Analisando áudio, imagem e texto...");
 					result = await aiClient.engagementScoreVideo(
 						new File([render.buffer], "pontuacao-viral.mp4", { type: "video/mp4" }),
-						{ transcriptText, hookText, title: "Projeto atual" },
+						{ transcriptText, hookText, title: "Projeto atual", visualDescription },
 					);
 					setScoredWithMedia(true);
 				} else {
@@ -201,16 +249,25 @@ export function ViralityScoreModal({ open, onOpenChange }: ViralityScoreModalPro
 			} else {
 				result = await scoreTextOnly();
 			}
+			if (!current()) return;
 			setScore(result);
+			setVisualReading(reading);
 			toast.success(`Pontuação Viral: ${result.grade} (${Math.round(result.composite)}/100)`);
 		} catch (e) {
+			if (!current()) return;
 			const msg = e instanceof Error ? e.message : "Falha ao calcular a pontuação";
 			setError(msg);
 			toast.error("Não foi possível calcular a Pontuação Viral");
 		} finally {
-			setIsAnalyzing(false);
+			if (current()) setIsAnalyzing(false);
 		}
-	}, [segments, editor, analyzeMedia]);
+	}, [segments, editor, analyzeMedia, readVisuals]);
+
+	const handleCancel = useCallback(() => {
+		runRef.current += 1;
+		setIsAnalyzing(false);
+		toast.info("Pontuação cancelada");
+	}, []);
 
 	const handleAskAI = useCallback(() => {
 		if (!score) return;
@@ -222,7 +279,10 @@ export function ViralityScoreModal({ open, onOpenChange }: ViralityScoreModalPro
 	// Reset when modal closes
 	const handleOpenChange = (v: boolean) => {
 		if (!v) {
+			runRef.current += 1;
+			setIsAnalyzing(false);
 			setScore(null);
+			setVisualReading(null);
 			setError(null);
 			setTab("score");
 		}
@@ -262,7 +322,44 @@ export function ViralityScoreModal({ open, onOpenChange }: ViralityScoreModalPro
 										<p className="text-sm text-muted-foreground">
 											Avalie o potencial viral do seu vídeo antes de publicar e receba sugestões práticas para melhorar o engajamento.
 										</p>
-										<TranscribeNotice description="Esta checagem avalia o que é falado no vídeo, então precisa da transcrição primeiro." />
+										<TranscribeNotice
+											description={
+												readVisuals
+													? "Com a transcrição, o gancho e a curiosidade também levam em conta o que é falado."
+													: "Esta checagem avalia o que é falado no vídeo, então precisa da transcrição primeiro."
+											}
+										/>
+										<label
+											htmlFor="viral-read-visuals"
+											className="flex items-start justify-between gap-3 rounded-md border p-3 text-left"
+										>
+											<span className="flex flex-col gap-0.5">
+												<span className="text-xs font-medium">Entender as imagens com IA</span>
+												<span className="text-[11px] leading-snug text-muted-foreground">
+													Um modelo com visão descreve quadros do vídeo, e a descrição entra
+													na nota de curiosidade e de potencial viral. É o caminho para vídeos
+													sem fala ou sem áudio.
+												</span>
+												{readVisuals && vision?.ok && (
+													<span className="text-[11px] leading-snug text-muted-foreground">
+														{vision.cloud
+															? `Os quadros (imagens pequenas) saem do seu PC e vão para o modelo em nuvem ${shortModelName(vision.model)}.`
+															: `Roda no seu PC, com o modelo ${shortModelName(vision.model)}.`}
+													</span>
+												)}
+												{readVisuals && vision && !vision.ok && (
+													<span className="text-[11px] leading-snug text-yellow-500">
+														{vision.reason ||
+															"O modelo de chat atual não enxerga imagens. Escolha um com visão, como o Nemotron 3.5 Super VL, no seletor de modelo do chat."}
+													</span>
+												)}
+											</span>
+											<Switch
+												id="viral-read-visuals"
+												checked={readVisuals}
+												onCheckedChange={setReadVisualsChoice}
+											/>
+										</label>
 										<label
 											htmlFor="viral-analyze-media"
 											className="flex items-start justify-between gap-3 rounded-md border p-3 text-left"
@@ -283,7 +380,9 @@ export function ViralityScoreModal({ open, onOpenChange }: ViralityScoreModalPro
 										<Button
 											className="w-full"
 											onClick={handleCheck}
-											disabled={segments.length === 0}
+											disabled={
+												readVisuals ? vision?.ok === false : segments.length === 0
+											}
 										>
 											Calcular Pontuação Viral
 										</Button>
@@ -295,6 +394,9 @@ export function ViralityScoreModal({ open, onOpenChange }: ViralityScoreModalPro
 									<div className="flex flex-col items-center gap-3 py-6">
 										<Spinner className="h-6 w-6" />
 										<p className="text-sm text-muted-foreground">{progressLabel}</p>
+										<Button variant="outline" size="sm" onClick={handleCancel}>
+											Cancelar
+										</Button>
 									</div>
 								)}
 
@@ -334,6 +436,19 @@ export function ViralityScoreModal({ open, onOpenChange }: ViralityScoreModalPro
 												<p className="text-sm font-medium text-red-400">Precisa melhorar antes de publicar</p>
 											)}
 										</div>
+
+										{/* What the vision model saw: the grade leans on this text */}
+										{visualReading && (
+											<div className="space-y-1 rounded-lg border p-3 text-xs">
+												<p className="font-medium">O que a IA viu no vídeo</p>
+												<p className="text-muted-foreground">{visualReading.description}</p>
+												<p className="text-[11px] text-muted-foreground/70">
+													Descrito por {shortModelName(visualReading.model)} a partir de{" "}
+													{visualReading.frames} quadros
+													{visualReading.cloud ? " (modelo em nuvem)" : " (no seu PC)"}.
+												</p>
+											</div>
+										)}
 
 										{/* What the model thought, in its own words */}
 										{isMeasured(score, "virality") &&

@@ -225,6 +225,8 @@ class EngagementScorer:
             text = " ".join(seg.get("text", "") for seg in req.transcript_segments)
 
         if not text:
+            if req.visual_description.strip():
+                return await self._curiosity_from_visuals(req.visual_description)
             return CuriosityScore(composite=50.0)
 
         text_lower = text.lower()
@@ -281,6 +283,34 @@ Respond with JSON: {{"score": int, "reason": "brief explanation"}}"""
             measured=True,
         )
 
+    async def _curiosity_from_visuals(self, description: str) -> CuriosityScore:
+        """Curiosity of a video with no speech, judged from a description of its frames.
+
+        Questions and "open loop" phrases are things people say, so the
+        keyword rules do not apply: only the model reads the description, and
+        without it the score is "not evaluated", never a made-up number.
+        """
+        try:
+            from app.services.model_backend import llm_backend
+
+            if not await llm_backend.check_available():
+                return CuriosityScore(composite=50.0)
+            prompt = f"""Rate from 0 to 100 how much this short video makes a viewer want to keep watching.
+The video has no speech. Below is a description of what its frames show, written by an AI.
+Consider: an unexplained or surprising image, a visible question or claim in on-screen text,
+a before/after, a reveal that has not happened yet, a clear promise of what comes next.
+
+Description: "{description[:800]}"
+
+Respond with JSON: {{"score": int, "reason": "brief explanation"}}"""
+            data = await llm_backend.generate_json(prompt=prompt)
+            score = max(0, min(100, round(float(data["score"]))))
+        except Exception:
+            logger.debug("Visual curiosity rating failed", exc_info=True)
+            return CuriosityScore(composite=50.0)
+
+        return CuriosityScore(composite=float(score), measured=True)
+
     async def _analyze_face(self, req: ScoreClipRequest) -> FacePresenceScore:
         """Analyze face presence ratio."""
         if not req.video_path:
@@ -331,8 +361,9 @@ Respond with JSON: {{"score": int, "reason": "brief explanation"}}"""
         text = req.transcript_text or ""
         if not text and req.transcript_segments:
             text = " ".join(seg.get("text", "") for seg in req.transcript_segments)
+        visual = req.visual_description.strip()
 
-        if not text:
+        if not text and not visual:
             return ViralityScore(composite=50.0)
 
         try:
@@ -347,7 +378,8 @@ Respond with JSON: {{"score": int, "reason": "brief explanation"}}"""
 
 Title: {req.title or "Untitled"}
 Duration: {duration:.0f}s (TikTok sweet spot: 15-60s)
-Transcript (first 200 words): {text[:800]}
+{f"Transcript (first 200 words): {text[:800]}" if text else "Transcript: none, the video has no speech."}
+{f'What the video shows (described by an AI from frames of the edit): {visual[:800]}' if visual else ""}
 
 Score on 4 dimensions (each 0-25, total 0-100):
 1. Hook strength: Would this stop someone mid-scroll?

@@ -224,10 +224,20 @@ export class AIClientCore {
 		endpoint: string,
 		formData: FormData,
 		timeoutMs: number = REQUEST_TIMEOUT_MS,
+		/** Aborts the request when the user cancels the task behind it */
+		cancelSignal?: AbortSignal,
 	): Promise<T> {
 		const url = `${this.baseUrl}${endpoint}`;
 		const controller = new AbortController();
 		const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+		if (cancelSignal) {
+			if (cancelSignal.aborted) controller.abort();
+			else {
+				cancelSignal.addEventListener("abort", () => controller.abort(), {
+					once: true,
+				});
+			}
+		}
 
 		try {
 			const response = await fetch(url, {

@@ -210,6 +210,10 @@ class ScoreClipRequest(BaseModel):
     # What is said in the first ~3 s of the edit; falls back to the
     # opening words of transcript_text when empty
     hook_text: str = ""
+    # What the video shows, written by a vision model from frames of the edit.
+    # Stands in for the speech when there is none (a video without audio, or
+    # without voice), and sits beside it when there is
+    visual_description: str = ""
 
 
 class ScoreBatchRequest(BaseModel):

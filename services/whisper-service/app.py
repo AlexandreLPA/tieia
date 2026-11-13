@@ -439,6 +439,31 @@ async def test_model():
             os.remove(test_path)
 
 
+def _has_audio_stream(path: str) -> bool:
+    """Whether the media file has an audio track.
+
+    True when ffprobe is missing or fails: not being able to tell must not
+    block a transcription that would have worked.
+    """
+    import subprocess
+
+    try:
+        probe = subprocess.run(
+            [
+                "ffprobe", "-v", "error", "-select_streams", "a",
+                "-show_entries", "stream=index", "-of", "csv=p=0", path,
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return True
+    if probe.returncode != 0:
+        return True
+    return bool(probe.stdout.strip())
+
+
 @app.post("/transcribe", response_model=TranscriptionResult)
 async def transcribe(
     file: UploadFile = File(...),
@@ -471,6 +496,10 @@ async def transcribe(
         audio_path = upload_path
         if ext in ALLOWED_VIDEO_EXTENSIONS:
             import subprocess
+
+            if not _has_audio_stream(upload_path):
+                # The editor turns this code into a sentence for the user
+                raise HTTPException(status_code=422, detail="no_audio_track")
 
             audio_path = os.path.join(UPLOAD_DIR, f"audio_{upload_id}.wav")
             logger.info("Extracting audio from video file '%s'", file.filename)

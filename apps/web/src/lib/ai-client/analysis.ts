@@ -21,6 +21,7 @@ export class AnalysisClient extends AIClientCore {
 	async transcribe(
 		file: File,
 		language?: string,
+		cancelSignal?: AbortSignal,
 	): Promise<TranscriptionResult> {
 		const formData = new FormData();
 		formData.append("file", file);
@@ -31,6 +32,8 @@ export class AnalysisClient extends AIClientCore {
 		return this.requestFormData<TranscriptionResult>(
 			"/api/transcribe",
 			formData,
+			undefined,
+			cancelSignal,
 		);
 	}
 
@@ -103,6 +106,7 @@ export class AnalysisClient extends AIClientCore {
 	async analyzeEmotions(
 		file: File,
 		windowSeconds?: number,
+		cancelSignal?: AbortSignal,
 	): Promise<EmotionDetectionResult> {
 		const formData = new FormData();
 		formData.append("file", file);
@@ -113,6 +117,7 @@ export class AnalysisClient extends AIClientCore {
 			"/api/analyze/emotions",
 			formData,
 			300_000,
+			cancelSignal,
 		);
 	}
 
@@ -141,6 +146,7 @@ export class AnalysisClient extends AIClientCore {
 			minSpeakers?: number;
 			maxSpeakers?: number;
 		},
+		cancelSignal?: AbortSignal,
 	): Promise<SpeakerDiarizationResult> {
 		const formData = new FormData();
 		formData.append("file", file);
@@ -155,6 +161,7 @@ export class AnalysisClient extends AIClientCore {
 			"/api/analyze/speakers",
 			formData,
 			600_000, // 10 min timeout for diarization
+			cancelSignal,
 		);
 	}
 

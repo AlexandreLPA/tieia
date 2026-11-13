@@ -1,7 +1,11 @@
 import { create } from "zustand";
 import { toast } from "sonner";
 
-export type BackgroundTaskStatus = "running" | "completed" | "error";
+export type BackgroundTaskStatus =
+	| "running"
+	| "completed"
+	| "error"
+	| "cancelled";
 
 export interface BackgroundTask {
 	id: string;
@@ -27,6 +31,11 @@ export interface BackgroundTask {
 	startedAt: number;
 	completedAt?: number;
 	error?: string;
+	/**
+	 * Stops the work behind the task (aborts its request). A task without one
+	 * cannot be interrupted and can only be hidden from the list.
+	 */
+	cancel?: () => void;
 }
 
 interface BackgroundTasksState {
@@ -34,6 +43,8 @@ interface BackgroundTasksState {
 	isMinimized: boolean;
 
 	addTask: (task: Omit<BackgroundTask, "startedAt" | "status">) => void;
+	/** Runs the task's cancel function and marks it cancelled. */
+	cancelTask: (id: string) => void;
 	updateTask: (
 		id: string,
 		updates: Partial<
@@ -60,28 +71,52 @@ export const useBackgroundTasksStore = create<BackgroundTasksState>(
 			}));
 		},
 
+		cancelTask: (id) => {
+			const task = get().tasks.find((t) => t.id === id);
+			if (!task || task.status !== "running") return;
+			// Marked first: the work that fails because it was aborted must not
+			// turn the task into an error
+			set((state) => ({
+				tasks: state.tasks.map((t) =>
+					t.id === id
+						? { ...t, status: "cancelled" as const, completedAt: Date.now() }
+						: t,
+				),
+			}));
+			try {
+				task.cancel?.();
+			} catch {
+				// Nothing more to stop
+			}
+		},
+
 		updateTask: (id, updates) => {
 			// Guard: don't re-notify if task is already in a terminal state
 			const existing = get().tasks.find((t) => t.id === id);
 			if (!existing) return;
-			const wasTerminal =
-				existing.status === "completed" || existing.status === "error";
+			// A task that finished, failed or was cancelled is done: work that is
+			// still unwinding (a request aborted by Cancelar) must not rewrite it
+			// or announce a second outcome
+			if (
+				existing.status === "completed" ||
+				existing.status === "error" ||
+				existing.status === "cancelled"
+			) {
+				return;
+			}
 
 			set((state) => ({
 				tasks: state.tasks.map((t) => (t.id === id ? { ...t, ...updates } : t)),
 			}));
 
-			// Only toast on the first transition to a terminal state
-			if (wasTerminal) return;
-
 			if (updates.status === "error" && updates.error) {
-				toast.error(`${existing.label} failed`, {
+				toast.error(`${existing.label} falhou`, {
 					description: updates.error,
 				});
 			}
 
 			if (updates.status === "completed") {
-				toast.success(`${existing.label} completed`);
+				toast.success(`${existing.label} concluída`);
 			}
 		},
 

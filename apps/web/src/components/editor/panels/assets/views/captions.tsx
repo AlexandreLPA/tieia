@@ -227,15 +227,24 @@ export function Captions() {
 
 	const handleGenerateTranscript = async () => {
 		let failure: string | null = null;
+		const taskId = `transcription-${Date.now()}`;
+		const bgTasks = useBackgroundTasksStore.getState();
+		// The task's Cancelar button aborts the request in flight
+		const cancel = new AbortController();
 		const fail = (message: string) => {
 			failure = message;
 			setError(message);
+			// Without this the task stayed "running" forever after a failure
+			// that returns early (no media, no speech)
+			bgTasks.updateTask(taskId, {
+				status: "error",
+				error: message,
+				completedAt: Date.now(),
+			});
 		};
 		useTranscriptStore
 			.getState()
 			.setCaptionsTranscription({ running: true, error: null });
-		const taskId = `transcription-${Date.now()}`;
-		const bgTasks = useBackgroundTasksStore.getState();
 
 		try {
 			setIsProcessing(true);
@@ -249,6 +258,7 @@ export function Captions() {
 				type: "transcription",
 				label: `Transcrição (${engineLabel})`,
 				progress: "Iniciando...",
+				cancel: () => cancel.abort(),
 			});
 
 			// Remove existing subtitle tracks before re-transcribing
@@ -330,8 +340,9 @@ export function Captions() {
 				});
 				setProcessingStep(`Transcrevendo via ${engineLabel}...`);
 				bgTasks.updateTask(taskId, { progress: `Transcrevendo via ${engineLabel}...` });
-				result = await aiClient.transcribe(file, language);
+				result = await aiClient.transcribe(file, language, cancel.signal);
 			}
+			if (cancel.signal.aborted) return;
 
 			setProcessingStep("Processando segmentos...");
 			bgTasks.updateTask(taskId, { progress: "Processando segmentos..." });
@@ -359,7 +370,7 @@ export function Captions() {
 			}));
 
 			if (validSegments.length === 0) {
-				fail("Nenhuma fala detectada no vídeo. Tente outro idioma ou verifique se o vídeo tem áudio.");
+				fail("Nenhuma fala detectada: o vídeo não tem áudio, ou o áudio não tem voz. Se o idioma estiver em \"Automático\", tente escolher o idioma da fala.");
 				return;
 			}
 
@@ -396,16 +407,21 @@ export function Captions() {
 			setProcessingStep("Detectando falantes e emoções...");
 			bgTasks.updateTask(taskId, { progress: "Detectando falantes e emoções..." });
 
-			const speakerPromise = aiClient.analyzeSpeakers(file).catch((err) => {
+			const speakerPromise = aiClient
+				.analyzeSpeakers(file, undefined, cancel.signal)
+				.catch((err) => {
 				console.warn("Speaker diarization failed:", err);
 				return null;
 			});
-			const emotionPromise = aiClient.analyzeEmotions(file).catch((err) => {
-				console.warn("Emotion detection failed:", err);
-				return null;
-			});
+			const emotionPromise = aiClient
+				.analyzeEmotions(file, undefined, cancel.signal)
+				.catch((err) => {
+					console.warn("Emotion detection failed:", err);
+					return null;
+				});
 
 			const [speakerResult, emotionResult] = await Promise.all([speakerPromise, emotionPromise]);
+			if (cancel.signal.aborted) return;
 
 			if (speakerResult && speakerResult.segments.length > 0) {
 				useTranscriptStore.getState().applySpeakerDiarization(speakerResult.segments);
@@ -439,10 +455,17 @@ export function Captions() {
 				completedAt: Date.now(),
 			});
 		} catch (err) {
+			// The user pressed Cancelar: the aborted request lands here
+			if (cancel.signal.aborted) {
+				toast.info("Transcrição cancelada");
+				return;
+			}
 			console.error("Transcription failed:", err);
 			const message = err instanceof Error ? err.message : "Ocorreu um erro inesperado";
 			if (message.includes("Cannot connect") || message.includes("connection_refused")) {
-				fail("Não é possível conectar ao back-end de IA. Verifique se ele está em execução (docker compose up -d).");
+				fail("Não é possível conectar ao back-end de IA. Abra Configuração de IA (indicador de IA no topo) e confira se a Base de IA está instalada e ligada.");
+			} else if (message.includes("no_audio_track")) {
+				fail("Este vídeo não tem faixa de áudio, então não há o que transcrever. A Pontuação Viral pode analisar as imagens do vídeo no lugar.");
 			} else if (message.includes("Sarvam API key")) {
 				fail("A chave de API do Sarvam não está configurada. Adicione OPENCUTAI_SARVAM_API_KEY ao seu ambiente.");
 			} else if (message.includes("Smallest AI API key")) {

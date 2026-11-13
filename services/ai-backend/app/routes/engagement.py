@@ -56,6 +56,7 @@ async def score_video(
     transcript_text: str = Form(default=""),
     hook_text: str = Form(default=""),
     title: str = Form(default=""),
+    visual_description: str = Form(default=""),
 ):
     """Score a video file's engagement potential.
 
@@ -114,6 +115,7 @@ async def score_video(
             video_path=upload_path,
             transcript_text=transcript_text,
             hook_text=hook_text,
+            visual_description=visual_description,
             title=title or None,
             start=0,
             end=duration,

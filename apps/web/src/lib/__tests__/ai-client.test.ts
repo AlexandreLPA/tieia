@@ -221,6 +221,11 @@ describe("aiClient request contract", () => {
 		nllbTranslateBatch: [["a", "b"], "en", "pt"],
 		chatStreamMessages: [[{ role: "user", content: "oi" }], () => {}],
 		chatStream: ["oi", () => {}, "system"],
+		// Their last parameter is a cancel signal: the fixed arguments would put
+		// a string there
+		transcribe: [sampleFile, "arg-1"],
+		analyzeEmotions: [sampleFile, "arg-1"],
+		analyzeSpeakers: [sampleFile, "arg-1"],
 	};
 
 	async function settle(name: string): Promise<unknown> {
@@ -304,6 +309,45 @@ describe("aiClient error handling", () => {
 			.health()
 			.catch((e: unknown) => e)) as AIClientError;
 		expect(error.errorType).toBe("timeout");
+	});
+
+	test("aborting the cancel signal of a transcription aborts the request", async () => {
+		let sent: AbortSignal | null | undefined;
+		globalThis.fetch = ((_url: unknown, init?: RequestInit) =>
+			new Promise((_resolve, reject) => {
+				sent = init?.signal;
+				sent?.addEventListener("abort", () =>
+					reject(new DOMException("aborted", "AbortError")),
+				);
+			})) as unknown as typeof fetch;
+		const cancel = new AbortController();
+		const pending = aiClient
+			.transcribe(new File(["x"], "a.wav", { type: "audio/wav" }), "pt", cancel.signal)
+			.catch((e: unknown) => e);
+		// Not yet: the request is in flight
+		await new Promise((resolve) => setTimeout(resolve, 20));
+		expect(sent?.aborted).toBe(false);
+		cancel.abort();
+		const error = (await pending) as AIClientError;
+		expect(sent?.aborted).toBe(true);
+		expect(error).toBeInstanceOf(AIClientError);
+	});
+
+	test("a signal that is already aborted never lets the request go on", async () => {
+		let sent: AbortSignal | null | undefined;
+		globalThis.fetch = ((_url: unknown, init?: RequestInit) => {
+			sent = init?.signal;
+			return new Promise((_resolve, reject) => {
+				if (sent?.aborted) reject(new DOMException("aborted", "AbortError"));
+			});
+		}) as unknown as typeof fetch;
+		const cancel = new AbortController();
+		cancel.abort();
+		const error = (await aiClient
+			.analyzeEmotions(new File(["x"], "a.wav"), undefined, cancel.signal)
+			.catch((e: unknown) => e)) as AIClientError;
+		expect(sent?.aborted).toBe(true);
+		expect(error).toBeInstanceOf(AIClientError);
 	});
 
 	test("keepalive streams skip pings and return the result", async () => {
