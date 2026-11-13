@@ -6,16 +6,16 @@ import { cn } from "@/utils/ui";
 
 function formatTimeAgo(timestamp: number): string {
 	const seconds = Math.floor((Date.now() - timestamp) / 1000);
-	if (seconds < 5) return "just now";
-	if (seconds < 60) return `${seconds}s ago`;
+	if (seconds < 5) return "agora";
+	if (seconds < 60) return `há ${seconds} s`;
 	const minutes = Math.floor(seconds / 60);
-	if (minutes < 60) return `${minutes}m ago`;
-	return `${Math.floor(minutes / 60)}h ago`;
+	if (minutes < 60) return `há ${minutes} min`;
+	return `há ${Math.floor(minutes / 60)} h`;
 }
 
 /**
  * Tiny indicator that shows save status in the editor header.
- * Shows: "Saving..." / "Saved just now" / "Saved 2m ago"
+ * Shows: "Salvando..." / "Salvo agora" / "Salvo há 2 min"
  */
 export function SaveStatus({ className }: { className?: string }) {
 	const editor = useEditor();
@@ -53,7 +53,7 @@ export function SaveStatus({ className }: { className?: string }) {
 	if (isSaving) {
 		return (
 			<span className={cn("text-[10px] text-muted-foreground animate-pulse", className)}>
-				Saving...
+				Salvando...
 			</span>
 		);
 	}
@@ -61,7 +61,7 @@ export function SaveStatus({ className }: { className?: string }) {
 	if (lastSaved) {
 		return (
 			<span className={cn("text-[10px] text-muted-foreground", className)}>
-				Saved {formatTimeAgo(lastSaved)}
+				Salvo {formatTimeAgo(lastSaved)}
 			</span>
 		);
 	}

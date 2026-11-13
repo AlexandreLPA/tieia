@@ -10,6 +10,7 @@ import {
 	PopoverTrigger,
 } from "@/components/ui/popover";
 import { AudioEffectsChainPanel } from "./audio-effects-panel";
+import { displayDefaultName } from "@/lib/default-names";
 
 type AudioTrackish = VideoTrack | AudioTrack;
 
@@ -175,7 +176,7 @@ function TrackMixerStrip({
 		>
 			<div className="flex items-center justify-between gap-1">
 				<span className="text-[9px] font-medium truncate max-w-[70px]">
-					{track.name}
+					{displayDefaultName(track.name)}
 				</span>
 				<div className="flex items-center gap-0.5">
 					<button

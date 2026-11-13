@@ -40,7 +40,11 @@ export function ThemeToggle({
 				className={cn("!size-[1.1rem]", iconClassName)}
 			/>
 			<span className="sr-only">
-				{mounted ? (theme === "dark" ? "Light" : "Dark") : "Toggle theme"}
+				{mounted
+					? theme === "dark"
+						? "Mudar para o tema claro"
+						: "Mudar para o tema escuro"
+					: "Trocar o tema"}
 			</span>
 		</Button>
 	);

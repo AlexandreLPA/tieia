@@ -135,7 +135,7 @@ export function VersionControlBar({
 				onClick={() => setShareOpen(true)}
 				title="Share a read-only review link"
 			>
-				Share
+				Compartilhar
 			</button>
 
 			<Separator orientation="vertical" className="h-4" />

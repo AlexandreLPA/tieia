@@ -38,6 +38,7 @@ import {
 	ArrowTurnForwardIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import { displayDefaultName } from "@/lib/default-names";
 
 export function TimelineToolbar({
 	zoomLevel,
@@ -187,7 +188,7 @@ function SceneSelector() {
 	return (
 		<div>
 			<SplitButton className="border-foreground/10 border">
-				<SplitButtonLeft>{currentScene?.name || "No Scene"}</SplitButtonLeft>
+				<SplitButtonLeft>{currentScene ? displayDefaultName(currentScene.name) : "Sem cena"}</SplitButtonLeft>
 				<SplitButtonSeparator />
 				<ScenesView>
 					<SplitButtonRight onClick={() => {}}>

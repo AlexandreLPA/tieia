@@ -63,6 +63,7 @@ import { useTimelinePlayhead } from "@/hooks/timeline/use-timeline-playhead";
 import { DragLine } from "./drag-line";
 import { invokeAction } from "@/lib/actions";
 import { AudioMixerPanel } from "./audio-mixer-panel";
+import { displayDefaultName } from "@/lib/default-names";
 
 const TRACKS_CONTAINER_MAX_HEIGHT = 800;
 const FALLBACK_CONTAINER_WIDTH = 1000;
@@ -623,7 +624,7 @@ function TrackLabel({ track }: { track: TimelineTrack }) {
 	const config = TRACK_CONFIG[track.type];
 	const [isEditing, setIsEditing] = useState(false);
 	const inputRef = useRef<HTMLInputElement>(null);
-	const displayName = track.name || config.defaultName;
+	const displayName = displayDefaultName(track.name || config.defaultName);
 
 	const handleStartEdit = () => {
 		setIsEditing(true);

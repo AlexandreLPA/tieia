@@ -194,7 +194,7 @@ export function ensureMainTrack({
 	if (!hasMainTrack) {
 		const mainTrack: TimelineTrack = {
 			id: generateUUID(),
-			name: "Main Track",
+			name: "Trilha principal",
 			type: "video",
 			elements: [],
 			muted: false,

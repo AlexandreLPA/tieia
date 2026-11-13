@@ -12,10 +12,10 @@ function formatRelativeTime(isoString: string): string {
 	const diffHr = Math.floor(diffMin / 60);
 	const diffDay = Math.floor(diffHr / 24);
 
-	if (diffSec < 60) return "just now";
-	if (diffMin < 60) return `${diffMin}m ago`;
-	if (diffHr < 24) return `${diffHr}h ago`;
-	if (diffDay < 7) return `${diffDay}d ago`;
+	if (diffSec < 60) return "agora";
+	if (diffMin < 60) return `há ${diffMin} min`;
+	if (diffHr < 24) return `há ${diffHr} h`;
+	if (diffDay < 7) return `há ${diffDay} d`;
 	return date.toLocaleDateString();
 }
 

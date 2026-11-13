@@ -836,7 +836,7 @@ export function AIStudioView() {
 												const fullText = transcriptSegments.map((s) => s.text).join(" ");
 												handleStarterPrompt(starter.prompt + fullText);
 											}}
-											className="text-left rounded-md border px-2.5 py-2 text-[11px] text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+											className="text-left rounded-full border px-3 py-1.5 text-xs text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
 										>
 											{starter.label}
 										</button>
@@ -871,9 +871,9 @@ export function AIStudioView() {
 													starter.prompt,
 												)
 											}
-											className="text-left rounded-md border px-2.5 py-2 text-[11px] text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+											className="text-left rounded-full border px-3 py-1.5 text-xs text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
 										>
-											{starter.label}
+											{starter.label.replace(/\.{3}$/, "")}
 										</button>
 									))}
 								</div>
