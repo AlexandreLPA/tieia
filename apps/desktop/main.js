@@ -118,12 +118,18 @@ function portIsFree(port) {
  * The process listening on a local port, with its command line, read with
  * PowerShell (Windows has no simpler way to get both).
  */
+/**
+ * The process listening on a local port and the ones above it (its parents),
+ * read with PowerShell. The listener is often a child of the process that
+ * started the editor, so the chain is needed to recognise it.
+ */
 function portOwner(port) {
 	const script = [
 		`$c = Get-NetTCPConnection -LocalPort ${port} -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1`,
 		"if (-not $c) { exit }",
-		'$p = Get-CimInstance Win32_Process -Filter "ProcessId=$($c.OwningProcess)"',
-		"@{ pid = $p.ProcessId; command = $p.CommandLine } | ConvertTo-Json -Compress",
+		"$chain = @(); $id = $c.OwningProcess",
+		"for ($i = 0; $i -lt 5 -and $id -gt 0; $i++) { $p = Get-CimInstance Win32_Process -Filter \"ProcessId=$id\"; if (-not $p) { break }; $chain += @{ pid = $p.ProcessId; command = $p.CommandLine }; $id = $p.ParentProcessId }",
+		"ConvertTo-Json -Compress -InputObject @($chain)",
 	].join("; ");
 	return new Promise((resolve) =>
 		execFile(
@@ -132,35 +138,40 @@ function portOwner(port) {
 			{ windowsHide: true },
 			(error, stdout) => {
 				try {
-					resolve(error || !stdout.trim() ? null : JSON.parse(stdout));
+					resolve(error || !stdout.trim() ? [] : [].concat(JSON.parse(stdout)));
 				} catch {
-					resolve(null);
+					resolve([]);
 				}
 			},
 		),
 	);
 }
 
+/** Next.js serving this repository's editor, in any of its modes. */
+function isOldEditor(command) {
+	const text = command.toLowerCase();
+	const webDir = path.resolve(__dirname, "../web").toLowerCase();
+	return (
+		text.includes("\\next\\dist\\bin\\next") &&
+		(text.includes(" start") || text.includes(" dev")) &&
+		text.includes(webDir)
+	);
+}
+
 /**
  * The port is ours by design. When the editor the Docker launcher started is
  * on it, that one is stopped: it serves the same editor in the browser. It is
- * recognised by its command (Next.js serving this repository's editor), not by
- * the launcher's saved state, which can be out of date.
+ * recognised by its command along the process chain, not by the launcher's
+ * saved state, which can be out of date.
  */
 async function freePort() {
 	if (await portIsFree(PORT)) return true;
-	const owner = await portOwner(PORT);
-	const command = owner?.command ?? "";
-	const isOldEditor =
-		/next[\\/]dist[\\/]bin[\\/]next"?\s+(start|dev)/i.test(command) &&
-		command
-			.toLowerCase()
-			.includes(path.resolve(__dirname, "../web").toLowerCase());
-	if (!owner || !isOldEditor) return false;
+	const editor = (await portOwner(PORT)).find((entry) =>
+		isOldEditor(entry.command ?? ""),
+	);
+	if (!editor) return false;
 	await new Promise((resolve) =>
-		execFile("taskkill", ["/PID", String(owner.pid), "/T", "/F"], () =>
-			resolve(),
-		),
+		execFile("taskkill", ["/PID", String(editor.pid), "/T", "/F"], () => resolve()),
 	);
 	for (let i = 0; i < 40; i++) {
 		if (await portIsFree(PORT)) return true;
