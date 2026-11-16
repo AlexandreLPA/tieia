@@ -14,10 +14,11 @@
 
 ---
 
-A Tiê AI é um editor de vídeo no navegador com um conjunto de ferramentas de
-IA embutido. O editor roda no seu computador, os modelos de IA rodam em
-containers Docker no seu computador, e os projetos ficam guardados no
-navegador. Só vai para a internet o que você ligar, como um LLM na nuvem pela
+A Tiê AI é um editor de vídeo com um conjunto de ferramentas de IA embutido,
+num app de desktop para Windows. O editor e os modelos de IA rodam no seu
+computador, e os projetos também ficam nele. Cada recurso de IA é um pacote
+que você instala pelo app, e os modelos só são baixados quando você os
+escolhe. Só vai para a internet o que você ligar, como um LLM na nuvem pela
 [OpenRouter](https://openrouter.ai/) ou a busca de GIFs da
 [KLIPY](https://klipy.com/) (veja [Privacidade](#privacidade)).
 
@@ -67,9 +68,13 @@ Recursos de IA:
   Replicate ou pela PiAPI, com a sua chave.
 - **GIFs e figurinhas**: setas animadas, botões "clique aqui" e reações da
   KLIPY, além do Kit TikTok Shop, figurinhas e emojis.
-- **Separação de locutores**, **rastreamento de rosto** para reenquadrar em
-  9:16, **tradução local** e **geração de imagens local**, cada um no seu
-  serviço.
+- **Separação de locutores** (quem fala em cada trecho, e a emoção da fala),
+  **rastreamento de rosto** para reenquadrar em 9:16, **tradução local** e
+  **geração de imagens local**, cada um no seu serviço.
+- **Modelos locais escolhidos onde são usados**: o modelo de transcrição em
+  Legendas e o de imagem no Tiê Image, cada um mostrando o tamanho, a memória
+  de vídeo que precisa, se já está baixado e qual combina com o seu PC. A
+  "Configuração de IA" lista os modelos baixados para você liberar espaço.
 
 Em desenvolvimento:
 
@@ -79,51 +84,61 @@ Em desenvolvimento:
 ## Arquitetura
 
 ```
-Navegador (janela de app do Edge, http://localhost:3100)
-  └─ Editor Next.js (apps/web), roda direto no Windows, só em 127.0.0.1
-       ├─ projetos e mídia: armazenamento do navegador (IndexedDB / OPFS)
+App de desktop Tiê AI (Electron, apps/desktop)
+  └─ Editor Next.js (apps/web), servidor standalone em 127.0.0.1:3100
+       ├─ projetos e mídia: armazenamento do app (IndexedDB / OPFS)
+       ├─ banco de dados: PGlite (Postgres embutido)
        ├─ busca de GIFs da KLIPY ───────────────────────► api.klipy.com
        └─ chamadas de IA ──► ai-backend (FastAPI, :8420), o gateway
-                               ├─ whisper-service    :8421  faster-whisper (GPU)
-                               ├─ tts-service        :8422  Coqui TTS
-                               ├─ image-service      :8423  diffusers
-                               ├─ speaker-service    :8424  pyannote
+                               ├─ whisper-service    :8421  faster-whisper
+                               ├─ tts-service        :8422  Coqui XTTS
+                               ├─ image-service      :8423  diffusers, rembg
+                               ├─ speaker-service    :8424  SpeechBrain (pyannote com chave do HF)
                                ├─ face-service       :8425  MediaPipe
                                ├─ clip-service       :8426  embeddings CLIP
                                ├─ translate-service  :8427  NLLB-200
-                               ├─ chatterbox-service :8428  clonagem de voz (GPU)
+                               ├─ chatterbox-service :8428  clonagem de voz
                                ├─ turboquant-service :8430  LLMs locais (Hugging Face)
-                               ├─ ollama             :11434 LLMs locais (GGUF)
                                └─ OpenRouter (opcional) ──► openrouter.ai
-O Docker também roda o PostgreSQL e o Redis.
 ```
 
-Tudo o que roda no Docker publica as portas só em `127.0.0.1`.
+Os serviços de IA vêm em **pacotes**, instalados pela "Configuração de IA" no
+app. Cada pacote é um ambiente Python próprio, feito com o
+[uv](https://docs.astral.sh/uv/), porque os serviços precisam de versões
+diferentes do PyTorch:
 
-O backend de LLM é escolhido com `AI_LLM_BACKEND` no `.env`:
+| Pacote | Serviços | Usa a GPU |
+|---|---|---|
+| Base de IA | ai-backend, whisper-service | Sim (transcrição) |
+| Voz clonada | chatterbox-service | Sim |
+| Imagem | image-service | Sim |
+| Vozes prontas | tts-service | Sim |
+| Falantes | speaker-service | Sim |
+| Rosto | face-service | Não |
+| Tradução e busca | translate-service, clip-service | Sim |
+| Chat local | turboquant-service | Sim |
 
-| Valor | O que roda |
-|---|---|
-| `auto` (padrão) | TurboQuant local, com o Ollama de reserva |
-| `ollama` | Ollama local (modelos GGUF) |
-| `turboquant` | Serviço TurboQuant local (modelos Hugging Face em 4 bits, cache KV comprimido) |
-| `openrouter` | Um modelo na nuvem pela OpenRouter, com a sua chave |
+Os pacotes instalados ligam junto com o app e desligam com ele. Tudo escuta só
+em `127.0.0.1`. O app guarda os dados em `%APPDATA%\Tiê AI`: o banco, os
+pacotes (`packs`), os modelos baixados (`ai\models`), as vozes clonadas e os
+logs.
 
-Com a OpenRouter, os modelos pagos ficam bloqueados a menos que
-`OPENROUTER_ALLOW_PAID=true`. Se um modelo falhar, o backend tenta os
-próximos modelos grátis.
+O LLM é escolhido no chat, abaixo do campo de mensagem: um modelo grátis na
+nuvem pela OpenRouter, ou um modelo local do pacote "Chat local". Com a
+OpenRouter, os modelos pagos ficam bloqueados a menos que
+`OPENROUTER_ALLOW_PAID=true`. Se um modelo da nuvem falhar, o backend tenta os
+próximos modelos grátis e depois o modelo local. O Ollama não vem com o app;
+o backend ainda o usa se você o rodar por conta própria na porta 11434.
 
 ## Como rodar
 
 ### Requisitos
 
-- Windows 11 com o [Docker Desktop](https://www.docker.com/products/docker-desktop/)
-  (backend WSL 2).
-- [Bun](https://bun.sh/).
-- Uma GPU NVIDIA com o suporte a GPU ligado no Docker Desktop. O
-  `docker-compose.yml` reserva a GPU para o serviço do Whisper
-  (`WHISPER_DEVICE=cuda`), e o Chatterbox a usa pelo
-  `docker-compose.gpu.yml`.
+- Windows 11.
+- [Bun](https://bun.sh/), [uv](https://docs.astral.sh/uv/) e
+  [FFmpeg](https://ffmpeg.org/) no `PATH`.
+- Uma GPU NVIDIA é recomendada. Os pacotes usam o PyTorch feito para CUDA 12.8,
+  que também atende as placas RTX 50. Sem GPU os recursos rodam, mais devagar.
 
 ### Primeira vez
 
@@ -132,55 +147,45 @@ git clone https://github.com/AlexandreLPA/tieia.git
 cd tieia
 cp .env.example .env
 cp apps/web/.env.example apps/web/.env.local
+bun install
+node apps/desktop/build-web.js
 ```
 
-Para usar um LLM na nuvem, crie uma chave em
-[openrouter.ai/keys](https://openrouter.ai/keys) e coloque no `.env` (nunca
-faça commit desse arquivo):
+O `build-web.js` monta o editor para o app (em `apps/web/.next-desktop`).
+Rode de novo depois de mudar o código web.
 
-```env
-AI_LLM_BACKEND=openrouter
-OPENROUTER_API_KEY=<sua chave>
+### Uso diário
+
+```bash
+apps/desktop/node_modules/electron/dist/electron.exe apps/desktop
 ```
 
-Depois, construa os serviços de IA uma vez:
+Um atalho na área de trabalho para esse comando é o jeito mais fácil de abrir.
+Na primeira vez, abra a "Configuração de IA" e instale os pacotes que quiser;
+cada um baixa as bibliotecas uma vez (de 2 a 8 GB). Para um LLM na nuvem, crie
+uma chave em [openrouter.ai/keys](https://openrouter.ai/keys) e cole no app;
+ela fica salva só no seu computador.
+
+### Com Docker (jeito antigo)
+
+Os serviços também rodam no Docker, que era como a Tiê AI rodava antes do app
+de desktop. O Docker roda os serviços de IA, o PostgreSQL e o Redis, e um
+launcher serve o editor em `127.0.0.1:3100`:
 
 ```bash
 docker compose build
-```
-
-### Uso diário (modo híbrido)
-
-O launcher abre o Docker Desktop se precisar, sobe os serviços de IA, o banco
-e o Redis, refaz o build do editor quando o código dele mudou (cerca de 30 s)
-e serve o editor escondido em `127.0.0.1:3100`. Depois abre uma janela de app
-do Edge.
-
-```powershell
 powershell -ExecutionPolicy Bypass -File scripts/start-opencut.ps1        # build de produção
-powershell -ExecutionPolicy Bypass -File scripts/start-opencut.ps1 -Dev   # next dev, hot reload
 powershell -ExecutionPolicy Bypass -File scripts/start-opencut.ps1 -Stop  # desliga o editor e os serviços do Docker
-```
 
-- O log do editor fica em `%LOCALAPPDATA%\OpenCut-AI\editor.log`.
-- `-NoBrowser` liga sem abrir janela.
-- Mantenha a porta **3100**: os projetos ficam no armazenamento do navegador
-  por endereço, e outra porta mostra a lista de projetos vazia.
-- Um atalho na área de trabalho pode rodar o mesmo comando; com `-Stop`, vira
-  o atalho de fechar.
-
-### Outros jeitos de rodar
-
-```bash
 # Tudo no Docker, inclusive o editor
 docker compose --profile docker-web up -d --build web
-
-# Refazer o backend depois de mudar o código dele
-docker compose up -d --build ai-backend
 
 # TurboQuant e Chatterbox na GPU
 docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d --build
 ```
+
+Nesse jeito, o backend de LLM também pode ser escolhido com `AI_LLM_BACKEND` no
+`.env` (`auto`, `ollama`, `turboquant` ou `openrouter`).
 
 ### Testes
 
@@ -193,16 +198,16 @@ cd services/ai-backend && python -m pytest   # precisa do requirements.txt e do 
 
 O que fica no seu computador:
 
-- Seus vídeos, imagens, áudios e projetos (armazenamento do navegador).
+- Seus vídeos, imagens, áudios e projetos (armazenamento do app).
 - Transcrição, clonagem de voz, síntese de fala, separação de locutores,
-  rastreamento de rosto, tradução, geração de imagens, pesquisa CLIP e os
-  LLMs locais (Ollama, TurboQuant).
+  rastreamento de rosto, tradução, geração de imagens, pesquisa CLIP e o LLM
+  local (TurboQuant, ou o Ollama se você o rodar).
 
 O que sai, e só quando você usa:
 
 | Recurso | Destino | O que é enviado |
 |---|---|---|
-| LLM na nuvem (`AI_LLM_BACKEND=openrouter`) | OpenRouter e o provedor do modelo | Prompts, transcrições, o contexto do projeto aberto e, na Pontuação Viral e na verificação do TikTok Shop, quadros do vídeo |
+| LLM na nuvem (um modelo da nuvem escolhido no chat) | OpenRouter e o provedor do modelo | Prompts, transcrições, o contexto do projeto aberto e, na Pontuação Viral e na verificação do TikTok Shop, quadros do vídeo |
 | Painel de GIFs e figurinhas | KLIPY, chamada pelo navegador com a sua chave | Termos de busca. Os resultados são exibidos, não guardados |
 | Figurinhas, ícones e fontes | Iconify e Google Fonts, chamados pelo navegador | Buscas de ícones e pedidos de fontes |
 | Criar vídeo com IA | Pexels (sua chave), Wikimedia Commons | Termos de busca de imagens de banco |
@@ -211,9 +216,10 @@ O que sai, e só quando você usa:
 | Vozes e transcrição da Sarvam AI / Smallest AI | Sarvam, Smallest (sua chave) | Texto ou áudio |
 | Busca de sons | Freesound (sua chave) | Termos de busca |
 | Publicar no TikTok | TikTok, depois do seu login | O vídeo exportado |
+| Instalar um pacote ou um modelo | PyPI, índice de pacotes do PyTorch, Hugging Face | Pedidos de download (nenhum dado do projeto) |
 
-Com o padrão `AI_LLM_BACKEND=auto` e nenhuma chave configurada, nenhum texto,
-áudio ou vídeo vai para um provedor de IA.
+Sem nenhuma chave configurada, nenhum texto, áudio ou vídeo vai para um
+provedor de IA.
 
 ## Por que o nome
 
